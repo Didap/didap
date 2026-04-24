@@ -2,60 +2,51 @@
 
 @theme {
   --color-background: #fdfdfd;
-  --color-foreground: hsl(222.2 84% 4.9%);
+  --color-foreground: oklch(0.12 0.01 45);
 
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222.2 84% 4.9%);
+  --color-card: #ffffff;
+  --color-card-foreground: oklch(0.12 0.01 45);
 
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222.2 84% 4.9%);
+  --color-primary: oklch(0.66 0.19 45); /* DIDAP Orange */
+  --color-primary-foreground: #ffffff;
 
-  --color-primary: hsl(24.6 95% 53.1%);
-  --color-primary-foreground: hsl(210 40% 98%);
+  --color-muted: oklch(0.96 0.005 45);
+  --color-muted-foreground: oklch(0.45 0.01 45);
 
-  --color-secondary: hsl(210 40% 96.1%);
-  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --color-accent: oklch(0.66 0.19 45);
+  --color-accent-foreground: #ffffff;
 
-  --color-muted: hsl(210 40% 96.1%);
-  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --color-border: oklch(0.92 0.005 45);
+  --color-input: oklch(0.92 0.005 45);
+  --color-ring: oklch(0.66 0.19 45);
 
-  --color-accent: hsl(210 40% 96.1%);
-  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
 
-  --color-destructive: hsl(0 84.2% 60.2%);
-  --color-destructive-foreground: hsl(210 40% 98%);
+  --font-display: "Italiana", serif;
+  --font-heading: "Bricolage Grotesque", sans-serif;
+  --font-body: "Bricolage Grotesque", sans-serif;
 
-  --color-border: hsl(214.3 31.8% 91.4%);
-  --color-input: hsl(214.3 31.8% 91.4%);
-  --color-ring: hsl(24.6 95% 53.1%);
+  --animate-accordion-down: accordion-down 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-accordion-up: accordion-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-
-  --font-display: 'Playfair Display', serif;
-  --font-heading: 'Outfit', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
+@keyframes accordion-down {
+  from {
+    height: 0;
   }
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
   }
 }
 
@@ -78,10 +69,11 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 ::selection {
-  background-color: hsl(24.6 95% 53.1%);
+  background-color: var(--color-primary);
   color: white;
 }
 
@@ -157,32 +149,26 @@ body {
 
 /* Floating animation */
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
 }
 
-@utility animate-float {
+@keyframes glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.animate-float {
   animation: float 6s ease-in-out infinite;
 }
 
-/* Glow Pulse */
-@keyframes glow-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.05);
-  }
+.animate-glow {
+  animation: glow 8s ease-in-out infinite;
 }
 
-@utility animate-glow {
-  animation: glow-pulse 4s ease-in-out infinite;
+/* Snap Container Utilities */
+.snap-section {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }

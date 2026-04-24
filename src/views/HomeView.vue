@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import PremiumCard from '../components/PremiumCard.vue'
+import ContactForm from '../components/ContactForm.vue'
+import { resolveMediaUrl, STRAPI_URL } from '../utils/media'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -33,15 +35,20 @@ interface Project {
   rarity: 'common' | 'rare' | 'ultra'
   type: 'fire' | 'water' | 'grass' | 'electric' | 'psychic' | 'dark' | 'steel' | 'dragon'
   abilities: Ability[]
+  techStack: string[]
+}
+
+interface Stack {
+  name: string
+  logo: string | null
 }
 
 const featuredProjects = ref<Project[]>([])
+const allStacks = ref<Stack[]>([])
 
 const fetchFeaturedProjects = async () => {
   try {
-    const res = await fetch(
-      'http://localhost:1337/api/projects?populate=*&pagination[limit]=3&sort=rarity:desc',
-    )
+    const res = await fetch(`${STRAPI_URL}/api/projects?populate=*&pagination[limit]=3&sort=rarity:desc`)
     const data = await res.json()
 
     interface StrapiProject {
@@ -55,14 +62,14 @@ const fetchFeaturedProjects = async () => {
         month?: number
         rarity?: 'common' | 'rare' | 'ultra'
         element_type?:
-          | 'fire'
-          | 'water'
-          | 'grass'
-          | 'electric'
-          | 'psychic'
-          | 'dark'
-          | 'steel'
-          | 'dragon'
+        | 'fire'
+        | 'water'
+        | 'grass'
+        | 'electric'
+        | 'psychic'
+        | 'dark'
+        | 'steel'
+        | 'dragon'
         abilities?: Ability[]
         image?: {
           data?: {
@@ -79,15 +86,16 @@ const fetchFeaturedProjects = async () => {
       month?: number
       rarity?: 'common' | 'rare' | 'ultra'
       element_type?:
-        | 'fire'
-        | 'water'
-        | 'grass'
-        | 'electric'
-        | 'psychic'
-        | 'dark'
-        | 'steel'
-        | 'dragon'
+      | 'fire'
+      | 'water'
+      | 'grass'
+      | 'electric'
+      | 'psychic'
+      | 'dark'
+      | 'steel'
+      | 'dragon'
       abilities?: Ability[]
+      stacks?: any
       image?: {
         url: string
       }
@@ -97,11 +105,10 @@ const fetchFeaturedProjects = async () => {
       featuredProjects.value = data.data.map((item: StrapiProject) => ({
         title: item.name || item.attributes?.name,
         category: item.category || item.attributes?.category,
-        image: item.image?.url
-          ? `http://localhost:1337${item.image.url}`
-          : item.attributes?.image?.data?.attributes?.url
-            ? `http://localhost:1337${item.attributes.image.data.attributes.url}`
-            : 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800',
+        image: resolveMediaUrl(
+          item.image?.url || item.attributes?.image?.data?.attributes?.url,
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800'
+        ),
         link: item.link || item.attributes?.link,
         description: item.description || item.attributes?.description,
         year: (item.year || item.attributes?.year || '2024').toString(),
@@ -109,6 +116,11 @@ const fetchFeaturedProjects = async () => {
         rarity: item.rarity || item.attributes?.rarity || 'ultra',
         type: item.element_type || item.attributes?.element_type || 'electric',
         abilities: item.abilities || item.attributes?.abilities || [],
+        techStack:
+          item.stacks?.map?.((s: any) => s.name || s.attributes?.name) ||
+          item.stacks?.data?.map?.((s: any) => s.attributes?.name) ||
+          (item.attributes as any)?.stacks?.data?.map?.((s: any) => s.attributes?.name) ||
+          [],
       }))
     }
   } catch (err) {
@@ -116,335 +128,241 @@ const fetchFeaturedProjects = async () => {
   }
 }
 
-const skills = [
-  'Vue 3',
-  'TypeScript',
-  'Node.js',
-  'Strapi CMS',
-  'GSAP Animation',
-  'Tailwind CSS',
-  'PostgreSQL',
-  'UI/UX Design',
-  'Cloud Deployment',
-]
+const fetchAllStacks = async () => {
+  try {
+    const res = await fetch(`${STRAPI_URL}/api/stacks?populate=*`)
+    const data = await res.json()
+
+    if (data.data) {
+      allStacks.value = data.data.map((item: any) => ({
+        name: item.name || item.attributes?.name,
+        logo: resolveMediaUrl(
+          item.logo?.url || item.attributes?.logo?.data?.attributes?.url
+        ) || null,
+      }))
+    }
+  } catch (err) {
+    console.error('Failed to fetch all stacks', err)
+  }
+}
+
+const handleGlobalMouseMove = (e: MouseEvent) => {
+  const xNormalized = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2)
+  const yNormalized = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2)
+
+  gsap.to('.parallax-logo', { x: xNormalized * 25, y: yNormalized * 25, ease: 'power2.out', duration: 0.6 })
+  gsap.to('.parallax-stat-1', { x: xNormalized * -15, y: yNormalized * -20, ease: 'power2.out', duration: 0.6 })
+  gsap.to('.parallax-stat-2', { x: xNormalized * -20, y: yNormalized * 15, ease: 'power2.out', duration: 0.6 })
+  gsap.to('.parallax-stat-3', { x: xNormalized * 15, y: yNormalized * -15, ease: 'power2.out', duration: 0.6 })
+}
 
 // --- GSAP Animations ---
 onMounted(() => {
   fetchFeaturedProjects()
+  fetchAllStacks()
+  window.addEventListener('mousemove', handleGlobalMouseMove)
 
-  const heroTl = gsap.timeline({ delay: 0.6 })
-
-  // Staggered floating elements appearance
-  gsap.from('.floating-element', {
-    y: 40,
-    opacity: 0,
-    duration: 1.2,
-    stagger: 0.15,
-    ease: 'power3.out',
-    delay: 0.6,
-  })
+  // 1. Entrance choreography (Hero)
+  const heroTl = gsap.timeline({ delay: 0.2 })
   heroTl
-    .from(
-      '.hero-badge',
-      {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-      },
-      0,
-    )
-    .from(
-      '.hero-title',
-      {
-        y: 40,
-        opacity: 0,
-        duration: 1,
-        ease: 'power4.out',
-      },
-      0.2,
-    )
-    .from(
-      '.hero-desc',
-      {
+    .from('.hero-badge', { y: 10, opacity: 0, duration: 0.8, ease: 'power3.out' })
+    .from('.hero-title-main', { y: 60, opacity: 0, duration: 1.2, ease: 'power4.out' }, '-=0.6')
+    .from('.hero-title-italic', { x: -40, opacity: 0, duration: 1.4, ease: 'power3.out' }, '-=1')
+    .from('.hero-desc', { y: 20, opacity: 0, duration: 1, ease: 'power2.out' }, '-=1')
+    .from('.hero-btns', { y: 10, opacity: 0, duration: 0.8, ease: 'power2.out' }, '-=0.8')
+    .from('.hero-visual', { scale: 0.95, opacity: 0, duration: 1.5, ease: 'expo.out' }, '-=1.2')
+
+  // 2. Section Revelations (Subtle Parallax)
+  const sections = gsap.utils.toArray('.reveal-section')
+  sections.forEach((section: any) => {
+    const header = section.querySelector('.section-header')
+    const content = section.querySelector('.section-content')
+    
+    if (header) {
+      gsap.from(header, {
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+        },
         y: 30,
         opacity: 0,
         duration: 1,
-        ease: 'power3.out',
-      },
-      0.4,
-    )
-    .from(
-      '.hero-btns',
-      {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
         ease: 'power2.out',
-      },
-      0.6,
-    )
-
-  gsap.from('.projects-header', {
-    scrollTrigger: {
-      trigger: '#projects',
-      start: 'top 80%',
-    },
-    y: 40,
-    opacity: 0,
-    duration: 1,
-    ease: 'power3.out',
+      })
+    }
+    
+    if (content) {
+      gsap.from(content, {
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 75%',
+        },
+        y: 40,
+        opacity: 0,
+        duration: 1.2,
+        ease: 'power3.out',
+        stagger: 0.1
+      })
+    }
   })
+
+  // 3. Stat Numbers
+  const statNumbers = document.querySelectorAll('.stat-number')
+  statNumbers.forEach((el) => {
+    const target = parseFloat(el.getAttribute('data-target') || '0')
+    gsap.to(el, {
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 95%',
+      },
+      innerHTML: target,
+      duration: 3,
+      ease: 'expo.out',
+      snap: { innerHTML: 1 },
+    })
+  })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', handleGlobalMouseMove)
 })
 </script>
 
 <template>
-  <div
-    class="min-h-screen bg-white font-body selection:bg-orange-500 selection:text-white overflow-x-hidden pt-20"
-  >
+  <div class="page-wrapper min-h-screen bg-white font-body selection:bg-orange-500 selection:text-white overflow-x-hidden pt-20 snap-y snap-mandatory">
     <!-- ===== HERO SECTION ===== -->
-    <section
-      id="home"
-      class="relative pt-32 pb-32 px-6 md:px-16 overflow-hidden min-h-[90vh] flex items-center"
-    >
+    <section id="home"
+      class="reveal-section snap-start relative px-4 md:px-16 overflow-hidden min-h-screen flex items-center">
       <!-- Glow background -->
-      <div
-        class="absolute top-[20%] left-[10%] w-[40%] h-[40%] bg-orange-100/40 blur-[120px] rounded-full -z-10 animate-glow"
-      ></div>
-      <div
-        class="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-blue-50/30 blur-[100px] rounded-full -z-10"
-      ></div>
-
-      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div class="absolute top-[10%] left-[5%] w-[40%] h-[40%] bg-orange-100/30 blur-[150px] rounded-full -z-10 animate-glow"></div>
+      
+      <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center relative w-full gap-20">
         <!-- Left Column: Content -->
-        <div class="relative z-10 text-left pt-10 md:pt-0">
-          <h1
-            class="hero-title text-6xl md:text-8xl font-heading font-black tracking-tighter text-slate-900 leading-[0.9] mb-8"
-          >
-            Sviluppiamo <br />
-            <span class="font-display italic text-slate-400">Idee Vincenti.</span>
+        <div class="relative z-20 text-left w-full lg:w-3/5">
+          <div class="hero-badge mb-8 inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+            <span class="text-[0.65rem] font-bold uppercase tracking-[0.25em] text-slate-400">Visionary Studio</span>
+          </div>
+
+          <h1 class="hero-title text-7xl sm:text-8xl lg:text-[8.5rem] font-heading font-black tracking-[-0.05em] text-slate-900 leading-[0.75] mb-12">
+            Sviluppiamo<br />
+            <span class="font-display italic text-slate-300 block">Idee Vincenti.</span>
           </h1>
 
-          <p
-            class="hero-desc text-slate-500 text-lg md:text-xl font-medium leading-relaxed mb-12 max-w-xl"
-          >
-            Siamo un'agenzia creativa specializzata in Web, App e Brand Identity. Trasformiamo la
-            visione del tuo business in un'esperienza digitale indimenticabile.
+          <p class="hero-desc text-slate-500 text-xl lg:text-3xl font-medium leading-tight mb-16 max-w-2xl">
+            Un'agenzia creativa per chi cerca la perfezione digitale. Web, App & Brand Identity con un'anima artigianale.
           </p>
 
-          <div class="hero-btns flex flex-wrap gap-6 mb-16 md:mb-0">
-            <button
-              @click="scrollToSection('projects')"
-              class="px-10 py-5 bg-orange-500 text-white rounded-full text-xs font-bold uppercase tracking-[0.2em] shadow-2xl shadow-orange-500/40 hover:bg-orange-600 hover:-translate-y-1 transition-all duration-300"
-            >
-              Guarda i Lavori
-            </button>
-            <button
-              @click="scrollToSection('skills')"
-              class="px-10 py-5 bg-white border border-slate-200 text-slate-900 rounded-full text-xs font-bold uppercase tracking-[0.2em] shadow-sm hover:border-slate-400 hover:-translate-y-1 transition-all duration-300"
-            >
-              Scopri di Più
+          <div class="hero-btns flex flex-wrap gap-6">
+            <button @click="scrollToSection('projects')"
+              class="px-12 py-6 bg-slate-900 text-white rounded-full text-xs font-bold uppercase tracking-[0.25em] hover:bg-orange-500 transition-all duration-500 shadow-2xl hover:shadow-orange-500/30">
+              Esplora i Lavori
             </button>
           </div>
         </div>
 
-        <!-- Right Column: Minimal Floating Stats & Logo -->
-        <div
-          class="hero-visual relative flex items-center justify-center w-full h-[400px] md:h-[500px]"
-        >
-          <!-- Central Logo (No Background) -->
-          <div
-            class="absolute inset-0 m-auto w-40 h-40 md:w-56 md:h-56 flex items-center justify-center z-20 floating-element"
-          >
-            <img
-              src="../assets/logo (1).png"
-              alt="Didap Logo"
-              class="w-full h-full object-contain drop-shadow-2xl"
-            />
+        <!-- Right Column: Simplified Visual -->
+        <div class="hero-visual relative flex flex-col items-start gap-12 w-full lg:w-2/5">
+          <div class="flex items-baseline gap-2">
+            <span class="text-8xl lg:text-[10rem] font-heading font-black text-slate-900 tracking-tighter stat-number" data-target="50">0</span>
+            <span class="text-4xl lg:text-6xl font-display italic text-orange-500">+</span>
+            <span class="text-[0.7rem] font-bold uppercase tracking-[0.3em] text-slate-400 ml-4">Progetti<br/>Completati</span>
           </div>
-
-          <!-- Top Left Stat -->
-          <div
-            class="absolute top-10 left-4 md:left-12 bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 shadow-[0_20px_40px_-5px_rgba(0,0,0,0.05)] z-10 floating-element hover:-translate-y-2 transition-transform duration-300"
-          >
-            <div
-              class="text-4xl md:text-5xl font-black font-heading text-slate-900 tracking-tighter"
-            >
-              50<span class="text-orange-500">+</span>
-            </div>
-            <div
-              class="text-[0.6rem] md:text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-400 mt-2 leading-tight"
-            >
-              Progetti <br />
-              Completati
-            </div>
-          </div>
-
-          <!-- Bottom Right Stat -->
-          <div
-            class="absolute bottom-10 right-4 md:right-12 bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 shadow-[0_20px_40px_-5px_rgba(0,0,0,0.2)] z-30 floating-element hover:-translate-y-2 transition-transform duration-300"
-          >
-            <div class="text-4xl md:text-5xl font-black font-heading text-white tracking-tighter">
-              100<span class="text-orange-500">%</span>
-            </div>
-            <div
-              class="text-[0.6rem] md:text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-400 mt-2 leading-tight"
-            >
-              Clienti <br />
-              Felici
-            </div>
-          </div>
-
-          <!-- Middle Left Stat -->
-          <div
-            class="absolute bottom-32 left-0 md:left-8 bg-orange-50 rounded-3xl p-5 md:p-6 shadow-[0_15px_30px_-5px_rgba(249,115,22,0.1)] z-10 floating-element hover:-translate-y-2 transition-transform duration-300"
-          >
-            <div class="text-3xl font-black font-heading text-orange-600 tracking-tighter">
-              5<span class="text-orange-500">+</span>
-            </div>
-            <div
-              class="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-orange-900/50 mt-1 leading-tight"
-            >
-              Anni di <br />
-              Esperienza
-            </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-8xl lg:text-[10rem] font-heading font-black text-slate-900 tracking-tighter stat-number" data-target="100">0</span>
+            <span class="text-4xl lg:text-6xl font-display italic text-orange-500">%</span>
+            <span class="text-[0.7rem] font-bold uppercase tracking-[0.3em] text-slate-400 ml-4">Clienti<br/>Soddisfatti</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== PROJECTS SECTION ===== -->
-    <section
-      id="projects"
-      class="relative z-10 px-6 md:px-16 py-32 bg-slate-50/50 rounded-[4rem] mx-4"
-    >
+    <!-- ===== PROJECTS SECTION (STAGGERED EDITORIAL) ===== -->
+    <section id="projects" class="reveal-section snap-start relative px-4 md:px-16 py-32 bg-slate-50">
       <div class="max-w-7xl mx-auto">
-        <div
-          class="projects-header flex flex-col md:flex-row md:items-end justify-between mb-20 gap-6"
-        >
-          <div class="max-w-2xl text-left">
-            <span
-              class="text-[0.65rem] font-bold text-orange-500 uppercase tracking-[0.4em] mb-4 block font-heading"
-              >Progetti Evidenziati</span
-            >
-            <h2
-              class="text-4xl md:text-6xl font-heading font-black tracking-tighter text-slate-900"
-            >
-              Lavori che fanno<br />
-              <span class="font-display italic text-slate-400">la differenza.</span>
-            </h2>
-          </div>
-          <button
-            @click="exploreCollection"
-            class="group flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-orange-500 transition-colors"
-          >
-            Vedi tutti
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Featured Projects Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24 justify-items-center">
-          <div
-            v-for="(project, index) in featuredProjects"
-            :key="index"
-            class="featured-project-card group flex justify-center"
-          >
-            <PremiumCard
-              :name="project.title"
-              :year="parseInt(project.year.toString()) || 2024"
-              :month="project.month"
-              :rarity="project.rarity"
-              :type="project.type"
-              :image="project.image"
-              :link="project.link"
-              :description="project.description"
-              :abilities="project.abilities"
-              :techStack="['Vue 3', 'GSAP', 'Tailwind']"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== SKILLS SECTION ===== -->
-    <section id="skills" class="relative z-10 px-6 md:px-16 py-32 border-t border-slate-100">
-      <div class="max-w-5xl mx-auto flex flex-col items-center">
-        <div class="skills-header text-center mb-16">
-          <span
-            class="text-[0.65rem] font-bold text-orange-500 uppercase tracking-[0.4em] mb-4 block font-heading"
-            >Il nostro toolkit</span
-          >
-          <h2 class="text-3xl md:text-5xl font-heading font-black tracking-tighter text-slate-900">
-            Tecnologie <span class="font-display italic text-slate-400">&</span> Competenze
+        <div class="section-header mb-32">
+          <span class="text-[0.7rem] font-bold text-orange-500 uppercase tracking-[0.5em] mb-8 block font-heading">Journal</span>
+          <h2 class="text-6xl md:text-8xl font-heading font-black tracking-[-0.05em] text-slate-900 leading-none">
+            Opere <span class="font-display italic text-slate-300">Scelte.</span>
           </h2>
         </div>
-        <div class="flex flex-wrap justify-center gap-3 max-w-3xl">
-          <div
-            v-for="skill in skills"
-            :key="skill"
-            class="skill-pill px-5 py-2.5 glass border border-slate-200/60 rounded-full shadow-sm text-sm font-heading font-bold text-slate-600 hover:border-orange-300 hover:text-orange-600 hover:shadow-md hover:shadow-orange-500/5 transition-all duration-300 cursor-default"
-          >
-            {{ skill }}
+
+        <div class="section-content grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-32">
+          <div v-for="(project, index) in featuredProjects" :key="index"
+            :class="index % 2 === 1 ? 'md:mt-40' : ''"
+            class="project-item group">
+            <div class="mb-10 overflow-hidden rounded-[2rem] shadow-2xl transition-transform duration-700 group-hover:scale-[0.98]">
+               <PremiumCard :name="project.title" :year="parseInt(project.year.toString()) || 2024" :month="project.month"
+                :rarity="project.rarity" :type="project.type" :image="project.image" :link="project.link"
+                :description="project.description" :abilities="project.abilities" :techStack="project.techStack || []" />
+            </div>
+          </div>
+          <!-- CTA Cell -->
+          <div class="flex flex-col justify-center items-start p-12">
+             <h3 class="text-4xl font-heading font-black text-slate-900 mb-8 leading-tight">Vedi come trasformiamo<br/>visioni in realtà.</h3>
+             <button @click="exploreCollection" class="group flex items-center gap-4 text-[0.7rem] font-bold uppercase tracking-[0.3em] text-orange-500 hover:text-slate-900 transition-colors">
+               Archivio Completo
+               <div class="w-10 h-px bg-orange-500 group-hover:w-16 group-hover:bg-slate-900 transition-all duration-500"></div>
+             </button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== FOOTER SECTION ===== -->
-    <section id="contacts" class="px-6 md:px-16 py-32 bg-slate-900 rounded-t-[4rem] text-white">
-      <div class="max-w-7xl mx-auto text-center">
-        <h2 class="text-4xl md:text-7xl font-heading font-black tracking-tighter mb-12">
-          Hai un'idea? <br />
-          <span class="text-orange-500 font-display italic">Realizziamola.</span>
-        </h2>
-
-        <div
-          class="flex flex-col md:flex-row items-center justify-center gap-12 mb-20 font-heading"
-        >
-          <div class="flex flex-col items-center">
-            <span class="text-[0.6rem] font-bold uppercase tracking-[0.4em] text-slate-400 mb-2"
-              >Scrivici</span
-            >
-            <a
-              href="mailto:info@didap.it"
-              class="text-xl md:text-2xl font-bold hover:text-orange-500 transition-colors"
-              >info@didap.it</a
-            >
-          </div>
-          <div class="flex flex-col items-center">
-            <span class="text-[0.6rem] font-bold uppercase tracking-[0.4em] text-slate-400 mb-2"
-              >Chiamaci</span
-            >
-            <a
-              href="tel:+3912345678"
-              class="text-xl md:text-2xl font-bold hover:text-orange-500 transition-colors"
-              >+39 123 456 78</a
-            >
+    <!-- ===== SKILLS SECTION (EDITORIAL SPEC) ===== -->
+    <section id="skills" class="reveal-section snap-start relative px-4 md:px-16 py-32 bg-white">
+      <div class="max-w-7xl mx-auto">
+        <div class="section-header mb-32 grid grid-cols-1 lg:grid-cols-2 gap-20">
+          <h2 class="text-6xl md:text-8xl font-heading font-black tracking-[-0.05em] text-slate-900 leading-[0.8]">
+            L'eccellenza <br />
+            <span class="font-display italic text-slate-300">tecnica.</span>
+          </h2>
+          <p class="text-slate-500 text-xl lg:text-2xl font-medium leading-relaxed self-end">
+            Non siamo solo designer. Siamo ingegneri del possibile. Utilizziamo stack all'avanguardia per performance senza compromessi.
+          </p>
+        </div>
+        
+        <div class="section-content border-t border-slate-100">
+          <div v-for="stack in allStacks.slice(0, 8)" :key="stack.name"
+            class="flex items-center justify-between py-10 border-b border-slate-100 group hover:px-8 transition-all duration-500">
+            <div class="flex items-center gap-12">
+               <span class="text-xs font-black text-slate-200 group-hover:text-orange-500 transition-colors">0{{ allStacks.indexOf(stack) + 1 }}</span>
+               <h4 class="text-2xl md:text-4xl font-heading font-black text-slate-900">{{ stack.name }}</h4>
+            </div>
+            <img v-if="stack.logo" :src="stack.logo" :alt="stack.name" class="w-12 h-12 object-contain grayscale opacity-20 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
           </div>
         </div>
+      </div>
+    </section>
 
-        <div
-          class="pt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[0.6rem] font-bold uppercase tracking-widest font-heading"
-        >
-          <div class="text-slate-500">© 2026 DIDAP Digital Agency — Crafted with passion</div>
-          <div class="flex gap-8">
-            <a
-              v-for="s in ['Instagram', 'LinkedIn', 'Facebook']"
-              :key="s"
-              href="#"
-              class="text-slate-400 hover:text-white transition-colors"
-              >{{ s }}</a
-            >
+    <!-- ===== CONTACTS SECTION ===== -->
+    <section id="contacts"
+      class="reveal-section snap-start px-4 md:px-16 py-32 bg-slate-900 text-white relative overflow-hidden">
+      <div class="max-w-7xl mx-auto">
+        <div class="section-header mb-32">
+          <h2 class="text-7xl md:text-[9rem] font-heading font-black tracking-[-0.05em] leading-[0.75]">
+            Diamo vita<br />
+            <span class="text-orange-500 font-display italic">al domani.</span>
+          </h2>
+        </div>
+
+        <div class="section-content grid grid-cols-1 lg:grid-cols-2 gap-32">
+          <div class="space-y-16">
+            <p class="text-slate-400 text-2xl font-medium max-w-md">Hai un'idea che merita di essere grande? Parliamone oggi.</p>
+            <div class="space-y-4">
+              <span class="text-[0.6rem] font-bold uppercase tracking-[0.5em] text-slate-600 block">Direzione</span>
+              <a href="mailto:info@didap.it" class="text-3xl font-heading font-black hover:text-orange-500 transition-colors">info@didap.it</a>
+            </div>
+          </div>
+          <div class="bg-white/5 backdrop-blur-3xl border border-white/10 p-12 rounded-[3rem]">
+            <ContactForm />
+          </div>
+        </div>
+        
+        <div class="mt-40 pt-12 border-t border-white/5 flex justify-between items-center opacity-20 text-[0.6rem] font-black uppercase tracking-[0.4em]">
+          <span>© 2026 DIDAP AGENCY</span>
+          <div class="flex gap-12">
+             <span>IG</span><span>LI</span><span>TW</span>
           </div>
         </div>
       </div>

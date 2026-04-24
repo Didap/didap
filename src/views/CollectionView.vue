@@ -3,6 +3,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import gsap from 'gsap'
 import BoosterPack from '../components/BoosterPack.vue'
 import PremiumCard from '../components/PremiumCard.vue'
+import { resolveMediaUrl, STRAPI_URL } from '../utils/media'
 
 interface Ability {
   name: string
@@ -56,7 +57,7 @@ const categoryPacks = computed(() => {
 const fetchProjects = async () => {
   try {
     isLoading.value = true
-    const res = await fetch('http://localhost:1337/api/projects?populate=*')
+    const res = await fetch(`${STRAPI_URL}/api/projects?populate=*`)
     if (!res.ok) throw new Error('Network response was not ok')
     const data = await res.json()
 
@@ -80,6 +81,7 @@ const fetchProjects = async () => {
       description: string
       tech_stack?: string[]
       abilities?: Ability[]
+      stacks?: any
       image?: {
         data?: {
           attributes: {
@@ -128,13 +130,15 @@ const fetchProjects = async () => {
         level: attrs.level_text || '',
         link: attrs.link,
         description: attrs.description,
-        techStack: attrs.tech_stack || [],
+        techStack:
+          attrs.stacks?.map?.((s: any) => s.name || s.attributes?.name) ||
+          attrs.stacks?.data?.map?.((s: any) => s.attributes?.name) ||
+          [],
         abilities: attrs.abilities || [],
-        image: attrs.image?.data?.attributes?.url
-          ? `http://localhost:1337${attrs.image.data.attributes.url}`
-          : attrs.image?.url
-            ? `http://localhost:1337${attrs.image.url}`
-            : '',
+        image: resolveMediaUrl(
+          attrs.image?.data?.attributes?.url || attrs.image?.url,
+          ''
+        ),
       }
     })
   } catch (err) {
@@ -167,84 +171,82 @@ const resetView = () => {
 }
 
 const animateGridReveal = () => {
-  gsap.fromTo(
-    '.grid-header',
-    { y: -30, opacity: 0 },
-    { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' },
-  )
+  const gridHeader = document.querySelector('.grid-header')
+  if (gridHeader) {
+    gsap.fromTo(
+      gridHeader,
+      { y: -30, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' },
+    )
+  }
 
-  gsap.fromTo(
-    '.project-grid-item',
-    { y: 60, opacity: 0, scale: 0.95 },
-    {
-      y: 0,
-      opacity: 1,
-      scale: 1,
-      duration: 1.2,
-      stagger: 0.1,
-      ease: 'power4.out',
-      clearProps: 'transform',
-    },
-  )
+  const projectGridItems = document.querySelectorAll('.project-grid-item')
+  if (projectGridItems.length) {
+    gsap.fromTo(
+      projectGridItems,
+      { y: 60, opacity: 0, scale: 0.95 },
+      {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 1.2,
+        stagger: 0.1,
+        ease: 'power4.out',
+        clearProps: 'transform',
+      },
+    )
+  }
 }
 
 onMounted(() => {
   fetchProjects()
-  gsap.from('.header-element', {
-    y: 30,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.1,
-    ease: 'power3.out',
-  })
+  const headerElements = document.querySelectorAll('.header-element')
+  if (headerElements.length) {
+    gsap.from(headerElements, {
+      y: 30,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.1,
+      ease: 'power3.out',
+    })
+  }
 })
 </script>
 
 <template>
   <div
-    class="min-h-screen bg-[#FDFDFD] relative overflow-hidden font-body text-slate-900 selection:bg-orange-500 selection:text-white"
-  >
+    class="min-h-screen bg-[#FDFDFD] relative overflow-hidden font-body text-slate-900 selection:bg-orange-500 selection:text-white">
     <!-- Background Glow -->
     <div
-      class="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[400px] bg-orange-200/15 blur-[120px] rounded-full pointer-events-none z-0"
-    ></div>
+      class="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[400px] bg-orange-200/15 blur-[120px] rounded-full pointer-events-none z-0">
+    </div>
 
-    <div class="relative z-10 max-w-7xl mx-auto px-6 pt-32 md:pt-40 pb-24 min-h-screen">
+    <div class="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pt-28 md:pt-40 pb-24 min-h-screen">
       <!-- Loading State -->
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-40">
-        <div
-          class="w-10 h-10 rounded-full border-2 border-slate-100 border-t-orange-500 animate-spin mb-6"
-        ></div>
-        <span class="text-[0.7rem] font-bold uppercase tracking-[0.4em] text-slate-400"
-          >Caricamento Universo Didap...</span
-        >
+        <div class="w-10 h-10 rounded-full border-2 border-slate-100 border-t-orange-500 animate-spin mb-6"></div>
+        <span class="text-[0.7rem] font-bold uppercase tracking-[0.4em] text-slate-400">Caricamento Universo
+          Didap...</span>
       </div>
 
       <template v-else>
         <!-- SELECTION VIEW -->
         <div v-if="viewStatus === 'selection'" class="flex flex-col items-center">
-          <div class="text-center mb-20 header-element">
-            <span class="text-[0.65rem] font-bold text-orange-500 uppercase tracking-[0.4em] mb-4"
-              >Portfolio</span
-            >
-            <h1 class="text-4xl md:text-6xl font-heading font-black tracking-tighter mb-6">
-              I Nostri <span class="font-display italic text-gradient-orange">Progetti</span>
+          <div class="text-center mb-24 header-element">
+            <span class="text-[0.7rem] font-bold text-orange-500 uppercase tracking-[0.4em] mb-6 block font-heading">Portfolio</span>
+            <h1 class="text-6xl md:text-8xl font-heading font-black tracking-[-0.04em] mb-8 leading-[0.9]">
+              I Nostri <span class="font-display italic text-slate-400">Progetti</span>
             </h1>
-            <p class="text-slate-500 max-w-2xl font-medium leading-relaxed mb-4">
+            <p class="text-slate-500 text-lg md:text-xl max-w-2xl font-medium leading-relaxed mx-auto">
               Scegli una categoria per sbloccare tutti i nostri lavori in quel settore.
             </p>
           </div>
 
-          <div class="flex flex-wrap justify-center gap-12 md:gap-16">
+          <div class="flex flex-wrap justify-center gap-8 md:gap-16">
             <div v-for="pack in categoryPacks" :key="pack.id" class="flex flex-col items-center">
-              <BoosterPack
-                :packName="pack.label"
-                :themeColor="pack.color"
-                @open="handlePackOpen(pack.id as ProjectCategory)"
-              />
-              <p
-                class="mt-8 text-[0.6rem] font-black uppercase tracking-[0.3em] text-slate-400 font-heading"
-              >
+              <BoosterPack :packName="pack.label" :themeColor="pack.color"
+                @open="handlePackOpen(pack.id as ProjectCategory)" />
+              <p class="mt-8 text-[0.6rem] font-black uppercase tracking-[0.3em] text-slate-400 font-heading">
                 Sblocca {{ pack.label }}
               </p>
             </div>
@@ -252,10 +254,7 @@ onMounted(() => {
         </div>
 
         <!-- OPENING VIEW -->
-        <div
-          v-if="viewStatus === 'opening'"
-          class="flex items-center justify-center py-40 min-h-[60vh]"
-        >
+        <div v-if="viewStatus === 'opening'" class="flex items-center justify-center py-40 min-h-[60vh]">
           <div class="text-center animate-bounce">
             <p class="text-[0.8rem] font-black uppercase tracking-[0.5em] text-orange-500">
               Apertura Universo...
@@ -266,62 +265,37 @@ onMounted(() => {
         <!-- GRID VIEW -->
         <div v-if="viewStatus === 'grid'" class="flex flex-col items-center">
           <div class="grid-header w-full flex justify-between items-center mb-16 px-4">
-            <button
-              @click="resetView"
-              class="group flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-orange-500 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
+            <button @click="resetView"
+              class="group flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-orange-500 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Altre Categorie
             </button>
 
             <div class="text-right">
-              <span class="text-[0.65rem] font-bold text-orange-500 uppercase tracking-[0.4em] mb-1"
-                >Categoria Sbloccata</span
-              >
+              <span class="text-[0.65rem] font-bold text-orange-500 uppercase tracking-[0.4em] mb-1">Categoria
+                Sbloccata</span>
               <h2 class="text-2xl font-heading font-black tracking-tight uppercase">
-                {{ categoryPacks.find((p) => p.id === selectedCategory)?.label }}
+                {{categoryPacks.find((p) => p.id === selectedCategory)?.label}}
               </h2>
             </div>
           </div>
 
-          <div
-            v-if="filteredProjects.length === 0"
-            class="flex flex-col items-center justify-center py-20 min-h-[40vh] text-slate-400"
-          >
+          <div v-if="filteredProjects.length === 0"
+            class="flex flex-col items-center justify-center py-20 min-h-[40vh] text-slate-400">
             <p class="text-sm font-medium">Nessun progetto trovato per questa categoria.</p>
           </div>
 
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 w-full">
-            <div
-              v-for="project in filteredProjects"
-              :key="project.id"
-              class="project-grid-item opacity-0 flex justify-center"
-            >
-              <PremiumCard
-                :name="project.name"
-                :year="project.year"
-                :month="project.month"
-                :rarity="project.rarity"
-                :type="project.type"
-                :image="project.image"
-                :link="project.link"
-                :description="project.description"
-                :techStack="project.techStack"
-                :abilities="project.abilities"
-              />
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 w-full">
+            <div v-for="project in filteredProjects" :key="project.id"
+              class="project-grid-item opacity-0 flex justify-center">
+              <PremiumCard :name="project.name" :year="project.year" :month="project.month" :rarity="project.rarity"
+                :type="project.type" :image="project.image" :link="project.link" :description="project.description"
+                :techStack="project.techStack" :abilities="project.abilities" />
             </div>
           </div>
         </div>
@@ -331,10 +305,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.text-gradient-orange {
-  background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 </style>

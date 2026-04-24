@@ -17,13 +17,18 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "@types/gsap": "^1.20.2",
+    "@vee-validate/zod": "^4.15.1",
     "clsx": "^2.1.1",
     "gsap": "^3.14.2",
+    "lucide-vue-next": "^0.577.0",
     "pinia": "^3.0.4",
+    "radix-vue": "^1.9.17",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
+    "vee-validate": "^4.15.1",
     "vue": "^3.5.29",
-    "vue-router": "^5.0.3"
+    "vue-router": "^5.0.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",

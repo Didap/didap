@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "work": "Studio",
+    "clients": "Clienti",
+    "about": "Chi siamo",
+    "contact": "Contatti"
+  },
+  "home": {
+    "kicker": "Studio creativo · dal 2026",
+    "title": "Didap.\nIdee che durano.",
+    "intro": "Studio digitale specializzato in identità di marca, esperienze interattive e prodotti su misura per chi non si accontenta del già visto.",
+    "cta_work": "Scopri i lavori",
+    "cta_contact": "Lavoriamo insieme",
+    "work_heading": "I nostri lavori",
+    "clients_heading": "I nostri clienti",
+    "see_all": "Vedi tutti"
+  },
+  "work": {
+    "kicker": "Lo studio",
+    "title": "I nostri lavori",
+    "intro": "Progetti realizzati in autonomia: prodotti, ricerche, esperimenti."
+  },
+  "clients": {
+    "kicker": "Casi studio",
+    "title": "Lavori per i clienti",
+    "intro": "Una selezione di collaborazioni con aziende, agenzie e brand."
+  },
+  "about": {
+    "kicker": "Chi siamo",
+    "title": "Didap, in due righe.",
+    "intro": "Siamo uno studio piccolo, indipendente, ostinato.",
+    "body_1": "Lavoriamo all'incrocio tra design e tecnologia per costruire prodotti digitali che sembrano scritti a mano.",
+    "body_2": "Ogni progetto è un'occasione per imparare qualcosa di nuovo — e per non ripetersi mai."
+  },
+  "contact": {
+    "kicker": "Contatti",
+    "title": "Parliamone.",
+    "intro": "Se hai un progetto in mente, scrivici. Rispondiamo a tutti — anche solo per dirti di no."
+  },
+  "footer": {
+    "tagline": "Studio creativo indipendente.",
+    "made_in": "Made in Italy"
+  },
+  "common": {
+    "visit": "Visita il sito",
+    "no_items": "Niente da mostrare per ora."
+  }
+}

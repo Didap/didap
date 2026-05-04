@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+/*
+  ============================================================
+  DIDAP — DESIGN TOKENS
+  ============================================================
+  Placeholder "anni '30" palette. Sostituire con i valori
+  finali del brand quando arrivano logo / font / colori.
+
+  Per cambiare lo stile in tutto il sito basta toccare
+  queste variabili: ogni componente le legge via Tailwind
+  (es. bg-paper, text-ink, font-display).
+  ============================================================
+*/
+
+@theme {
+  /* Colori — placeholder seppia/avorio/nero */
+  --color-paper: #f4ecdb;
+  --color-paper-soft: #ece2cc;
+  --color-ink: #1a1614;
+  --color-ink-soft: #3a322c;
+  --color-accent: #b8423b;
+  --color-accent-soft: #d97a4f;
+  --color-gold: #c8a14a;
+
+  /* Tipografia — placeholder. Sostituire i font-family
+     quando arrivano i font ufficiali. */
+  --font-display: 'Playfair Display', 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Animazioni — curve "vintage" più morbide del default */
+  --ease-vintage: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.4s var(--ease-vintage),
+    transform 0.4s var(--ease-vintage);
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}

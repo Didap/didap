@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "work": "Work",
+    "clients": "Clients",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "home": {
+    "kicker": "Creative studio · est. 2026",
+    "title": "Didap.\nIdeas built to last.",
+    "intro": "A digital studio crafting brand identities, interactive experiences and bespoke products for people who don't settle for the obvious.",
+    "cta_work": "See our work",
+    "cta_contact": "Let's work together",
+    "work_heading": "Our work",
+    "clients_heading": "Our clients",
+    "see_all": "See all"
+  },
+  "work": {
+    "kicker": "Studio",
+    "title": "Our work",
+    "intro": "Projects we've built on our own: products, research, experiments."
+  },
+  "clients": {
+    "kicker": "Case studies",
+    "title": "Client work",
+    "intro": "A selection of collaborations with companies, agencies and brands."
+  },
+  "about": {
+    "kicker": "About",
+    "title": "Didap, in two lines.",
+    "intro": "We're a small, independent, stubborn studio.",
+    "body_1": "We sit at the intersection of design and technology to build digital products that feel handcrafted.",
+    "body_2": "Every project is a chance to learn something new — and to never repeat ourselves."
+  },
+  "contact": {
+    "kicker": "Contact",
+    "title": "Let's talk.",
+    "intro": "If you have a project in mind, write to us. We answer everyone — even just to say no."
+  },
+  "footer": {
+    "tagline": "Independent creative studio.",
+    "made_in": "Made in Italy"
+  },
+  "common": {
+    "visit": "Visit the site",
+    "no_items": "Nothing to show yet."
+  }
+}

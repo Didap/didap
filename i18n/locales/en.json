@@ -6,16 +6,16 @@
     "contact": "Contact"
   },
   "home": {
-    "kicker": "Creative studio · est. 2026",
-    "title": "Didap.\nIdeas built to last.",
-    "intro": "A digital studio crafting brand identities, interactive experiences and bespoke products for people who don't settle for the obvious.",
+    "kicker": "Software craftspeople",
+    "title": "Didap.\nFree the monkey.",
+    "intro": "A studio of software craftspeople: we design, write and ship bespoke digital products, from foundations to final polish.",
     "cta_work": "See PROd",
     "cta_contact": "Let's work together",
     "work_heading": "PROd by Didap",
     "clients_heading": "Our partners",
     "team_kicker": "The people",
-    "team_heading": "Five people, one studio.",
-    "team_intro": "Different backgrounds, one small and stubborn crew.",
+    "team_heading": "Five people, one engine.",
+    "team_intro": "Three full-stack engineers, one designer, one project manager. All in-house.",
     "see_all": "See all"
   },
   "work": {
@@ -37,9 +37,9 @@
   "about": {
     "kicker": "About",
     "title": "Didap, in two lines.",
-    "intro": "We're a small, independent, stubborn studio.",
-    "body_1": "We sit at the intersection of design and technology to build digital products that feel handcrafted.",
-    "body_2": "Every project is a chance to learn something new — and to never repeat ourselves."
+    "intro": "Five of us: three full-stack engineers, one designer, one project manager. Independent software craftspeople.",
+    "body_1": "We work full-stack for real — backend, frontend, infrastructure, mobile, integrations. No outsourcing on what matters: the code we ship is written, tested and run by us.",
+    "body_2": "Design lives inside the code: built to actually ship, not just look good in slides. Products grow through real use, not the perfect brief."
   },
   "contact": {
     "kicker": "Contact",
@@ -47,7 +47,8 @@
     "intro": "If you have a project in mind, write to us. We answer everyone — even just to say no.",
     "info_title": "Before you write",
     "info_response": "We reply within 48 working hours.",
-    "info_scope": "We work on bespoke products, native apps, internal SaaS and management platforms, and websites — plus subsidised-finance consulting together with our partner The Qube.",
+    "info_scope": "We work on bespoke products, native apps, internal SaaS and management platforms, and websites.",
+    "info_ethics": "We only take on projects we believe in — ethically, creatively, humanly. If we say no, no offence: everyone does what feels right.",
     "info_email": "Prefer to write directly?",
     "form": {
       "name": "Name",
@@ -63,8 +64,14 @@
       "option_saas": "A SaaS or internal platform",
       "option_app": "A mobile app",
       "option_site": "A website",
-      "option_funding": "Subsidised-finance consulting (with The Qube)",
       "option_other": "Something else",
+      "funding_legend": "Have you thought about the budget?",
+      "funding_have": "Yes, the project is funded",
+      "funding_need": "I'd like advice on public funding",
+      "qube_kicker": "Recommended partner",
+      "qube_description": "The Qube is a MIMIT-certified business incubator. They help startups and SMEs access calls, grants and subsidised finance. We don't deliver that ourselves: we handle the technical side of your project, they handle covering the cost.",
+      "qube_visit": "Visit theqube.it",
+      "qube_more": "Partner page",
       "message": "Tell us",
       "message_placeholder": "A few lines about the project, draft is fine.",
       "consent": "I agree to the data processing as per the",
@@ -76,8 +83,7 @@
     }
   },
   "footer": {
-    "tagline": "Independent creative studio.",
-    "made_in": "Made in Italy",
+    "tagline": "Software craftspeople.",
     "legal": "Legal",
     "privacy": "Privacy policy",
     "cookies": "Cookie policy"

@@ -1,7 +1,6 @@
 ---
 title: CityFix
 summary: Piattaforma di rigenerazione urbana che mette in contatto cittadini, comuni e fornitori per segnalare, gestire e risolvere gli interventi sul territorio.
-year: 2026
 role: Città
 cover: /covers/cityfix.jpg
 tags:

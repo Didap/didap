@@ -1,7 +1,6 @@
 ---
 title: CityFix
 summary: An urban regeneration platform that connects citizens, municipalities and suppliers to report, manage and resolve interventions across the city.
-year: 2026
 role: Cities
 cover: /covers/cityfix.jpg
 tags:

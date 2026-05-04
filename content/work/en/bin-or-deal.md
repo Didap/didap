@@ -1,7 +1,6 @@
 ---
 title: Bin or Deal
 summary: An aggregator of European marketplace listings for collectors, with automatic "bin vs deal" scoring against the reference prices of specialised catalogs.
-year: 2026
 role: Marketplace
 cover: /covers/bin-or-deal.jpg
 url: https://www.binordeal.com

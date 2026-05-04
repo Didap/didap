@@ -6,16 +6,16 @@
     "contact": "Contatti"
   },
   "home": {
-    "kicker": "Studio creativo · dal 2026",
-    "title": "Didap.\nIdee che durano.",
-    "intro": "Studio digitale specializzato in identità di marca, esperienze interattive e prodotti su misura per chi non si accontenta del già visto.",
+    "kicker": "Artigiani del software",
+    "title": "Didap.\nFree the monkey.",
+    "intro": "Studio di artigiani del software: progettiamo, scriviamo e portiamo in produzione prodotti digitali su misura, dalle fondamenta all'ultima rifinitura.",
     "cta_work": "Scopri i PROd",
     "cta_contact": "Lavoriamo insieme",
     "work_heading": "PROd by Didap",
     "clients_heading": "I nostri partner",
     "team_kicker": "Le persone",
-    "team_heading": "Cinque persone, uno studio.",
-    "team_intro": "Background diversi, una squadra piccola e ostinata.",
+    "team_heading": "Cinque persone, una sola macchina.",
+    "team_intro": "Tre full-stack, una designer, una project manager. Tutto fatto in casa.",
     "see_all": "Vedi tutti"
   },
   "work": {
@@ -37,9 +37,9 @@
   "about": {
     "kicker": "Chi siamo",
     "title": "Didap, in due righe.",
-    "intro": "Siamo uno studio piccolo, indipendente, ostinato.",
-    "body_1": "Lavoriamo all'incrocio tra design e tecnologia per costruire prodotti digitali che sembrano scritti a mano.",
-    "body_2": "Ogni progetto è un'occasione per imparare qualcosa di nuovo — e per non ripetersi mai."
+    "intro": "Siamo cinque: tre full-stack, una designer, una project manager. Artigiani del software, indipendenti.",
+    "body_1": "Lavoriamo full-stack davvero — backend, frontend, infrastruttura, mobile, integrazioni. Niente subappalti sui pezzi che contano: il codice che spediamo lo scriviamo, testiamo e portiamo in produzione noi.",
+    "body_2": "Il design vive dentro al codice: pensato per essere costruibile, non solo bello sulle slide. I prodotti crescono con l'uso reale, non con il brief perfetto."
   },
   "contact": {
     "kicker": "Contatti",
@@ -47,7 +47,8 @@
     "intro": "Se hai un progetto in mente, scrivici. Rispondiamo a tutti — anche solo per dirti di no.",
     "info_title": "Prima di scrivere",
     "info_response": "Rispondiamo entro 48 ore lavorative.",
-    "info_scope": "Lavoriamo su prodotti su misura, app native, gestionali e SaaS, siti — più consulenza in finanza agevolata insieme al nostro partner The Qube.",
+    "info_scope": "Lavoriamo su prodotti su misura, app native, gestionali, SaaS e siti.",
+    "info_ethics": "Sviluppiamo solo progetti in cui crediamo — eticamente, creativamente, umanamente. Se ti diciamo di no non offenderti: ognuno fa ciò che si sente.",
     "info_email": "Preferisci scrivere direttamente?",
     "form": {
       "name": "Nome",
@@ -63,8 +64,14 @@
       "option_saas": "Un gestionale o SaaS",
       "option_app": "Un'app mobile",
       "option_site": "Un sito",
-      "option_funding": "Consulenza finanza agevolata (con The Qube)",
       "option_other": "Altro",
+      "funding_legend": "Hai già pensato al budget?",
+      "funding_have": "Sì, ho il budget per il progetto",
+      "funding_need": "Mi serve un consiglio sulla finanza agevolata",
+      "qube_kicker": "Partner consigliato",
+      "qube_description": "The Qube è un incubatore certificato MIMIT. Aiuta startup e PMI ad accedere a bandi, contributi e finanza agevolata. Noi non ce ne occupiamo direttamente: pensiamo alla parte tecnica del tuo progetto, loro al modo per coprirne il costo.",
+      "qube_visit": "Vai a theqube.it",
+      "qube_more": "Scheda partner",
       "message": "Raccontaci",
       "message_placeholder": "Due righe sul progetto, anche bozza.",
       "consent": "Acconsento al trattamento dei dati come da",
@@ -76,8 +83,7 @@
     }
   },
   "footer": {
-    "tagline": "Studio creativo indipendente.",
-    "made_in": "Made in Italy",
+    "tagline": "Artigiani del software.",
     "legal": "Legal",
     "privacy": "Privacy policy",
     "cookies": "Cookie policy"

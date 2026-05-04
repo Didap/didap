@@ -16,6 +16,7 @@
     "@nuxt/content": "^3.7.1",
     "@nuxtjs/i18n": "^9.5.5",
     "@tailwindcss/vite": "^4.2.1",
+    "@vueuse/core": "^14.3.0",
     "better-sqlite3": "^12.5.0",
     "motion-v": "^2.2.1",
     "nuxt": "^4.0.0",

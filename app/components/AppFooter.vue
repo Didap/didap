@@ -12,9 +12,6 @@ const year = new Date().getFullYear()
       <div class="space-y-2">
         <p class="font-display text-lg text-ink">Didap</p>
         <p>{{ t('footer.tagline') }}</p>
-        <p class="text-xs uppercase tracking-widest">
-          {{ t('footer.made_in') }}
-        </p>
       </div>
 
       <div class="space-y-3">

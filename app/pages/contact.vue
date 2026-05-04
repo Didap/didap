@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Motion, AnimatePresence } from 'motion-v'
+import InteractiveHoverButton from '~/components/InteractiveHoverButton.vue'
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 
@@ -12,6 +15,7 @@ const form = reactive({
   email: '',
   company: '',
   projectType: '',
+  fundingHelp: '',
   message: '',
   consent: false,
   website: '', // honeypot
@@ -25,9 +29,10 @@ const projectTypeOptions = computed(() => [
   { value: 'saas', label: t('contact.form.option_saas') },
   { value: 'app', label: t('contact.form.option_app') },
   { value: 'site', label: t('contact.form.option_site') },
-  { value: 'funding', label: t('contact.form.option_funding') },
   { value: 'other', label: t('contact.form.option_other') },
 ])
+
+const showQube = computed(() => form.fundingHelp === 'need_help')
 
 async function onSubmit() {
   if (status.value === 'sending') return
@@ -41,6 +46,7 @@ async function onSubmit() {
         email: form.email.trim(),
         company: form.company.trim(),
         projectType: form.projectType,
+        fundingHelp: form.fundingHelp,
         message: form.message.trim(),
         consent: form.consent,
         website: form.website,
@@ -52,6 +58,7 @@ async function onSubmit() {
       email: '',
       company: '',
       projectType: '',
+      fundingHelp: '',
       message: '',
       consent: false,
       website: '',
@@ -81,6 +88,7 @@ async function onSubmit() {
       <ul class="mt-3 space-y-2 text-ink-soft">
         <li>· {{ t('contact.info_response') }}</li>
         <li>· {{ t('contact.info_scope') }}</li>
+        <li>· {{ t('contact.info_ethics') }}</li>
         <li>
           · {{ t('contact.info_email') }}
           <a
@@ -173,6 +181,71 @@ async function onSubmit() {
         </select>
       </label>
 
+      <fieldset class="space-y-4">
+        <legend
+          class="text-xs font-semibold uppercase tracking-widest text-ink-soft"
+        >
+          {{ t('contact.form.funding_legend') }}
+        </legend>
+        <div role="radiogroup" class="flex flex-col gap-3">
+          <InteractiveHoverButton
+            :text="t('contact.form.funding_have')"
+            :active="form.fundingHelp === 'have_budget'"
+            tone-class="bg-ink"
+            inverted-text-class="text-paper"
+            @click="form.fundingHelp = 'have_budget'"
+          />
+          <InteractiveHoverButton
+            :text="t('contact.form.funding_need')"
+            :active="form.fundingHelp === 'need_help'"
+            tone-class="bg-finance"
+            inverted-text-class="text-paper"
+            @click="form.fundingHelp = 'need_help'"
+          />
+        </div>
+      </fieldset>
+
+      <!-- Mobile / tablet inline Qube card -->
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <aside
+          v-if="showQube"
+          class="space-y-3 rounded-xl border-2 border-finance/40 bg-finance/5 p-5 lg:hidden"
+        >
+          <p
+            class="text-[11px] font-semibold uppercase tracking-widest text-finance"
+          >
+            {{ t('contact.form.qube_kicker') }}
+          </p>
+          <h3 class="font-display text-2xl text-ink">The Qube</h3>
+          <p class="text-sm text-ink-soft">
+            {{ t('contact.form.qube_description') }}
+          </p>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <a
+              href="https://www.theqube.it"
+              target="_blank"
+              rel="noopener"
+              class="rounded-full bg-finance px-4 py-2 text-xs uppercase tracking-widest text-paper transition hover:bg-ink"
+            >
+              {{ t('contact.form.qube_visit') }} ↗
+            </a>
+            <NuxtLink
+              :to="localePath('/clients/the-qube')"
+              class="rounded-full border border-finance/60 px-4 py-2 text-xs uppercase tracking-widest text-finance transition hover:border-finance hover:bg-finance hover:text-paper"
+            >
+              {{ t('contact.form.qube_more') }}
+            </NuxtLink>
+          </div>
+        </aside>
+      </Transition>
+
       <label class="block">
         <span
           class="text-xs font-semibold uppercase tracking-widest text-ink-soft"
@@ -226,5 +299,46 @@ async function onSubmit() {
         </p>
       </div>
     </form>
+
+    <!-- Desktop floating Qube card (lg+) -->
+    <ClientOnly>
+      <AnimatePresence>
+        <Motion
+          v-if="showQube"
+          as="aside"
+          :initial="{ y: 60, opacity: 0 }"
+          :animate="{ y: 0, opacity: 1 }"
+          :exit="{ y: 60, opacity: 0 }"
+          :transition="{ duration: 0.35, ease: 'easeOut' }"
+          class="fixed bottom-6 right-6 z-40 hidden w-[340px] space-y-3 rounded-xl border-2 border-finance/40 bg-paper p-5 shadow-xl shadow-ink/10 lg:block"
+        >
+          <p
+            class="text-[11px] font-semibold uppercase tracking-widest text-finance"
+          >
+            {{ t('contact.form.qube_kicker') }}
+          </p>
+          <h3 class="font-display text-2xl text-ink">The Qube</h3>
+          <p class="text-sm text-ink-soft">
+            {{ t('contact.form.qube_description') }}
+          </p>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <a
+              href="https://www.theqube.it"
+              target="_blank"
+              rel="noopener"
+              class="rounded-full bg-finance px-4 py-2 text-xs uppercase tracking-widest text-paper transition hover:bg-ink"
+            >
+              {{ t('contact.form.qube_visit') }} ↗
+            </a>
+            <NuxtLink
+              :to="localePath('/clients/the-qube')"
+              class="rounded-full border border-finance/60 px-4 py-2 text-xs uppercase tracking-widest text-finance transition hover:border-finance hover:bg-finance hover:text-paper"
+            >
+              {{ t('contact.form.qube_more') }}
+            </NuxtLink>
+          </div>
+        </Motion>
+      </AnimatePresence>
+    </ClientOnly>
   </section>
 </template>

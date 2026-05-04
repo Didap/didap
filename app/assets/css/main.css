@@ -135,3 +135,14 @@ h3,
     display: none;
   }
 }
+
+/*
+  Smooth cursor: when attivo (solo pointer-fine), nasconde il cursore di
+  sistema su TUTTI gli elementi — anche button/link/input/select dove
+  Tailwind imposta cursor: pointer/text. Senza questa regola il
+  cursore nativo riapparirebbe sopra al nostro custom in hover.
+*/
+.has-smooth-cursor,
+.has-smooth-cursor * {
+  cursor: none !important;
+}

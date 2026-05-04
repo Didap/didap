@@ -104,7 +104,7 @@ function throttledMouseMove(e: MouseEvent) {
 
 onMounted(() => {
   if (isFinePointer.value) {
-    document.body.style.cursor = 'none'
+    document.documentElement.classList.add('has-smooth-cursor')
   }
 })
 
@@ -113,7 +113,7 @@ useEventListener(window, 'mousemove', throttledMouseMove)
 onUnmounted(() => {
   if (rafId) cancelAnimationFrame(rafId)
   if (resetTimer) clearTimeout(resetTimer)
-  document.body.style.cursor = ''
+  document.documentElement.classList.remove('has-smooth-cursor')
 })
 </script>
 

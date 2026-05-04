@@ -1,7 +1,7 @@
 {
   "nav": {
-    "work": "Studio",
-    "clients": "Clienti",
+    "work": "Prodotti",
+    "clients": "Partner",
     "about": "Chi siamo",
     "contact": "Contatti"
   },
@@ -9,21 +9,30 @@
     "kicker": "Studio creativo · dal 2026",
     "title": "Didap.\nIdee che durano.",
     "intro": "Studio digitale specializzato in identità di marca, esperienze interattive e prodotti su misura per chi non si accontenta del già visto.",
-    "cta_work": "Scopri i lavori",
+    "cta_work": "Scopri i PROd",
     "cta_contact": "Lavoriamo insieme",
-    "work_heading": "I nostri lavori",
-    "clients_heading": "I nostri clienti",
+    "work_heading": "PROd by Didap",
+    "clients_heading": "I nostri partner",
+    "team_kicker": "Le persone",
+    "team_heading": "Cinque persone, uno studio.",
+    "team_intro": "Background diversi, una squadra piccola e ostinata.",
     "see_all": "Vedi tutti"
   },
   "work": {
     "kicker": "Lo studio",
-    "title": "I nostri lavori",
-    "intro": "Progetti realizzati in autonomia: prodotti, ricerche, esperimenti."
+    "title": "PROd by Didap",
+    "intro": "Prodotti che progettiamo, costruiamo e portiamo sul mercato in autonomia. Per il design, per le città, per i mercati.",
+    "search_placeholder": "Cerca un prodotto…",
+    "filter_by": "Filtra:",
+    "clear_filters": "Cancella filtri",
+    "results_count_one": "1 prodotto",
+    "results_count_other": "{count} prodotti"
   },
   "clients": {
-    "kicker": "Casi studio",
-    "title": "Lavori per i clienti",
-    "intro": "Una selezione di collaborazioni con aziende, agenzie e brand."
+    "kicker": "Partner",
+    "title": "I nostri partner",
+    "intro": "Clienti e partner strategici con cui costruiamo, fianco a fianco, prodotti e collaborazioni a lungo termine.",
+    "strategic_partner": "Partner strategico"
   },
   "about": {
     "kicker": "Chi siamo",
@@ -35,14 +44,61 @@
   "contact": {
     "kicker": "Contatti",
     "title": "Parliamone.",
-    "intro": "Se hai un progetto in mente, scrivici. Rispondiamo a tutti — anche solo per dirti di no."
+    "intro": "Se hai un progetto in mente, scrivici. Rispondiamo a tutti — anche solo per dirti di no.",
+    "info_title": "Prima di scrivere",
+    "info_response": "Rispondiamo entro 48 ore lavorative.",
+    "info_scope": "Lavoriamo su prodotti su misura, app native, gestionali e SaaS, siti — più consulenza in finanza agevolata insieme al nostro partner The Qube.",
+    "info_email": "Preferisci scrivere direttamente?",
+    "form": {
+      "name": "Nome",
+      "name_placeholder": "Mario Rossi",
+      "email": "Email",
+      "email_placeholder": "mario{'@'}azienda.it",
+      "company": "Azienda",
+      "company_optional": "(opzionale)",
+      "company_placeholder": "Per chi lavori?",
+      "project_type": "Cosa hai in mente?",
+      "project_type_default": "Seleziona…",
+      "option_product": "Un prodotto su misura",
+      "option_saas": "Un gestionale o SaaS",
+      "option_app": "Un'app mobile",
+      "option_site": "Un sito",
+      "option_funding": "Consulenza finanza agevolata (con The Qube)",
+      "option_other": "Altro",
+      "message": "Raccontaci",
+      "message_placeholder": "Due righe sul progetto, anche bozza.",
+      "consent": "Acconsento al trattamento dei dati come da",
+      "privacy_link": "privacy policy",
+      "submit": "Invia",
+      "submitting": "Invio in corso…",
+      "success": "Grazie. Ti rispondiamo a breve.",
+      "error": "Qualcosa è andato storto. Scrivici a amministrazione{'@'}didap.it"
+    }
   },
   "footer": {
     "tagline": "Studio creativo indipendente.",
-    "made_in": "Made in Italy"
+    "made_in": "Made in Italy",
+    "legal": "Legal",
+    "privacy": "Privacy policy",
+    "cookies": "Cookie policy"
+  },
+  "privacy": {
+    "kicker": "Legal",
+    "title": "Privacy policy",
+    "intro": "Come trattiamo i dati personali raccolti tramite questo sito.",
+    "updated": "Ultimo aggiornamento: 4 maggio 2026",
+    "placeholder": "Pagina in lavorazione. Sostituiremo questo testo con l'informativa completa una volta integrato PostHog per l'analytics e finalizzati i flussi di raccolta dati."
+  },
+  "cookies": {
+    "kicker": "Legal",
+    "title": "Cookie policy",
+    "intro": "Quali cookie usiamo, perché li usiamo e come puoi disattivarli.",
+    "updated": "Ultimo aggiornamento: 4 maggio 2026",
+    "placeholder": "Pagina in lavorazione. Verrà completata insieme all'integrazione di PostHog per l'analytics."
   },
   "common": {
     "visit": "Visita il sito",
-    "no_items": "Niente da mostrare per ora."
+    "no_items": "Niente da mostrare per ora.",
+    "no_results": "Nessun progetto trovato con questi filtri."
   }
 }

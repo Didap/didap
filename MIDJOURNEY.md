@@ -37,26 +37,26 @@ sovrappone, quindi serve **spazio negativo a destra**.
 ## 2 · Cover progetto (formato card)
 
 **Uso:** copertina di ogni progetto in `content/work/` e `content/clients/`.
-Visualizzata in `ProjectCard.vue` con `aspect-[4/3]`.
-**Export:** 1200×900 jpg → `public/covers/<slug>.jpg`
+Visualizzata in `ProjectCard.vue` con `aspect-[16/9]`.
+**Export:** 1600×900 jpg → `public/covers/<slug>.jpg`
 **Frontmatter:** `cover: /covers/<slug>.jpg`
 
 **Template generico** (sostituisci la frase tra `[ ]`):
 
 ```
-1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing [DESCRIVI IL PROGETTO IN 5-10 PAROLE], single central composition, clear silhouette, decorative art deco border frame, no text --ar 4:3 --style raw --v 7
+1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing [DESCRIVI IL PROGETTO IN 5-10 PAROLE], single central composition, clear silhouette, decorative art deco border frame, no text --ar 16:9 --style raw --v 7
 ```
 
-**Esempio compilato — Nexus Core (nostro progetto interno):**
+**Esempio compilato — Ditto (nostro prodotto interno):**
 
 ```
-1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing a network of interconnected gears and pipes orchestrated by a friendly conductor character, single central composition, clear silhouette, decorative art deco border frame, no text --ar 4:3 --style raw --v 7
+1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing a small character carefully copying colored swatches from a printed website page onto a fresh blueprint, ink ribbons flowing between the two, single central composition, clear silhouette, decorative art deco border frame, no text --ar 16:9 --style raw --v 7
 ```
 
-**Esempio compilato — Booster Pack (cliente, e-commerce di carte da gioco):**
+**Esempio compilato — Bin or Deal (nostro prodotto interno):**
 
 ```
-1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing a fanned hand of vintage trading cards spilling out of a wrapped paper booster pack, magic dust trailing, single central composition, clear silhouette, decorative art deco border frame, no text --ar 4:3 --style raw --v 7
+1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing a tiny inspector character holding a magnifying glass over a stack of trading cards and coin pouches, sorting them between green and red baskets, single central composition, clear silhouette, decorative art deco border frame, no text --ar 16:9 --style raw --v 7
 ```
 
 ---

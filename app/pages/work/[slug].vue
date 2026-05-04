@@ -38,12 +38,12 @@ useSeoMeta({
 
     <header class="mt-6 space-y-4">
       <div
+        v-if="project.role || project.year"
         class="flex flex-wrap gap-2 text-xs uppercase tracking-widest text-ink-soft"
       >
-        <span v-if="project.client">{{ project.client }}</span>
-        <span v-if="project.client && project.year">·</span>
+        <span v-if="project.role">{{ project.role }}</span>
+        <span v-if="project.role && project.year">·</span>
         <span v-if="project.year">{{ project.year }}</span>
-        <span v-if="project.role">· {{ project.role }}</span>
       </div>
       <h1 class="font-display text-5xl leading-tight">{{ project.title }}</h1>
       <p class="text-xl text-ink-soft">{{ project.summary }}</p>

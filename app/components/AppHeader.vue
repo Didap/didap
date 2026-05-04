@@ -3,8 +3,10 @@ const { t, locale, locales } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
 const localePath = useLocalePath()
 
+type LocaleCode = 'it' | 'en'
+
 const otherLocales = computed(() =>
-  (locales.value as { code: string; name: string }[]).filter(
+  (locales.value as { code: LocaleCode; name: string }[]).filter(
     (l) => l.code !== locale.value,
   ),
 )

@@ -39,7 +39,7 @@ useSeoMeta({
         :title="p.title"
         :summary="p.summary"
         :cover="p.cover"
-        :client="p.client"
+        :role="p.role"
         :year="p.year"
         :tags="p.tags"
       />

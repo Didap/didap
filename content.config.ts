@@ -12,6 +12,7 @@ const projectSchema = z.object({
   tags: z.array(z.string()).default([]),
   url: z.string().url().optional(),
   featured: z.boolean().default(false),
+  strategic: z.boolean().default(false),
   order: z.number().int().default(0),
 })
 

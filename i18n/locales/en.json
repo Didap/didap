@@ -1,7 +1,7 @@
 {
   "nav": {
-    "work": "Work",
-    "clients": "Clients",
+    "work": "Products",
+    "clients": "Partners",
     "about": "About",
     "contact": "Contact"
   },
@@ -9,21 +9,30 @@
     "kicker": "Creative studio · est. 2026",
     "title": "Didap.\nIdeas built to last.",
     "intro": "A digital studio crafting brand identities, interactive experiences and bespoke products for people who don't settle for the obvious.",
-    "cta_work": "See our work",
+    "cta_work": "See PROd",
     "cta_contact": "Let's work together",
-    "work_heading": "Our work",
-    "clients_heading": "Our clients",
+    "work_heading": "PROd by Didap",
+    "clients_heading": "Our partners",
+    "team_kicker": "The people",
+    "team_heading": "Five people, one studio.",
+    "team_intro": "Different backgrounds, one small and stubborn crew.",
     "see_all": "See all"
   },
   "work": {
     "kicker": "Studio",
-    "title": "Our work",
-    "intro": "Projects we've built on our own: products, research, experiments."
+    "title": "PROd by Didap",
+    "intro": "Products we design, build and ship on our own. For design, for cities, for markets.",
+    "search_placeholder": "Search a product…",
+    "filter_by": "Filter:",
+    "clear_filters": "Clear filters",
+    "results_count_one": "1 product",
+    "results_count_other": "{count} products"
   },
   "clients": {
-    "kicker": "Case studies",
-    "title": "Client work",
-    "intro": "A selection of collaborations with companies, agencies and brands."
+    "kicker": "Partners",
+    "title": "Our partners",
+    "intro": "Clients and strategic partners we build alongside, working on products and long-term collaborations.",
+    "strategic_partner": "Strategic partner"
   },
   "about": {
     "kicker": "About",
@@ -35,14 +44,61 @@
   "contact": {
     "kicker": "Contact",
     "title": "Let's talk.",
-    "intro": "If you have a project in mind, write to us. We answer everyone — even just to say no."
+    "intro": "If you have a project in mind, write to us. We answer everyone — even just to say no.",
+    "info_title": "Before you write",
+    "info_response": "We reply within 48 working hours.",
+    "info_scope": "We work on bespoke products, native apps, internal SaaS and management platforms, and websites — plus subsidised-finance consulting together with our partner The Qube.",
+    "info_email": "Prefer to write directly?",
+    "form": {
+      "name": "Name",
+      "name_placeholder": "Jane Doe",
+      "email": "Email",
+      "email_placeholder": "jane{'@'}company.com",
+      "company": "Company",
+      "company_optional": "(optional)",
+      "company_placeholder": "Who do you work for?",
+      "project_type": "What do you have in mind?",
+      "project_type_default": "Select…",
+      "option_product": "A bespoke product",
+      "option_saas": "A SaaS or internal platform",
+      "option_app": "A mobile app",
+      "option_site": "A website",
+      "option_funding": "Subsidised-finance consulting (with The Qube)",
+      "option_other": "Something else",
+      "message": "Tell us",
+      "message_placeholder": "A few lines about the project, draft is fine.",
+      "consent": "I agree to the data processing as per the",
+      "privacy_link": "privacy policy",
+      "submit": "Send",
+      "submitting": "Sending…",
+      "success": "Thanks. We'll reply soon.",
+      "error": "Something went wrong. Write to amministrazione{'@'}didap.it"
+    }
   },
   "footer": {
     "tagline": "Independent creative studio.",
-    "made_in": "Made in Italy"
+    "made_in": "Made in Italy",
+    "legal": "Legal",
+    "privacy": "Privacy policy",
+    "cookies": "Cookie policy"
+  },
+  "privacy": {
+    "kicker": "Legal",
+    "title": "Privacy policy",
+    "intro": "How we handle the personal data collected through this site.",
+    "updated": "Last updated: May 4, 2026",
+    "placeholder": "Work in progress. We'll replace this with the full notice once PostHog analytics is integrated and the data-collection flows are finalised."
+  },
+  "cookies": {
+    "kicker": "Legal",
+    "title": "Cookie policy",
+    "intro": "Which cookies we use, why we use them, and how to opt out.",
+    "updated": "Last updated: May 4, 2026",
+    "placeholder": "Work in progress. Will be completed alongside the PostHog analytics integration."
   },
   "common": {
     "visit": "Visit the site",
-    "no_items": "Nothing to show yet."
+    "no_items": "Nothing to show yet.",
+    "no_results": "No project matches these filters."
   }
 }

@@ -22,6 +22,8 @@
   --color-accent: #b8423b;
   --color-accent-soft: #d97a4f;
   --color-gold: #c8a14a;
+  --color-finance: #4f7755;
+  --color-finance-soft: #6b9572;
 
   /* Tipografia — placeholder. Sostituire i font-family
      quando arrivano i font ufficiali. */
@@ -64,4 +66,72 @@ h3,
 .page-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+/*
+  ============================================================
+  MARQUEE — scorrimento orizzontale lento, pausa on-hover
+  ============================================================
+  L'effetto loop si ottiene duplicando il contenuto e animando
+  il track da translateX(0) a translateX(-50%): il secondo set
+  arriva esattamente nella posizione iniziale del primo, quindi
+  l'animazione può ripartire senza salti visibili.
+
+  - I figli del track devono avere il proprio margin-right
+    (NON gap) altrimenti il -50% non chiude il cerchio.
+  - prefers-reduced-motion: animazione off, scroll manuale,
+    duplicato nascosto.
+*/
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 4%,
+    black 96%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 4%,
+    black 96%,
+    transparent
+  );
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee 80s linear infinite;
+  will-change: transform;
+}
+
+.marquee:hover .marquee__track,
+.marquee:focus-within .marquee__track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .marquee__track {
+    animation: none;
+  }
+  .marquee__duplicate {
+    display: none;
+  }
 }

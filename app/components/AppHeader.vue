@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import { useWindowScroll } from '@vueuse/core'
+import DidapLogo from '~/components/DidapLogo.vue'
+
 const { t, locale, locales } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
 const localePath = useLocalePath()
+
+const { y } = useWindowScroll()
+// Soglia bassa per evitare jitter, più alta del bordo del header iniziale
+const scrolled = computed(() => y.value > 32)
 
 type LocaleCode = 'it' | 'en'
 
@@ -14,23 +21,24 @@ const otherLocales = computed(() =>
 
 <template>
   <header
-    class="sticky top-0 z-40 border-b border-ink/10 bg-paper/85 backdrop-blur"
+    class="sticky top-0 z-40 bg-paper/85 backdrop-blur transition-[padding,box-shadow,border-color] duration-300 ease-out"
+    :class="
+      scrolled
+        ? 'border-b border-ink/10 py-2 shadow-sm shadow-ink/5'
+        : 'border-b border-transparent py-5'
+    "
   >
-    <div
-      class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4"
-    >
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-6">
       <NuxtLink
         :to="localePath('/')"
-        class="font-display text-2xl tracking-tight"
+        class="-ml-2 block text-ink"
+        aria-label="Didap — home"
       >
-        Didap
+        <DidapLogo :compact="scrolled" />
       </NuxtLink>
 
       <nav class="hidden items-center gap-8 md:flex">
-        <NuxtLink
-          :to="localePath('/work')"
-          class="text-sm hover:text-accent"
-        >
+        <NuxtLink :to="localePath('/work')" class="text-sm hover:text-accent">
           {{ t('nav.work') }}
         </NuxtLink>
         <NuxtLink
@@ -39,10 +47,7 @@ const otherLocales = computed(() =>
         >
           {{ t('nav.clients') }}
         </NuxtLink>
-        <NuxtLink
-          :to="localePath('/about')"
-          class="text-sm hover:text-accent"
-        >
+        <NuxtLink :to="localePath('/about')" class="text-sm hover:text-accent">
           {{ t('nav.about') }}
         </NuxtLink>
         <NuxtLink

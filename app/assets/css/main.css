@@ -14,20 +14,26 @@
 */
 
 @theme {
-  /* Colori — placeholder seppia/avorio/nero */
-  --color-paper: #f4ecdb;
-  --color-paper-soft: #ece2cc;
-  --color-ink: #1a1614;
-  --color-ink-soft: #3a322c;
-  --color-accent: #b8423b;
-  --color-accent-soft: #d97a4f;
-  --color-gold: #c8a14a;
-  --color-finance: #4f7755;
-  --color-finance-soft: #6b9572;
+  /* Brand palette — vedi public/palette.svg
+     paper  cream surface
+     ink    primary text / outlines
+     accent rosso vermiglio (alerts, hover, primary CTA)
+     gold   giallo ocra (highlight, accento secondario)
+     finance verde (partner finanza agevolata) */
+  --color-paper: #fbf4e2;
+  --color-paper-soft: #f3ead0;
+  --color-ink: #141414;
+  --color-ink-soft: #3a3a3a;
+  --color-accent: #c8412c;
+  --color-accent-soft: #e26e51;
+  --color-gold: #e2a52b;
+  --color-finance: #2e5d4a;
+  --color-finance-soft: #5a8870;
 
-  /* Tipografia — placeholder. Sostituire i font-family
-     quando arrivano i font ufficiali. */
-  --font-display: 'Playfair Display', 'Times New Roman', serif;
+  /* Tipografia — Bricolage Grotesque (display+headline),
+     Inter (body), JetBrains Mono (caption/code).
+     Caricati via nuxt.config.ts > app.head.link da Google Fonts. */
+  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
@@ -40,16 +46,38 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/*
+  Headings — Bricolage Grotesque
+  - h1 (display): peso 800, tracking -4% (gestito da .font-display-xl)
+  - h2/h3 (headline): peso 700, tracking -3%
+*/
 h1,
 h2,
 h3,
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.font-display-xl {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+/* Caption / micro-copy in JetBrains Mono — usato dove c'è
+   .font-mono e nei kicker del progetto (uppercase tracking widest) */
+.font-mono,
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
 }
 
 /* Page transitions */
@@ -145,4 +173,78 @@ h3,
 .has-smooth-cursor,
 .has-smooth-cursor * {
   cursor: none !important;
+}
+
+/*
+  ============================================================
+  GUMMY — squash & stretch lettera per lettera
+  ============================================================
+  Ogni lettera ha la propria coppia di valori `--gdur` (durata) e
+  `--gd` (delay negativo) impostata inline da GummyText.vue. Risultato:
+  ogni glifo si muove a tempo proprio, l'insieme appare irregolare e
+  vivo invece che ondulare in sincrono.
+
+  - .gummy-letter (outer): keyframes idle infinite con timings unici
+    per lettera
+  - .gummy-letter__inner (inner): solo transizione, attivata dall'hover
+    del wrapper. La separazione evita che la transizione hover si
+    contenda il transform con l'animazione idle.
+*/
+.gummy-text {
+  display: inline;
+}
+
+.gummy-space {
+  display: inline;
+  white-space: pre;
+}
+
+.gummy-letter {
+  display: inline-block;
+  transform-origin: center 82%;
+}
+
+/* Solo le lettere con `is-animated` ricevono il loop idle.
+   Tutte le altre restano ferme ma reagiscono comunque all'hover. */
+.gummy-letter.is-animated {
+  animation: gummy-letter-idle var(--gdur, 5s) ease-in-out infinite;
+  animation-delay: var(--gd, 0s);
+}
+
+.gummy-letter__inner {
+  display: inline-block;
+  transform-origin: center 82%;
+  transition: transform 0.4s cubic-bezier(0.34, 1.75, 0.4, 1);
+}
+
+.gummy-letter:hover .gummy-letter__inner,
+.gummy-letter:focus-visible .gummy-letter__inner {
+  transform: scale(1.28, 0.74) translateY(-6%);
+}
+
+@keyframes gummy-letter-idle {
+  0%,
+  100% {
+    transform: scale(1, 1) translateY(0);
+  }
+  25% {
+    transform: scale(1.05, 0.95) translateY(2%);
+  }
+  50% {
+    transform: scale(0.96, 1.04) translateY(-3%);
+  }
+  75% {
+    transform: scale(1.02, 0.98) translateY(1%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gummy-letter,
+  .gummy-letter__inner {
+    animation: none;
+    transition: none;
+  }
+  .gummy-letter:hover .gummy-letter__inner {
+    transform: none;
+  }
 }

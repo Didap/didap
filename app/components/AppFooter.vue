@@ -9,8 +9,12 @@ const year = new Date().getFullYear()
     <div
       class="mx-auto grid max-w-6xl gap-8 px-6 py-12 text-sm text-ink-soft md:grid-cols-3"
     >
-      <div class="space-y-2">
-        <p class="font-display text-lg text-ink">Didap</p>
+      <div class="space-y-3">
+        <img
+          src="/logo_esteso.svg"
+          alt="Didap"
+          class="-ml-2 h-40 w-auto"
+        />
         <p>{{ t('footer.tagline') }}</p>
       </div>
 

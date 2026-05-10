@@ -2,6 +2,7 @@
 import ProjectCard from '~/components/ProjectCard.vue'
 import ExpandableGallery from '~/components/ExpandableGallery.vue'
 import AnimatedTestimonials from '~/components/AnimatedTestimonials.vue'
+import GummyText from '~/components/GummyText.vue'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -65,8 +66,10 @@ useSeoMeta({
         <p class="text-xs uppercase tracking-[0.3em] text-ink-soft">
           {{ t('home.kicker') }}
         </p>
-        <h1 class="font-display text-5xl leading-[0.95] md:text-7xl">
-          {{ t('home.title') }}
+        <h1
+          class="font-display font-display-xl text-5xl leading-[0.95] md:text-7xl"
+        >
+          <GummyText :text="t('home.title')" />
         </h1>
         <p class="max-w-2xl text-lg text-ink-soft">
           {{ t('home.intro') }}

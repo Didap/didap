@@ -1,5 +1,11 @@
 import { Resend } from 'resend'
 import { z } from 'zod'
+import {
+  adminNotificationHtml,
+  adminNotificationText,
+  userAutoReplyHtml,
+  userAutoReplyText,
+} from '../emails/contact-templates'
 
 const ContactSchema = z.object({
   name: z.string().min(1).max(120),
@@ -42,38 +48,40 @@ export default defineEventHandler(async (event) => {
   const fromAddress = process.env.RESEND_FROM ?? 'Didap <noreply@didap.it>'
   const toAddress = process.env.CONTACT_RECIPIENT ?? 'amministrazione@didap.it'
 
-  const fundingLabel =
-    data.fundingHelp === 'have_budget'
-      ? 'Budget coperto'
-      : data.fundingHelp === 'need_help'
-        ? 'Vuole consiglio su finanza agevolata (The Qube)'
-        : null
-
-  const lines = [
-    `Nome: ${data.name}`,
-    `Email: ${data.email}`,
-    data.company ? `Azienda: ${data.company}` : null,
-    data.projectType ? `Tipo: ${data.projectType}` : null,
-    fundingLabel ? `Finanza: ${fundingLabel}` : null,
-    '',
-    data.message,
-  ].filter((l): l is string => l !== null)
-
-  const result = await resend.emails.send({
+  // 1) Notifica admin (critica): replyTo punta all'utente che ha scritto,
+  //    così rispondere dalla casella va direttamente a lui.
+  const adminResult = await resend.emails.send({
     from: fromAddress,
     to: toAddress,
     replyTo: data.email,
     subject: `Nuovo contatto da didap.it — ${data.name}`,
-    text: lines.join('\n'),
+    text: adminNotificationText(data),
+    html: adminNotificationHtml(data),
   })
 
-  if (result.error) {
+  if (adminResult.error) {
     throw createError({
       statusCode: 502,
       statusMessage: 'EMAIL_DELIVERY_FAILED',
-      data: { error: result.error.message },
+      data: { error: adminResult.error.message },
     })
   }
 
-  return { ok: true, id: result.data?.id }
+  // 2) Auto-reply utente (best-effort): se Resend rifiuta l'indirizzo o
+  //    l'invio fallisce per qualsiasi motivo, NON facciamo fallire la
+  //    request — l'utente ha già completato la submission.
+  try {
+    await resend.emails.send({
+      from: fromAddress,
+      to: data.email,
+      replyTo: toAddress,
+      subject: `Grazie ${data.name}, ti rispondiamo entro 2 giorni lavorativi`,
+      text: userAutoReplyText(data),
+      html: userAutoReplyHtml(data),
+    })
+  } catch (err) {
+    console.error('[contact] auto-reply failed', err)
+  }
+
+  return { ok: true, id: adminResult.data?.id }
 })

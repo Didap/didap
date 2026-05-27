@@ -75,9 +75,6 @@ useSeoMeta({
     <!-- Hero -->
     <section class="relative overflow-hidden border-b border-ink/10">
       <div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-24 md:py-32">
-        <p class="text-xs uppercase tracking-[0.3em] text-ink-soft">
-          {{ t('home.kicker') }}
-        </p>
         <h1
           class="font-display font-display-xl text-5xl leading-[0.95] md:text-7xl"
         >

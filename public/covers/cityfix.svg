@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#e2a52b"/>
+  <circle cx="1500" cy="120" r="8" fill="none" stroke="#141414" stroke-width="3"/>
+  <text x="80" y="150" font-family="'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="700" fill="#141414" letter-spacing="6">CITTÀ · PA</text>
+  <text x="80" y="560" font-family="'Helvetica Neue', Arial, sans-serif" font-size="220" font-weight="800" fill="#141414" letter-spacing="-5">CityFix</text>
+  <line x1="80" y1="780" x2="200" y2="780" stroke="#141414" stroke-width="3"/>
+  <text x="80" y="830" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="500" fill="#141414" opacity="0.55" letter-spacing="3">Cover provvisoria · 1600 × 900</text>
+</svg>

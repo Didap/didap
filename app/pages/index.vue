@@ -38,18 +38,30 @@ const regularClients = computed(() =>
 )
 
 const team = [
-  { name: 'Barbara', role: 'Placeholder', image: '/team/barbara.svg' },
-  { name: 'William', role: 'Placeholder', image: '/team/william.svg' },
-  { name: 'Cristiano', role: 'Placeholder', image: '/team/cristiano.svg' },
-  { name: 'Alessandro', role: 'Placeholder', image: '/team/alessandro.svg' },
-  { name: 'Vitantonio', role: 'Placeholder', image: '/team/vitantonio.svg' },
+  { name: 'Barbara', role: 'CEO & Founder', image: '/team/barbara.jpg' },
+  {
+    name: 'William',
+    role: 'Full-stack developer',
+    image: '/team/william.jpg',
+  },
+  {
+    name: 'Cristiano',
+    role: 'Full-stack developer',
+    image: '/team/cristiano.jpg',
+  },
+  {
+    name: 'Alessandro',
+    role: 'Full-stack developer',
+    image: '/team/alessandro.jpg',
+  },
+  { name: 'Vitantonio', role: 'Designer', image: '/team/vitantonio.jpg' },
 ]
 
 const teamTestimonials = team.map((m) => ({
   name: m.name,
   designation: m.role,
   image: m.image,
-  quote: 'Placeholder.',
+  quote: '',
 }))
 
 useSeoMeta({

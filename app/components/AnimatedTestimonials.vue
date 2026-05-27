@@ -115,7 +115,11 @@ onUnmounted(() => {
           <p class="mt-1 text-xs uppercase tracking-widest text-ink-soft">
             {{ props.testimonials[active]?.designation }}
           </p>
-          <Motion as="p" class="mt-6 text-base text-ink-soft">
+          <Motion
+            v-if="activeTestimonialQuote.length && activeTestimonialQuote[0]"
+            as="p"
+            class="mt-6 text-base text-ink-soft"
+          >
             <Motion
               v-for="(word, i) in activeTestimonialQuote"
               :key="i"

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="ditto-blob" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#5BC0DA">
+        <animate attributeName="stop-color"
+          values="#5BC0DA;#4FB3D1;#62C7DE;#5BC0DA"
+          dur="7s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="55%" stop-color="#8AB48E">
+        <animate attributeName="stop-color"
+          values="#8AB48E;#9CBE91;#7EAE8A;#8AB48E"
+          dur="9s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#D8C45F">
+        <animate attributeName="stop-color"
+          values="#D8C45F;#E2CC68;#CFBA52;#D8C45F"
+          dur="6s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <g transform="translate(800 450)">
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+        from="0" to="360" dur="22s" repeatCount="indefinite"/>
+      <g>
+        <animateTransform attributeName="transform" type="scale"
+          values="1;1.08;0.93;1.05;1"
+          dur="8s" repeatCount="indefinite"
+          calcMode="spline"
+          keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"/>
+        <path fill="url(#ditto-blob)" d="M 200,0 C 200,110 110,200 0,200 C -110,200 -200,110 -200,0 C -200,-110 -110,-200 0,-200 C 110,-200 200,-110 200,0 Z">
+          <animate attributeName="d"
+            values="
+              M 200,0 C 200,110 110,200 0,200 C -110,200 -200,110 -200,0 C -200,-110 -110,-200 0,-200 C 110,-200 200,-110 200,0 Z;
+              M 230,-20 C 240,90 130,230 -10,220 C -150,210 -210,80 -210,-30 C -210,-160 -90,-240 30,-220 C 140,-200 220,-130 230,-20 Z;
+              M 180,40 C 220,150 80,230 -30,210 C -170,200 -250,70 -220,-50 C -200,-160 -80,-220 50,-200 C 150,-180 200,-80 180,40 Z;
+              M 240,10 C 250,140 90,200 -20,230 C -130,220 -240,100 -200,-30 C -180,-150 -50,-230 70,-190 C 180,-160 250,-100 240,10 Z;
+              M 200,0 C 200,110 110,200 0,200 C -110,200 -200,110 -200,0 C -200,-110 -110,-200 0,-200 C 110,-200 200,-110 200,0 Z
+            "
+            dur="9s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"/>
+        </path>
+      </g>
+    </g>
+  </g>
+</svg>

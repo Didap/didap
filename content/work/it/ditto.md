@@ -2,7 +2,7 @@
 title: Ditto
 summary: Estrai un design system completo da qualsiasi sito in 30 secondi ed esportalo per Claude, Cursor, ChatGPT, Stitch, Figma, WordPress ed Elementor.
 role: Design
-cover: /covers/ditto.jpg
+cover: /covers/ditto.svg
 url: https://dittodesign.dev/it
 tags:
   - web app

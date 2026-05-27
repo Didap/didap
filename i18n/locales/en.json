@@ -7,15 +7,15 @@
   },
   "home": {
     "kicker": "Software craftspeople",
-    "title": "Free the monkey.",
+    "title": "Free the monkey",
     "intro": "A studio of software craftspeople: we design, write and ship bespoke digital products, from foundations to final polish.",
     "cta_work": "See PROd",
     "cta_contact": "Let's work together",
     "work_heading": "PROd by Didap",
     "clients_heading": "Our partners",
     "team_kicker": "The people",
-    "team_heading": "Five people, one engine.",
-    "team_intro": "Three full-stack engineers, one designer, one project manager. All in-house.",
+    "team_heading": "The team is the feature.",
+    "team_intro": "Three full-stack engineers, one designer, one project manager.",
     "see_all": "See all"
   },
   "work": {

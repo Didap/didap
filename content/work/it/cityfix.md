@@ -3,6 +3,7 @@ title: CityFix
 summary: Piattaforma di rigenerazione urbana che mette in contatto cittadini, comuni e fornitori per segnalare, gestire e risolvere gli interventi sul territorio.
 role: Città
 cover: /covers/cityfix.jpg
+url: https://cityfix.io
 tags:
   - PA
   - app

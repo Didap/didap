@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#c8412c"/>
+  <circle cx="1500" cy="120" r="8" fill="none" stroke="#fbf4e2" stroke-width="3"/>
+  <text x="80" y="150" font-family="'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="700" fill="#fbf4e2" letter-spacing="6">MARKETPLACE</text>
+  <text x="80" y="560" font-family="'Helvetica Neue', Arial, sans-serif" font-size="180" font-weight="800" fill="#fbf4e2" letter-spacing="-4">Bin or Deal</text>
+  <line x1="80" y1="780" x2="200" y2="780" stroke="#fbf4e2" stroke-width="3"/>
+  <text x="80" y="830" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="500" fill="#fbf4e2" opacity="0.7" letter-spacing="3">Cover provvisoria · 1600 × 900</text>
+</svg>

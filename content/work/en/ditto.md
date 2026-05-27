@@ -2,7 +2,7 @@
 title: Ditto
 summary: Extract a full design system from any website in 30 seconds and export it for Claude, Cursor, ChatGPT, Stitch, Figma, WordPress and Elementor.
 role: Design
-cover: /covers/ditto.jpg
+cover: /covers/ditto.svg
 url: https://dittodesign.dev/en
 tags:
   - web app

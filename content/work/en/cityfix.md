@@ -3,6 +3,7 @@ title: CityFix
 summary: An urban regeneration platform that connects citizens, municipalities and suppliers to report, manage and resolve interventions across the city.
 role: Cities
 cover: /covers/cityfix.jpg
+url: https://cityfix.io
 tags:
   - PA
   - app

@@ -19,7 +19,7 @@ RUN npm run build
 
 FROM node:${NODE_VERSION} AS runner
 WORKDIR /app
-RUN apk add --no-cache libc6-compat \
+RUN apk add --no-cache libc6-compat curl \
   && addgroup -S nodejs -g 1001 \
   && adduser -S nuxt -u 1001 -G nodejs
 ENV NODE_ENV=production

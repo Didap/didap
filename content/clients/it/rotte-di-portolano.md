@@ -17,8 +17,8 @@ order: 1
 Le Rotte di Portolano è un tour operator italiano con quasi vent'anni di
 esperienza nel turismo nautico: noleggio imbarcazioni (catamarani, caicchi,
 barche a vela), crociere su misura, consulenza sugli itinerari e
-assicurazioni di viaggio. Operano principalmente nel Sud Italia — Eolie,
-Sicilia — e in Croazia e Turchia, fino a destinazioni più lontane come
+assicurazioni di viaggio. Operano principalmente nel Sud Italia - Eolie,
+Sicilia - e in Croazia e Turchia, fino a destinazioni più lontane come
 Polinesia francese e Isole Vergini Britanniche.
 
 Il loro posizionamento è chiaro: non vendono crociere, costruiscono
@@ -28,6 +28,6 @@ selezionati personalmente.
 ## Cosa abbiamo fatto
 
 Abbiamo progettato e sviluppato il loro gestionale su misura: una
-piattaforma SaaS interna che supporta il lavoro quotidiano del team —
+piattaforma SaaS interna che supporta il lavoro quotidiano del team -
 gestione di flotta, itinerari e clienti, dal primo contatto fino alla
 chiusura della pratica di viaggio.

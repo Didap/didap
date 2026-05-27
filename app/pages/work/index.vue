@@ -74,7 +74,7 @@ const hasFilters = computed(
 const isPa = (tag: string) => tag.trim().toUpperCase() === 'PA'
 
 useSeoMeta({
-  title: `${t('nav.work')} — Didap`,
+  title: `${t('nav.work')} - Didap`,
   description: t('work.intro'),
 })
 </script>

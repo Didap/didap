@@ -185,7 +185,7 @@ export function userAutoReplyHtml(d: ContactData) {
                 Grazie per averci scritto. Abbiamo ricevuto il tuo messaggio e ti rispondiamo <strong style="color:${C.ink};">entro 2 giorni lavorativi</strong>.
               </p>
               <p style="margin:0 0 16px;font-family:${FONT_BODY};font-size:17px;line-height:1.55;color:${C.ink};">
-                Se ti viene in mente qualcosa da aggiungere — un link, un riferimento, un esempio — rispondi a questa email: arriva direttamente sulla nostra casella.
+                Se ti viene in mente qualcosa da aggiungere - un link, un riferimento, un esempio - rispondi a questa email: arriva direttamente sulla nostra casella.
               </p>
             </td>
           </tr>
@@ -212,19 +212,19 @@ export function userAutoReplyHtml(d: ContactData) {
 export function userAutoReplyText(d: ContactData) {
   const fundingNote =
     d.fundingHelp === 'need_help'
-      ? '\nFinanza agevolata — Hai chiesto un consiglio sulla finanza agevolata: mettiamo in copia il team di The Qube, il nostro partner. Li sentirai a stretto giro.\n'
+      ? '\nFinanza agevolata - Hai chiesto un consiglio sulla finanza agevolata: mettiamo in copia il team di The Qube, il nostro partner. Li sentirai a stretto giro.\n'
       : ''
 
   return `Ciao ${d.name},
 
 grazie per averci scritto. Abbiamo ricevuto il tuo messaggio e ti rispondiamo entro 2 giorni lavorativi.
 
-Se ti viene in mente qualcosa da aggiungere — un link, un riferimento, un esempio — rispondi a questa email: arriva direttamente sulla nostra casella.
+Se ti viene in mente qualcosa da aggiungere - un link, un riferimento, un esempio - rispondi a questa email: arriva direttamente sulla nostra casella.
 ${fundingNote}
 A presto,
 Il team Didap
 
-—
+-
 Didap · Free the monkey · ${SITE_URL}`
 }
 

@@ -21,21 +21,21 @@ automatico, per ogni listing trovato.
 Aggreghiamo le offerte dei principali marketplace europei e confrontiamo
 ogni prezzo con il riferimento del catalogo verticale (Cardmarket per le
 carte, Numista per la numismatica). Ogni annuncio diventa **🟢 Deal**,
-**🟡 Fair** o **🔴 Bin** — così la ricerca smette di essere "scorri 200
+**🟡 Fair** o **🔴 Bin** - così la ricerca smette di essere "scorri 200
 annunci" e diventa "guardami solo i 5 verdi".
 
 ## Cosa fa
 
 - **Ricerca aggregata** su eBay, Vinted, Wallapop e Subito in una sola
   query.
-- **Deal scoring** — ogni listing viene confrontato in tempo reale con il
+- **Deal scoring** - ogni listing viene confrontato in tempo reale con il
   prezzo di mercato del catalogo di riferimento.
-- **Verticali iniziali** — carte Pokémon (riferimento Cardmarket) e monete
+- **Verticali iniziali** - carte Pokémon (riferimento Cardmarket) e monete
   da collezione (riferimento Numista). Più verticali in roadmap.
-- **Filtri pensati per chi colleziona** — prezzo, paese, freschezza,
+- **Filtri pensati per chi colleziona** - prezzo, paese, freschezza,
   punteggio, condizione.
 - **Alert automatici** sulle ricerche salvate, via email e Telegram.
-- **Privacy by design** — nessuno storico di annunci sui nostri server,
+- **Privacy by design** - nessuno storico di annunci sui nostri server,
   nessun dato personale dei venditori, ricerche eseguite *per conto*
   dell'utente solo quando le richiede.
 

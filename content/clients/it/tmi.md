@@ -16,8 +16,8 @@ order: 4
 
 TMI srl è un'azienda italiana con sede a Galatone, in provincia di Lecce.
 Progetta e produce sistemi di aspirazione e ventilazione per cucine
-professionali e ambienti industriali — soluzioni come **KlimaKucina**
-(controsoffitto aspirante per cucine), **KlimaKlean** e **KlimaShow** —
+professionali e ambienti industriali - soluzioni come **KlimaKucina**
+(controsoffitto aspirante per cucine), **KlimaKlean** e **KlimaShow** -
 al servizio di ristoranti, centri cottura, hotel, scuole di cucina e
 manifattura.
 

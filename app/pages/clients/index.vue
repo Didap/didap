@@ -16,7 +16,7 @@ const { data: items } = await useAsyncData(
 )
 
 useSeoMeta({
-  title: `${t('nav.clients')} — Didap`,
+  title: `${t('nav.clients')} - Didap`,
   description: t('clients.intro'),
 })
 </script>

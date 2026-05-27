@@ -22,20 +22,20 @@ classifica e assegna; il fornitore esegue e chiude l'intervento. Tutto in
 un unico flusso, tracciato dall'inizio alla fine.
 
 Pensata per scalare a tutti i ~8.000 Comuni italiani: ogni ente è un
-*tenant* isolato — i suoi operatori, i suoi fornitori, i suoi dati — con
+*tenant* isolato - i suoi operatori, i suoi fornitori, i suoi dati - con
 isolamento garantito sia a livello applicativo sia a livello database.
 
 ## Cosa fa
 
-- **App per il cittadino** — segnalazioni con foto e geolocalizzazione,
+- **App per il cittadino** - segnalazioni con foto e geolocalizzazione,
   stato in tempo reale, comunicazione diretta con il Comune.
-- **Backoffice comunale** — triage delle segnalazioni, assegnazione ai
+- **Backoffice comunale** - triage delle segnalazioni, assegnazione ai
   fornitori, gestione di operatori e team, statistiche territoriali.
-- **Workflow per il fornitore** — riceve gli incarichi, aggiorna lo stato,
+- **Workflow per il fornitore** - riceve gli incarichi, aggiorna lo stato,
   chiude gli interventi con prove fotografiche.
-- **Ruoli e permessi** — `super_admin`, `admin_comunale`, `operator`,
+- **Ruoli e permessi** - `super_admin`, `admin_comunale`, `operator`,
   `supplier`, `citizen`, ognuno con scope e capacità diverse.
-- **Multi-tenancy reale** — ~8.000 Comuni potenziali, dataset ISTAT
+- **Multi-tenancy reale** - ~8.000 Comuni potenziali, dataset ISTAT
   precaricato, isolamento via `comune_id` + Row Level Security su
   PostgreSQL.
 
@@ -51,10 +51,10 @@ API versionata `/api/v1/` dal day-one, deploy via Docker, cloud-agnostico.
 
 Licenza annuale ai Comuni con quota per abitante. Un solo strumento per
 tutto il ciclo di vita della segnalazione, condiviso tra ente, operatori
-e fornitori — niente moduli paralleli, niente email, niente fogli di
+e fornitori - niente moduli paralleli, niente email, niente fogli di
 calcolo.
 
 ## Stato
 
-In sviluppo avanzato — backend completo, backoffice operativo, app
+In sviluppo avanzato - backend completo, backoffice operativo, app
 cittadino in fase MVP. Pilota previsto con il primo Comune partner.

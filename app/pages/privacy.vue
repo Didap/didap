@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 useSeoMeta({
-  title: `${t('privacy.title')} — Didap`,
+  title: `${t('privacy.title')} - Didap`,
   description: t('privacy.intro'),
 })
 </script>

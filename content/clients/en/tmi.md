@@ -16,9 +16,9 @@ order: 4
 
 TMI srl is an Italian company headquartered in Galatone, in the province
 of Lecce. It designs and manufactures extraction and ventilation systems
-for professional kitchens and industrial spaces — solutions like
+for professional kitchens and industrial spaces - solutions like
 **KlimaKucina** (extracting drop-ceiling for kitchens), **KlimaKlean**
-and **KlimaShow** — serving restaurants, central kitchens, hotels,
+and **KlimaShow** - serving restaurants, central kitchens, hotels,
 culinary schools and manufacturing.
 
 What sets them apart is technological innovation pushed forward through

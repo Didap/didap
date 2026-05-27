@@ -22,7 +22,7 @@ intercom interfaces and the Sudel Cloud platform for smartphone-based
 management.
 
 A nearly fifty-year-old industrial company carrying forward an entirely
-*made in Italy* production line — with the tagline "Sicuro, affidabile,
+*made in Italy* production line - with the tagline "Sicuro, affidabile,
 Sudel" (safe, reliable, Sudel) capturing the positioning well:
 reassurance, durability, solid engineering.
 
@@ -33,8 +33,8 @@ touch keypad for the NOVA X alarm control panels: a native Android app
 running on an 8.68" tablet that becomes the single control surface for
 the security system.
 
-The work started from everyday use — arming, disarming, managing zones,
-reading the system's state at a glance — and extended to home automation
+The work started from everyday use - arming, disarming, managing zones,
+reading the system's state at a glance - and extended to home automation
 and video surveillance integration, with the option to run other Android
 apps alongside it on the same tablet. One touch surface in place of the
 traditional panel.

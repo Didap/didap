@@ -1,7 +1,7 @@
-# Midjourney — Prompt per il sito Didap
+# Midjourney - Prompt per il sito Didap
 
 Tutti i prompt sono **già completi**: copia il blocco intero e incolla in Midjourney.
-Lo stile è coerente in tutto il documento — basta non cambiare le frasi tra `[ ]`
+Lo stile è coerente in tutto il documento - basta non cambiare le frasi tra `[ ]`
 finché non sai cosa stai facendo.
 
 **Palette del sito (definita in [main.css](app/assets/css/main.css)):**
@@ -13,7 +13,7 @@ finché non sai cosa stai facendo.
 
 > Stiamo costruendo le immagini per **Didap**, studio creativo digitale italiano.
 > Landing aziendale bilingue (IT/EN) realizzata in Nuxt. Stile visivo: animazione
-> cartoon americana **1928–1935**, era *Steamboat Willie* / primi Mickey /
+> cartoon americana **1928-1935**, era *Steamboat Willie* / primi Mickey /
 > Fleischer Studios / Cuphead. Palette del sito: paper #f4ecdb (avorio caldo),
 > ink #1a1614 (nero seppia), accent #b8423b (rosso vermiglio spento),
 > gold #c8a14a. Le illustrazioni devono integrarsi su sfondo *paper*, quindi mai
@@ -47,13 +47,13 @@ Visualizzata in `ProjectCard.vue` con `aspect-[16/9]`.
 1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing [DESCRIVI IL PROGETTO IN 5-10 PAROLE], single central composition, clear silhouette, decorative art deco border frame, no text --ar 16:9 --style raw --v 7
 ```
 
-**Esempio compilato — Ditto (nostro prodotto interno):**
+**Esempio compilato - Ditto (nostro prodotto interno):**
 
 ```
 1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing a small character carefully copying colored swatches from a printed website page onto a fresh blueprint, ink ribbons flowing between the two, single central composition, clear silhouette, decorative art deco border frame, no text --ar 16:9 --style raw --v 7
 ```
 
-**Esempio compilato — Bin or Deal (nostro prodotto interno):**
+**Esempio compilato - Bin or Deal (nostro prodotto interno):**
 
 ```
 1930s rubber hose cartoon style, hand-inked wobbly outlines, pie-cut eyes, noodle limbs, bouncy expressive poses, painted in cream paper #f4ecdb and sepia ink #1a1614 with vermilion #b8423b and gold #c8a14a accents, hand-painted watercolor texture, heavy film grain, archival celluloid feel circa 1930, Fleischer Studios meets early Walt Disney, Cuphead reference, slightly off-register printing, a symbolic illustration representing a tiny inspector character holding a magnifying glass over a stack of trading cards and coin pouches, sorting them between green and red baskets, single central composition, clear silhouette, decorative art deco border frame, no text --ar 16:9 --style raw --v 7
@@ -147,7 +147,7 @@ con [favicon.io](https://favicon.io) → `public/favicon.ico`
 
 ---
 
-## Coerenza tra le immagini — 3 regole
+## Coerenza tra le immagini - 3 regole
 
 1. **Fissa il seed** dopo la prima generazione che ti piace.
    Aggiungi `--seed 1234567` (numero qualunque) a tutti i prompt successivi:
@@ -159,7 +159,7 @@ con [favicon.io](https://favicon.io) → `public/favicon.ico`
    <prompt completo>... --sref https://cdn.midjourney.com/<id>.png --sw 200
    ```
 
-3. **`--cref` per i personaggi** ricorrenti. La mascotte va trattata così —
+3. **`--cref` per i personaggi** ricorrenti. La mascotte va trattata così -
    stesso URL su ogni nuova posa, `--cw 80` come buon punto di partenza
    (più alto = più fedele, più basso = più libertà).
 
@@ -182,10 +182,10 @@ con [favicon.io](https://favicon.io) → `public/favicon.ico`
 
 ## Workflow consigliato
 
-1. Genera **prima la mascotte** (sezione 5) — è la base stilistica.
+1. Genera **prima la mascotte** (sezione 5) - è la base stilistica.
 2. Salvi l'URL della mascotte preferita e lo riusi come `--sref` in tutti
    gli altri prompt: il sito sarà visivamente coerente.
-3. Genera **il divisore** (sezione 4) — ti serve subito tra le sezioni della
+3. Genera **il divisore** (sezione 4) - ti serve subito tra le sezioni della
    landing.
 4. Solo dopo passa a **hero** (sezione 1) e **cover progetti** (sezione 2):
    con `--sref` impostato verranno tutte allineate alla mascotte.

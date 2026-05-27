@@ -20,22 +20,22 @@ and SMEs across the development cycle: strategic consulting, public
 and private fundraising, digital transformation, acceleration,
 networking.
 
-They run the programmes that actually move the territory — *Bravo
+They run the programmes that actually move the territory - *Bravo
 Innovation Hub*, *Innovaction Factory*, *Officine Mezzogiorno*, *Youth
-Brindisi*, *Green Urban Paths* — and the full spectrum of subsidised
+Brindisi*, *Green Urban Paths* - and the full spectrum of subsidised
 finance: Italian ministry calls, regional funds, PNRR, Horizon Europe.
 
 ## What it means for choosing Didap
 
 For our clients and partners, the relationship with The Qube is a fast
-lane. You pick Didap as your **technology partner** — product, design,
-engineering — and The Qube handles the **funding and paperwork side**:
+lane. You pick Didap as your **technology partner** - product, design,
+engineering - and The Qube handles the **funding and paperwork side**:
 finding the right call, planning the project, writing the bid, managing
 reporting.
 
 In practice: the digital product you have in mind becomes far more
 sustainable, because a meaningful share of the investment can be
-covered by subsidised finance — and you don't have to deal with any
+covered by subsidised finance - and you don't have to deal with any
 of that side. We build, they capture the funds, you focus on the
 business.
 

@@ -22,20 +22,20 @@ triages and assigns; the supplier carries out the work and closes the
 intervention. One flow, end to end, traced from start to finish.
 
 Built to scale to all of Italy's ~8,000 municipalities: every authority
-is an isolated tenant — its operators, its suppliers, its data — with
+is an isolated tenant - its operators, its suppliers, its data - with
 isolation enforced at both the application and the database layer.
 
 ## What it does
 
-- **Citizen app** — reports with photos and geolocation, real-time status,
+- **Citizen app** - reports with photos and geolocation, real-time status,
   direct communication with the municipality.
-- **Municipal backoffice** — report triage, supplier assignment, team and
+- **Municipal backoffice** - report triage, supplier assignment, team and
   operator management, territorial analytics.
-- **Supplier workflow** — receives work orders, updates status, closes
+- **Supplier workflow** - receives work orders, updates status, closes
   interventions with photographic evidence.
-- **Roles and permissions** — `super_admin`, `admin_comunale`, `operator`,
+- **Roles and permissions** - `super_admin`, `admin_comunale`, `operator`,
   `supplier`, `citizen`, each with their own scope and capabilities.
-- **Real multi-tenancy** — ~8,000 potential municipalities, full ISTAT
+- **Real multi-tenancy** - ~8,000 potential municipalities, full ISTAT
   dataset preloaded, isolation via `comune_id` + PostgreSQL Row Level
   Security.
 
@@ -51,10 +51,10 @@ under `/api/v1/` from day one, Docker-based deployment, cloud-agnostic.
 
 Annual license sold to municipalities with a per-capita fee. One tool
 for the entire lifecycle of a citizen report, shared between authority,
-operators and suppliers — no parallel modules, no email threads, no
+operators and suppliers - no parallel modules, no email threads, no
 spreadsheets.
 
 ## Status
 
-In advanced development — backend complete, backoffice operative, citizen
+In advanced development - backend complete, backoffice operative, citizen
 app in MVP. Pilot scheduled with the first partner municipality.

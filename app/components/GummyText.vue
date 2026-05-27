@@ -4,7 +4,7 @@ const props = defineProps<{
 }>()
 
 /*
-  Pseudo-random deterministico (sin-hash) — server e client devono
+  Pseudo-random deterministico (sin-hash) - server e client devono
   produrre gli stessi valori, altrimenti si rompe l'hydration.
 */
 function pr(seed: number) {

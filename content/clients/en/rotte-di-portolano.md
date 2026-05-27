@@ -17,7 +17,7 @@ order: 1
 Le Rotte di Portolano is an Italian sailing tour operator with nearly
 twenty years of experience: boat charters (catamarans, gulets, sailboats),
 tailor-made cruises, itinerary consulting and travel insurance. They
-operate mainly in southern Italy — the Aeolian Islands, Sicily — and
+operate mainly in southern Italy - the Aeolian Islands, Sicily - and
 along the Croatian and Turkish coasts, all the way to more distant
 destinations like French Polynesia and the British Virgin Islands.
 
@@ -28,5 +28,5 @@ and crews they pick personally.
 ## What we did
 
 We designed and built their custom SaaS: an internal platform that
-supports the team's day-to-day work — managing the fleet, itineraries
+supports the team's day-to-day work - managing the fleet, itineraries
 and clients, from the first conversation through to closing the trip.

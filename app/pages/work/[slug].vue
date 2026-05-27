@@ -22,7 +22,7 @@ if (!project.value) {
 }
 
 useSeoMeta({
-  title: `${project.value.title} — Didap`,
+  title: `${project.value.title} - Didap`,
   description: project.value.summary,
 })
 </script>
@@ -68,7 +68,7 @@ useSeoMeta({
         v-for="(src, i) in project.gallery"
         :key="i"
         :src="src"
-        :alt="`${project.title} — ${i + 1}`"
+        :alt="`${project.title} - ${i + 1}`"
         class="w-full rounded-lg border border-ink/10"
       />
     </div>

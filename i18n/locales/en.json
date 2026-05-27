@@ -7,7 +7,7 @@
   },
   "home": {
     "title": "Free the monkey",
-    "intro": "We design, write and ship bespoke digital products — from foundations to final polish.",
+    "intro": "We design, write and ship bespoke digital products - from foundations to final polish.",
     "cta_work": "See PROd",
     "cta_contact": "Let's work together",
     "work_heading": "PROd by Didap",
@@ -37,17 +37,17 @@
     "kicker": "About",
     "title": "Didap, in two lines.",
     "intro": "Five of us, independent: three full-stack engineers, one designer, one project manager. Free the monkey.",
-    "body_1": "We work full-stack for real — backend, frontend, infrastructure, mobile, integrations. No outsourcing on what matters: the code we ship is written, tested and run by us.",
+    "body_1": "We work full-stack for real - backend, frontend, infrastructure, mobile, integrations. No outsourcing on what matters: the code we ship is written, tested and run by us.",
     "body_2": "Design lives inside the code: built to actually ship, not just look good in slides. Products grow through real use, not the perfect brief."
   },
   "contact": {
     "kicker": "Contact",
     "title": "Let's talk.",
-    "intro": "If you have a project in mind, write to us. We answer everyone — even just to say no.",
+    "intro": "If you have a project in mind, write to us. We answer everyone - even just to say no.",
     "info_title": "Before you write",
     "info_response": "We reply within 2 working days.",
     "info_scope": "We work on bespoke products, native apps, internal SaaS and management platforms, and websites.",
-    "info_ethics": "We only take on projects we believe in — ethically, creatively, humanly. If we say no, no offence: everyone does what feels right.",
+    "info_ethics": "We only take on projects we believe in - ethically, creatively, humanly. If we say no, no offence: everyone does what feels right.",
     "info_email": "Prefer to write directly?",
     "form": {
       "name": "Name",

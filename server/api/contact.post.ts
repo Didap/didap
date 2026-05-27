@@ -18,7 +18,7 @@ const ContactSchema = z.object({
     .or(z.literal('')),
   message: z.string().min(1).max(5000),
   consent: z.literal(true),
-  // honeypot — must be empty
+  // honeypot - must be empty
   website: z.string().max(0).optional().or(z.literal('')),
 })
 
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     from: fromAddress,
     to: toAddress,
     replyTo: data.email,
-    subject: `Nuovo contatto da didap.it — ${data.name}`,
+    subject: `Nuovo contatto da didap.it - ${data.name}`,
     text: adminNotificationText(data),
     html: adminNotificationHtml(data),
   })
@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
 
   // 2) Auto-reply utente (best-effort): se Resend rifiuta l'indirizzo o
   //    l'invio fallisce per qualsiasi motivo, NON facciamo fallire la
-  //    request — l'utente ha già completato la submission.
+  //    request - l'utente ha già completato la submission.
   try {
     await resend.emails.send({
       from: fromAddress,

@@ -19,16 +19,16 @@ con sedi a Lecce e Brindisi. Affianca startup innovative e PMI nei
 percorsi di sviluppo: consulenza strategica, fundraising pubblico e
 privato, digitalizzazione, accelerazione, networking.
 
-Operano sui programmi che muovono davvero il territorio — *Bravo
+Operano sui programmi che muovono davvero il territorio - *Bravo
 Innovation Hub*, *Innovaction Factory*, *Officine Mezzogiorno*, *Youth
-Brindisi*, *Green Urban Paths* — e su tutto lo spettro della finanza
+Brindisi*, *Green Urban Paths* - e su tutto lo spettro della finanza
 agevolata: bandi MIMIT, fondi regionali, PNRR, Horizon Europe.
 
 ## Cosa significa per chi sceglie Didap
 
 Per i nostri clienti e partner, il rapporto con The Qube è una corsia
-preferenziale. Tu scegli Didap come **fornitore tecnologico** — sviluppo,
-prodotto, design — e The Qube si occupa della **parte burocratica e
+preferenziale. Tu scegli Didap come **fornitore tecnologico** - sviluppo,
+prodotto, design - e The Qube si occupa della **parte burocratica e
 finanziaria**: studio del bando giusto, progettazione esecutiva, scrittura,
 rendicontazione.
 

@@ -17,29 +17,29 @@ order: 1
 
 Ditto è il nostro strumento per estrarre il design system di qualsiasi sito web
 e trasformarlo, in pochi secondi, nel formato richiesto dall'IDE o dalla
-piattaforma con cui stai lavorando — `DESIGN.md` per Claude, Cursor, ChatGPT
+piattaforma con cui stai lavorando - `DESIGN.md` per Claude, Cursor, ChatGPT
 o Lovable, la spec ufficiale di Google Stitch, variabili Figma, tema FSE
 WordPress, tema Elementor, configurazione Tailwind, Storybook, componenti
 React.
 
 Niente token AI per l'estrazione: usiamo Puppeteer e analisi CSS pura. Quello
-che vedi è quello che ottieni — colori, tipografia, spaziature, ombre,
-border-radius — fedele al sito di partenza.
+che vedi è quello che ottieni - colori, tipografia, spaziature, ombre,
+border-radius - fedele al sito di partenza.
 
 ## Cosa fa Ditto
 
-- **Estrazione da URL** — incolli un link, in 30 secondi hai i token e una
+- **Estrazione da URL** - incolli un link, in 30 secondi hai i token e una
   copertura completa di colori, font, scale, motion.
-- **Sei pagine di anteprima** — Landing, Dashboard, Auth, Pricing, Blog,
+- **Sei pagine di anteprima** - Landing, Dashboard, Auth, Pricing, Blog,
   Components. Si ridipingono al volo con il tuo design system.
-- **Generazione ibrida** — pesca da più siti contemporaneamente e mescola
+- **Generazione ibrida** - pesca da più siti contemporaneamente e mescola
   le ispirazioni in un design coerente.
-- **Export multi-piattaforma** — `DESIGN.md` per gli agenti AI di coding,
+- **Export multi-piattaforma** - `DESIGN.md` per gli agenti AI di coding,
   variabili Figma sincronizzabili, temi WordPress FSE ed Elementor pronti
   da installare, Tailwind config, Storybook, componenti React.
-- **Catalogo + Devkit** — design system già pronti da sbloccare a credito,
+- **Catalogo + Devkit** - design system già pronti da sbloccare a credito,
   con devkit completo per chi sviluppa.
-- **CLI & MCP server** — usabile da terminale e direttamente da Claude
+- **CLI & MCP server** - usabile da terminale e direttamente da Claude
   Code via Model Context Protocol.
 
 ## Stack

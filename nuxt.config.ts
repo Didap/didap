@@ -43,7 +43,7 @@ export default defineNuxtConfig({
       title: 'Didap',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Didap — landing aziendale.' },
+        { name: 'description', content: 'Didap - landing aziendale.' },
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

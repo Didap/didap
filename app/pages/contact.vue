@@ -6,7 +6,7 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 
 useSeoMeta({
-  title: `${t('nav.contact')} — Didap`,
+  title: `${t('nav.contact')} - Didap`,
   description: t('contact.intro'),
 })
 

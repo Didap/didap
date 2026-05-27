@@ -32,7 +32,7 @@ const otherLocales = computed(() =>
       <NuxtLink
         :to="localePath('/')"
         class="-ml-2 block text-ink"
-        aria-label="Didap — home"
+        aria-label="Didap - home"
       >
         <DidapLogo :compact="scrolled" />
       </NuxtLink>

@@ -7,7 +7,7 @@
   },
   "home": {
     "title": "Free the monkey",
-    "intro": "Progettiamo, scriviamo e portiamo in produzione prodotti digitali su misura — dalle fondamenta all'ultima rifinitura.",
+    "intro": "Progettiamo, scriviamo e portiamo in produzione prodotti digitali su misura - dalle fondamenta all'ultima rifinitura.",
     "cta_work": "Scopri i PROd",
     "cta_contact": "Lavoriamo insieme",
     "work_heading": "PROd by Didap",
@@ -37,17 +37,17 @@
     "kicker": "Chi siamo",
     "title": "Didap, in due righe.",
     "intro": "Siamo cinque, indipendenti: tre full-stack, una designer, una project manager. Free the monkey.",
-    "body_1": "Lavoriamo full-stack davvero — backend, frontend, infrastruttura, mobile, integrazioni. Niente subappalti sui pezzi che contano: il codice che spediamo lo scriviamo, testiamo e portiamo in produzione noi.",
+    "body_1": "Lavoriamo full-stack davvero - backend, frontend, infrastruttura, mobile, integrazioni. Niente subappalti sui pezzi che contano: il codice che spediamo lo scriviamo, testiamo e portiamo in produzione noi.",
     "body_2": "Il design vive dentro al codice: pensato per essere costruibile, non solo bello sulle slide. I prodotti crescono con l'uso reale, non con il brief perfetto."
   },
   "contact": {
     "kicker": "Contatti",
     "title": "Parliamone.",
-    "intro": "Se hai un progetto in mente, scrivici. Rispondiamo a tutti — anche solo per dirti di no.",
+    "intro": "Se hai un progetto in mente, scrivici. Rispondiamo a tutti - anche solo per dirti di no.",
     "info_title": "Prima di scrivere",
     "info_response": "Rispondiamo entro 2 giorni lavorativi.",
     "info_scope": "Lavoriamo su prodotti su misura, app native, gestionali, SaaS e siti.",
-    "info_ethics": "Sviluppiamo solo progetti in cui crediamo — eticamente, creativamente, umanamente. Se ti diciamo di no non offenderti: ognuno fa ciò che si sente.",
+    "info_ethics": "Sviluppiamo solo progetti in cui crediamo - eticamente, creativamente, umanamente. Se ti diciamo di no non offenderti: ognuno fa ciò che si sente.",
     "info_email": "Preferisci scrivere direttamente?",
     "form": {
       "name": "Nome",

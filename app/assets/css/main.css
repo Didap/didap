@@ -4,8 +4,9 @@
   ============================================================
   DIDAP - DESIGN TOKENS
   ============================================================
-  Placeholder "anni '30" palette. Sostituire con i valori
-  finali del brand quando arrivano logo / font / colori.
+  Palette ufficiale del brand — vedi public/palette.svg.
+  ink #141414 · accent #c8412c · gold #e2a52b ·
+  finance #2e5d4a · paper #fbf4e2.
 
   Per cambiare lo stile in tutto il sito basta toccare
   queste variabili: ogni componente le legge via Tailwind

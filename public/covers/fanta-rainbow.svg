@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="fr-arc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A3E635"/>
+      <stop offset="50%" stop-color="#609CD2"/>
+      <stop offset="100%" stop-color="#9778D1"/>
+    </linearGradient>
+    <radialGradient id="fr-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10261D"/>
+      <stop offset="100%" stop-color="#05100C" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="#05100C"/>
+  <ellipse cx="800" cy="450" rx="660" ry="450" fill="url(#fr-glow)"/>
+
+  <g transform="translate(800 450)">
+    <!-- Pista del countdown -->
+    <circle r="240" fill="none" stroke="#10261D" stroke-width="28"/>
+
+    <!-- Countdown che si svuota: dasharray = circonferenza (2 pi 240) -->
+    <circle
+      r="240" fill="none" stroke="url(#fr-arc)" stroke-width="28"
+      stroke-linecap="round" stroke-dasharray="1508" stroke-dashoffset="0"
+      transform="rotate(-90)">
+      <animate attributeName="stroke-dashoffset"
+        values="0;1508;1508" keyTimes="0;0.86;1"
+        dur="9s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Il buzz: due onde sfalsate -->
+    <circle r="60" fill="none" stroke="#A3E635" stroke-width="4" opacity="0">
+      <animate attributeName="r" values="60;196" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.65;0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="60" fill="none" stroke="#609CD2" stroke-width="4" opacity="0">
+      <animate attributeName="r" values="60;196" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.65;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Pulsante -->
+    <circle r="52" fill="#F4F6F1">
+      <animate attributeName="r" values="52;48;52" dur="3s" repeatCount="indefinite"
+        calcMode="spline" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/>
+    </circle>
+  </g>
+</svg>

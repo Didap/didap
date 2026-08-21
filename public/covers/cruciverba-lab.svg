@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <!--
+    Griglia 10 x 5, cella 110px, origine (250,175) -> 1100 x 550 centrata.
+    Le caselle nere hanno simmetria rotazionale di 180 gradi, come in un
+    cruciverba vero. La riga centrale si riempie lettera per lettera.
+  -->
+  <rect width="1600" height="900" fill="#FBF7EC"/>
+
+  <!-- Cursore che scorre sulla riga centrale -->
+  <rect y="395" width="110" height="110" x="250" fill="#E05F24" opacity="0">
+    <animate attributeName="x" calcMode="discrete"
+      values="250;360;470;580;690;800;910;1020;1130;1240;1240"
+      keyTimes="0;0.05;0.1;0.15;0.2;0.25;0.3;0.35;0.4;0.45;0.5"
+      dur="10s" repeatCount="indefinite"/>
+    <animate attributeName="opacity"
+      values="0.14;0.14;0" keyTimes="0;0.49;0.5"
+      dur="10s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Caselle nere -->
+  <g fill="#241C16">
+    <rect x="470" y="175" width="110" height="110"/>
+    <rect x="1020" y="175" width="110" height="110"/>
+    <rect x="250" y="285" width="110" height="110"/>
+    <rect x="800" y="285" width="110" height="110"/>
+    <rect x="690" y="505" width="110" height="110"/>
+    <rect x="1240" y="505" width="110" height="110"/>
+    <rect x="470" y="615" width="110" height="110"/>
+    <rect x="1020" y="615" width="110" height="110"/>
+  </g>
+
+  <!-- Reticolo -->
+  <g stroke="#241C16" stroke-width="3" fill="none">
+    <path d="M250 175V725M360 175V725M470 175V725M580 175V725M690 175V725M800 175V725M910 175V725M1020 175V725M1130 175V725M1240 175V725M1350 175V725"/>
+    <path d="M250 175H1350M250 285H1350M250 395H1350M250 505H1350M250 615H1350M250 725H1350"/>
+    <rect x="250" y="175" width="1100" height="550" stroke-width="6"/>
+  </g>
+
+  <!-- Numerazione -->
+  <g font-family="'JetBrains Mono', ui-monospace, monospace" font-size="20" fill="#241C16" opacity="0.38">
+    <text x="262" y="205">1</text>
+    <text x="372" y="205">2</text>
+    <text x="592" y="205">3</text>
+    <text x="702" y="205">4</text>
+    <text x="812" y="205">5</text>
+    <text x="922" y="205">6</text>
+    <text x="1142" y="205">7</text>
+    <text x="1252" y="205">8</text>
+    <text x="372" y="315">9</text>
+    <text x="262" y="425">10</text>
+    <text x="262" y="535">11</text>
+    <text x="262" y="645">12</text>
+  </g>
+
+  <!-- CRUCIVERBA, una lettera alla volta -->
+  <g font-family="'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif"
+     font-size="66" font-weight="700" fill="#E05F24" text-anchor="middle">
+    <text x="305" y="474" opacity="0">C<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="0s" repeatCount="indefinite"/></text>
+    <text x="415" y="474" opacity="0">R<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="0.5s" repeatCount="indefinite"/></text>
+    <text x="525" y="474" opacity="0">U<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="1s" repeatCount="indefinite"/></text>
+    <text x="635" y="474" opacity="0">C<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="1.5s" repeatCount="indefinite"/></text>
+    <text x="745" y="474" opacity="0">I<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="2s" repeatCount="indefinite"/></text>
+    <text x="855" y="474" opacity="0">V<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="2.5s" repeatCount="indefinite"/></text>
+    <text x="965" y="474" opacity="0">E<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="3s" repeatCount="indefinite"/></text>
+    <text x="1075" y="474" opacity="0">R<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="3.5s" repeatCount="indefinite"/></text>
+    <text x="1185" y="474" opacity="0">B<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="4s" repeatCount="indefinite"/></text>
+    <text x="1295" y="474" opacity="0">A<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.9;0.94;1" dur="10s" begin="4.5s" repeatCount="indefinite"/></text>
+  </g>
+</svg>

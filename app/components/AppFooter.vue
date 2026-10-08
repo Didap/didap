@@ -7,12 +7,7 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const year = new Date().getFullYear()
 
-const siteLinks = computed(() => [
-  { to: localePath('/work'), label: t('nav.work') },
-  { to: localePath('/clients'), label: t('nav.clients') },
-  { to: localePath('/about'), label: t('nav.about') },
-  { to: localePath('/contact'), label: t('nav.contact') },
-])
+const siteLinks = useHomeSections()
 
 const legalLinks = computed(() => [
   { to: localePath('/privacy'), label: t('footer.privacy') },
@@ -46,8 +41,9 @@ const legalLinks = computed(() => [
               </p>
               <NuxtLink
                 v-for="l in siteLinks"
-                :key="l.to"
+                :key="l.id"
                 :to="l.to"
+                aria-current="false"
                 class="
                   text-body transition-colors
                   hover:text-green

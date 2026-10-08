@@ -39,6 +39,7 @@ const projectSchema = z.object({
     .optional(),
   model: z.string().optional(),
   next: z.string().optional(),
+  logo: z.string().optional(),
   media: z
     .object({
       pair: z.array(mediaSlot).optional(),

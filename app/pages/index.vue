@@ -144,7 +144,10 @@ useSeoMeta({
     </section>
 
     <!-- PROd -->
-    <section class="page-x">
+    <section
+      id="prodotti"
+      class="page-x"
+    >
       <div
         class="
           flex flex-col gap-16 border-t-[1.5px] border-ink pt-8 pb-24
@@ -228,7 +231,7 @@ useSeoMeta({
                 {{ t('home.placeholder_image') }}
               </span>
             </div>
-            <div class="flex items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
               <span class="text-label opacity-60">
                 {{ t(`home.products.${p.key}.category`) }}
               </span>
@@ -259,7 +262,10 @@ useSeoMeta({
     </section>
 
     <!-- Come lavoriamo -->
-    <section class="page-x">
+    <section
+      id="come-lavoriamo"
+      class="page-x"
+    >
       <div class="border-t-[1.5px] border-ink py-8">
         <div class="
           grid gap-6
@@ -303,7 +309,10 @@ useSeoMeta({
     </section>
 
     <!-- Partner -->
-    <section class="page-x">
+    <section
+      id="partner"
+      class="page-x"
+    >
       <div class="
         border-t-[1.5px] border-ink pt-8 pb-24
         lg:pb-[136px]
@@ -391,7 +400,10 @@ useSeoMeta({
     </section>
 
     <!-- Contatto -->
-    <section class="page-x">
+    <section
+      id="contatti"
+      class="page-x"
+    >
       <div
         class="
           flex flex-col gap-12 border-t-[1.5px] border-ink pt-8 pb-24

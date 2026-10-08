@@ -146,6 +146,26 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Ancore della nav: scorrimento morbido, la sezione si ferma sotto
+     la nav sticky (72 mobile, 97 desktop) */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  [id] {
+    scroll-margin-top: 72px;
+
+    @media (width >= 64rem) {
+      scroll-margin-top: 97px;
+    }
+  }
+
   h1,
   h2,
   h3,
@@ -196,5 +216,20 @@ samp {
   *::before,
   *::after {
     cursor: url('/cursor.svg?v=2') 7 3, auto !important;
+  }
+}
+
+/* Campi dei form di /admin */
+@utility admin-input {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 25%, transparent);
+  background: #fff;
+  padding: 0.625rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.4;
+
+  &:focus {
+    outline: 2px solid var(--color-green);
+    outline-offset: 1px;
   }
 }

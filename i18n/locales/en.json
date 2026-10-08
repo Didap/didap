@@ -7,7 +7,9 @@
     "cta": "Let’s work together",
     "main": "Main navigation",
     "open_menu": "Open menu",
-    "close_menu": "Close menu"
+    "close_menu": "Close menu",
+    "back": "Go back",
+    "open_product": "Open {name}"
   },
   "home": {
     "seo_description": "We design, write and ship bespoke digital products. From the foundations to the final polish.",

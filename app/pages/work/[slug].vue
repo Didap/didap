@@ -6,7 +6,8 @@ import StatusPill from '~/components/StatusPill.vue'
 // Scheda prodotto - Figma "Scheda prodotto · Fanta Rainbow · Desktop 1440".
 // Le sezioni compaiono solo se il frontmatter ha i dati; i prodotti senza
 // scheda strutturata mostrano il corpo markdown al posto dei blocchi testo.
-definePageMeta({ surface: 'cream' })
+// Sopra al markdown si applicano le modifiche fatte da /admin.
+definePageMeta({ surface: 'cream', nav: 'product' })
 
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -14,16 +15,9 @@ const localePath = useLocalePath()
 const collection = useProjectCollection('work')
 const slug = computed(() => String(route.params.slug))
 
-const { data: project } = await useAsyncData(
-  () => `work-${locale.value}-${slug.value}`,
-  () =>
-    queryCollection(collection.value)
-      .where('stem', 'LIKE', `%/${slug.value}`)
-      .first(),
-  { watch: [collection, slug] },
-)
+const { base: baseProject, overrides, project } = await useProductPage(slug)
 
-if (!project.value) {
+if (!baseProject.value) {
   throw createError({
     statusCode: 404,
     statusMessage: 'Project not found',
@@ -44,19 +38,23 @@ const nextProject = computed(() => {
   const list = allProjects.value ?? []
   if (!project.value || list.length < 2) return null
   const wanted = project.value.next
-  if (wanted) {
-    const found = list.find((p) => slugOf(p) === wanted)
-    if (found) return found
+  let found = wanted ? list.find((p) => slugOf(p) === wanted) : undefined
+  if (!found) {
+    const i = list.findIndex((p) => p.stem === project.value?.stem)
+    found = list[(i + 1) % list.length]
   }
-  const i = list.findIndex((p) => p.stem === project.value?.stem)
-  return list[(i + 1) % list.length] ?? null
+  return found ? mergeProduct(found, overrides.value?.[slugOf(found)]) : null
 })
 
-const host = computed(() =>
-  project.value?.url
-    ? new URL(project.value.url).hostname.replace(/^www\./, '')
-    : '',
-)
+const host = computed(() => {
+  if (!project.value?.url) return ''
+  try {
+    return new URL(project.value.url).hostname.replace(/^www\./, '')
+  }
+  catch {
+    return ''
+  }
+})
 
 const hasStory = computed(
   () =>
@@ -69,8 +67,8 @@ const hasStory = computed(
 )
 
 useSeoMeta({
-  title: `${project.value.title} - Didap`,
-  description: project.value.lede ?? project.value.summary,
+  title: () => `${project.value?.title} - Didap`,
+  description: () => project.value?.lede || project.value?.summary,
 })
 </script>
 
@@ -78,13 +76,14 @@ useSeoMeta({
   <article v-if="project">
     <!-- Immagine di testata, a tutta larghezza 1440x864 -->
     <MediaSlot
+      data-preview-section="testata"
       v-if="project.hero"
       :media="{ alt: project.title, ...project.hero }"
       class="aspect-1440/864 max-h-[90vh] w-full"
     />
 
     <!-- Header -->
-    <header class="page-x">
+    <header class="page-x" data-preview-section="scheda">
       <div class="
         flex flex-col gap-6 pt-10 pb-16
         lg:pb-20
@@ -163,7 +162,7 @@ useSeoMeta({
 
           <div class="flex flex-col items-start gap-8">
             <p class="text-title">
-              {{ project.lede ?? project.summary }}
+              {{ project.lede || project.summary }}
             </p>
             <DidapButton
               v-if="project.url"
@@ -178,6 +177,7 @@ useSeoMeta({
 
     <!-- Immagini · due affiancate -->
     <section
+      data-preview-section="prodotto"
       v-if="project.media?.pair?.length"
       class="page-x"
     >
@@ -197,6 +197,7 @@ useSeoMeta({
     <template v-if="hasStory">
       <!-- Testo · Il prodotto -->
       <section
+        data-preview-section="prodotto"
         v-if="project.intro"
         class="page-x"
       >
@@ -218,6 +219,7 @@ useSeoMeta({
 
       <!-- Testo · La cosa difficile -->
       <section
+        data-preview-section="difficile"
         v-if="project.challenge"
         class="page-x"
       >
@@ -236,6 +238,7 @@ useSeoMeta({
 
       <!-- Testo · Cosa fa -->
       <section
+        data-preview-section="cosafa"
         v-if="project.features"
         class="page-x"
       >
@@ -286,6 +289,7 @@ useSeoMeta({
 
       <!-- Immagini · tre affiancate -->
       <section
+        data-preview-section="chiusura"
         v-if="project.media?.triple?.length"
         class="page-x"
       >
@@ -304,6 +308,7 @@ useSeoMeta({
 
       <!-- Testo · Modello -->
       <section
+        data-preview-section="chiusura"
         v-if="project.model"
         class="page-x"
       >
@@ -329,10 +334,15 @@ useSeoMeta({
       </div>
     </section>
 
-    <!-- Prossimo prodotto -->
+    <!-- Prossimo prodotto (stacca dalle immagini se manca il Modello) -->
     <section
+      data-preview-section="chiusura"
       v-if="nextProject"
       class="page-x"
+      :class="hasStory && !project.model ? `
+        mt-16
+        lg:mt-28
+      ` : ''"
     >
       <NuxtLink
         :to="localePath(`/work/${slugOf(nextProject)}`)"

@@ -7,7 +7,9 @@
     "cta": "Lavoriamo insieme",
     "main": "Navigazione principale",
     "open_menu": "Apri il menu",
-    "close_menu": "Chiudi il menu"
+    "close_menu": "Chiudi il menu",
+    "back": "Torna indietro",
+    "open_product": "Apri {name}"
   },
   "home": {
     "seo_description": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",

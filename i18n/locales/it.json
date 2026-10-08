@@ -2,20 +2,77 @@
   "nav": {
     "work": "Prodotti",
     "clients": "Partner",
-    "about": "Chi siamo",
-    "contact": "Contatti"
+    "about": "About",
+    "contact": "Contatti",
+    "cta": "Lavoriamo insieme",
+    "main": "Navigazione principale",
+    "open_menu": "Apri il menu",
+    "close_menu": "Chiudi il menu"
   },
   "home": {
-    "title": "Free the monkey",
-    "intro": "Progettiamo, scriviamo e portiamo in produzione prodotti digitali su misura - dalle fondamenta all'ultima rifinitura.",
-    "cta_work": "Scopri i PROd",
-    "cta_contact": "Lavoriamo insieme",
-    "work_heading": "PROd by Didap",
-    "clients_heading": "I nostri partner",
-    "team_kicker": "Le persone",
-    "team_heading": "Il team è la feature.",
-    "team_intro": "Tre full-stack, una designer, una project manager.",
-    "see_all": "Vedi tutti"
+    "seo_description": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
+    "hero_tagline": "Free the\nmonkey.",
+    "hero_sub": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
+    "products_title": "Prodotti vivi. Aprili.",
+    "products_intro": "Li progettiamo, li scriviamo e li teniamo in produzione noi. \nIl modo più rapido per capire come lavoriamo è usarli.",
+    "featured_category": "Fantacalcio",
+    "featured_desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide.",
+    "featured_cta": "Apri fantarainbow.com",
+    "featured_more": "Leggi la scheda",
+    "featured_alt": "Fanta Rainbow: una porta da calcio su un campo in erba con il logo Fanta Rainbow e la scritta Gioca ora",
+    "status_live": "Live",
+    "status_pilot": "Pilot",
+    "status_pending": "Stato da confermare",
+    "placeholder_image": "Immagine",
+    "open_product": "Apri il prodotto",
+    "products": {
+      "bin_or_deal": {
+        "category": "Marketplace",
+        "desc": "Aggregatore di annunci dai marketplace europei per collezionisti, con punteggio automatico “bin vs deal”."
+      },
+      "cityfix": {
+        "category": "Città",
+        "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città."
+      },
+      "cruciverba_lab": {
+        "category": "Giochi",
+        "desc": "La casa dei cruciverba italiani online. Sette nuovi giochi di parole ogni giorno, nel browser."
+      }
+    },
+    "how_label": "Come lavoriamo",
+    "how": {
+      "fullstack": {
+        "title": "Full-stack, \nper davvero.",
+        "body": "Backend, frontend, infrastruttura, mobile, integrazioni."
+      },
+      "outsourcing": {
+        "title": "Niente outsourcing \nsu ciò che conta.",
+        "body": "Il codice che rilasciamo lo scriviamo, lo testiamo e lo teniamo in piedi noi."
+      },
+      "design": {
+        "title": "Il design vive \nnel codice.",
+        "body": "Pensato per andare in produzione, non per stare bene nelle slide. I prodotti crescono con l’uso reale."
+      }
+    },
+    "partners_label": "Partner e clienti",
+    "partner_types": {
+      "institutional": "Partner istituzionale",
+      "saas": "SaaS",
+      "app": "App"
+    },
+    "team_title": "The team is the feature.",
+    "team_intro": "Tre full-stack engineer, un designer, un project manager. E Didi.",
+    "roles": {
+      "ceo": "CEO & Founder",
+      "fullstack": "Full-stack developer",
+      "art_director": "art director",
+      "mascot": "Mascotte"
+    },
+    "contact_title": "Hai un’ idea da liberare?",
+    "contact_cta": "Lavoriamo insieme",
+    "qube_label": "Partner strategico · The Qube",
+    "qube_title": "Ti aiutiamo anche a finanziarlo.",
+    "qube_body": "Con The Qube, incubatore certificato MIMIT, ti accompagniamo verso finanza agevolata e bandi pubblici italiani ed europei."
   },
   "work": {
     "kicker": "Lo studio",
@@ -83,7 +140,9 @@
   },
   "footer": {
     "tagline": "Free the monkey.",
-    "legal": "Legal",
+    "site": "Sito",
+    "legal": "Legale",
+    "contact": "Contatto",
     "privacy": "Privacy policy",
     "cookies": "Cookie policy"
   },
@@ -105,5 +164,14 @@
     "visit": "Visita il sito",
     "no_items": "Niente da mostrare per ora.",
     "no_results": "Nessun progetto trovato con questi filtri."
+  },
+  "product": {
+    "category": "Categoria",
+    "status": "Stato",
+    "scope": "Ruolo",
+    "stack": "Stack",
+    "open": "Apri {host}",
+    "next": "Prossimo prodotto",
+    "placeholder_image": "Immagine"
   }
 }

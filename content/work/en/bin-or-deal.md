@@ -10,6 +10,7 @@ tags:
   - marketplace
 featured: true
 order: 2
+status: pending
 ---
 
 ## The product

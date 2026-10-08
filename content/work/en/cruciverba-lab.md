@@ -9,6 +9,7 @@ tags:
   - SaaS
 featured: true
 order: 4
+status: pending
 ---
 
 ## The product

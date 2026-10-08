@@ -4,72 +4,161 @@
   ============================================================
   DIDAP - DESIGN TOKENS
   ============================================================
-  Palette ufficiale del brand — vedi public/palette.svg.
-  ink #141414 · accent #c8412c · gold #e2a52b ·
-  finance #2e5d4a · paper #fbf4e2.
+  Allineati al Figma "DIDAP - Home & Project page" (variabili
+  Didap / Color e stili di testo della pagina Foundations).
 
   Per cambiare lo stile in tutto il sito basta toccare
   queste variabili: ogni componente le legge via Tailwind
-  (es. bg-paper, text-ink, font-display).
+  (es. bg-paper, text-ink, font-sans, text-title).
   ============================================================
 */
 
 @theme {
-  /* Brand palette - vedi public/palette.svg
-     paper  cream surface
-     ink    primary text / outlines
-     accent rosso vermiglio (alerts, hover, primary CTA)
-     gold   giallo ocra (highlight, accento secondario)
-     finance verde (partner finanza agevolata) */
-  --color-paper: #fbf4e2;
+  /* Palette (variabili Figma: ink, cream, red, green, banana)
+     paper        fondo pagina
+     paper-light  superfici nav/footer, testo su verde
+     cream        variabile "cream" del Figma */
+  --color-paper: #fff9ea;
+  --color-paper-light: #fffbf2;
+  --color-cream: #fbf4e2;
+  --color-ink: #161412;
+  --color-red: #c8412c;
+  --color-green: #2e5d4a;
+  --color-banana: #e2a52b;
+  --color-blush: #e8a6a0;
+
+  /* Alias storici usati dalle pagine interne */
   --color-paper-soft: #f3ead0;
-  --color-ink: #141414;
   --color-ink-soft: #3a3a3a;
-  --color-accent: #c8412c;
+  --color-accent: var(--color-red);
   --color-accent-soft: #e26e51;
-  --color-gold: #e2a52b;
-  --color-finance: #2e5d4a;
+  --color-gold: var(--color-banana);
+  --color-finance: var(--color-green);
   --color-finance-soft: #5a8870;
 
-  /* Tipografia - Bricolage Grotesque (display+headline),
-     Inter (body), JetBrains Mono (caption/code).
-     Caricati via nuxt.config.ts > app.head.link da Google Fonts. */
-  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
+  /* Tipografia - Obviously (Adobe Fonts, kit in nuxt.config.ts).
+     obviously-wide solo per la tagline della hero. */
+  --font-display: 'obviously', system-ui, sans-serif;
+  --font-sans: 'obviously', system-ui, sans-serif;
+  --font-wide: 'obviously-wide', 'obviously', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* Animazioni - curve "vintage" più morbide del default */
   --ease-vintage: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html,
-body {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 17px;
-  line-height: 1.45;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 /*
-  Headings - Bricolage Grotesque
-  - h1 (display): peso 800, tracking -4% (gestito da .font-display-xl)
-  - h2/h3 (headline): peso 700, tracking -3%
+  Stili di testo del Figma (Foundations), uno per utility.
+  Le misure sono quelle del desktop 1440; sotto scalano con clamp.
+  - display  Obviously Black 128 / 0.92 / -3%
+  - title    Obviously Bold 40 / 1.08 / -1%
+  - body     Obviously Regular 20 / 1.5
+  - label    Obviously Medium 13 / 1.3 / +8% maiuscolo
+  - button   Obviously Semibold 13 / 1.3 / +8% maiuscolo
+  - hero     Obviously Wide Bold 40 / 1.08 / -1%
+  - intro    Obviously Wide Bold 24 / 1.5
 */
-h1,
-h2,
-h3,
-.font-display {
+@utility text-display {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-size: clamp(3.25rem, 8.9vw, 8rem);
+  font-weight: 900;
+  line-height: 0.92;
   letter-spacing: -0.03em;
 }
 
-.font-display-xl {
-  font-weight: 800;
-  letter-spacing: -0.04em;
+@utility text-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+@utility text-hero {
+  font-family: var(--font-wide);
+  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+/* Testo di apertura della scheda prodotto: Obviously Wide Bold 24 / 1.5 */
+@utility text-intro {
+  font-family: var(--font-wide);
+  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+@utility text-body {
+  font-size: clamp(1.0625rem, 0.95rem + 0.4vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@utility text-body-medium {
+  font-size: clamp(1.0625rem, 0.95rem + 0.4vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+@utility text-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@utility text-button {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Griglia di pagina: 1440 con 80 di margine laterale */
+@utility page-x {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 90rem;
+  padding-inline: 1.25rem;
+
+  @media (width >= 48rem) {
+    padding-inline: 2.5rem;
+  }
+
+  @media (width >= 80rem) {
+    padding-inline: 5rem;
+  }
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .font-display-xl {
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
 }
 
 /* Caption / micro-copy in JetBrains Mono - usato dove c'è
@@ -98,154 +187,14 @@ samp {
 }
 
 /*
-  ============================================================
-  MARQUEE - scorrimento orizzontale lento, pausa on-hover
-  ============================================================
-  L'effetto loop si ottiene duplicando il contenuto e animando
-  il track da translateX(0) a translateX(-50%): il secondo set
-  arriva esattamente nella posizione iniziale del primo, quindi
-  l'animazione può ripartire senza salti visibili.
-
-  - I figli del track devono avere il proprio margin-right
-    (NON gap) altrimenti il -50% non chiude il cerchio.
-  - prefers-reduced-motion: animazione off, scroll manuale,
-    duplicato nascosto.
+  Cursore Didap: la freccia ink sostituisce quello di sistema su tutti
+  gli elementi, anche link/bottoni/input (solo con mouse). Cursore
+  nativo, nessuna animazione. Hotspot sulla punta della freccia.
 */
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.marquee {
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 4%,
-    black 96%,
-    transparent
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 4%,
-    black 96%,
-    transparent
-  );
-}
-
-.marquee__track {
-  display: flex;
-  width: max-content;
-  animation: marquee 80s linear infinite;
-  will-change: transform;
-}
-
-.marquee:hover .marquee__track,
-.marquee:focus-within .marquee__track {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marquee {
-    overflow-x: auto;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .marquee__track {
-    animation: none;
-  }
-  .marquee__duplicate {
-    display: none;
-  }
-}
-
-/*
-  Smooth cursor: when attivo (solo pointer-fine), nasconde il cursore di
-  sistema su TUTTI gli elementi - anche button/link/input/select dove
-  Tailwind imposta cursor: pointer/text. Senza questa regola il
-  cursore nativo riapparirebbe sopra al nostro custom in hover.
-*/
-.has-smooth-cursor,
-.has-smooth-cursor * {
-  cursor: none !important;
-}
-
-/*
-  ============================================================
-  GUMMY - squash & stretch lettera per lettera
-  ============================================================
-  Ogni lettera ha la propria coppia di valori `--gdur` (durata) e
-  `--gd` (delay negativo) impostata inline da GummyText.vue. Risultato:
-  ogni glifo si muove a tempo proprio, l'insieme appare irregolare e
-  vivo invece che ondulare in sincrono.
-
-  - .gummy-letter (outer): keyframes idle infinite con timings unici
-    per lettera
-  - .gummy-letter__inner (inner): solo transizione, attivata dall'hover
-    del wrapper. La separazione evita che la transizione hover si
-    contenda il transform con l'animazione idle.
-*/
-.gummy-text {
-  display: inline;
-}
-
-.gummy-space {
-  display: inline;
-  white-space: pre;
-}
-
-.gummy-letter {
-  display: inline-block;
-  transform-origin: center 82%;
-}
-
-/* Solo le lettere con `is-animated` ricevono il loop idle.
-   Tutte le altre restano ferme ma reagiscono comunque all'hover. */
-.gummy-letter.is-animated {
-  animation: gummy-letter-idle var(--gdur, 5s) ease-in-out infinite;
-  animation-delay: var(--gd, 0s);
-}
-
-.gummy-letter__inner {
-  display: inline-block;
-  transform-origin: center 82%;
-  transition: transform 0.4s cubic-bezier(0.34, 1.75, 0.4, 1);
-}
-
-.gummy-letter:hover .gummy-letter__inner,
-.gummy-letter:focus-visible .gummy-letter__inner {
-  transform: scale(1.28, 0.74) translateY(-6%);
-}
-
-@keyframes gummy-letter-idle {
-  0%,
-  100% {
-    transform: scale(1, 1) translateY(0);
-  }
-  25% {
-    transform: scale(1.05, 0.95) translateY(2%);
-  }
-  50% {
-    transform: scale(0.96, 1.04) translateY(-3%);
-  }
-  75% {
-    transform: scale(1.02, 0.98) translateY(1%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gummy-letter,
-  .gummy-letter__inner {
-    animation: none;
-    transition: none;
-  }
-  .gummy-letter:hover .gummy-letter__inner {
-    transform: none;
+@media (pointer: fine) {
+  *,
+  *::before,
+  *::after {
+    cursor: url('/cursor.svg?v=2') 7 3, auto !important;
   }
 }

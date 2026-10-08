@@ -1,58 +1,102 @@
 <script setup lang="ts">
+// Componente "Footer" del Figma: filetto ink 1.5 in alto, tagline Title
+// a sinistra, tre colonne (Sito, Legale, Contatto) a 80 di distanza.
+defineProps<{ cream?: boolean }>()
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const year = new Date().getFullYear()
+
+const siteLinks = computed(() => [
+  { to: localePath('/work'), label: t('nav.work') },
+  { to: localePath('/clients'), label: t('nav.clients') },
+  { to: localePath('/about'), label: t('nav.about') },
+  { to: localePath('/contact'), label: t('nav.contact') },
+])
+
+const legalLinks = computed(() => [
+  { to: localePath('/privacy'), label: t('footer.privacy') },
+  { to: localePath('/cookies'), label: t('footer.cookies') },
+])
 </script>
 
 <template>
-  <footer class="border-t border-ink/10 bg-paper-soft">
-    <div
-      class="mx-auto grid max-w-6xl gap-8 px-6 py-12 text-sm text-ink-soft md:grid-cols-3"
-    >
-      <div class="space-y-3">
-        <img
-          src="/logo_esteso.svg"
-          alt="Didap"
-          class="-ml-2 h-40 w-auto"
-        />
-        <p>{{ t('footer.tagline') }}</p>
-      </div>
-
-      <div class="space-y-3">
-        <p class="text-xs uppercase tracking-widest text-ink-soft/70">
-          {{ t('footer.legal') }}
-        </p>
-        <ul class="space-y-1.5">
-          <li>
-            <NuxtLink
-              :to="localePath('/privacy')"
-              class="transition hover:text-accent"
-            >
-              {{ t('footer.privacy') }}
-            </NuxtLink>
-          </li>
-          <li>
-            <NuxtLink
-              :to="localePath('/cookies')"
-              class="transition hover:text-accent"
-            >
-              {{ t('footer.cookies') }}
-            </NuxtLink>
-          </li>
-        </ul>
-      </div>
-
-      <div class="space-y-3 md:text-right">
-        <p class="text-xs uppercase tracking-widest text-ink-soft/70">
-          {{ t('nav.contact') }}
-        </p>
-        <a
-          href="mailto:amministrazione@didap.it"
-          class="block transition hover:text-accent"
+  <footer
+    :class="cream ? 'bg-cream' : 'bg-paper-light'"
+  >
+    <div class="page-x">
+      <div class="flex flex-col gap-[72px] border-t-[1.5px] border-ink py-10">
+        <div
+          class="
+            flex flex-col justify-between gap-12
+            lg:flex-row lg:gap-6
+          "
         >
-          amministrazione@didap.it
-        </a>
-        <p class="text-xs">© {{ year }} Didap srl</p>
+          <p class="text-title">
+            {{ t('footer.tagline') }}
+          </p>
+
+          <div class="flex flex-wrap gap-x-20 gap-y-10">
+            <nav
+              class="flex flex-col gap-3"
+              :aria-label="t('footer.site')"
+            >
+              <p class="text-label opacity-60">
+                {{ t('footer.site') }}
+              </p>
+              <NuxtLink
+                v-for="l in siteLinks"
+                :key="l.to"
+                :to="l.to"
+                class="
+                  text-body transition-colors
+                  hover:text-green
+                "
+              >
+                {{ l.label }}
+              </NuxtLink>
+            </nav>
+
+            <nav
+              class="flex flex-col gap-3"
+              :aria-label="t('footer.legal')"
+            >
+              <p class="text-label opacity-60">
+                {{ t('footer.legal') }}
+              </p>
+              <NuxtLink
+                v-for="l in legalLinks"
+                :key="l.to"
+                :to="l.to"
+                class="
+                  text-body transition-colors
+                  hover:text-green
+                "
+              >
+                {{ l.label }}
+              </NuxtLink>
+            </nav>
+
+            <div class="flex flex-col gap-3">
+              <p class="text-label opacity-60">
+                {{ t('footer.contact') }}
+              </p>
+              <a
+                href="mailto:amministrazione@didap.it"
+                class="
+                  text-body transition-colors
+                  hover:text-green
+                "
+              >
+                amministrazione@didap.it
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-label opacity-60">
+          © {{ year }} Didap srl
+        </p>
       </div>
     </div>
   </footer>

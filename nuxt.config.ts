@@ -46,6 +46,9 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Didap - landing aziendale.' },
       ],
       link: [
+        // Obviously via Adobe Fonts (kit ctd0ukv)
+        { rel: 'preconnect', href: 'https://use.typekit.net', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://use.typekit.net/ctd0ukv.css' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
           rel: 'preconnect',
@@ -54,21 +57,7 @@ export default defineNuxtConfig({
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700..800&family=Inter:opsz,wght@14..32,400..500&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap',
-        },
-        // Preload entrambi i loghi per evitare flash quando il header si
-        // contrae allo scroll e fa swap del src.
-        {
-          rel: 'preload',
-          as: 'image',
-          href: '/logo_esteso.svg',
-          type: 'image/svg+xml',
-        },
-        {
-          rel: 'preload',
-          as: 'image',
-          href: '/logo_contratto.svg',
-          type: 'image/svg+xml',
+          href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap',
         },
       ],
     },

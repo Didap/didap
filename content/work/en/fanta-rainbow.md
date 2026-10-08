@@ -9,6 +9,49 @@ tags:
   - SaaS
 featured: true
 order: 1
+status: live
+scope: Full-stack design and development
+stack: Nuxt 4, Vue 3, PostgreSQL, Stripe
+lede: Live fantasy football auctions. The bank keeps the score, players bid from their phone, the countdown decides.
+hero:
+  src: /covers/fanta-rainbow-hero.webp
+  alt: A football goal on a grass pitch with the Fanta Rainbow logo and the words Gioca ora
+intro: Fanta Rainbow is the bank of a fantasy football auction. The organiser creates the auction, picks the team names and gets a personal link for each one. On auction night the board runs on the big screen and everyone else is on their phone. Whoever bids last before the countdown runs out takes the player.
+challenge:
+  title: No timers on the server.
+  body: "Every bid writes the lot’s deadline. The first request that finds it in the past assigns the player. Two bids in the same instant never overwrite each other: the second is replayed on the updated bid. Everyone sees the same countdown on the same second, even those who are not in the room."
+features:
+  title: From auction night to the whole season.
+  items:
+    - name: Two-phase auction
+      desc: A draw for the big names picked at random, a call for everyone else.
+    - name: Bids from the phone
+      desc: "No app and no sign-up: open your own link and raise."
+    - name: Synced countdown
+      desc: The client corrects the drift against the server clock.
+    - name: Squad rules enforced
+      desc: Full position, bid rejected. The last sale can be undone.
+    - name: List import
+      desc: The official Fantacalcio.it CSV, as it is.
+    - name: The whole season
+      desc: League, line-ups, goals, Rainbow credits and a sticker album.
+model: "One-off league credit: 10 € per league, unlimited teams, only the organiser pays. No subscription and no per-player cost. Finished leagues stay readable and export to JSON."
+next: cityfix
+media:
+  pair:
+    - color: ink
+      label: false
+    - color: red
+      label: false
+  wide:
+    color: green
+  feature:
+    - color: ink
+    - color: red
+  triple:
+    - color: red
+    - color: ink
+    - color: green
 ---
 
 ## The product

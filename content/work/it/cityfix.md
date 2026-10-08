@@ -12,6 +12,7 @@ tags:
   - civic tech
 featured: true
 order: 3
+status: pilot
 ---
 
 ## Il prodotto

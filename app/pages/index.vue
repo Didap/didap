@@ -1,276 +1,436 @@
 <script setup lang="ts">
-import ProjectCard from '~/components/ProjectCard.vue'
-import ExpandableGallery from '~/components/ExpandableGallery.vue'
-import AnimatedTestimonials from '~/components/AnimatedTestimonials.vue'
-import GummyText from '~/components/GummyText.vue'
+import DidapButton from '~/components/DidapButton.vue'
+import StatusPill from '~/components/StatusPill.vue'
+import type { ProductStatus } from '~/components/StatusPill.vue'
 
+// Home - Figma "Home · Desktop 1440 · v0.1".
+// Ogni sezione: filetto ink 1.5 in alto, 32 sopra, 136 sotto,
+// colonna etichetta 302 + colonna testo 954 su 1280 utili.
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-const workCollection = useProjectCollection('work')
-const clientsCollection = useProjectCollection('clients')
+const products: {
+  key: string
+  slug: string
+  name: string
+  url: string
+  status: ProductStatus
+}[] = [
+  {
+    key: 'bin_or_deal',
+    slug: 'bin-or-deal',
+    name: 'Bin or Deal',
+    url: 'https://www.binordeal.com',
+    status: 'pending',
+  },
+  {
+    key: 'cityfix',
+    slug: 'cityfix',
+    name: 'CityFix',
+    url: 'https://cityfix.io',
+    status: 'pilot',
+  },
+  {
+    key: 'cruciverba_lab',
+    slug: 'cruciverba-lab',
+    name: 'Cruciverba Lab',
+    url: 'https://cruciverba-lab.it',
+    status: 'pending',
+  },
+]
 
-const { data: featuredWork } = await useAsyncData(
-  () => `home-work-${workCollection.value}`,
-  () =>
-    queryCollection(workCollection.value)
-      .where('featured', '=', true)
-      .order('order', 'ASC')
-      .all(),
-  { watch: [workCollection] },
-)
+const statusLabel = (s: ProductStatus) => t(`home.status_${s}`)
 
-const { data: featuredClients } = await useAsyncData(
-  () => `home-clients-${clientsCollection.value}`,
-  () =>
-    queryCollection(clientsCollection.value)
-      .where('featured', '=', true)
-      .order('order', 'ASC')
-      .all(),
-  { watch: [clientsCollection] },
-)
+const facts = ['fullstack', 'outsourcing', 'design']
 
-const strategicPartner = computed(
-  () => featuredClients.value?.find((p) => p.strategic === true) ?? null,
-)
-const regularClients = computed(() =>
-  (featuredClients.value ?? []).filter((p) => !p.strategic),
-)
+const partners = [
+  { slug: 'comune-di-brindisi', name: 'Comune di Brindisi', type: 'institutional' },
+  { slug: 'rotte-di-portolano', name: 'Le Rotte di Portolano', type: 'saas' },
+  { slug: 'sudel', name: 'Sudel', type: 'app' },
+  { slug: 'tmi', name: 'TMI', type: 'app' },
+]
 
-const team = [
-  { name: 'Barbara', role: 'CEO & Founder', image: '/team/barbara.jpg' },
+// width: larghezza dell'illustrazione sulla foto (193.3 di base)
+const team = computed<
+  {
+    name: string
+    role: string
+    bg: string
+    illustration: string
+    width: string
+  }[]
+>(() => [
+  {
+    name: 'Barbara',
+    role: t('home.roles.ceo'),
+    bg: 'bg-banana',
+    illustration: '/team/illustrations/barbara.svg',
+    width: 'w-[75%]',
+  },
   {
     name: 'William',
-    role: 'Full-stack developer',
-    image: '/team/william.jpg',
+    role: '¯\\_(ツ)_/¯',
+    bg: 'bg-green',
+    illustration: '/team/illustrations/william.svg',
+    width: 'w-[64.1%]',
   },
   {
     name: 'Cristiano',
-    role: 'Full-stack developer',
-    image: '/team/cristiano.jpg',
+    role: t('home.roles.fullstack'),
+    bg: 'bg-cream',
+    illustration: '/team/illustrations/cristiano.svg',
+    width: 'w-[66.7%]',
   },
   {
     name: 'Alessandro',
-    role: 'Full-stack developer',
-    image: '/team/alessandro.jpg',
+    role: t('home.roles.fullstack'),
+    bg: 'bg-blush',
+    illustration: '/team/illustrations/alessandro.svg',
+    width: 'w-[64.7%]',
   },
-  { name: 'Vitantonio', role: 'Designer', image: '/team/vitantonio.jpg' },
-]
-
-const teamTestimonials = team.map((m) => ({
-  name: m.name,
-  designation: m.role,
-  image: m.image,
-  quote: '',
-}))
+  {
+    name: 'Vitantonio',
+    role: t('home.roles.art_director'),
+    bg: 'bg-ink',
+    illustration: '/team/illustrations/vitantonio.svg',
+    width: 'w-[68.3%]',
+  },
+  {
+    name: 'Didi',
+    role: t('home.roles.mascot'),
+    bg: 'bg-red',
+    illustration: '/brand/didi-testa.svg',
+    width: 'w-[73.3%]',
+  },
+])
 
 useSeoMeta({
   title: 'Didap',
-  description: t('home.intro'),
+  description: t('home.seo_description'),
 })
 </script>
 
 <template>
   <div>
     <!-- Hero -->
-    <section class="relative overflow-hidden border-b border-ink/10">
-      <div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-24 md:py-32">
-        <h1
-          class="font-display font-display-xl text-5xl leading-[0.95] md:text-7xl"
-        >
-          <GummyText :text="t('home.title')" />
+    <section class="page-x">
+      <div
+        class="
+          flex flex-col gap-12 py-16
+          lg:gap-24 lg:pt-[139px] lg:pb-[67px]
+        "
+      >
+        <h1 class="m-0">
+          <img
+            src="/brand/logo-esteso.svg"
+            alt="Didap"
+            width="1278"
+            height="367"
+            class="block aspect-[559.4/160] w-full"
+          >
         </h1>
-        <p class="max-w-2xl text-lg text-ink-soft">
-          {{ t('home.intro') }}
-        </p>
-        <div class="flex flex-wrap gap-3 pt-2">
-          <NuxtLink
-            :to="localePath('/work')"
-            class="rounded-full bg-ink px-6 py-3 text-sm uppercase tracking-widest text-paper transition hover:bg-accent"
-          >
-            {{ t('home.cta_work') }}
-          </NuxtLink>
-          <NuxtLink
-            :to="localePath('/contact')"
-            class="rounded-full border border-ink/30 px-6 py-3 text-sm uppercase tracking-widest transition hover:border-accent hover:text-accent"
-          >
-            {{ t('home.cta_contact') }}
-          </NuxtLink>
+        <div class="
+          grid gap-6
+          lg:grid-cols-2
+        ">
+          <p class="text-hero whitespace-pre-line">
+            {{ t('home.hero_tagline') }}
+          </p>
+          <p class="text-body-medium">
+            {{ t('home.hero_sub') }}
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- Products (was 'Our work') -->
-    <section
-      v-if="featuredWork?.length"
-      class="border-b border-ink/10"
-    >
-      <div class="mx-auto max-w-6xl px-6 pt-20">
-        <div class="mb-10 flex items-end justify-between">
-          <h2 class="font-display text-3xl md:text-4xl">
-            {{ t('home.work_heading') }}
+    <!-- PROd -->
+    <section class="page-x">
+      <div
+        class="
+          flex flex-col gap-16 border-t-[1.5px] border-ink pt-8 pb-24
+          lg:pb-[136px]
+        "
+      >
+        <header class="flex flex-col gap-7">
+          <h2 class="text-title">
+            {{ t('home.products_title') }}
           </h2>
-          <NuxtLink
-            :to="localePath('/work')"
-            class="text-sm uppercase tracking-widest hover:text-accent"
-          >
-            {{ t('home.see_all') }} →
-          </NuxtLink>
-        </div>
-      </div>
-      <div class="marquee pb-20">
-        <div class="marquee__track">
-          <div
-            v-for="p in featuredWork"
-            :key="p.path"
-            class="mr-8 w-[80vw] max-w-[340px] flex-none md:w-[340px]"
-          >
-            <ProjectCard
-              :to="localePath(`/work/${p.stem.split('/').pop()}`)"
-              :title="p.title"
-              :summary="p.summary"
-              :cover="p.cover"
-              :role="p.role"
-              :year="p.year"
-              :tags="p.tags"
-            />
-          </div>
-          <div
-            v-for="p in featuredWork"
-            :key="`d-${p.path}`"
-            class="marquee__duplicate mr-8 w-[80vw] max-w-[340px] flex-none md:w-[340px]"
-            aria-hidden="true"
-          >
-            <ProjectCard
-              :to="localePath(`/work/${p.stem.split('/').pop()}`)"
-              :title="p.title"
-              :summary="p.summary"
-              :cover="p.cover"
-              :role="p.role"
-              :year="p.year"
-              :tags="p.tags"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
+          <p class="max-w-[693px] text-body whitespace-pre-line">
+            {{ t('home.products_intro') }}
+          </p>
+        </header>
 
-    <!-- Partners (was 'Our clients') -->
-    <section
-      v-if="featuredClients?.length"
-      class="border-b border-ink/10"
-    >
-      <div class="mx-auto max-w-6xl px-6 pt-20">
-        <div class="mb-10 flex items-end justify-between">
-          <h2 class="font-display text-3xl md:text-4xl">
-            {{ t('home.clients_heading') }}
-          </h2>
-          <NuxtLink
-            :to="localePath('/clients')"
-            class="text-sm uppercase tracking-widest hover:text-accent"
+        <!-- In evidenza - Fanta Rainbow -->
+        <article class="flex flex-col gap-6">
+          <img
+            src="/covers/fanta-rainbow-hero.webp"
+            :alt="t('home.featured_alt')"
+            width="1280"
+            height="640"
+            class="aspect-2/1 w-full object-cover"
           >
-            {{ t('home.see_all') }} →
-          </NuxtLink>
-        </div>
-      </div>
+          <div class="
+            grid gap-6
+            lg:grid-cols-[588fr_692fr] lg:gap-x-0
+          ">
+            <div class="flex flex-col gap-3.5">
+              <div class="flex items-center gap-3">
+                <span class="text-label opacity-60">
+                  {{ t('home.featured_category') }}
+                </span>
+                <StatusPill status="live">
+                  {{ statusLabel('live') }}
+                </StatusPill>
+              </div>
+              <h3 class="text-title">
+                Fanta Rainbow
+              </h3>
+            </div>
+            <div class="flex flex-col gap-6">
+              <p class="text-body">
+                {{ t('home.featured_desc') }}
+              </p>
+              <div class="flex flex-wrap items-center gap-6">
+                <DidapButton href="https://fantarainbow.com">
+                  {{ t('home.featured_cta') }}
+                </DidapButton>
+                <NuxtLink
+                  :to="localePath('/work/fanta-rainbow')"
+                  class="
+                    text-label underline transition-colors
+                    hover:text-green
+                  "
+                >
+                  {{ t('home.featured_more') }}
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+        </article>
 
-      <div class="mx-auto max-w-6xl px-6 pb-20">
-        <div
-          class="grid gap-8"
-          :class="strategicPartner ? 'lg:grid-cols-[1fr_320px]' : ''"
-        >
-          <!-- Strategic partner: top on mobile, right on desktop -->
-          <aside
-            v-if="strategicPartner"
-            class="-order-1 space-y-2 lg:order-last"
+        <!-- Card prodotto -->
+        <div class="
+          grid gap-16
+          md:grid-cols-3 md:gap-6
+        ">
+          <article
+            v-for="p in products"
+            :key="p.key"
+            class="flex flex-col gap-5"
           >
-            <p class="text-[11px] font-semibold uppercase tracking-widest text-finance">
-              {{ t('clients.strategic_partner') }}
-            </p>
             <div
-              class="rounded-xl ring-2 ring-finance/40 ring-offset-4 ring-offset-paper transition hover:ring-finance/70"
+              class="
+                flex aspect-[410.7/300] w-full items-center justify-center
+                bg-ink
+              "
             >
-              <ProjectCard
-                :to="
-                  localePath(
-                    `/clients/${strategicPartner.stem.split('/').pop()}`,
-                  )
-                "
-                :title="strategicPartner.title"
-                :summary="strategicPartner.summary"
-                :cover="strategicPartner.cover"
-                :role="strategicPartner.role"
-                :tags="strategicPartner.tags"
-              />
+              <span class="text-label text-paper-light">
+                {{ t('home.placeholder_image') }}
+              </span>
             </div>
-          </aside>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-label opacity-60">
+                {{ t(`home.products.${p.key}.category`) }}
+              </span>
+              <StatusPill :status="p.status">
+                {{ statusLabel(p.status) }}
+              </StatusPill>
+            </div>
+            <h3 class="text-title">
+              {{ p.name }}
+            </h3>
+            <p class="text-body">
+              {{ t(`home.products.${p.key}.desc`) }}
+            </p>
+            <a
+              :href="p.url"
+              target="_blank"
+              rel="noopener"
+              class="
+                self-start text-label underline transition-colors
+                hover:text-green
+              "
+            >
+              {{ t('home.open_product') }}
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
 
-          <!-- Regular partners marquee (excludes strategic) -->
-          <div class="marquee min-w-0 overflow-hidden">
-            <div class="marquee__track">
-              <div
-                v-for="p in regularClients"
-                :key="p.path"
-                class="mr-6 w-[80vw] max-w-[300px] flex-none md:w-[300px]"
-              >
-                <ProjectCard
-                  :to="localePath(`/clients/${p.stem.split('/').pop()}`)"
-                  :title="p.title"
-                  :summary="p.summary"
-                  :cover="p.cover"
-                  :role="p.role"
-                  :tags="p.tags"
-                />
-              </div>
-              <div
-                v-for="p in regularClients"
-                :key="`d-${p.path}`"
-                class="marquee__duplicate mr-6 w-[80vw] max-w-[300px] flex-none md:w-[300px]"
-                aria-hidden="true"
-              >
-                <ProjectCard
-                  :to="localePath(`/clients/${p.stem.split('/').pop()}`)"
-                  :title="p.title"
-                  :summary="p.summary"
-                  :cover="p.cover"
-                  :role="p.role"
-                  :tags="p.tags"
-                />
-              </div>
-            </div>
+    <!-- Come lavoriamo -->
+    <section class="page-x">
+      <div class="border-t-[1.5px] border-ink py-8">
+        <div class="
+          grid gap-6
+          lg:grid-cols-[302fr_954fr]
+        ">
+          <div>
+            <h2 class="text-label text-green">
+              {{ t('home.how_label') }}
+            </h2>
+            <img
+              src="/brand/didi-testa.svg"
+              alt=""
+              width="218"
+              height="200"
+              class="
+                mt-8 hidden w-[218px]
+                lg:mt-[52px] lg:ml-[42px] lg:block
+              "
+            >
           </div>
+          <ul>
+            <li
+              v-for="(f, i) in facts"
+              :key="f"
+              class="
+                grid gap-3
+                md:grid-cols-[519fr_411fr] md:gap-6
+              "
+              :class="i === 0 ? 'pb-7' : 'border-t border-ink py-7'"
+            >
+              <h3 class="text-title whitespace-pre-line">
+                {{ t(`home.how.${f}.title`) }}
+              </h3>
+              <p class="text-body">
+                {{ t(`home.how.${f}.body`) }}
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Partner -->
+    <section class="page-x">
+      <div class="
+        border-t-[1.5px] border-ink pt-8 pb-24
+        lg:pb-[136px]
+      ">
+        <div class="
+          grid gap-6
+          lg:grid-cols-[302fr_954fr]
+        ">
+          <h2 class="text-label text-green">
+            {{ t('home.partners_label') }}
+          </h2>
+          <ul>
+            <li
+              v-for="(p, i) in partners"
+              :key="p.slug"
+              :class="i === 0 ? 'pb-6' : 'border-t border-ink py-6'"
+            >
+              <NuxtLink
+                :to="localePath(`/clients/${p.slug}`)"
+                class="group flex items-center justify-between gap-6"
+              >
+                <span class="
+                  text-title transition-colors
+                  group-hover:text-green
+                ">
+                  {{ p.name }}
+                </span>
+                <span class="shrink-0 text-right text-label opacity-60">
+                  {{ t(`home.partner_types.${p.type}`) }}
+                </span>
+              </NuxtLink>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
 
     <!-- Team -->
-    <section v-if="team.length">
-      <div class="mx-auto max-w-6xl px-6 pt-20">
-        <header class="mb-10 max-w-2xl space-y-4">
-          <p class="text-xs uppercase tracking-[0.3em] text-ink-soft">
-            {{ t('home.team_kicker') }}
-          </p>
-          <h2 class="font-display text-3xl md:text-4xl">
-            {{ t('home.team_heading') }}
+    <section class="page-x">
+      <div
+        class="
+          flex flex-col gap-16 border-t-[1.5px] border-ink pt-8 pb-24
+          lg:pb-[136px]
+        "
+      >
+        <div class="flex flex-col gap-7">
+          <h2 class="max-w-[628px] text-title">
+            {{ t('home.team_title') }}
           </h2>
-          <p class="text-lg text-ink-soft">{{ t('home.team_intro') }}</p>
-        </header>
-      </div>
+          <p class="max-w-[628px] text-body">
+            {{ t('home.team_intro') }}
+          </p>
+        </div>
 
-      <!-- Desktop / tablet: expandable gallery -->
-      <div class="mx-auto hidden max-w-6xl px-6 pb-20 md:block">
-        <ExpandableGallery :members="team" />
+        <ul class="
+          grid grid-cols-2 gap-x-6 gap-y-10
+          md:grid-cols-3
+          lg:grid-cols-6 lg:gap-y-6
+        ">
+          <li
+            v-for="m in team"
+            :key="m.name"
+            class="flex min-w-0 flex-col gap-3"
+          >
+            <div
+              class="flex aspect-[193.3/250] w-full items-center justify-center"
+              :class="m.bg"
+            >
+              <img
+                :src="m.illustration"
+                :alt="m.name"
+                class="h-auto"
+                :class="m.width"
+              >
+            </div>
+            <p class="text-body">
+              {{ m.name }}
+            </p>
+            <p class="overflow-hidden text-label whitespace-nowrap opacity-60">
+              {{ m.role }}
+            </p>
+          </li>
+        </ul>
       </div>
+    </section>
 
-      <!-- Mobile: animated testimonials -->
-      <div class="pb-20 md:hidden">
-        <ClientOnly>
-          <AnimatedTestimonials
-            :testimonials="teamTestimonials"
-            :autoplay="true"
-            :duration="6000"
-          />
-        </ClientOnly>
+    <!-- Contatto -->
+    <section class="page-x">
+      <div
+        class="
+          flex flex-col gap-12 border-t-[1.5px] border-ink pt-8 pb-24
+          lg:pb-[120px]
+        "
+      >
+        <h2 class="text-display">
+          {{ t('home.contact_title') }}
+        </h2>
+        <div class="flex flex-wrap items-center gap-6">
+          <DidapButton :to="localePath('/contact')">
+            {{ t('home.contact_cta') }}
+          </DidapButton>
+          <a
+            href="mailto:amministrazione@didap.it"
+            class="
+              text-body transition-colors
+              hover:text-green
+            "
+          >
+            amministrazione@didap.it
+          </a>
+        </div>
+        <div class="
+          grid gap-6
+          lg:grid-cols-[302fr_954fr]
+        ">
+          <h3 class="text-label text-green">
+            {{ t('home.qube_label') }}
+          </h3>
+          <div class="flex flex-col gap-7">
+            <p class="max-w-[628px] text-title">
+              {{ t('home.qube_title') }}
+            </p>
+            <p class="text-body">
+              {{ t('home.qube_body') }}
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   </div>

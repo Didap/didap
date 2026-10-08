@@ -3,19 +3,76 @@
     "work": "Products",
     "clients": "Partners",
     "about": "About",
-    "contact": "Contact"
+    "contact": "Contact",
+    "cta": "Let’s work together",
+    "main": "Main navigation",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu"
   },
   "home": {
-    "title": "Free the monkey",
-    "intro": "We design, write and ship bespoke digital products - from foundations to final polish.",
-    "cta_work": "See PROd",
-    "cta_contact": "Let's work together",
-    "work_heading": "PROd by Didap",
-    "clients_heading": "Our partners",
-    "team_kicker": "The people",
-    "team_heading": "The team is the feature.",
-    "team_intro": "Three full-stack engineers, one designer, one project manager.",
-    "see_all": "See all"
+    "seo_description": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
+    "hero_tagline": "Free the\nmonkey.",
+    "hero_sub": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
+    "products_title": "Living products. Open them.",
+    "products_intro": "We design them, write them and keep them in production ourselves. \nThe fastest way to see how we work is to use them.",
+    "featured_category": "Fantasy football",
+    "featured_desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides.",
+    "featured_cta": "Open fantarainbow.com",
+    "featured_more": "Read the case",
+    "featured_alt": "Fanta Rainbow: a football goal on a grass pitch with the Fanta Rainbow logo and the words Gioca ora",
+    "status_live": "Live",
+    "status_pilot": "Pilot",
+    "status_pending": "Status to be confirmed",
+    "placeholder_image": "Image",
+    "open_product": "Open the product",
+    "products": {
+      "bin_or_deal": {
+        "category": "Marketplace",
+        "desc": "Listings aggregator across European marketplaces for collectors, with an automatic “bin vs deal” score."
+      },
+      "cityfix": {
+        "category": "Cities",
+        "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city."
+      },
+      "cruciverba_lab": {
+        "category": "Games",
+        "desc": "The home of Italian crosswords online. Seven new word games every day, in the browser."
+      }
+    },
+    "how_label": "How we work",
+    "how": {
+      "fullstack": {
+        "title": "Full-stack, \nfor real.",
+        "body": "Backend, frontend, infrastructure, mobile, integrations."
+      },
+      "outsourcing": {
+        "title": "No outsourcing \non what matters.",
+        "body": "The code we ship, we write it, test it and keep it running ourselves."
+      },
+      "design": {
+        "title": "Design lives \nin the code.",
+        "body": "Built to go to production, not to look good on slides. Products grow with real use."
+      }
+    },
+    "partners_label": "Partners and clients",
+    "partner_types": {
+      "institutional": "Institutional partner",
+      "saas": "SaaS",
+      "app": "App"
+    },
+    "team_title": "The team is the feature.",
+    "team_intro": "Three full-stack engineers, a designer, a project manager. And Didi.",
+    "roles": {
+      "ceo": "CEO & Founder",
+      "fullstack": "Full-stack developer",
+      "art_director": "art director",
+      "mascot": "Mascot"
+    },
+    "contact_title": "Got an idea to set free?",
+    "contact_cta": "Let’s work together",
+    "qube_label": "Strategic partner · The Qube",
+    "qube_title": "We help you fund it, too.",
+    "qube_body": "With The Qube, a MIMIT-certified incubator, we guide you towards subsidised finance and Italian and European public grants."
   },
   "work": {
     "kicker": "Studio",
@@ -83,7 +140,9 @@
   },
   "footer": {
     "tagline": "Free the monkey.",
+    "site": "Site",
     "legal": "Legal",
+    "contact": "Contact",
     "privacy": "Privacy policy",
     "cookies": "Cookie policy"
   },
@@ -105,5 +164,14 @@
     "visit": "Visit the site",
     "no_items": "Nothing to show yet.",
     "no_results": "No project matches these filters."
+  },
+  "product": {
+    "category": "Category",
+    "status": "Status",
+    "scope": "Role",
+    "stack": "Stack",
+    "open": "Open {host}",
+    "next": "Next product",
+    "placeholder_image": "Image"
   }
 }

@@ -1,7 +1,7 @@
 # Preventivi: design
 
 Data: 2026-10-15
-Stato: in revisione
+Stato: approvata
 
 ## Obiettivo
 

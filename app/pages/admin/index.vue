@@ -319,12 +319,16 @@ async function resolvePending(choice: 'save' | 'discard' | 'cancel') {
 // stessa domanda dei cambi di prodotto
 onBeforeRouteLeave((to) => {
   if (!dirty.value) return true
-  pending.value = () => router.push(to.fullPath)
+  pending.value = async () => {
+    await router.push(to.fullPath)
+  }
   return false
 })
 onBeforeRouteUpdate((to) => {
   if (!dirty.value) return true
-  pending.value = () => router.replace(to.fullPath)
+  pending.value = async () => {
+    await router.replace(to.fullPath)
+  }
   return false
 })
 

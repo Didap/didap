@@ -54,6 +54,8 @@ describe('parseDaysInput e parsePercentInput', () => {
     expect(parseDaysInput('1,5')).toBe(1.5)
     expect(parseDaysInput('3')).toBe(3)
     expect(parseDaysInput('0,5')).toBe(0.5)
+    expect(parseDaysInput('1.000')).toBe(1000)
+    expect(parseDaysInput('1.5')).toBe(1.5)
   })
 
   it.each(['0', '0,3', '-1', '1001', 'x', ''])('rifiuta %s giorni', (input) => {

@@ -31,31 +31,35 @@ const WITH_COMMA = /^(\d{1,3}(\.\d{3})+|\d+),\d{0,2}$/
 const DOT_DECIMAL = /^\d+\.\d{1,2}$/
 const INTEGER = /^(\d{1,3}(\.\d{3})+|\d+)$/
 
-// "1.234,50", "1234,5", "1234.50", "1.234" -> centesimi; null se non valido
-export function parseEuroInput(input: string): number | null {
+// Un solo modo di leggere i numeri scritti a mano, per euro, giorni e
+// percentuali: virgola = decimali (con punti per le migliaia), "123.45"
+// con 1-2 decimali = decimali, interi a gruppi di punti = migliaia
+function normalizeNumber(input: string): number | null {
   const s = clean(input)
   let normalized: string
   if (WITH_COMMA.test(s)) normalized = s.replace(/\./g, '').replace(',', '.')
   else if (DOT_DECIMAL.test(s)) normalized = s
   else if (INTEGER.test(s)) normalized = s.replace(/\./g, '')
   else return null
-  const cents = Math.round(Number(normalized) * 100)
-  return cents <= MAX_CENTS ? cents : null
+  return Number(normalized)
 }
 
-function parseDecimal(input: string) {
-  const s = clean(input).replace(',', '.')
-  return /^\d+(\.\d+)?$/.test(s) ? Number(s) : null
+// "1.234,50", "1234,5", "1234.50", "1.234" -> centesimi; null se non valido
+export function parseEuroInput(input: string): number | null {
+  const n = normalizeNumber(input)
+  if (n === null) return null
+  const cents = Math.round(n * 100)
+  return cents <= MAX_CENTS ? cents : null
 }
 
 // Giorni: più di 0, a multipli di mezza giornata, al massimo 1000
 export function parseDaysInput(input: string): number | null {
-  const n = parseDecimal(input)
+  const n = normalizeNumber(input)
   return n !== null && n > 0 && n <= 1000 && Number.isInteger(n * 2) ? n : null
 }
 
 // Percentuali tra 0 e 100, arrotondate al centesimo
 export function parsePercentInput(input: string): number | null {
-  const n = parseDecimal(input)
+  const n = normalizeNumber(input)
   return n !== null && n <= 100 ? Math.round(n * 100) / 100 : null
 }

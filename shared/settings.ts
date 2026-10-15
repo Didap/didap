@@ -41,8 +41,29 @@ export const DEFAULT_SETTINGS: Settings = {
   defaults: { dayRate: 0, vatRate: 22, validityDays: 30, paymentTerms: '', exclusions: '', notes: '' },
 }
 
-// Niente salvato, o salvato con uno schema vecchio: si riparte dai default
+// Una sezione alla volta, un campo alla volta: il valore salvato resta se
+// lo schema del campo lo accetta, altrimenti si usa il default. Un cambio
+// di schema non cancella i dati di Didap; le chiavi sconosciute cadono.
+function mergeSection<T extends Record<string, unknown>>(
+  shape: Record<string, { safeParse(v: unknown): { success: boolean; data?: unknown } }>,
+  stored: unknown,
+  defaults: T,
+): T {
+  const source = stored && typeof stored === 'object' ? (stored as Record<string, unknown>) : {}
+  const out: Record<string, unknown> = {}
+  for (const key of Object.keys(shape)) {
+    const parsed = shape[key]!.safeParse(source[key])
+    out[key] = parsed.success ? parsed.data : defaults[key]
+  }
+  return out as T
+}
+
+// Niente salvato, o salvato con uno schema vecchio: i campi non validi
+// ripartono dai default, gli altri restano
 export function parseSettings(data: unknown): Settings {
-  const parsed = settingsSchema.safeParse(data)
-  return parsed.success ? parsed.data : DEFAULT_SETTINGS
+  const source = data && typeof data === 'object' ? (data as Record<string, unknown>) : {}
+  return {
+    company: mergeSection(companySchema.shape, source.company, DEFAULT_SETTINGS.company),
+    defaults: mergeSection(settingsSchema.shape.defaults.shape, source.defaults, DEFAULT_SETTINGS.defaults),
+  }
 }

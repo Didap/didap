@@ -83,9 +83,23 @@ describe('schemi', () => {
     expect(quoteContentSchema.safeParse({ ...base(), extra: 1 }).success).toBe(false)
   })
 
-  it('le impostazioni non valide tornano ai default', () => {
-    expect(parseSettings(undefined)).toEqual(DEFAULT_SETTINGS)
+  it('le impostazioni non valide tornano ai default, campo per campo', () => {
+    const parsed = parseSettings(undefined)
+    expect(parsed).toEqual(DEFAULT_SETTINGS)
+    expect(parsed).not.toBe(DEFAULT_SETTINGS)
     expect(parseSettings({ company: 'x' })).toEqual(DEFAULT_SETTINGS)
+  })
+
+  it('le impostazioni tengono i campi validi e scartano quelli sconosciuti', () => {
+    const stored = {
+      company: { ...DEFAULT_SETTINGS.company, name: 'Didap srl', iban: 'IT00', extra: 1 },
+      defaults: { ...DEFAULT_SETTINGS.defaults, dayRate: 45000, vatRate: 500, nuovo: true },
+      altro: 1,
+    }
+    const parsed = parseSettings(stored)
+    expect(parsed.company).toEqual({ ...DEFAULT_SETTINGS.company, name: 'Didap srl', iban: 'IT00' })
+    expect(parsed.defaults).toEqual({ ...DEFAULT_SETTINGS.defaults, dayRate: 45000 })
+    expect(parsed).not.toHaveProperty('altro')
   })
 })
 

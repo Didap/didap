@@ -9,7 +9,7 @@ definePageMeta({ layout: 'admin' })
 defineI18nRoute(false)
 useSeoMeta({ title: 'Clienti - Admin Didap' })
 
-const { data: session } = await useAdminSession()
+await useAdminSession()
 const { notify } = useAdminToast()
 
 const clients = ref<Client[] | null>(null)
@@ -35,9 +35,7 @@ async function load() {
   }
 }
 
-onMounted(() => {
-  watch(() => session.value?.authenticated, (ok) => ok && load(), { immediate: true })
-})
+onAdminReady(load)
 
 function edit(client: Client | null) {
   confirmDelete.value = false

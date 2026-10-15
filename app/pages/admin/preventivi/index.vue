@@ -2,29 +2,19 @@
 import AdminShell from '~/components/admin/AdminShell.vue'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
+import { formatDay } from '~/utils/format'
 import { formatEuro } from '#shared/money'
-import { STATUS_LABELS, type DisplayStatus, type QuoteStatus } from '#shared/quote'
+import { STATUS_LABELS, type DisplayStatus, type QuoteListRow } from '#shared/quote'
 
 // Elenco dei preventivi, dal più recente
 definePageMeta({ layout: 'admin' })
 defineI18nRoute(false)
 useSeoMeta({ title: 'Preventivi - Admin Didap' })
 
-type Row = {
-  id: string
-  number: string | null
-  title: string
-  clientName: string | null
-  total: number
-  status: QuoteStatus
-  displayStatus: DisplayStatus
-  updatedAt: string
-}
-
-const { data: session } = await useAdminSession()
+await useAdminSession()
 const { notify } = useAdminToast()
 
-const rows = ref<Row[] | null>(null)
+const rows = ref<QuoteListRow[] | null>(null)
 const filter = ref<DisplayStatus | 'all'>('all')
 const query = ref('')
 const creating = ref(false)
@@ -40,16 +30,14 @@ const visible = computed(() => {
 
 async function load() {
   try {
-    rows.value = await $fetch<Row[]>('/api/admin/quotes')
+    rows.value = await $fetch<QuoteListRow[]>('/api/admin/quotes')
   }
   catch (err) {
     notify('error', adminErrorText(err))
   }
 }
 
-onMounted(() => {
-  watch(() => session.value?.authenticated, (ok) => ok && load(), { immediate: true })
-})
+onAdminReady(load)
 
 async function create() {
   creating.value = true
@@ -64,8 +52,6 @@ async function create() {
     creating.value = false
   }
 }
-
-const formatDay = (iso: string) => new Date(iso).toLocaleDateString('it-IT')
 </script>
 
 <template>

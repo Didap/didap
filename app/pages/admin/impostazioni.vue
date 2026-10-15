@@ -11,7 +11,7 @@ definePageMeta({ layout: 'admin' })
 defineI18nRoute(false)
 useSeoMeta({ title: 'Impostazioni - Admin Didap' })
 
-const { data: session } = await useAdminSession()
+await useAdminSession()
 const { notify } = useAdminToast()
 
 const form = ref<Settings | null>(null)
@@ -26,9 +26,7 @@ async function load() {
   }
 }
 
-onMounted(() => {
-  watch(() => session.value?.authenticated, (ok) => ok && load(), { immediate: true })
-})
+onAdminReady(load)
 
 async function save() {
   if (!form.value) return

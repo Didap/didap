@@ -7,6 +7,8 @@ import NumberInput from '~/components/admin/NumberInput.vue'
 import QuotePhaseEditor from '~/components/admin/QuotePhaseEditor.vue'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
+import { formatDateTime } from '~/utils/format'
+import { moveInArray } from '~/utils/moveInArray'
 import type { Client } from '#shared/clients'
 import { romeDate } from '#shared/dates'
 import { formatDecimal, formatEuro } from '#shared/money'
@@ -14,38 +16,27 @@ import {
   computeTotals,
   issueProblems,
   newLocalId,
+  SETTABLE_STATUSES,
   stableStringify,
   STATUS_LABELS,
-  type DisplayStatus,
   type DraftInput,
   type QuoteContent,
-  type QuoteStatus,
+  type QuoteDetail,
+  type SettableStatus,
 } from '#shared/quote'
 
 // Editor di un preventivo. La bozza si salva da sola; "Emetti" crea una
 // revisione con numero e PDF, e il link pubblico mostra sempre l'ultima.
-definePageMeta({ layout: 'admin' })
+// key: ogni preventivo ha la sua istanza, senza stato rimasto dal precedente
+definePageMeta({ layout: 'admin', key: (route) => String(route.params.id) })
 defineI18nRoute(false)
-
-type Detail = {
-  id: string
-  number: string | null
-  token: string | null
-  status: QuoteStatus
-  displayStatus: DisplayStatus
-  currentRev: number
-  draft: DraftInput
-  issuedDraft: DraftInput | null
-  revisions: { rev: number; issuedAt: string; total: number }[]
-  updatedAt: string
-}
 
 const route = useRoute()
 const id = computed(() => String(route.params.id))
 const { data: session } = await useAdminSession()
 const { notify } = useAdminToast()
 
-const detail = ref<Detail | null>(null)
+const detail = ref<QuoteDetail | null>(null)
 const form = ref<DraftInput | null>(null)
 const clients = ref<Client[]>([])
 const loadError = ref('')
@@ -62,22 +53,29 @@ const dirty = computed(() => !!form.value && signature.value !== savedSignature.
 const totals = computed(() => (form.value ? computeTotals(form.value.content) : null))
 const problems = computed(() => (form.value ? issueProblems(form.value, romeDate(new Date())) : []))
 // Bozza diversa da com'era all'ultima emissione
-const unissued = computed(() =>
-  !!detail.value?.issuedDraft && stableStringify(detail.value.issuedDraft) !== signature.value,
+const issuedSignature = computed(() =>
+  detail.value?.issuedDraft ? stableStringify(detail.value.issuedDraft) : '',
 )
+const unissued = computed(() => !!issuedSignature.value && issuedSignature.value !== signature.value)
 // Si può riemettere anche a bozza invariata: cambiano i dati di cliente e Didap
 const canIssue = computed(() => !!detail.value && !problems.value.length)
 const publicUrl = computed(() => (detail.value?.token ? `${origin.value}/p/${detail.value.token}` : ''))
+
+// L'elenco clienti non cambia da qui: basta caricarlo la prima volta
+let clientsLoaded = false
 
 async function load() {
   loadError.value = ''
   try {
     const [d, c] = await Promise.all([
-      $fetch<Detail>(`/api/admin/quotes/${id.value}`),
-      $fetch<Client[]>('/api/admin/clients'),
+      $fetch<QuoteDetail>(`/api/admin/quotes/${id.value}`),
+      clientsLoaded ? null : $fetch<Client[]>('/api/admin/clients'),
     ])
     detail.value = d
-    clients.value = c
+    if (c) {
+      clients.value = c
+      clientsLoaded = true
+    }
     form.value = d.draft
     savedSignature.value = stableStringify(d.draft)
   }
@@ -88,17 +86,10 @@ async function load() {
 
 onMounted(() => {
   origin.value = location.origin
-  watch([id, () => session.value?.authenticated], ([newId, ok], prev) => {
-    // Altro preventivo (es. dopo "Duplica"): via la bozza vecchia, che non
-    // deve finire salvata sul nuovo id né restare modificabile
-    if (prev && newId !== prev[0]) {
-      form.value = null
-      detail.value = null
-      savedSignature.value = ''
-    }
+  watch(() => session.value?.authenticated, (ok) => {
     if (!ok) return
     // Rientro dopo una sessione scaduta: load() rimpiazzerebbe la bozza modificata
-    if (prev && newId === prev[0] && dirty.value) {
+    if (dirty.value) {
       save()
       return
     }
@@ -135,8 +126,8 @@ useEventListener('beforeunload', (e: BeforeUnloadEvent) => {
 })
 
 // Navigazione interna: salva prima di uscire e resta qui se il salvataggio fallisce
-onBeforeRouteLeave(async () => (await save()))
-onBeforeRouteUpdate(async () => (await save()))
+onBeforeRouteLeave(() => save())
+onBeforeRouteUpdate(() => save())
 
 // ---- Azioni: partono sempre dalla bozza salvata -----------------------------
 async function run(action: () => Promise<void>) {
@@ -171,7 +162,7 @@ const issue = () => run(async () => {
   notify('ok', `Emesso ${res.number}, rev. ${res.rev}`)
 })
 
-const setStatus = (status: Exclude<QuoteStatus, 'draft'>) => run(async () => {
+const setStatus = (status: SettableStatus) => run(async () => {
   await $fetch(`/api/admin/quotes/${id.value}/status`, { method: 'PUT', body: { status } })
   await load()
   notify('ok', 'Stato aggiornato')
@@ -223,28 +214,12 @@ function addPhase() {
   form.value?.content.phases.push({ id: newLocalId(), title: '', description: '', items: [] })
 }
 
-function movePhase(i: number, delta: -1 | 1) {
-  const phases = form.value?.content.phases
-  const j = i + delta
-  if (!phases || j < 0 || j >= phases.length) return
-  const [moved] = phases.splice(i, 1)
-  phases.splice(j, 0, moved!)
-}
-
-function removePhase(i: number) {
-  form.value?.content.phases.splice(i, 1)
-}
-
 type DiscountKind = QuoteContent['discount']['kind']
 function setDiscountKind(e: Event) {
   if (!form.value) return
   const kind = (e.target as HTMLSelectElement).value as DiscountKind
   form.value.content.discount = kind === 'none' ? { kind } : { kind, value: 0 }
 }
-
-const formatDay = (iso: string) =>
-  new Date(iso).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })
-const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
 </script>
 
 <template>
@@ -382,8 +357,8 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
               :count="form.content.phases.length"
               :day-rate="form.content.dayRate"
               :subtotal="totals?.phases[i] ?? 0"
-              @move="movePhase(i, $event)"
-              @remove="removePhase(i)"
+              @move="moveInArray(form.content.phases, i, $event)"
+              @remove="form.content.phases.splice(i, 1)"
             />
             <button
               type="button"
@@ -618,7 +593,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
             </p>
             <div class="flex flex-wrap gap-2">
               <button
-                v-for="s in STATUS_CHOICES"
+                v-for="s in SETTABLE_STATUSES"
                 :key="s"
                 type="button"
                 class="rounded-full px-3 py-1.5 text-sm"
@@ -655,7 +630,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
                     hover:bg-ink/5
                   "
                 >
-                  <span>rev. {{ r.rev }} · {{ formatDay(r.issuedAt) }}</span>
+                  <span>rev. {{ r.rev }} · {{ formatDateTime(r.issuedAt) }}</span>
                   <span class="font-mono tabular-nums">{{ formatEuro(r.total) }}</span>
                 </a>
               </li>

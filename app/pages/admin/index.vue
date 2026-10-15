@@ -5,6 +5,7 @@ import ProductForm from '~/components/admin/ProductForm.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
+import AdminToast from '~/components/admin/AdminToast.vue'
 import type { ProductLocale, ProductOverride } from '#shared/product'
 import {
   formSignature,
@@ -12,6 +13,7 @@ import {
   toAdminForm,
 } from '~/utils/adminForm'
 import type { AdminForm, AdminSource } from '~/utils/adminForm'
+import { formatDateTime } from '~/utils/format'
 
 // /admin: modifica delle schede prodotto con anteprima live.
 // Le modifiche vanno nel database e si sovrappongono al markdown;
@@ -200,13 +202,7 @@ onMounted(() => {
 })
 
 // ---- Messaggi ------------------------------------------------------------
-const toast = ref<{ kind: 'ok' | 'error'; text: string } | null>(null)
-let toastTimer: ReturnType<typeof setTimeout> | undefined
-function notify(kind: 'ok' | 'error', text: string) {
-  toast.value = { kind, text }
-  clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => (toast.value = null), kind === 'ok' ? 2500 : 6000)
-}
+const { notify } = useAdminToast()
 
 const FIELD_LABELS: Record<string, string> = {
   title: 'Nome',
@@ -411,9 +407,7 @@ const others = computed(() =>
 )
 
 const lastSaved = computed(() =>
-  updatedAt.value
-    ? new Date(updatedAt.value).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })
-    : null,
+  updatedAt.value ? formatDateTime(updatedAt.value) : null,
 )
 const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' } as const
 </script>
@@ -753,7 +747,7 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
             >
               <p class="text-sm">
                 C'è una bozza non salvata del
-                {{ new Date(restorable.at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }) }}.
+                {{ formatDateTime(restorable.at) }}.
               </p>
               <div class="flex gap-2">
                 <button
@@ -937,26 +931,7 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
     </div>
 
     <!-- Avvisi -->
-    <Transition
-      enter-from-class="translate-y-4 opacity-0"
-      leave-to-class="translate-y-4 opacity-0"
-      enter-active-class="transition"
-      leave-active-class="transition"
-    >
-      <div
-        v-if="toast"
-        class="
-          fixed bottom-6 left-1/2 z-50 w-max max-w-[calc(100vw-2rem)]
-          -translate-x-1/2 rounded-full px-5 py-3 text-sm font-medium shadow-lg
-        "
-        :class="toast.kind === 'ok' ? 'bg-ink text-paper-light' : `
-          bg-red text-white
-        `"
-        role="status"
-      >
-        {{ toast.text }}
-      </div>
-    </Transition>
+    <AdminToast />
   </div>
 </template>
 

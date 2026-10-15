@@ -20,3 +20,12 @@ export async function adminLogout() {
   await $fetch('/api/admin/logout', { method: 'POST' })
   await refreshAdminSession()
 }
+
+// Chiama load appena la sessione risulta autenticata (anche dopo un nuovo
+// accesso). Parte solo nel browser, dopo il mount.
+export function onAdminReady(load: () => unknown) {
+  const session = useAdminSessionState()
+  onMounted(() => {
+    watch(() => session.value?.authenticated, (ok) => ok && load(), { immediate: true })
+  })
+}

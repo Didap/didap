@@ -233,3 +233,23 @@ samp {
     outline-offset: 1px;
   }
 }
+
+/* Pulsante tondo con un simbolo (sposta, elimina) nei form di /admin */
+@utility admin-icon-btn {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+
+  &:hover:not(:disabled) {
+    background: var(--color-ink);
+    color: var(--color-paper-light);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+  }
+}

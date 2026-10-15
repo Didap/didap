@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminField from '~/components/admin/AdminField.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
+import { moveInArray } from '~/utils/moveInArray'
 import { formatEuro } from '#shared/money'
 import { itemAmount, newLocalId, type QuoteItem, type QuotePhase } from '#shared/quote'
 
@@ -22,13 +23,6 @@ function addItem(kind: QuoteItem['kind']) {
   items.value.push(kind === 'days'
     ? { id: newLocalId(), kind, description: '', days: 1, rate: props.dayRate }
     : { id: newLocalId(), kind, description: '', amount: 0 })
-}
-
-function moveItem(i: number, delta: -1 | 1) {
-  const j = i + delta
-  if (j < 0 || j >= items.value.length) return
-  const [moved] = items.value.splice(i, 1)
-  items.value.splice(j, 0, moved!)
 }
 
 // Cambio di tipo: passando a corpo l'importo resta quello calcolato
@@ -61,7 +55,7 @@ function askRemove() {
       >
       <button
         type="button"
-        class="icon-btn"
+        class="admin-icon-btn"
         :disabled="index === 0"
         aria-label="Sposta la fase in alto"
         @click="emit('move', -1)"
@@ -70,7 +64,7 @@ function askRemove() {
       </button>
       <button
         type="button"
-        class="icon-btn"
+        class="admin-icon-btn"
         :disabled="index === count - 1"
         aria-label="Sposta la fase in basso"
         @click="emit('move', 1)"
@@ -79,7 +73,7 @@ function askRemove() {
       </button>
       <button
         type="button"
-        class="icon-btn"
+        class="admin-icon-btn"
         aria-label="Elimina la fase"
         @click="askRemove"
       >
@@ -184,25 +178,25 @@ function askRemove() {
           <div class="flex flex-col gap-1">
             <button
               type="button"
-              class="icon-btn"
+              class="admin-icon-btn"
               :disabled="i === 0"
               aria-label="Sposta la voce in alto"
-              @click="moveItem(i, -1)"
+              @click="moveInArray(items, i, -1)"
             >
               ↑
             </button>
             <button
               type="button"
-              class="icon-btn"
+              class="admin-icon-btn"
               :disabled="i === items.length - 1"
               aria-label="Sposta la voce in basso"
-              @click="moveItem(i, 1)"
+              @click="moveInArray(items, i, 1)"
             >
               ↓
             </button>
             <button
               type="button"
-              class="icon-btn"
+              class="admin-icon-btn"
               aria-label="Elimina la voce"
               @click="items.splice(i, 1)"
             >
@@ -240,24 +234,3 @@ function askRemove() {
     </div>
   </section>
 </template>
-
-<style scoped>
-.icon-btn {
-  display: flex;
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-}
-
-.icon-btn:hover:not(:disabled) {
-  background: var(--color-ink);
-  color: var(--color-paper-light);
-}
-
-.icon-btn:disabled {
-  opacity: 0.3;
-}
-</style>

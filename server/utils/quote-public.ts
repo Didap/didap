@@ -14,6 +14,8 @@ import {
 type Sql = postgres.Sql
 type Pdf = { pdf: Buffer; filename: string }
 
+const toPdf = (row: postgres.Row): Pdf => ({ pdf: row.pdf, filename: pdfFilename(row.number, row.rev) })
+
 export async function getPublicQuote(
   sql: Sql,
   token: string,
@@ -42,7 +44,7 @@ export async function getPublicPdf(sql: Sql, token: string): Promise<Pdf | null>
     join quote_revisions r on r.quote_id = q.id and r.rev = q.current_rev
     where q.token = ${token}
   `
-  return row ? { pdf: row.pdf, filename: pdfFilename(row.number, row.rev) } : null
+  return row ? toPdf(row) : null
 }
 
 export async function getRevisionPdf(sql: Sql, id: string, rev: number): Promise<Pdf | null> {
@@ -50,5 +52,5 @@ export async function getRevisionPdf(sql: Sql, id: string, rev: number): Promise
     select pdf, rev, snapshot->>'number' as number
     from quote_revisions where quote_id = ${id} and rev = ${rev}
   `
-  return row ? { pdf: row.pdf, filename: pdfFilename(row.number, row.rev) } : null
+  return row ? toPdf(row) : null
 }

@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { formatDate } from '#shared/dates'
 import { formatDecimal, formatEuro } from '#shared/money'
-import { itemAmount, TOKEN_PATTERN, type PublicSnapshot } from '#shared/quote'
+import {
+  clientAddressLines,
+  discountLabel,
+  extraSections,
+  itemAmount,
+  TOKEN_PATTERN,
+  type PublicSnapshot,
+} from '#shared/quote'
 
 // Preventivo per il cliente: ultima revisione emessa, con PDF da scaricare.
 // Link privato (token casuale), mai indicizzato.
@@ -27,37 +34,17 @@ if (!data.value) {
 const s = computed(() => data.value!.snapshot)
 const pdfUrl = `/p/${safeToken}/pdf`
 
+// Il layout quote imposta già robots noindex
 useSeoMeta({
   title: () => `Preventivo ${s.value.number} - ${s.value.company.name}`,
-  robots: 'noindex, nofollow',
 })
 
-const clientLines = computed(() => {
-  const c = s.value.client
-  return [
-    c.address,
-    c.vatNumber && `P.IVA ${c.vatNumber}`,
-    c.taxCode && `C.F. ${c.taxCode}`,
-    c.sdiPec && `SDI/PEC ${c.sdiPec}`,
-    c.contactName && `Alla c.a. di ${c.contactName}`,
-  ].filter(Boolean) as string[]
-})
+const clientLines = computed(() => clientAddressLines(s.value.client))
 const companyLines = computed(() => {
   const c = s.value.company
   return [c.address, c.vatNumber && `P.IVA ${c.vatNumber}`, c.email, c.phone].filter(Boolean) as string[]
 })
-const discountLabel = computed(() => {
-  const d = s.value.content.discount
-  return d.kind === 'percent' ? `Sconto ${formatDecimal(d.value)}%` : 'Sconto'
-})
-const extras = computed(() =>
-  ([
-    ['Tempi', s.value.content.timeline],
-    ['Condizioni di pagamento', s.value.content.paymentTerms],
-    ['Esclusioni', s.value.content.exclusions],
-    ['Note', s.value.content.notes],
-  ] as const).filter(([, body]) => body.trim()),
-)
+const extras = computed(() => extraSections(s.value.content))
 </script>
 
 <template>
@@ -252,7 +239,7 @@ const extras = computed(() =>
         </div>
         <template v-if="s.totals.discount > 0">
           <div class="flex justify-between">
-            <dt>{{ discountLabel }}</dt>
+            <dt>{{ discountLabel(s.content.discount) }}</dt>
             <dd class="font-mono">
               {{ formatEuro(-s.totals.discount) }}
             </dd>

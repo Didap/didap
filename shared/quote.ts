@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { ClientInput } from './clients'
 import { addDays, ISO_DATE, romeDate } from './dates'
-import { MAX_CENTS } from './money'
+import { formatDecimal, MAX_CENTS } from './money'
 import type { Company, Settings } from './settings'
 import { text } from './text'
 
@@ -10,6 +10,9 @@ import { text } from './text'
 
 export const QUOTE_STATUSES = ['draft', 'sent', 'accepted', 'rejected'] as const
 export type QuoteStatus = (typeof QUOTE_STATUSES)[number]
+// Stati che si impostano a mano dopo l'emissione
+export const SETTABLE_STATUSES = ['sent', 'accepted', 'rejected'] as const
+export type SettableStatus = (typeof SETTABLE_STATUSES)[number]
 // "Scaduto" non si salva: si calcola dalla scadenza
 export type DisplayStatus = QuoteStatus | 'expired'
 
@@ -86,7 +89,7 @@ export const draftInputSchema = z
   .strict()
 
 export const statusInputSchema = z
-  .object({ status: z.enum(['sent', 'accepted', 'rejected']) })
+  .object({ status: z.enum(SETTABLE_STATUSES) })
   .strict()
 
 export type QuoteItem = z.infer<typeof itemSchema>
@@ -115,6 +118,32 @@ export type QuoteSnapshot = {
   company: Company
   content: QuoteContent
   totals: QuoteTotals
+}
+
+// Riga dell'elenco /admin/preventivi
+export type QuoteListRow = {
+  id: string
+  number: string | null
+  title: string
+  clientName: string | null
+  total: number
+  status: QuoteStatus
+  displayStatus: DisplayStatus
+  updatedAt: string
+}
+
+// Dettaglio di un preventivo in /admin
+export type QuoteDetail = {
+  id: string
+  number: string | null
+  token: string | null
+  status: QuoteStatus
+  displayStatus: DisplayStatus
+  currentRev: number
+  draft: DraftInput
+  issuedDraft: DraftInput | null
+  revisions: { rev: number; issuedAt: string; total: number }[]
+  updatedAt: string
 }
 
 export const TOKEN_PATTERN = /^[\w-]{43}$/
@@ -245,4 +274,33 @@ export function toPublicSnapshot(s: QuoteSnapshot): PublicSnapshot {
     content,
     totals: s.totals,
   }
+}
+
+// Righe dell'anagrafica cliente nel documento (pagina pubblica e PDF)
+export function clientAddressLines(
+  c: Pick<ClientInput, 'address' | 'vatNumber' | 'taxCode' | 'sdiPec' | 'contactName'>,
+): string[] {
+  return [
+    c.address,
+    c.vatNumber && `P.IVA ${c.vatNumber}`,
+    c.taxCode && `C.F. ${c.taxCode}`,
+    c.sdiPec && `SDI/PEC ${c.sdiPec}`,
+    c.contactName && `Alla c.a. di ${c.contactName}`,
+  ].filter(Boolean)
+}
+
+export const discountLabel = (d: QuoteContent['discount']) =>
+  d.kind === 'percent' ? `Sconto ${formatDecimal(d.value)}%` : 'Sconto'
+
+// Sezioni finali di testo libero: quelle vuote non compaiono
+export function extraSections(
+  content: Pick<QuoteContent, 'timeline' | 'paymentTerms' | 'exclusions' | 'notes'>,
+): [string, string][] {
+  const sections: [string, string][] = [
+    ['Tempi', content.timeline],
+    ['Condizioni di pagamento', content.paymentTerms],
+    ['Esclusioni', content.exclusions],
+    ['Note', content.notes],
+  ]
+  return sections.filter(([, body]) => body.trim())
 }

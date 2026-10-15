@@ -2,8 +2,9 @@ import { randomBytes } from 'node:crypto'
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import { romeDate, romeYear } from '#shared/dates'
-import { buildSnapshot, draftInputSchema, issueProblems, quoteNumber, type QuoteSnapshot } from '#shared/quote'
+import { buildSnapshot, issueProblems, quoteNumber, type QuoteSnapshot } from '#shared/quote'
 import { rowToClientInput } from './clients'
+import { rowToDraft } from './quotes'
 import { readSettings } from './settings'
 
 // Emissione di una revisione in una sola transazione: numero (solo la
@@ -20,7 +21,7 @@ export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Dat
     const [q] = await tx`select * from quotes where id = ${id} for update`
     if (!q) throw createError({ statusCode: 404, statusMessage: 'Preventivo non trovato' })
 
-    const draft = draftInputSchema.parse({ title: q.title, clientId: q.client_id, content: q.draft })
+    const draft = rowToDraft(q)
     const problems = issueProblems(draft, romeDate(opts.now))
     if (problems.length) {
       throw createError({ statusCode: 422, statusMessage: 'Preventivo incompleto', data: { problems } })

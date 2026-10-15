@@ -1,6 +1,7 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import type { Client, ClientInput } from '#shared/clients'
+import { pgCode } from './pg'
 
 // Anagrafica clienti dei preventivi
 
@@ -62,18 +63,16 @@ export async function updateClient(sql: Sql, id: string, input: ClientInput): Pr
   return rowToClient(row)
 }
 
-// Un cliente con preventivi non si elimina: i preventivi lo citano
+// Un cliente con preventivi non si elimina: lo ferma la chiave esterna
 export async function deleteClient(sql: Sql, id: string): Promise<void> {
-  const [used] = await sql`select 1 from quotes where client_id = ${id} limit 1`
-  const inUse = () => createError({ statusCode: 409, statusMessage: 'Il cliente ha dei preventivi: non si può eliminare' })
-  if (used) throw inUse()
   let row
   try {
     [row] = await sql`delete from clients where id = ${id} returning id`
   }
   catch (err) {
-    // Un preventivo è nato dopo il controllo: lo ferma la chiave esterna
-    if ((err as { code?: string }).code === '23503') throw inUse()
+    if (pgCode(err) === '23503') {
+      throw createError({ statusCode: 409, statusMessage: 'Il cliente ha dei preventivi: non si può eliminare' })
+    }
     throw err
   }
   if (!row) throw notFound()

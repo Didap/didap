@@ -46,6 +46,13 @@ export default defineNuxtConfig({
         'Referrer-Policy': 'no-referrer',
       },
     },
+    // Dati dei preventivi: mai in cache né indicizzati
+    '/api/quotes/**': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'private, no-store' },
+    },
+    '/api/admin/**': {
+      headers: { 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' },
+    },
   },
 
   app: {

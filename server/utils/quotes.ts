@@ -10,42 +10,20 @@ import {
   newDraftContent,
   quoteContentSchema,
   quoteNumber,
-  type DisplayStatus,
   type DraftInput,
+  type QuoteDetail,
+  type QuoteListRow,
   type QuoteSnapshot,
-  type QuoteStatus,
+  type SettableStatus,
 } from '#shared/quote'
 import { rowToClientInput } from './clients'
+import { pgCode } from './pg'
 import { readSettings } from './settings'
 
 // Preventivi in /admin: bozza, elenco, duplicazione, stato, anteprima.
 // L'emissione è in quote-issue.ts, le letture pubbliche in quote-public.ts.
 
 type Sql = postgres.Sql
-
-export type QuoteListRow = {
-  id: string
-  number: string | null
-  title: string
-  clientName: string | null
-  total: number
-  status: QuoteStatus
-  displayStatus: DisplayStatus
-  updatedAt: string
-}
-
-export type QuoteDetail = {
-  id: string
-  number: string | null
-  token: string | null
-  status: QuoteStatus
-  displayStatus: DisplayStatus
-  currentRev: number
-  draft: DraftInput
-  issuedDraft: DraftInput | null
-  revisions: { rev: number; issuedAt: string; total: number }[]
-  updatedAt: string
-}
 
 const notFound = () => createError({ statusCode: 404, statusMessage: 'Preventivo non trovato' })
 const iso = (d: Date | string) => new Date(d).toISOString()
@@ -99,16 +77,23 @@ export async function saveDraft(sql: Sql, id: string, input: DraftInput): Promis
   }
   catch (err) {
     // 23503: il cliente scelto non esiste (più)
-    if ((err as { code?: string }).code === '23503') {
+    if (pgCode(err) === '23503') {
       throw createError({ statusCode: 422, statusMessage: 'Cliente non trovato' })
     }
     throw err
   }
 }
 
+// Totale di una bozza non ancora emessa (0 se il contenuto non è valido)
+function draftTotal(draft: unknown): number {
+  const content = quoteContentSchema.safeParse(draft)
+  return content.success ? computeTotals(content.data).total : 0
+}
+
 export async function listQuotes(sql: Sql, today: string): Promise<QuoteListRow[]> {
   const rows = await sql`
-    select q.id, q.title, q.status, q.year, q.seq, q.draft, q.updated_at,
+    select q.id, q.title, q.status, q.year, q.seq, q.updated_at,
+      case when q.current_rev = 0 then q.draft end as draft,
       c.name as client_name,
       r.snapshot->'totals'->>'total' as issued_total,
       r.snapshot->'content'->>'validUntil' as valid_until
@@ -118,15 +103,12 @@ export async function listQuotes(sql: Sql, today: string): Promise<QuoteListRow[
     order by q.updated_at desc
   `
   return rows.map((r) => {
-    // Emesso: il totale dell'ultima revisione; bozza: quello della bozza
-    const content = quoteContentSchema.safeParse(r.draft)
-    const draftTotal = content.success ? computeTotals(content.data).total : 0
     return {
       id: r.id,
       number: numberOf(r),
       title: r.title,
       clientName: r.client_name,
-      total: r.issued_total != null ? Number(r.issued_total) : draftTotal,
+      total: r.issued_total != null ? Number(r.issued_total) : draftTotal(r.draft),
       status: r.status,
       displayStatus: effectiveStatus(r.status, r.valid_until ?? '', today),
       updatedAt: iso(r.updated_at),
@@ -145,7 +127,7 @@ export async function deleteQuote(sql: Sql, id: string): Promise<void> {
   if (!row) await conflictOrNotFound(sql, id, 'Un preventivo emesso non si può eliminare')
 }
 
-export async function setQuoteStatus(sql: Sql, id: string, status: Exclude<QuoteStatus, 'draft'>): Promise<void> {
+export async function setQuoteStatus(sql: Sql, id: string, status: SettableStatus): Promise<void> {
   const [row] = await sql`
     update quotes set status = ${status}, updated_at = now()
     where id = ${id} and current_rev > 0

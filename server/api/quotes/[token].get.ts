@@ -5,6 +5,5 @@ import { romeDate } from '#shared/dates'
 export default defineEventHandler(async (event) => {
   const found = await getPublicQuote(await useDb(), getRouterParam(event, 'token') ?? '', romeDate(new Date()))
   if (!found) throw createError({ statusCode: 404, statusMessage: 'Non trovato' })
-  setResponseHeaders(event, { 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' })
   return found
 })

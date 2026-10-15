@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { text } from './text'
 
 // Campi della scheda prodotto modificabili da /admin.
 // Le modifiche salvate nel database si sovrappongono al frontmatter
@@ -7,8 +8,6 @@ import { z } from 'zod'
 
 export const PRODUCT_COLORS = ['ink', 'red', 'green', 'banana'] as const
 export const PRODUCT_STATUSES = ['live', 'pilot', 'pending'] as const
-
-const text = (max: number) => z.string().trim().max(max)
 
 // Link esterni solo http(s); immagini solo percorsi del sito o https
 const httpUrl = z

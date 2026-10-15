@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { emptyClient } from '#shared/clients'
 import {
   buildSnapshot,
+  clientAddressLines,
   computeTotals,
   draftInputSchema,
+  discountLabel,
   effectiveStatus,
+  extraSections,
   issueProblems,
   newDraftContent,
   quoteContentSchema,
@@ -188,5 +191,31 @@ describe('toPublicSnapshot', () => {
     })
     expect(toPublicSnapshot(s).content).not.toHaveProperty('dayRate')
     expect(toPublicSnapshot(s).content).toMatchObject({ vatRate: 22 })
+  })
+})
+
+describe('clientAddressLines', () => {
+  it('compone le righe e scarta quelle vuote', () => {
+    expect(clientAddressLines({ address: 'Via Roma 1', vatNumber: '123', taxCode: '', sdiPec: 'abc@pec.it', contactName: 'Mario' }))
+      .toEqual(['Via Roma 1', 'P.IVA 123', 'SDI/PEC abc@pec.it', 'Alla c.a. di Mario'])
+    expect(clientAddressLines({ address: '', vatNumber: '', taxCode: 'RSSMRA', sdiPec: '', contactName: '' }))
+      .toEqual(['C.F. RSSMRA'])
+    expect(clientAddressLines({ address: '', vatNumber: '', taxCode: '', sdiPec: '', contactName: '' })).toEqual([])
+  })
+})
+
+describe('discountLabel', () => {
+  it('mostra la percentuale solo per lo sconto percentuale', () => {
+    expect(discountLabel({ kind: 'percent', value: 12.5 })).toBe('Sconto 12,5%')
+    expect(discountLabel({ kind: 'amount', value: 5000 })).toBe('Sconto')
+    expect(discountLabel({ kind: 'none' })).toBe('Sconto')
+  })
+})
+
+describe('extraSections', () => {
+  it('tiene in ordine le sezioni con testo e scarta quelle vuote o di soli spazi', () => {
+    expect(extraSections({ timeline: '', paymentTerms: '30 giorni', exclusions: '   ', notes: 'Ok' }))
+      .toEqual([['Condizioni di pagamento', '30 giorni'], ['Note', 'Ok']])
+    expect(extraSections({ timeline: '', paymentTerms: '', exclusions: '', notes: '' })).toEqual([])
   })
 })

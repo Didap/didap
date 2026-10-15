@@ -2,7 +2,7 @@ import pdfmake from 'pdfmake'
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces'
 import { formatDate } from '#shared/dates'
 import { formatDecimal, formatEuro } from '#shared/money'
-import { itemAmount, type QuotePhase, type QuoteSnapshot } from '#shared/quote'
+import { clientAddressLines, discountLabel, extraSections, itemAmount, type QuotePhase, type QuoteSnapshot } from '#shared/quote'
 
 // PDF del preventivo, costruito con pdfmake dallo snapshot di una revisione.
 // Font e logo arrivano da fuori (loadPdfAssets in Nitro, file nei test).
@@ -98,7 +98,7 @@ function summaryBlock(s: QuoteSnapshot): Content {
   const d = s.content.discount
   const rows: TableCell[][] = [['Imponibile', money(t.subtotal)]]
   if (t.discount > 0) {
-    rows.push([d.kind === 'percent' ? `Sconto ${formatDecimal(d.value)}%` : 'Sconto', money(-t.discount)])
+    rows.push([discountLabel(d), money(-t.discount)])
     rows.push(['Imponibile scontato', money(t.taxable)])
   }
   rows.push([`IVA ${formatDecimal(s.content.vatRate)}%`, money(t.vat)])
@@ -152,13 +152,7 @@ export function buildQuoteDoc(s: QuoteSnapshot, logoSvg: string): TDocumentDefin
             { text: 'Spett.le', fontSize: 8, color: C.muted },
             { text: c.name, bold: true, fontSize: 11 },
             {
-              text: lines(
-                c.address,
-                c.vatNumber && `P.IVA ${c.vatNumber}`,
-                c.taxCode && `C.F. ${c.taxCode}`,
-                c.sdiPec && `SDI/PEC ${c.sdiPec}`,
-                c.contactName && `Alla c.a. di ${c.contactName}`,
-              ),
+              text: clientAddressLines(c).join('\n'),
               fontSize: 9,
             },
           ],
@@ -176,14 +170,8 @@ export function buildQuoteDoc(s: QuoteSnapshot, logoSvg: string): TDocumentDefin
   content.phases.forEach((phase, i) => body.push(...phaseBlock(phase, s.totals.phases[i] ?? 0, i)))
   body.push(summaryBlock(s))
 
-  const extras: [string, string][] = [
-    ['Tempi', content.timeline],
-    ['Condizioni di pagamento', content.paymentTerms],
-    ['Esclusioni', content.exclusions],
-    ['Note', content.notes],
-  ]
-  for (const [title, text] of extras) {
-    if (text.trim()) body.push({ text: title, style: 'h3' }, { text })
+  for (const [title, text] of extraSections(content)) {
+    body.push({ text: title, style: 'h3' }, { text })
   }
   if (company.iban) {
     body.push({ text: [{ text: 'IBAN ', color: C.muted }, { text: company.iban, font: 'Mono' }], margin: [0, 14, 0, 0] })

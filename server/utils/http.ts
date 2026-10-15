@@ -28,8 +28,6 @@ export function sendPdf(
   setResponseHeaders(event, {
     'Content-Type': 'application/pdf',
     'Content-Disposition': `${disposition}; filename="${file.filename}"`,
-    'Cache-Control': 'private, no-store',
-    'X-Robots-Tag': 'noindex',
   })
   return file.pdf
 }

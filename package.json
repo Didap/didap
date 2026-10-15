@@ -10,7 +10,9 @@
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@nuxt/content": "^3.16.2",
@@ -33,6 +35,7 @@
     "eslint-plugin-better-tailwindcss": "^4.5.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.59.1",
+    "vitest": "^5.0.4",
     "vue-tsc": "^3.2.5"
   },
   "allowScripts": {

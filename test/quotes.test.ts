@@ -184,6 +184,29 @@ describe.skipIf(!TEST_DATABASE_URL)('preventivi su Postgres', () => {
     expect((await getPublicQuote(sql, (await getQuote(sql, id, TODAY)).token!, '2026-11-15'))?.expired).toBe(true)
   })
 
+  it('il link pubblico non espone note interne, contatti e id del cliente', async () => {
+    const { id, client } = await readyQuote('Comune di Prova')
+    await updateClient(sql, client.id, {
+      ...emptyClient(),
+      name: 'Comune di Prova',
+      notes: 'nota interna',
+      email: 'ufficio@comune.it',
+      phone: '0123456',
+    })
+    const { token } = await issueQuote(sql, id, { now: NOW, render })
+    const pub = await getPublicQuote(sql, token, TODAY)
+    expect(pub?.snapshot.client).toEqual({
+      name: 'Comune di Prova',
+      address: '',
+      vatNumber: '',
+      taxCode: '',
+      sdiPec: '',
+      contactName: '',
+    })
+    expect(pub?.snapshot).not.toHaveProperty('clientId')
+    expect(JSON.stringify(pub)).not.toContain('nota interna')
+  })
+
   it('il link pubblico risponde solo a token validi di preventivi emessi', async () => {
     expect(await getPublicQuote(sql, 'non-valido', TODAY)).toBeNull()
     expect(await getPublicQuote(sql, 'a'.repeat(43), TODAY)).toBeNull()

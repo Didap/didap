@@ -214,3 +214,31 @@ export function buildSnapshot(input: {
     totals: computeTotals(content),
   }
 }
+
+// Snapshot per il link pubblico: il cliente vede solo la propria anagrafica
+// essenziale. Note interne, email, telefono e id restano fuori. Le revisioni
+// emesse le contengono ancora (sono immutabili), quindi il taglio va fatto in lettura.
+export type PublicSnapshot = Omit<QuoteSnapshot, 'clientId' | 'client'> & {
+  client: Pick<ClientInput, 'name' | 'address' | 'vatNumber' | 'taxCode' | 'sdiPec' | 'contactName'>
+}
+
+export function toPublicSnapshot(s: QuoteSnapshot): PublicSnapshot {
+  return {
+    number: s.number,
+    rev: s.rev,
+    issuedAt: s.issuedAt,
+    issuedDate: s.issuedDate,
+    title: s.title,
+    client: {
+      name: s.client.name,
+      address: s.client.address,
+      vatNumber: s.client.vatNumber,
+      taxCode: s.client.taxCode,
+      sdiPec: s.client.sdiPec,
+      contactName: s.client.contactName,
+    },
+    company: s.company,
+    content: s.content,
+    totals: s.totals,
+  }
+}

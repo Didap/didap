@@ -1,5 +1,12 @@
 import type postgres from 'postgres'
-import { effectiveStatus, pdfFilename, TOKEN_PATTERN, type QuoteSnapshot } from '#shared/quote'
+import {
+  effectiveStatus,
+  pdfFilename,
+  type QuoteSnapshot,
+  type PublicSnapshot,
+  toPublicSnapshot,
+  TOKEN_PATTERN,
+} from '#shared/quote'
 
 // Letture per il link pubblico /p/:token, sempre sull'ultima revisione
 // emessa. Token malformati o sconosciuti danno null (404 generico).
@@ -11,7 +18,7 @@ export async function getPublicQuote(
   sql: Sql,
   token: string,
   today: string,
-): Promise<{ snapshot: QuoteSnapshot; expired: boolean } | null> {
+): Promise<{ snapshot: PublicSnapshot; expired: boolean } | null> {
   if (!TOKEN_PATTERN.test(token)) return null
   const [row] = await sql`
     select q.status, r.snapshot
@@ -21,7 +28,10 @@ export async function getPublicQuote(
   `
   if (!row) return null
   const snapshot = row.snapshot as QuoteSnapshot
-  return { snapshot, expired: effectiveStatus(row.status, snapshot.content.validUntil, today) === 'expired' }
+  return {
+    snapshot: toPublicSnapshot(snapshot),
+    expired: effectiveStatus(row.status, snapshot.content.validUntil, today) === 'expired',
+  }
 }
 
 export async function getPublicPdf(sql: Sql, token: string): Promise<Pdf | null> {

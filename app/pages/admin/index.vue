@@ -54,6 +54,11 @@ const { data: edits, refresh: refreshEdits } = await useFetch('/api/admin/produc
   }[],
 })
 
+// Dopo l'accesso le modifiche salvate vanno caricate (da sloggati non lo sono)
+watch(() => session.value?.authenticated, (ok) => {
+  if (ok) refreshEdits()
+})
+
 // Nome e stato mostrati nell'elenco: quelli salvati in italiano, se ci sono
 const products = computed(() =>
   (productRows.value ?? []).map((p) => {
@@ -421,10 +426,7 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
     />
 
     <!-- Accesso -->
-    <AdminLogin
-      v-if="!session?.authenticated"
-      @authenticated="refreshEdits()"
-    />
+    <AdminLogin v-if="!session?.authenticated" />
 
     <!-- App -->
     <div

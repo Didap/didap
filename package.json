@@ -22,6 +22,7 @@
     "better-sqlite3": "^13.0.3",
     "motion-v": "^2.2.1",
     "nuxt": "^4.0.0",
+    "pdfmake": "^0.3.11",
     "postgres": "^3.4.9",
     "resend": "^6.12.2",
     "tailwindcss": "^4.2.1",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "@types/node": "^24.11.0",
+    "@types/pdfmake": "^0.3.3",
     "eslint": "^10.3.0",
     "eslint-plugin-better-tailwindcss": "^4.5.0",
     "typescript": "~5.9.3",

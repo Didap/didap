@@ -1,0 +1,176 @@
+<script setup lang="ts">
+import AdminField from '~/components/admin/AdminField.vue'
+import AdminSection from '~/components/admin/AdminSection.vue'
+import AdminShell from '~/components/admin/AdminShell.vue'
+import NumberInput from '~/components/admin/NumberInput.vue'
+import { adminErrorText } from '~/utils/adminErrors'
+import type { Settings } from '#shared/settings'
+
+// Dati di Didap stampati nei preventivi e valori di partenza delle bozze
+definePageMeta({ layout: 'admin' })
+defineI18nRoute(false)
+useSeoMeta({ title: 'Impostazioni - Admin Didap' })
+
+const { data: session } = await useAdminSession()
+const { notify } = useAdminToast()
+
+const form = ref<Settings | null>(null)
+const saving = ref(false)
+
+async function load() {
+  try {
+    form.value = await $fetch<Settings>('/api/admin/settings')
+  }
+  catch (err) {
+    notify('error', adminErrorText(err))
+  }
+}
+
+onMounted(() => {
+  watch(() => session.value?.authenticated, (ok) => ok && load(), { immediate: true })
+})
+
+async function save() {
+  if (!form.value) return
+  saving.value = true
+  try {
+    form.value = await $fetch<Settings>('/api/admin/settings', { method: 'PUT', body: form.value })
+    notify('ok', 'Impostazioni salvate')
+  }
+  catch (err) {
+    notify('error', adminErrorText(err))
+  }
+  finally {
+    saving.value = false
+  }
+}
+
+const COMPANY_FIELDS = [
+  { key: 'name', label: 'Ragione sociale' },
+  { key: 'vatNumber', label: 'Partita IVA' },
+  { key: 'taxCode', label: 'Codice fiscale' },
+  { key: 'email', label: 'Email' },
+  { key: 'phone', label: 'Telefono' },
+  { key: 'iban', label: 'IBAN' },
+] as const
+</script>
+
+<template>
+  <AdminShell>
+    <main class="
+      mx-auto w-full max-w-3xl p-6
+      lg:p-10
+    ">
+      <h1 class="text-3xl font-bold">
+        Impostazioni
+      </h1>
+      <p class="mt-2 opacity-60">
+        Dati di Didap stampati nei preventivi e valori con cui parte ogni nuova bozza.
+        Cambiarli non tocca i preventivi già creati.
+      </p>
+
+      <form
+        v-if="form"
+        class="mt-8 flex flex-col gap-6"
+        @submit.prevent="save"
+      >
+        <AdminSection
+          id="azienda"
+          title="Didap"
+          description="Intestazione e piè di pagina del PDF."
+        >
+          <div class="
+            grid gap-5
+            sm:grid-cols-2
+          ">
+            <AdminField
+              v-for="f in COMPANY_FIELDS"
+              :key="f.key"
+              :label="f.label"
+            >
+              <input
+                v-model="form.company[f.key]"
+                class="admin-input"
+              >
+            </AdminField>
+          </div>
+          <AdminField label="Indirizzo">
+            <textarea
+              v-model="form.company.address"
+              rows="2"
+              class="admin-input"
+            />
+          </AdminField>
+        </AdminSection>
+
+        <AdminSection
+          id="partenza"
+          title="Valori di partenza"
+          description="Copiati in ogni nuova bozza, poi modificabili."
+        >
+          <div class="
+            grid gap-5
+            sm:grid-cols-3
+          ">
+            <AdminField label="Tariffa giornaliera (€)">
+              <NumberInput
+                v-model="form.defaults.dayRate"
+                kind="euro"
+              />
+            </AdminField>
+            <AdminField label="IVA (%)">
+              <NumberInput
+                v-model="form.defaults.vatRate"
+                kind="percent"
+              />
+            </AdminField>
+            <AdminField label="Validità (giorni)">
+              <input
+                v-model.number="form.defaults.validityDays"
+                type="number"
+                min="1"
+                max="365"
+                class="admin-input"
+              >
+            </AdminField>
+          </div>
+          <AdminField label="Condizioni di pagamento">
+            <textarea
+              v-model="form.defaults.paymentTerms"
+              rows="3"
+              class="admin-input"
+            />
+          </AdminField>
+          <AdminField label="Esclusioni">
+            <textarea
+              v-model="form.defaults.exclusions"
+              rows="3"
+              class="admin-input"
+            />
+          </AdminField>
+          <AdminField label="Note">
+            <textarea
+              v-model="form.defaults.notes"
+              rows="3"
+              class="admin-input"
+            />
+          </AdminField>
+        </AdminSection>
+
+        <div>
+          <button
+            type="submit"
+            class="
+              rounded-full bg-green px-6 py-3 font-medium text-paper-light
+              hover:bg-ink
+              disabled:opacity-50
+            "
+            :disabled="saving"
+          >
+            {{ saving ? 'Salvo…' : 'Salva impostazioni' }}
+          </button>
+        </div>
+      </form>
+    </main>
+  </AdminShell>
+</template>

@@ -3,6 +3,8 @@ import { useDebouncedRefHistory, useEventListener, watchDebounced } from '@vueus
 import PreviewPane from '~/components/admin/PreviewPane.vue'
 import ProductForm from '~/components/admin/ProductForm.vue'
 import StatusPill from '~/components/StatusPill.vue'
+import AdminHeader from '~/components/admin/AdminHeader.vue'
+import AdminLogin from '~/components/admin/AdminLogin.vue'
 import type { ProductLocale, ProductOverride } from '#shared/product'
 import {
   formSignature,
@@ -21,36 +23,13 @@ useSeoMeta({ title: 'Admin - Didap' })
 const route = useRoute()
 const router = useRouter()
 
-const { data: session, refresh: refreshSession } = await useFetch('/api/admin/session')
-
-// ---- Login ---------------------------------------------------------------
-const password = ref('')
-const loginError = ref('')
-const loggingIn = ref(false)
-
-async function login() {
-  loggingIn.value = true
-  loginError.value = ''
-  try {
-    await $fetch('/api/admin/login', { method: 'POST', body: { password: password.value } })
-    password.value = ''
-    await refreshSession()
-    await refreshEdits()
-  }
-  catch (err) {
-    loginError.value = (err as { statusMessage?: string }).statusMessage ?? 'Accesso non riuscito'
-  }
-  finally {
-    loggingIn.value = false
-  }
-}
+const { data: session, refresh: refreshSession } = await useAdminSession()
 
 async function logout() {
   await guard(async () => {
-    await $fetch('/api/admin/logout', { method: 'POST' })
+    await adminLogout()
     form.value = null
     await router.replace({ query: {} })
-    await refreshSession()
   })
 }
 
@@ -331,6 +310,19 @@ async function resolvePending(choice: 'save' | 'discard' | 'cancel') {
   await action()
 }
 
+// Link della barra (altre sezioni, logo) con modifiche non salvate:
+// stessa domanda dei cambi di prodotto
+onBeforeRouteLeave((to) => {
+  if (!dirty.value) return true
+  pending.value = () => router.push(to.fullPath)
+  return false
+})
+onBeforeRouteUpdate((to) => {
+  if (!dirty.value) return true
+  pending.value = () => router.replace(to.fullPath)
+  return false
+})
+
 const open = (slug: string | null, lang: ProductLocale = locale.value) =>
   guard(async () => {
     await router.replace({ query: slug ? { p: slug, ...(lang === 'en' ? { lang } : {}) } : {} })
@@ -423,124 +415,16 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
     lg:h-screen
   ">
     <!-- Barra -->
-    <header class="
-      flex h-14 shrink-0 items-center justify-between gap-4 border-b
-      border-ink/10 bg-paper-light px-5
-    ">
-      <button
-        type="button"
-        class="flex items-center gap-3"
-        @click="open(null)"
-      >
-        <img
-          src="/brand/logo-contratto.svg"
-          alt=""
-          width="27"
-          height="30"
-          class="h-7 w-auto"
-        >
-        <span class="text-sm font-bold">Didap<span class="
-          hidden
-          sm:inline
-        "> · Admin prodotti</span></span>
-      </button>
-      <div
-        v-if="session?.authenticated"
-        class="flex items-center gap-4 text-sm"
-      >
-        <a
-          href="/"
-          target="_blank"
-          class="
-            hidden opacity-60
-            hover:opacity-100
-            sm:inline
-          "
-        >Vai al sito ↗</a>
-        <button
-          type="button"
-          class="
-            rounded-full border border-ink/20 px-3 py-1
-            hover:border-ink
-          "
-          @click="logout"
-        >
-          Esci
-        </button>
-      </div>
-    </header>
+    <AdminHeader
+      :authenticated="!!session?.authenticated"
+      @logout="logout"
+    />
 
-    <!-- Stati di sistema -->
-    <main
-      v-if="!session?.configured || (!session?.database && !session?.authenticated)"
-      class="flex flex-1 items-center justify-center p-6"
-    >
-      <div class="max-w-md rounded-2xl border border-ink/10 bg-white p-8">
-        <h1 class="text-2xl font-bold">
-          {{ !session?.configured ? 'Admin non configurato' : 'Database non disponibile' }}
-        </h1>
-        <p class="mt-3 opacity-70">
-          <template v-if="!session?.configured">
-            Imposta la variabile d'ambiente ADMIN_PASSWORD sul server per attivare l'accesso.
-          </template>
-          <template v-else>
-            Imposta DATABASE_URL sul server o controlla che il database sia raggiungibile.
-          </template>
-        </p>
-      </div>
-    </main>
-
-    <!-- Login -->
-    <main
-      v-else-if="!session?.authenticated"
-      class="flex flex-1 items-center justify-center p-6"
-    >
-      <form
-        class="
-          flex w-full max-w-sm flex-col gap-5 rounded-2xl border border-ink/10
-          bg-white p-8
-        "
-        @submit.prevent="login"
-      >
-        <div>
-          <h1 class="text-2xl font-bold">
-            Accedi
-          </h1>
-          <p class="mt-1 text-sm opacity-60">
-            Per modificare le pagine prodotto.
-          </p>
-        </div>
-        <label class="flex flex-col gap-1.5">
-          <span class="text-sm font-medium">Password</span>
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            required
-            autofocus
-            class="admin-input"
-          >
-        </label>
-        <p
-          v-if="loginError"
-          class="text-sm text-red"
-          role="alert"
-        >
-          {{ loginError }}
-        </p>
-        <button
-          type="submit"
-          class="
-            rounded-full bg-green px-6 py-3 font-medium text-paper-light
-            hover:bg-ink
-            disabled:opacity-50
-          "
-          :disabled="loggingIn || !password"
-        >
-          {{ loggingIn ? 'Accesso…' : 'Entra' }}
-        </button>
-      </form>
-    </main>
+    <!-- Accesso -->
+    <AdminLogin
+      v-if="!session?.authenticated"
+      @authenticated="refreshEdits()"
+    />
 
     <!-- App -->
     <div

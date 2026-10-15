@@ -89,6 +89,13 @@ async function load() {
 onMounted(() => {
   origin.value = location.origin
   watch([id, () => session.value?.authenticated], ([newId, ok], prev) => {
+    // Altro preventivo (es. dopo "Duplica"): via la bozza vecchia, che non
+    // deve finire salvata sul nuovo id né restare modificabile
+    if (prev && newId !== prev[0]) {
+      form.value = null
+      detail.value = null
+      savedSignature.value = ''
+    }
     if (!ok) return
     // Rientro dopo una sessione scaduta: load() rimpiazzerebbe la bozza modificata
     if (prev && newId === prev[0] && dirty.value) {
@@ -178,14 +185,22 @@ const duplicate = () => run(async () => {
 
 async function remove() {
   confirmDelete.value = false
+  if (busy.value) return
   busy.value = true
+  // Un salvataggio in corso o in coda non deve arrivare dopo la DELETE
+  await queue
+  const kept = form.value
+  const keptSignature = savedSignature.value
+  // Senza bozza, un salvataggio rimandato non fa nulla
+  form.value = null
   try {
     await $fetch(`/api/admin/quotes/${id.value}`, { method: 'DELETE' })
-    form.value = null
     await navigateTo('/admin/preventivi')
     notify('ok', 'Bozza eliminata')
   }
   catch (err) {
+    form.value = kept
+    savedSignature.value = keptSignature
     notify('error', adminErrorText(err))
   }
   finally {

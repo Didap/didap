@@ -130,6 +130,7 @@ const COMPANY_FIELDS = [
               <input
                 v-model.number="form.defaults.validityDays"
                 type="number"
+                required
                 min="1"
                 max="365"
                 class="admin-input"

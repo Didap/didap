@@ -15,9 +15,13 @@ if (!TOKEN_PATTERN.test(token)) {
   throw createError({ statusCode: 404, statusMessage: 'Preventivo non trovato', fatal: true })
 }
 const safeToken = encodeURIComponent(token)
-const { data } = await useFetch<{ snapshot: PublicSnapshot; expired: boolean }>(`/api/quotes/${safeToken}`)
+const { data, error } = await useFetch<{ snapshot: PublicSnapshot; expired: boolean }>(`/api/quotes/${safeToken}`)
 if (!data.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Preventivo non trovato', fatal: true })
+  // 404 solo se il preventivo non esiste; un guasto del server è un'altra cosa
+  if (!error.value || error.value.statusCode === 404) {
+    throw createError({ statusCode: 404, statusMessage: 'Preventivo non trovato', fatal: true })
+  }
+  throw createError({ statusCode: 503, statusMessage: 'Preventivo non disponibile, riprova tra poco', fatal: true })
 }
 
 const s = computed(() => data.value!.snapshot)

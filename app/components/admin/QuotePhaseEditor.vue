@@ -55,7 +55,7 @@ function askRemove() {
       <input
         v-model="phase.title"
         class="admin-input flex-1 font-bold"
-        :placeholder="`Fase ${index + 1}`"
+        placeholder="Titolo della fase"
         aria-label="Titolo della fase"
         maxlength="200"
       >

@@ -119,6 +119,10 @@ useEventListener('beforeunload', (e: BeforeUnloadEvent) => {
   if (dirty.value) e.preventDefault()
 })
 
+// Navigazione interna: salva prima di uscire e resta qui se il salvataggio fallisce
+onBeforeRouteLeave(async () => (await save()))
+onBeforeRouteUpdate(async () => (await save()))
+
 // ---- Azioni: partono sempre dalla bozza salvata -----------------------------
 async function run(action: () => Promise<void>) {
   if (busy.value) return
@@ -251,7 +255,11 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
           lg:grid-cols-[minmax(0,1fr)_320px]
         "
       >
-        <div class="flex min-w-0 flex-col gap-6">
+        <!-- Durante un'azione la bozza non si modifica: load() la rimpiazzerebbe -->
+        <fieldset
+          :disabled="busy"
+          class="flex min-w-0 flex-col gap-6"
+        >
           <div class="flex flex-wrap items-center gap-3">
             <h1 class="text-3xl font-bold">
               {{ detail.number ?? 'Nuovo preventivo' }}
@@ -452,7 +460,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
               />
             </AdminField>
           </AdminSection>
-        </div>
+        </fieldset>
 
         <aside class="
           flex flex-col gap-4

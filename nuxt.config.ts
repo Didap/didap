@@ -37,6 +37,13 @@ export default defineNuxtConfig({
     },
   },
 
+  // Preventivi per i clienti: link privati, mai in cache condivise né indicizzati
+  routeRules: {
+    '/p/**': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'private, no-store' },
+    },
+  },
+
   app: {
     head: {
       htmlAttrs: { lang: 'it' },

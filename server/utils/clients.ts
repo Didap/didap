@@ -65,9 +65,16 @@ export async function updateClient(sql: Sql, id: string, input: ClientInput): Pr
 // Un cliente con preventivi non si elimina: i preventivi lo citano
 export async function deleteClient(sql: Sql, id: string): Promise<void> {
   const [used] = await sql`select 1 from quotes where client_id = ${id} limit 1`
-  if (used) {
-    throw createError({ statusCode: 409, statusMessage: 'Il cliente ha dei preventivi: non si può eliminare' })
+  const inUse = () => createError({ statusCode: 409, statusMessage: 'Il cliente ha dei preventivi: non si può eliminare' })
+  if (used) throw inUse()
+  let row
+  try {
+    [row] = await sql`delete from clients where id = ${id} returning id`
   }
-  const [row] = await sql`delete from clients where id = ${id} returning id`
+  catch (err) {
+    // Un preventivo è nato dopo il controllo: lo ferma la chiave esterna
+    if ((err as { code?: string }).code === '23503') throw inUse()
+    throw err
+  }
   if (!row) throw notFound()
 }

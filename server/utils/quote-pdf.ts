@@ -15,6 +15,9 @@ export type PdfAssets = {
   mono: { normal: Buffer; bold: Buffer }
 }
 
+// Oltre questo tempo il render fallisce e la transazione torna indietro
+const PDF_TIMEOUT_MS = 20_000
+
 const C = {
   ink: '#161412',
   muted: '#6f6a64',
@@ -218,5 +221,21 @@ export async function renderQuotePdf(s: QuoteSnapshot, assets: PdfAssets): Promi
     Wide: family(wide, wide),
     Mono: family(assets.mono.normal, assets.mono.bold),
   })
-  return pdfmake.createPdf(buildQuoteDoc(s, assets.logoSvg)).getBuffer()
+  const output = pdfmake.createPdf(buildQuoteDoc(s, assets.logoSvg))
+  return new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = []
+    // Senza timer uno stream che non finisce terrebbe aperta la transazione
+    const timer = setTimeout(() => reject(new Error('Timeout nella generazione del PDF')), PDF_TIMEOUT_MS)
+    const done = (settle: () => void) => {
+      clearTimeout(timer)
+      settle()
+    }
+    // Come getBuffer di pdfmake, ma con l'ascolto dell'errore
+    output.getStream().then((stream) => {
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk))
+      stream.on('end', () => done(() => resolve(Buffer.concat(chunks))))
+      stream.on('error', (err: Error) => done(() => reject(err)))
+      stream.end()
+    }, (err: Error) => done(() => reject(err)))
+  })
 }

@@ -15,7 +15,6 @@ import {
   type QuoteSnapshot,
   type QuoteStatus,
 } from '#shared/quote'
-import { parseSettings } from '#shared/settings'
 import { rowToClientInput } from './clients'
 import { readSettings } from './settings'
 
@@ -177,7 +176,7 @@ export async function previewSnapshot(sql: Sql, id: string, now: Date): Promise<
   if (!q) throw notFound()
   const draft = rowToDraft(q)
   const [clientRow] = draft.clientId ? await sql`select * from clients where id = ${draft.clientId}` : []
-  const [settingsRow] = await sql`select data from settings where id = 1`
+  const settings = await readSettings(sql)
   return buildSnapshot({
     number: numberOf(q) ?? 'BOZZA',
     rev: q.current_rev + 1,
@@ -185,7 +184,7 @@ export async function previewSnapshot(sql: Sql, id: string, now: Date): Promise<
     title: draft.title,
     clientId: draft.clientId ?? '',
     client: clientRow ? rowToClientInput(clientRow) : { ...emptyClient(), name: 'Cliente da scegliere' },
-    company: parseSettings(settingsRow?.data).company,
+    company: settings.company,
     content: draft.content,
   })
 }

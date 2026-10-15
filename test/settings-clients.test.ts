@@ -53,3 +53,15 @@ describe.skipIf(!TEST_DATABASE_URL)('impostazioni e clienti su Postgres', () => 
     await expect(deleteClient(sql, missing)).rejects.toMatchObject({ statusCode: 404 })
   })
 })
+
+describe('deleteClient e chiave esterna', () => {
+  it('un preventivo nato dopo il controllo dà 409, non 500', async () => {
+    // Finto client: il controllo non trova nulla, poi la delete viola la chiave
+    let calls = 0
+    const fake = (() => {
+      if (++calls === 1) return Promise.resolve([])
+      return Promise.reject(Object.assign(new Error('violazione'), { code: '23503' }))
+    }) as unknown as postgres.Sql
+    await expect(deleteClient(fake, 'x')).rejects.toMatchObject({ statusCode: 409 })
+  })
+})

@@ -3,8 +3,8 @@ import { createError } from 'h3'
 import type postgres from 'postgres'
 import { romeDate, romeYear } from '#shared/dates'
 import { buildSnapshot, draftInputSchema, issueProblems, quoteNumber, type QuoteSnapshot } from '#shared/quote'
-import { parseSettings } from '#shared/settings'
 import { rowToClientInput } from './clients'
+import { readSettings } from './settings'
 
 // Emissione di una revisione in una sola transazione: numero (solo la
 // prima volta), snapshot e PDF. Se qualcosa fallisce non resta nulla,
@@ -13,6 +13,8 @@ import { rowToClientInput } from './clients'
 export type RenderPdf = (snapshot: QuoteSnapshot) => Promise<Buffer>
 
 export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Date; render: RenderPdf }) {
+  // Fuori dalla transazione: readSettings vuole il client, non tx
+  const settings = await readSettings(sql)
   return sql.begin(async (tx) => {
     // Blocca il preventivo: due emissioni dello stesso vanno in fila
     const [q] = await tx`select * from quotes where id = ${id} for update`
@@ -25,7 +27,6 @@ export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Dat
     }
 
     const [clientRow] = await tx`select * from clients where id = ${draft.clientId}`
-    const [settingsRow] = await tx`select data from settings where id = 1`
 
     let year: number = q.year
     let seq: number = q.seq
@@ -51,7 +52,7 @@ export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Dat
       title: draft.title,
       clientId: draft.clientId!,
       client: rowToClientInput(clientRow!),
-      company: parseSettings(settingsRow?.data).company,
+      company: settings.company,
       content: draft.content,
     })
     let pdf: Buffer

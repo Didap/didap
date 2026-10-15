@@ -33,6 +33,11 @@ describe('renderQuotePdf', () => {
     }), assets)
     expect(pdf.subarray(0, 5).toString()).toBe('%PDF-')
   })
+
+  it('rifiuta invece di restare appeso se il font è rotto', async () => {
+    const broken = { ...assets, sans: { normal: Buffer.from('non un font'), bold: Buffer.from('non un font') } }
+    await expect(renderQuotePdf(sampleSnapshot(), broken)).rejects.toBeInstanceOf(Error)
+  }, 5000)
 })
 
 describe('buildQuoteDoc', () => {

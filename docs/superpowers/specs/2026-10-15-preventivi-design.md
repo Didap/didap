@@ -69,6 +69,8 @@ può eliminare.
   `unique (year, seq)`
 - `token text unique`: null finché non viene emesso
 - `draft jsonb`: contenuto modificabile (vedi sotto)
+- `issued_draft jsonb`: bozza (titolo, cliente, contenuto) com'era
+  all'ultima emissione; serve a mostrare "modifiche non emesse"
 - `current_rev int`: 0 se mai emesso
 - `created_at`, `updated_at`
 
@@ -177,14 +179,14 @@ validato con zod; errori 422 con i dettagli come per i prodotti.
 | POST | `quotes/:id/issue` | Emetti nuova revisione |
 | POST | `quotes/:id/duplicate` | Duplica |
 | PUT | `quotes/:id/status` | Cambia stato |
-| GET | `quotes/:id/revisions/:rev/pdf` | PDF di una revisione |
-| GET | `quotes/:id/preview.pdf` | PDF della bozza al volo, non salvato |
+| GET | `quotes/:id/revisions/:rev` | PDF di una revisione |
+| GET | `quotes/:id/preview` | PDF della bozza al volo, non salvato |
 
 Pubbliche:
 
 | Metodo | Percorso | Funzione |
 |---|---|---|
-| GET | `/api/quotes/:token` | Snapshot dell'ultima revisione |
+| GET | `/api/quotes/:token` | Snapshot dell'ultima revisione e flag `expired` |
 | GET | `/p/:token/pdf` | PDF dell'ultima revisione |
 
 Token sconosciuto: 404 generico. Risposte pubbliche con
@@ -245,9 +247,14 @@ Token sconosciuto: 404 generico. Risposte pubbliche con
 - Obviously per titoli e testo, JetBrains Mono per numeri e importi.
 - I file vanno in `server/assets/fonts/`. Il loader cerca i file
   `obviously-regular`, `obviously-bold`, `obviously-wide-bold` in
-  `.otf`, `.ttf`, `.woff` o `.woff2`; Didap si occupa di fornire i file.
+  `.otf`, `.ttf` o `.woff`; Didap si occupa di fornire i file.
+  `.woff2` non è supportato: la libreria dei font usata da pdfmake
+  (fontkit) fallisce nel sottoinsieme dei glifi (verificato).
 - Se Obviously manca, si usa un font di ripiego incluso nel progetto
-  (Inter, licenza OFL) e il server lo segnala una volta nel log.
+  (Inter in `.woff`, licenza OFL) e il server lo segnala una volta nel
+  log.
+- I font si leggono dagli asset del server (`useStorage('assets:server')`),
+  così finiscono nella build e nell'immagine Docker.
 - JetBrains Mono (OFL) è incluso nel progetto.
 
 ## Errori

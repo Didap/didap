@@ -1,4 +1,5 @@
 import postgres from 'postgres'
+import { DB_SCHEMA } from './schema'
 
 // Postgres condiviso (Coolify, progetto shared-infra), database "didap".
 // DATABASE_URL letta a runtime: senza, il sito funziona coi soli contenuti
@@ -12,27 +13,6 @@ let ready: Promise<Sql> | null = null
 export const databaseUrl = () => process.env.DATABASE_URL ?? ''
 
 export const hasDatabase = () => databaseUrl() !== ''
-
-const SCHEMA = `
-  create table if not exists product_overrides (
-    slug text not null,
-    locale text not null,
-    data jsonb not null default '{}'::jsonb,
-    updated_at timestamptz not null default now(),
-    primary key (slug, locale)
-  );
-  create table if not exists assets (
-    id uuid primary key default gen_random_uuid(),
-    mime text not null,
-    filename text,
-    bytes bytea not null,
-    created_at timestamptz not null default now()
-  );
-  create table if not exists admin_sessions (
-    id text primary key,
-    expires_at timestamptz not null
-  );
-`
 
 // Il database logico può non esistere ancora sull'istanza condivisa:
 // lo crea collegandosi al db di servizio "postgres".
@@ -70,7 +50,7 @@ async function connect(): Promise<Sql> {
     await ensureDatabase(url)
     client = postgres(url, OPTIONS)
   }
-  await client.unsafe(SCHEMA)
+  await client.unsafe(DB_SCHEMA)
   return client
 }
 

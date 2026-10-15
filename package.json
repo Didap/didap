@@ -13,11 +13,11 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@nuxt/content": "^3.7.1",
+    "@nuxt/content": "^3.16.2",
     "@nuxtjs/i18n": "^9.5.5",
     "@tailwindcss/vite": "^4.2.1",
     "@vueuse/core": "^14.3.0",
-    "better-sqlite3": "^12.5.0",
+    "better-sqlite3": "^13.0.3",
     "motion-v": "^2.2.1",
     "nuxt": "^4.0.0",
     "postgres": "^3.4.9",
@@ -34,5 +34,11 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.59.1",
     "vue-tsc": "^3.2.5"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "unrs-resolver": true,
+    "better-sqlite3": false,
+    "@parcel/watcher": false
   }
 }

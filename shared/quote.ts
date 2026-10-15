@@ -154,8 +154,8 @@ export function computeTotals(content: QuoteContent): QuoteTotals {
   return { phases, subtotal, discount, taxable, vat, total: taxable + vat }
 }
 
-// Cosa manca per poter emettere (vuoto = si può)
-export function issueProblems(draft: DraftInput): string[] {
+// Cosa manca per poter emettere (vuoto = si può). today: data di Roma, YYYY-MM-DD
+export function issueProblems(draft: DraftInput, today: string): string[] {
   const problems: string[] = []
   const items = draft.content.phases.flatMap((p) => p.items)
   if (!draft.clientId) problems.push('Scegli il cliente')
@@ -163,6 +163,7 @@ export function issueProblems(draft: DraftInput): string[] {
   if (items.some((i) => !i.description.trim())) problems.push('Ogni voce ha bisogno di una descrizione')
   if (items.some((i) => i.kind === 'days' && i.days <= 0)) problems.push('Le voci a giorni vogliono almeno mezza giornata')
   if (!draft.content.validUntil) problems.push('Imposta la scadenza')
+  else if (draft.content.validUntil < today) problems.push('La scadenza è già passata')
   return problems
 }
 
@@ -218,11 +219,14 @@ export function buildSnapshot(input: {
 // Snapshot per il link pubblico: il cliente vede solo la propria anagrafica
 // essenziale. Note interne, email, telefono e id restano fuori. Le revisioni
 // emesse le contengono ancora (sono immutabili), quindi il taglio va fatto in lettura.
-export type PublicSnapshot = Omit<QuoteSnapshot, 'clientId' | 'client'> & {
+// La tariffa giornaliera di default è interna e non compare nel documento.
+export type PublicSnapshot = Omit<QuoteSnapshot, 'clientId' | 'client' | 'content'> & {
+  content: Omit<QuoteContent, 'dayRate'>
   client: Pick<ClientInput, 'name' | 'address' | 'vatNumber' | 'taxCode' | 'sdiPec' | 'contactName'>
 }
 
 export function toPublicSnapshot(s: QuoteSnapshot): PublicSnapshot {
+  const { dayRate: _dayRate, ...content } = s.content
   return {
     number: s.number,
     rev: s.rev,
@@ -238,7 +242,7 @@ export function toPublicSnapshot(s: QuoteSnapshot): PublicSnapshot {
       contactName: s.client.contactName,
     },
     company: s.company,
-    content: s.content,
+    content,
     totals: s.totals,
   }
 }

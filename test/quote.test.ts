@@ -10,10 +10,12 @@ import {
   quoteContentSchema,
   quoteNumber,
   stableStringify,
+  toPublicSnapshot,
   type QuoteContent,
 } from '#shared/quote'
 import { DEFAULT_SETTINGS, parseSettings } from '#shared/settings'
 
+const TODAY = '2026-10-15'
 const base = (): QuoteContent => newDraftContent(DEFAULT_SETTINGS.defaults, '2026-10-15')
 
 describe('computeTotals', () => {
@@ -90,7 +92,7 @@ describe('schemi', () => {
 describe('emissione', () => {
   it('elenca cosa manca', () => {
     const draft = { title: '', clientId: null, content: { ...base(), validUntil: '' } }
-    expect(issueProblems(draft)).toEqual(['Scegli il cliente', 'Aggiungi almeno una voce', 'Imposta la scadenza'])
+    expect(issueProblems(draft, TODAY)).toEqual(['Scegli il cliente', 'Aggiungi almeno una voce', 'Imposta la scadenza'])
   })
 
   it('segnala voci senza descrizione', () => {
@@ -99,7 +101,7 @@ describe('emissione', () => {
       clientId: '00000000-0000-4000-8000-000000000000',
       content: { ...base(), phases: [{ id: 'p', title: '', description: '', items: [{ id: 'i', kind: 'fixed', description: ' ', amount: 1 }] }] },
     })
-    expect(issueProblems(draft)).toEqual(['Ogni voce ha bisogno di una descrizione'])
+    expect(issueProblems(draft, TODAY)).toEqual(['Ogni voce ha bisogno di una descrizione'])
   })
 
   it('una bozza completa non ha problemi', () => {
@@ -108,7 +110,18 @@ describe('emissione', () => {
       clientId: '00000000-0000-4000-8000-000000000000',
       content: { ...base(), phases: [{ id: 'p', title: '', description: '', items: [{ id: 'i', kind: 'fixed' as const, description: 'Sito', amount: 1 }] }] },
     }
-    expect(issueProblems(draft)).toEqual([])
+    expect(issueProblems(draft, TODAY)).toEqual([])
+  })
+
+  it('una scadenza già passata blocca l\'emissione, quella di oggi no', () => {
+    const draft = {
+      title: 'Sito',
+      clientId: '00000000-0000-4000-8000-000000000000',
+      content: { ...base(), phases: [{ id: 'p', title: '', description: '', items: [{ id: 'i', kind: 'fixed' as const, description: 'Sito', amount: 1 }] }] },
+    }
+    const withDate = (validUntil: string) => ({ ...draft, content: { ...draft.content, validUntil } })
+    expect(issueProblems(withDate('2026-10-14'), TODAY)).toEqual(['La scadenza è già passata'])
+    expect(issueProblems(withDate('2026-10-15'), TODAY)).toEqual([])
   })
 })
 
@@ -149,5 +162,17 @@ describe('buildSnapshot', () => {
     expect(s.totals.phases).toEqual([1000, 500])
     expect(s.issuedDate).toBe('2027-01-01')
     expect(s.issuedAt).toBe('2026-12-31T23:30:00.000Z')
+  })
+})
+
+describe('toPublicSnapshot', () => {
+  it('non espone la tariffa giornaliera di default', () => {
+    const s = buildSnapshot({
+      number: '2026-001', rev: 1, now: new Date('2026-10-15T10:00:00Z'), title: 'Sito',
+      clientId: 'c', client: { ...emptyClient(), name: 'Cliente' }, company: DEFAULT_SETTINGS.company,
+      content: { ...base(), dayRate: 45000 },
+    })
+    expect(toPublicSnapshot(s).content).not.toHaveProperty('dayRate')
+    expect(toPublicSnapshot(s).content).toMatchObject({ vatRate: 22 })
   })
 })

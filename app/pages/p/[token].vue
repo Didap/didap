@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { formatDate } from '#shared/dates'
 import { formatDecimal, formatEuro } from '#shared/money'
-import { itemAmount, type PublicSnapshot } from '#shared/quote'
+import { itemAmount, TOKEN_PATTERN, type PublicSnapshot } from '#shared/quote'
 
 // Preventivo per il cliente: ultima revisione emessa, con PDF da scaricare.
 // Link privato (token casuale), mai indicizzato.
@@ -10,13 +10,18 @@ defineI18nRoute(false)
 
 const route = useRoute()
 const token = String(route.params.token)
-const { data } = await useFetch<{ snapshot: PublicSnapshot; expired: boolean }>(`/api/quotes/${token}`)
+// Token malformato: 404 subito, senza interrogare l'API
+if (!TOKEN_PATTERN.test(token)) {
+  throw createError({ statusCode: 404, statusMessage: 'Preventivo non trovato', fatal: true })
+}
+const safeToken = encodeURIComponent(token)
+const { data } = await useFetch<{ snapshot: PublicSnapshot; expired: boolean }>(`/api/quotes/${safeToken}`)
 if (!data.value) {
   throw createError({ statusCode: 404, statusMessage: 'Preventivo non trovato', fatal: true })
 }
 
 const s = computed(() => data.value!.snapshot)
-const pdfUrl = `/p/${token}/pdf`
+const pdfUrl = `/p/${safeToken}/pdf`
 
 useSeoMeta({
   title: () => `Preventivo ${s.value.number} - ${s.value.company.name}`,

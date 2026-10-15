@@ -89,12 +89,12 @@ async function remove() {
 }
 
 const FIELDS = [
-  { key: 'vatNumber', label: 'Partita IVA' },
-  { key: 'taxCode', label: 'Codice fiscale' },
-  { key: 'sdiPec', label: 'Codice SDI o PEC' },
-  { key: 'contactName', label: 'Referente' },
-  { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Telefono' },
+  { key: 'vatNumber', label: 'Partita IVA', max: 40 },
+  { key: 'taxCode', label: 'Codice fiscale', max: 40 },
+  { key: 'sdiPec', label: 'Codice SDI o PEC', max: 200 },
+  { key: 'contactName', label: 'Referente', max: 200 },
+  { key: 'email', label: 'Email', max: 200 },
+  { key: 'phone', label: 'Telefono', max: 60 },
 ] as const
 </script>
 
@@ -200,6 +200,7 @@ const FIELDS = [
             >
               <input
                 v-model="editing.form[f.key]"
+                :maxlength="f.max"
                 class="admin-input"
               >
             </AdminField>
@@ -208,6 +209,7 @@ const FIELDS = [
             <textarea
               v-model="editing.form.address"
               rows="2"
+              maxlength="500"
               class="admin-input"
             />
           </AdminField>
@@ -218,6 +220,7 @@ const FIELDS = [
             <textarea
               v-model="editing.form.notes"
               rows="3"
+              maxlength="5000"
               class="admin-input"
             />
           </AdminField>

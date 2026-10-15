@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { createError } from 'h3'
 import type postgres from 'postgres'
-import { romeYear } from '#shared/dates'
+import { romeDate, romeYear } from '#shared/dates'
 import { buildSnapshot, draftInputSchema, issueProblems, quoteNumber, type QuoteSnapshot } from '#shared/quote'
 import { parseSettings } from '#shared/settings'
 import { rowToClientInput } from './clients'
@@ -19,7 +19,7 @@ export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Dat
     if (!q) throw createError({ statusCode: 404, statusMessage: 'Preventivo non trovato' })
 
     const draft = draftInputSchema.parse({ title: q.title, clientId: q.client_id, content: q.draft })
-    const problems = issueProblems(draft)
+    const problems = issueProblems(draft, romeDate(opts.now))
     if (problems.length) {
       throw createError({ statusCode: 422, statusMessage: 'Preventivo incompleto', data: { problems } })
     }
@@ -54,7 +54,15 @@ export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Dat
       company: parseSettings(settingsRow?.data).company,
       content: draft.content,
     })
-    const pdf = await opts.render(snapshot)
+    let pdf: Buffer
+    try {
+      pdf = await opts.render(snapshot)
+    }
+    catch (err) {
+      // La transazione torna indietro: nessun numero consumato
+      console.error('[quotes/issue]', err)
+      throw createError({ statusCode: 500, statusMessage: 'Generazione del PDF non riuscita' })
+    }
 
     await tx`
       insert into quote_revisions (quote_id, rev, snapshot, pdf, issued_at)

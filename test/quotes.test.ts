@@ -106,12 +106,26 @@ describe.skipIf(!TEST_DATABASE_URL)('preventivi su Postgres', () => {
     expect((await issueQuote(sql, ok.id, { now: NOW, render })).number).toBe('2026-001')
   })
 
+  it('non emette con la scadenza già passata e non consuma il numero', async () => {
+    const { id, ready } = await readyQuote()
+    await saveDraft(sql, id, { ...ready, content: { ...ready.content, validUntil: '2026-10-14' } })
+    await expect(issueQuote(sql, id, { now: NOW, render })).rejects.toMatchObject({
+      statusCode: 422,
+      data: { problems: ['La scadenza è già passata'] },
+    })
+    await saveDraft(sql, id, ready)
+    expect((await issueQuote(sql, id, { now: NOW, render })).number).toBe('2026-001')
+  })
+
   it('se il PDF fallisce non resta nulla', async () => {
     const { id } = await readyQuote()
     const broken = async (): Promise<Buffer> => {
       throw new Error('pdf rotto')
     }
-    await expect(issueQuote(sql, id, { now: NOW, render: broken })).rejects.toThrow('pdf rotto')
+    await expect(issueQuote(sql, id, { now: NOW, render: broken })).rejects.toMatchObject({
+      statusCode: 500,
+      statusMessage: 'Generazione del PDF non riuscita',
+    })
     expect(await getQuote(sql, id, TODAY)).toMatchObject({ currentRev: 0, number: null, status: 'draft', revisions: [] })
     expect((await issueQuote(sql, id, { now: NOW, render })).number).toBe('2026-001')
   })
@@ -119,6 +133,8 @@ describe.skipIf(!TEST_DATABASE_URL)('preventivi su Postgres', () => {
   it('la numerazione riparte ogni anno, con l\'anno di Roma', async () => {
     const a = await readyQuote('A')
     const b = await readyQuote('B')
+    // B esce a fine anno: la scadenza deve restare nel futuro
+    await saveDraft(sql, b.id, { ...b.ready, content: { ...b.ready.content, validUntil: '2027-02-01' } })
     expect((await issueQuote(sql, a.id, { now: NOW, render })).number).toBe('2026-001')
     expect((await issueQuote(sql, b.id, { now: new Date('2026-12-31T23:30:00Z'), render })).number).toBe('2027-001')
   })

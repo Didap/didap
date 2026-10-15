@@ -46,12 +46,12 @@ async function save() {
 }
 
 const COMPANY_FIELDS = [
-  { key: 'name', label: 'Ragione sociale' },
-  { key: 'vatNumber', label: 'Partita IVA' },
-  { key: 'taxCode', label: 'Codice fiscale' },
-  { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Telefono' },
-  { key: 'iban', label: 'IBAN' },
+  { key: 'name', label: 'Ragione sociale', max: 200 },
+  { key: 'vatNumber', label: 'Partita IVA', max: 40 },
+  { key: 'taxCode', label: 'Codice fiscale', max: 40 },
+  { key: 'email', label: 'Email', max: 200 },
+  { key: 'phone', label: 'Telefono', max: 60 },
+  { key: 'iban', label: 'IBAN', max: 60 },
 ] as const
 </script>
 
@@ -90,6 +90,7 @@ const COMPANY_FIELDS = [
             >
               <input
                 v-model="form.company[f.key]"
+                :maxlength="f.max"
                 class="admin-input"
               >
             </AdminField>
@@ -98,6 +99,7 @@ const COMPANY_FIELDS = [
             <textarea
               v-model="form.company.address"
               rows="2"
+              maxlength="500"
               class="admin-input"
             />
           </AdminField>
@@ -138,6 +140,7 @@ const COMPANY_FIELDS = [
             <textarea
               v-model="form.defaults.paymentTerms"
               rows="3"
+              maxlength="5000"
               class="admin-input"
             />
           </AdminField>
@@ -145,6 +148,7 @@ const COMPANY_FIELDS = [
             <textarea
               v-model="form.defaults.exclusions"
               rows="3"
+              maxlength="5000"
               class="admin-input"
             />
           </AdminField>
@@ -152,6 +156,7 @@ const COMPANY_FIELDS = [
             <textarea
               v-model="form.defaults.notes"
               rows="3"
+              maxlength="5000"
               class="admin-input"
             />
           </AdminField>

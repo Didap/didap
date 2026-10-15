@@ -8,6 +8,7 @@ import QuotePhaseEditor from '~/components/admin/QuotePhaseEditor.vue'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import type { Client } from '#shared/clients'
+import { romeDate } from '#shared/dates'
 import { formatDecimal, formatEuro } from '#shared/money'
 import {
   computeTotals,
@@ -59,14 +60,13 @@ useSeoMeta({ title: () => `${detail.value?.number ?? 'Bozza'} - Preventivi - Adm
 const signature = computed(() => (form.value ? stableStringify(form.value) : ''))
 const dirty = computed(() => !!form.value && signature.value !== savedSignature.value)
 const totals = computed(() => (form.value ? computeTotals(form.value.content) : null))
-const problems = computed(() => (form.value ? issueProblems(form.value) : []))
+const problems = computed(() => (form.value ? issueProblems(form.value, romeDate(new Date())) : []))
 // Bozza diversa da com'era all'ultima emissione
 const unissued = computed(() =>
   !!detail.value?.issuedDraft && stableStringify(detail.value.issuedDraft) !== signature.value,
 )
-const canIssue = computed(() =>
-  !!detail.value && !problems.value.length && (detail.value.currentRev === 0 || unissued.value),
-)
+// Si può riemettere anche a bozza invariata: cambiano i dati di cliente e Didap
+const canIssue = computed(() => !!detail.value && !problems.value.length)
 const publicUrl = computed(() => (detail.value?.token ? `${origin.value}/p/${detail.value.token}` : ''))
 
 async function load() {
@@ -88,7 +88,15 @@ async function load() {
 
 onMounted(() => {
   origin.value = location.origin
-  watch([id, () => session.value?.authenticated], ([, ok]) => ok && load(), { immediate: true })
+  watch([id, () => session.value?.authenticated], ([newId, ok], prev) => {
+    if (!ok) return
+    // Rientro dopo una sessione scaduta: load() rimpiazzerebbe la bozza modificata
+    if (prev && newId === prev[0] && dirty.value) {
+      save()
+      return
+    }
+    load()
+  }, { immediate: true })
 })
 
 // ---- Salvataggio automatico, in coda: mai due PUT insieme ------------------
@@ -435,6 +443,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
               <textarea
                 v-model="form.content.timeline"
                 rows="3"
+                maxlength="5000"
                 class="admin-input"
               />
             </AdminField>
@@ -442,6 +451,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
               <textarea
                 v-model="form.content.paymentTerms"
                 rows="3"
+                maxlength="5000"
                 class="admin-input"
               />
             </AdminField>
@@ -449,6 +459,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
               <textarea
                 v-model="form.content.exclusions"
                 rows="3"
+                maxlength="5000"
                 class="admin-input"
               />
             </AdminField>
@@ -456,6 +467,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
               <textarea
                 v-model="form.content.notes"
                 rows="3"
+                maxlength="5000"
                 class="admin-input"
               />
             </AdminField>
@@ -535,7 +547,7 @@ const STATUS_CHOICES = ['sent', 'accepted', 'rejected'] as const
               v-if="detail.currentRev && !unissued"
               class="text-xs opacity-60"
             >
-              Nessuna modifica dall'ultima emissione.
+              Nessuna modifica alla bozza dall'ultima emissione: emetti di nuovo solo se sono cambiati i dati del cliente o di Didap.
             </p>
             <button
               type="button"

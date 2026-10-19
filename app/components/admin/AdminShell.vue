@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
-import AdminToast from '~/components/admin/AdminToast.vue'
 
-// Guscio delle pagine admin (i prodotti hanno il loro): barra, accesso
-// e messaggi. Il contenuto compare solo da autenticati.
+// Guscio delle pagine admin (i prodotti hanno il loro): barra e accesso.
+// Il contenuto compare solo da autenticati. Gli avvisi stanno nel layout.
 const session = useAdminSessionState()
 const { notify } = useAdminToast()
 
@@ -26,7 +25,5 @@ async function logout() {
     />
     <AdminLogin v-if="!session?.authenticated" />
     <slot v-else />
-
-    <AdminToast />
   </div>
 </template>

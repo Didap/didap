@@ -1,12 +1,22 @@
 <script setup lang="ts">
+import {
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogRoot,
+  AlertDialogTitle,
+  ToggleGroupItem,
+  ToggleGroupRoot,
+} from 'reka-ui'
 import { useDebouncedRefHistory, useEventListener, watchDebounced } from '@vueuse/core'
 import PreviewPane from '~/components/admin/PreviewPane.vue'
 import ProductForm from '~/components/admin/ProductForm.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
-import AdminToast from '~/components/admin/AdminToast.vue'
-import type { ProductLocale, ProductOverride } from '#shared/product'
+import { isProductLocale, type ProductLocale, type ProductOverride } from '#shared/product'
 import {
   formSignature,
   fromAdminForm,
@@ -81,6 +91,10 @@ const selected = computed(() =>
   typeof route.query.p === 'string' ? route.query.p : null,
 )
 const locale = computed<ProductLocale>(() => (route.query.lang === 'en' ? 'en' : 'it'))
+const LOCALES = [
+  { value: 'it', label: 'Italiano' },
+  { value: 'en', label: 'English' },
+] as const satisfies readonly { value: ProductLocale; label: string }[]
 const current = computed(() => products.value.find((p) => p.slug === selected.value))
 
 // ---- Form e stato --------------------------------------------------------
@@ -333,9 +347,18 @@ const open = (slug: string | null, lang: ProductLocale = locale.value) =>
     await router.replace({ query: slug ? { p: slug, ...(lang === 'en' ? { lang } : {}) } : {} })
   })
 
+// Un clic sulla lingua attiva la spegnerebbe (undefined): non cambia niente
+function pickLocale(v: unknown) {
+  if (isProductLocale(v)) open(selected.value, v)
+}
+
 const isTextField = (el: EventTarget | null) =>
   el instanceof HTMLElement
-  && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
+  && (el.isContentEditable || ['INPUT', 'TEXTAREA'].includes(el.tagName))
+
+// Con un menu o un dialogo di Reka UI aperto, Esc e Ctrl+Z sono suoi.
+// data-dismissable-layer è il segno che Reka usa per la sua pila di livelli.
+const layerOpen = () => !!document.querySelector('[data-dismissable-layer]')
 
 useEventListener('keydown', (e: KeyboardEvent) => {
   const mod = e.ctrlKey || e.metaKey
@@ -345,7 +368,7 @@ useEventListener('keydown', (e: KeyboardEvent) => {
     if (dirty.value) save()
   }
   // Nei campi di testo Ctrl+Z resta quello del browser (annulla la digitazione)
-  if (mod && !isTextField(e.target) && form.value) {
+  if (mod && !isTextField(e.target) && !layerOpen() && form.value) {
     if (key === 'z' && !e.shiftKey && history.canUndo.value) {
       e.preventDefault()
       history.undo()
@@ -355,8 +378,9 @@ useEventListener('keydown', (e: KeyboardEvent) => {
       history.redo()
     }
   }
-  if (e.key === 'Escape') {
-    pending.value = null
+  // Esc con un menu o un dialogo aperto chiude solo quello (il dialogo
+  // delle modifiche non salvate gestisce il suo Esc)
+  if (e.key === 'Escape' && !layerOpen()) {
     confirmReset.value = false
     previewOpen.value = false
   }
@@ -569,35 +593,26 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
             <h1 class="mr-auto text-xl font-bold">
               {{ current?.title ?? selected }}
             </h1>
-            <div
-              class="flex rounded-full bg-ink/5 p-1"
-              role="tablist"
+            <ToggleGroupRoot
+              :model-value="locale"
+              type="single"
+              class="toggle-segmented"
               aria-label="Lingua"
+              @update:model-value="pickLocale"
             >
-              <button
-                v-for="l in (['it', 'en'] as const)"
-                :key="l"
-                type="button"
-                role="tab"
-                :aria-selected="locale === l"
-                class="
-                  flex items-center gap-1.5 rounded-full px-3 py-1 text-sm
-                  transition
-                "
-                :class="locale === l ? 'bg-white font-medium shadow-sm' : `
-                  opacity-60
-                  hover:opacity-100
-                `"
-                @click="locale !== l && open(selected, l)"
+              <ToggleGroupItem
+                v-for="o in LOCALES"
+                :key="o.value"
+                :value="o.value"
               >
-                {{ l === 'it' ? 'Italiano' : 'English' }}
+                {{ o.label }}
                 <span
-                  v-if="selected && editedLocales(selected).has(l)"
+                  v-if="selected && editedLocales(selected).has(o.value)"
                   class="size-1.5 rounded-full bg-banana"
                   aria-label="modificato"
                 />
-              </button>
-            </div>
+              </ToggleGroupItem>
+            </ToggleGroupRoot>
             <button
               type="button"
               class="
@@ -876,62 +891,59 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
       </aside>
     </div>
 
-    <!-- Modifiche non salvate -->
-    <div
-      v-if="pending"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="unsaved-title"
+    <!-- Modifiche non salvate: Esc e "Resta qui" valgono come annulla -->
+    <AlertDialogRoot
+      :open="!!pending"
+      @update:open="(o) => !o && resolvePending('cancel')"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white p-6">
-        <h2
-          id="unsaved-title"
-          class="text-xl font-bold"
+      <AlertDialogPortal>
+        <AlertDialogOverlay class="fixed inset-0 z-50 bg-ink/40" />
+        <AlertDialogContent
+          class="
+            fixed top-1/2 left-1/2 z-50 w-[calc(100%-3rem)] max-w-md
+            -translate-1/2 rounded-2xl bg-white p-6
+          "
         >
-          Modifiche non salvate
-        </h2>
-        <p class="mt-2 opacity-70">
-          Vuoi salvarle prima di continuare?
-        </p>
-        <div class="mt-6 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            class="
-              rounded-full px-4 py-2 text-sm
-              hover:bg-ink/5
-            "
-            @click="resolvePending('cancel')"
-          >
-            Resta qui
-          </button>
-          <button
-            type="button"
-            class="
-              rounded-full border border-ink/20 px-4 py-2 text-sm
-              hover:border-ink
-            "
-            @click="resolvePending('discard')"
-          >
-            Scarta
-          </button>
-          <button
-            type="button"
-            class="
-              rounded-full bg-green px-4 py-2 text-sm font-medium
-              text-paper-light
-              hover:bg-ink
-            "
-            @click="resolvePending('save')"
-          >
-            Salva e continua
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Avvisi -->
-    <AdminToast />
+          <AlertDialogTitle class="text-xl font-bold">
+            Modifiche non salvate
+          </AlertDialogTitle>
+          <AlertDialogDescription class="mt-2 opacity-70">
+            Vuoi salvarle prima di continuare?
+          </AlertDialogDescription>
+          <div class="mt-6 flex flex-wrap justify-end gap-2">
+            <AlertDialogCancel
+              class="
+                rounded-full px-4 py-2 text-sm
+                hover:bg-ink/5
+              "
+            >
+              Resta qui
+            </AlertDialogCancel>
+            <button
+              type="button"
+              class="
+                rounded-full border border-ink/20 px-4 py-2 text-sm
+                hover:border-ink
+              "
+              @click="resolvePending('discard')"
+            >
+              Scarta
+            </button>
+            <button
+              type="button"
+              class="
+                rounded-full bg-green px-4 py-2 text-sm font-medium
+                text-paper-light
+                hover:bg-ink
+              "
+              @click="resolvePending('save')"
+            >
+              Salva e continua
+            </button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialogPortal>
+    </AlertDialogRoot>
   </div>
 </template>
 

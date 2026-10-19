@@ -1,4 +1,18 @@
 <script setup lang="ts">
+import {
+  CheckboxIndicator,
+  CheckboxRoot,
+  RadioGroupItem,
+  RadioGroupRoot,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+} from 'reka-ui'
 import { Motion, AnimatePresence } from 'motion-v'
 import InteractiveHoverButton from '~/components/InteractiveHoverButton.vue'
 
@@ -24,13 +38,28 @@ const form = reactive({
 const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const errorDetail = ref<string | null>(null)
 
+// Reka non accetta '' come valore: "nessun tipo" ha il suo, che nel
+// form torna ''
+const NO_TYPE = 'none'
 const projectTypeOptions = computed(() => [
+  { value: NO_TYPE, label: t('contact.form.project_type_default') },
   { value: 'product', label: t('contact.form.option_product') },
   { value: 'saas', label: t('contact.form.option_saas') },
   { value: 'app', label: t('contact.form.option_app') },
   { value: 'site', label: t('contact.form.option_site') },
   { value: 'other', label: t('contact.form.option_other') },
 ])
+const projectTypeValue = computed(() => form.projectType || NO_TYPE)
+const projectTypeLabel = computed(() => projectTypeOptions.value.find((o) => o.value === projectTypeValue.value)?.label)
+
+function pickProjectType(v: unknown) {
+  if (typeof v === 'string') form.projectType = v === NO_TYPE ? '' : v
+}
+
+const FUNDING_OPTIONS = [
+  { value: 'have_budget', text: 'contact.form.funding_have', tone: 'bg-ink' },
+  { value: 'need_help', text: 'contact.form.funding_need', tone: 'bg-finance' },
+] as const
 
 const showQube = computed(() => form.fundingHelp === 'need_help')
 
@@ -166,19 +195,42 @@ async function onSubmit() {
         >
           {{ t('contact.form.project_type') }}
         </span>
-        <select
-          v-model="form.projectType"
-          class="mt-2 w-full rounded-lg border border-ink/20 bg-paper px-4 py-2.5 text-base focus:border-accent focus:outline-none"
+        <SelectRoot
+          :model-value="projectTypeValue"
+          @update:model-value="pickProjectType"
         >
-          <option value="">{{ t('contact.form.project_type_default') }}</option>
-          <option
-            v-for="o in projectTypeOptions"
-            :key="o.value"
-            :value="o.value"
+          <SelectTrigger
+            class="
+              mt-2 select-trigger w-full rounded-lg border border-ink/20
+              bg-paper px-4 py-2.5 text-base
+              focus:border-accent focus:outline-none
+            "
           >
-            {{ o.label }}
-          </option>
-        </select>
+            <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
+            <SelectValue>{{ projectTypeLabel }}</SelectValue>
+          </SelectTrigger>
+          <SelectPortal>
+            <SelectContent
+              position="popper"
+              :side-offset="4"
+              class="select-content rounded-lg border-ink/20 bg-paper"
+            >
+              <SelectViewport>
+                <SelectItem
+                  v-for="o in projectTypeOptions"
+                  :key="o.value"
+                  :value="o.value"
+                  class="
+                    select-item rounded-md text-base
+                    data-[state=checked]:text-accent
+                  "
+                >
+                  <SelectItemText>{{ o.label }}</SelectItemText>
+                </SelectItem>
+              </SelectViewport>
+            </SelectContent>
+          </SelectPortal>
+        </SelectRoot>
       </label>
 
       <fieldset class="space-y-4">
@@ -187,22 +239,26 @@ async function onSubmit() {
         >
           {{ t('contact.form.funding_legend') }}
         </legend>
-        <div role="radiogroup" class="flex flex-col gap-3">
-          <InteractiveHoverButton
-            :text="t('contact.form.funding_have')"
-            :active="form.fundingHelp === 'have_budget'"
-            tone-class="bg-ink"
-            inverted-text-class="text-paper"
-            @click="form.fundingHelp = 'have_budget'"
-          />
-          <InteractiveHoverButton
-            :text="t('contact.form.funding_need')"
-            :active="form.fundingHelp === 'need_help'"
-            tone-class="bg-finance"
-            inverted-text-class="text-paper"
-            @click="form.fundingHelp = 'need_help'"
-          />
-        </div>
+        <RadioGroupRoot
+          v-model="form.fundingHelp"
+          :aria-label="t('contact.form.funding_legend')"
+          class="flex flex-col gap-3"
+        >
+          <RadioGroupItem
+            v-for="f in FUNDING_OPTIONS"
+            :key="f.value"
+            v-slot="{ checked }"
+            :value="f.value"
+            as-child
+          >
+            <InteractiveHoverButton
+              :text="t(f.text)"
+              :active="checked"
+              :tone-class="f.tone"
+              inverted-text-class="text-paper"
+            />
+          </RadioGroupItem>
+        </RadioGroupRoot>
       </fieldset>
 
       <!-- Mobile / tablet inline Qube card -->
@@ -261,13 +317,28 @@ async function onSubmit() {
         />
       </label>
 
-      <label class="flex items-start gap-3 text-sm text-ink-soft">
-        <input
+      <!-- relative: il messaggio "obbligatorio" del browser compare qui,
+           accanto al checkbox nascosto di Reka -->
+      <label class="relative flex items-start gap-3 text-sm text-ink-soft">
+        <CheckboxRoot
           v-model="form.consent"
-          type="checkbox"
+          name="consent"
           required
-          class="mt-1 size-4 accent-accent"
-        />
+          class="mt-1 flex size-4 shrink-0 items-center justify-center rounded-sm border border-ink/40 bg-paper focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:outline-none data-[state=checked]:border-accent data-[state=checked]:bg-accent"
+        >
+          <CheckboxIndicator class="text-paper">
+            <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M3 8.5l3 3 7-7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </CheckboxIndicator>
+        </CheckboxRoot>
         <span>
           {{ t('contact.form.consent') }}
           <NuxtLink

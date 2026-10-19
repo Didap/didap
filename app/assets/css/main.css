@@ -45,6 +45,24 @@
 
   /* Animazioni - curve "vintage" più morbide del default */
   --ease-vintage: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Entrata e uscita degli avvisi di /admin (Toast di Reka UI) */
+  --animate-toast-in: toast-in 150ms var(--ease-vintage);
+  --animate-toast-out: toast-out 150ms ease-in forwards;
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
+
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
 }
 
 /*
@@ -231,6 +249,142 @@ samp {
   &:focus {
     outline: 2px solid var(--color-green);
     outline-offset: 1px;
+  }
+}
+
+/*
+  Menu a tendina (Select di Reka UI): bottone con la freccia, pannello e
+  voci con la spunta su quella scelta. Il colore viene da currentColor.
+*/
+@utility select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  text-align: left;
+
+  &::after {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    background: currentColor;
+    opacity: 0.6;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+}
+
+@utility select-content {
+  z-index: 50;
+  max-height: var(--reka-select-content-available-height);
+  min-width: var(--reka-select-trigger-width);
+  overflow: hidden;
+  border-width: 1px;
+  padding: 0.25rem;
+  box-shadow: --theme(--shadow-lg);
+}
+
+@utility select-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  outline: none;
+  user-select: none;
+
+  &[data-highlighted] {
+    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+  }
+
+  &[data-state='checked']::before {
+    content: '';
+    position: absolute;
+    left: 0.625rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3 3 7-7' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+}
+
+/* Il menu a tendina nei form di /admin, sopra select-content e select-item */
+@utility admin-select-content {
+  border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+@utility admin-select-item {
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+
+  &[data-state='checked'] {
+    font-weight: 500;
+  }
+}
+
+/*
+  Scelta singola a pulsanti (ToggleGroup di Reka UI) di /admin, sul root.
+  `toggle-segmented`: pulsanti in una pista grigia; `toggle-pills`:
+  pillole separate. La voce attiva ha data-state="on".
+*/
+@utility toggle-segmented {
+  display: flex;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+  padding: 0.25rem;
+
+  & > * {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    opacity: 0.6;
+    transition-property: color, background-color, border-color, opacity, box-shadow;
+    transition-duration: var(--default-transition-duration);
+    transition-timing-function: var(--default-transition-timing-function);
+  }
+
+  & > *:hover,
+  & > [data-state='on'] {
+    opacity: 1;
+  }
+
+  & > [data-state='on'] {
+    background: #fff;
+    font-weight: 500;
+    box-shadow: --theme(--shadow-sm);
+  }
+}
+
+@utility toggle-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  & > * {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+    border-radius: 9999px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    transition-property: color, background-color, border-color, opacity, box-shadow;
+    transition-duration: var(--default-transition-duration);
+    transition-timing-function: var(--default-transition-timing-function);
+  }
+
+  & > *:hover,
+  & > [data-state='on'] {
+    border-color: var(--color-ink);
+  }
+
+  & > [data-state='on'] {
+    background: var(--color-ink);
+    color: var(--color-paper-light);
   }
 }
 

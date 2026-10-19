@@ -1,5 +1,17 @@
 <script setup lang="ts">
 import { useEventListener, watchDebounced } from '@vueuse/core'
+import {
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+  ToggleGroupItem,
+  ToggleGroupRoot,
+} from 'reka-ui'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
@@ -39,6 +51,19 @@ const { notify } = useAdminToast()
 const detail = ref<QuoteDetail | null>(null)
 const form = ref<DraftInput | null>(null)
 const clients = ref<Client[]>([])
+// Reka non accetta null come valore: "nessun cliente" ha il suo, che non
+// può essere un uuid, e nel form torna null
+const NO_CLIENT = 'none'
+const clientOptions = computed(() => [
+  { value: NO_CLIENT, label: 'Scegli un cliente…' },
+  ...clients.value.map((c) => ({ value: c.id, label: c.name })),
+])
+const clientValue = computed(() => form.value?.clientId ?? NO_CLIENT)
+const clientLabel = computed(() => clientOptions.value.find((o) => o.value === clientValue.value)?.label)
+
+function pickClient(v: unknown) {
+  if (form.value && typeof v === 'string') form.value.clientId = v === NO_CLIENT ? null : v
+}
 const loadError = ref('')
 const savedSignature = ref('')
 const saving = ref(false)
@@ -162,6 +187,12 @@ const issue = () => run(async () => {
   notify('ok', `Emesso ${res.number}, rev. ${res.rev}`)
 })
 
+
+// Un clic sullo stato attivo lo spegnerebbe (undefined): non cambia niente
+function pickStatus(v: unknown) {
+  const s = SETTABLE_STATUSES.find((x) => x === v)
+  if (s) setStatus(s)
+}
 const setStatus = (status: SettableStatus) => run(async () => {
   await $fetch(`/api/admin/quotes/${id.value}/status`, { method: 'PUT', body: { status } })
   await load()
@@ -215,9 +246,18 @@ function addPhase() {
 }
 
 type DiscountKind = QuoteContent['discount']['kind']
-function setDiscountKind(e: Event) {
-  if (!form.value) return
-  const kind = (e.target as HTMLSelectElement).value as DiscountKind
+const DISCOUNT_OPTIONS = [
+  { value: 'none', label: 'Nessuno' },
+  { value: 'percent', label: 'Percentuale' },
+  { value: 'amount', label: 'Importo fisso' },
+] as const satisfies readonly { value: DiscountKind; label: string }[]
+const discountLabel = computed(() =>
+  DISCOUNT_OPTIONS.find((o) => o.value === form.value?.content.discount.kind)?.label,
+)
+
+function setDiscountKind(v: unknown) {
+  const kind = DISCOUNT_OPTIONS.find((o) => o.value === v)?.value
+  if (!form.value || !kind || kind === form.value.content.discount.kind) return
   form.value.content.discount = kind === 'none' ? { kind } : { kind, value: 0 }
 }
 </script>
@@ -281,21 +321,34 @@ function setDiscountKind(e: Event) {
               label="Cliente"
               hint="I dati dei clienti si gestiscono in Clienti."
             >
-              <select
-                v-model="form.clientId"
-                class="admin-input"
+              <SelectRoot
+                :model-value="clientValue"
+                :disabled="busy"
+                @update:model-value="pickClient"
               >
-                <option :value="null">
-                  Scegli un cliente…
-                </option>
-                <option
-                  v-for="c in clients"
-                  :key="c.id"
-                  :value="c.id"
-                >
-                  {{ c.name }}
-                </option>
-              </select>
+                <SelectTrigger class="select-trigger admin-input">
+                  <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
+                  <SelectValue>{{ clientLabel }}</SelectValue>
+                </SelectTrigger>
+                <SelectPortal>
+                  <SelectContent
+                    position="popper"
+                    :side-offset="4"
+                    class="select-content admin-select-content"
+                  >
+                    <SelectViewport>
+                      <SelectItem
+                        v-for="o in clientOptions"
+                        :key="o.value"
+                        :value="o.value"
+                        class="select-item admin-select-item"
+                      >
+                        <SelectItemText>{{ o.label }}</SelectItemText>
+                      </SelectItem>
+                    </SelectViewport>
+                  </SelectContent>
+                </SelectPortal>
+              </SelectRoot>
             </AdminField>
             <AdminField
               label="Titolo del progetto"
@@ -357,6 +410,7 @@ function setDiscountKind(e: Event) {
               :count="form.content.phases.length"
               :day-rate="form.content.dayRate"
               :subtotal="totals?.phases[i] ?? 0"
+              :disabled="busy"
               @move="moveInArray(form.content.phases, i, $event)"
               @remove="form.content.phases.splice(i, 1)"
             />
@@ -386,22 +440,36 @@ function setDiscountKind(e: Event) {
                 group
               >
                 <div class="flex gap-2">
-                  <select
-                    :value="form.content.discount.kind"
-                    class="admin-input w-auto"
-                    aria-label="Tipo di sconto"
-                    @change="setDiscountKind"
+                  <SelectRoot
+                    :model-value="form.content.discount.kind"
+                    :disabled="busy"
+                    @update:model-value="setDiscountKind"
                   >
-                    <option value="none">
-                      Nessuno
-                    </option>
-                    <option value="percent">
-                      Percentuale
-                    </option>
-                    <option value="amount">
-                      Importo fisso
-                    </option>
-                  </select>
+                    <SelectTrigger
+                      class="select-trigger admin-input w-auto"
+                      aria-label="Tipo di sconto"
+                    >
+                      <SelectValue>{{ discountLabel }}</SelectValue>
+                    </SelectTrigger>
+                    <SelectPortal>
+                      <SelectContent
+                        position="popper"
+                        :side-offset="4"
+                        class="select-content admin-select-content"
+                      >
+                        <SelectViewport>
+                          <SelectItem
+                            v-for="o in DISCOUNT_OPTIONS"
+                            :key="o.value"
+                            :value="o.value"
+                            class="select-item admin-select-item"
+                          >
+                            <SelectItemText>{{ o.label }}</SelectItemText>
+                          </SelectItem>
+                        </SelectViewport>
+                      </SelectContent>
+                    </SelectPortal>
+                  </SelectRoot>
                   <NumberInput
                     v-if="form.content.discount.kind === 'percent'"
                     v-model="form.content.discount.value"
@@ -588,26 +656,28 @@ function setDiscountKind(e: Event) {
                 "
               >Apri ↗</a>
             </div>
-            <p class="text-sm font-medium">
+            <p
+              id="stato-preventivo"
+              class="text-sm font-medium"
+            >
               Stato
             </p>
-            <div class="flex flex-wrap gap-2">
-              <button
+            <ToggleGroupRoot
+              :model-value="detail.status"
+              type="single"
+              :disabled="busy"
+              class="toggle-pills"
+              aria-labelledby="stato-preventivo"
+              @update:model-value="pickStatus"
+            >
+              <ToggleGroupItem
                 v-for="s in SETTABLE_STATUSES"
                 :key="s"
-                type="button"
-                class="rounded-full px-3 py-1.5 text-sm"
-                :class="detail.status === s ? 'bg-ink text-paper-light' : `
-                  border border-ink/20
-                  hover:border-ink
-                `"
-                :aria-pressed="detail.status === s"
-                :disabled="busy"
-                @click="detail.status !== s && setStatus(s)"
+                :value="s"
               >
                 {{ STATUS_LABELS[s] }}
-              </button>
-            </div>
+              </ToggleGroupItem>
+            </ToggleGroupRoot>
           </div>
 
           <div

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminShell from '~/components/admin/AdminShell.vue'
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
@@ -19,6 +20,12 @@ const filter = ref<DisplayStatus | 'all'>('all')
 const query = ref('')
 const creating = ref(false)
 const FILTERS = ['all', 'draft', 'sent', 'expired', 'accepted', 'rejected'] as const
+
+// Un clic sul filtro attivo lo spegnerebbe (undefined): resta com'è
+function pickFilter(v: unknown) {
+  const f = FILTERS.find((x) => x === v)
+  if (f) filter.value = f
+}
 
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
@@ -79,20 +86,21 @@ async function create() {
       </div>
 
       <div class="mt-6 flex flex-wrap items-center gap-2">
-        <button
-          v-for="f in FILTERS"
-          :key="f"
-          type="button"
-          class="rounded-full px-3 py-1.5 text-sm"
-          :class="filter === f ? 'bg-ink text-paper-light' : `
-            border border-ink/20
-            hover:border-ink
-          `"
-          :aria-pressed="filter === f"
-          @click="filter = f"
+        <ToggleGroupRoot
+          :model-value="filter"
+          type="single"
+          class="toggle-pills"
+          aria-label="Filtra per stato"
+          @update:model-value="pickFilter"
         >
-          {{ f === 'all' ? 'Tutti' : STATUS_LABELS[f] }}
-        </button>
+          <ToggleGroupItem
+            v-for="f in FILTERS"
+            :key="f"
+            :value="f"
+          >
+            {{ f === 'all' ? 'Tutti' : STATUS_LABELS[f] }}
+          </ToggleGroupItem>
+        </ToggleGroupRoot>
         <input
           v-model="query"
           type="search"

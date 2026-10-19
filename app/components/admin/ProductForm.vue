@@ -1,4 +1,16 @@
 <script setup lang="ts">
+import {
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+  ToggleGroupItem,
+  ToggleGroupRoot,
+} from 'reka-ui'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
@@ -11,13 +23,37 @@ import type { MediaSlot as MediaSlotType } from '#shared/product'
 // Form della scheda prodotto: un blocco per ogni sezione della pagina,
 // nello stesso ordine in cui compaiono.
 const form = defineModel<AdminForm>({ required: true })
-defineProps<{
+const props = defineProps<{
   others: { slug: string; title: string }[]
   highlighted?: string | null
 }>()
 const emit = defineEmits<{ focus: [section: string] }>()
 
 const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Stato da confermare' }
+const STATUS_OPTIONS = [
+  { value: '', label: 'Nessuno' },
+  ...PRODUCT_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+] as const
+
+// Un clic sulla voce attiva la spegnerebbe (undefined): resta com'è
+function pickStatus(v: unknown) {
+  const o = STATUS_OPTIONS.find((x) => x.value === v)
+  if (o) form.value.status = o.value
+}
+
+// Select di Reka non accetta '' come valore: "il successivo in ordine" ha
+// il suo, che nel form torna ''. '_' non può essere uno slug ([a-z0-9-])
+const NEXT_AUTO = '_'
+const nextOptions = computed(() => [
+  { value: NEXT_AUTO, label: 'Il successivo in ordine' },
+  ...props.others.map((p) => ({ value: p.slug, label: p.title })),
+])
+const nextValue = computed(() => form.value.next || NEXT_AUTO)
+const nextLabel = computed(() => nextOptions.value.find((o) => o.value === nextValue.value)?.label)
+
+function pickNext(v: unknown) {
+  if (typeof v === 'string') form.value.next = v === NEXT_AUTO ? '' : v
+}
 
 // ---- Voci di "Cosa fa": trascinamento (dalla maniglia) e frecce da tastiera
 const items = computed(() => form.value.features.items)
@@ -150,22 +186,20 @@ const usesMarkdownBody = computed(
           label="Stato"
           group
         >
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="s in ['', ...PRODUCT_STATUSES] as const"
-              :key="s"
-              type="button"
-              class="rounded-full border px-3 py-1.5 text-sm transition"
-              :class="form.status === s ? 'border-ink bg-ink text-paper-light' : `
-                border-ink/20
-                hover:border-ink
-              `"
-              :aria-pressed="form.status === s"
-              @click="form.status = s"
+          <ToggleGroupRoot
+            :model-value="form.status"
+            type="single"
+            class="toggle-pills"
+            @update:model-value="pickStatus"
+          >
+            <ToggleGroupItem
+              v-for="o in STATUS_OPTIONS"
+              :key="o.value"
+              :value="o.value"
             >
-              {{ s ? STATUS_LABELS[s] : 'Nessuno' }}
-            </button>
-          </div>
+              {{ o.label }}
+            </ToggleGroupItem>
+          </ToggleGroupRoot>
         </AdminField>
         <AdminField label="Ruolo">
           <input
@@ -536,21 +570,33 @@ const usesMarkdownBody = computed(
         />
       </AdminField>
       <AdminField label="Prossimo prodotto">
-        <select
-          v-model="form.next"
-          class="admin-input"
+        <SelectRoot
+          :model-value="nextValue"
+          @update:model-value="pickNext"
         >
-          <option value="">
-            Il successivo in ordine
-          </option>
-          <option
-            v-for="p in others"
-            :key="p.slug"
-            :value="p.slug"
-          >
-            {{ p.title }}
-          </option>
-        </select>
+          <SelectTrigger class="select-trigger admin-input">
+            <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
+            <SelectValue>{{ nextLabel }}</SelectValue>
+          </SelectTrigger>
+          <SelectPortal>
+            <SelectContent
+              position="popper"
+              :side-offset="4"
+              class="select-content admin-select-content"
+            >
+              <SelectViewport>
+                <SelectItem
+                  v-for="o in nextOptions"
+                  :key="o.value"
+                  :value="o.value"
+                  class="select-item admin-select-item"
+                >
+                  <SelectItemText>{{ o.label }}</SelectItemText>
+                </SelectItem>
+              </SelectViewport>
+            </SelectContent>
+          </SelectPortal>
+        </SelectRoot>
       </AdminField>
     </AdminSection>
   </div>

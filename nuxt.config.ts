@@ -19,9 +19,6 @@ export default defineNuxtConfig({
       { code: 'it', language: 'it-IT', name: 'Italiano', file: 'it.json' },
       { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
     ],
-    bundle: {
-      optimizeTranslationDirective: false,
-    },
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'didap_lang',

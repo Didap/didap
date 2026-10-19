@@ -1,14 +1,15 @@
-// Messaggio breve in basso nelle pagine admin (lo mostra AdminShell)
+// Messaggio breve in basso nelle pagine admin: notify() lo mostra,
+// AdminToast (nel layout) lo chiude dopo qualche secondo. Uno nuovo
+// sostituisce quello in corso.
 
-type Toast = { kind: 'ok' | 'error'; text: string }
-let timer: ReturnType<typeof setTimeout> | undefined
+type Toast = { id: number; kind: 'ok' | 'error'; text: string; open: boolean }
+
+let nextId = 0
 
 export function useAdminToast() {
   const toast = useState<Toast | null>('admin-toast', () => null)
   function notify(kind: Toast['kind'], text: string) {
-    toast.value = { kind, text }
-    clearTimeout(timer)
-    timer = setTimeout(() => (toast.value = null), kind === 'ok' ? 2500 : 6000)
+    toast.value = { id: ++nextId, kind, text, open: true }
   }
   return { toast, notify }
 }

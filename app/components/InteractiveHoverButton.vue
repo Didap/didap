@@ -18,7 +18,6 @@ withDefaults(
 <template>
   <button
     type="button"
-    :aria-pressed="active"
     :class="[
       'group relative w-full cursor-pointer overflow-hidden rounded-full border-2 bg-paper p-3 px-6 text-left text-sm font-semibold uppercase tracking-widest transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40',
       active ? 'border-ink' : 'border-ink/20 hover:border-ink',

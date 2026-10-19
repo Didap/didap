@@ -244,8 +244,8 @@ export function adminNotificationHtml(d: ContactData) {
       'Tipo',
       escapeHtml(PROJECT_TYPE_LABELS[d.projectType] ?? d.projectType),
     ])
-  if (d.fundingHelp && FUNDING_LABELS[d.fundingHelp])
-    rows.push(['Finanza', escapeHtml(FUNDING_LABELS[d.fundingHelp])])
+  const funding = d.fundingHelp ? FUNDING_LABELS[d.fundingHelp] : undefined
+  if (funding) rows.push(['Finanza', escapeHtml(funding)])
 
   const rowsHtml = rows
     .map(

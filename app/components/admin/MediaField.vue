@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RadioGroupItem, RadioGroupRoot } from 'reka-ui'
 import ImageDrop from '~/components/admin/ImageDrop.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
 import { PRODUCT_COLORS } from '#shared/product'
@@ -27,7 +28,10 @@ const src = computed({
   get: () => model.value.src ?? '',
   set: (v: string) => (model.value = { ...model.value, src: v || undefined }),
 })
-const color = computed(() => model.value.color ?? 'ink')
+const color = computed({
+  get: () => model.value.color ?? 'ink',
+  set: (v: (typeof PRODUCT_COLORS)[number]) => (model.value = { ...model.value, color: v }),
+})
 const label = computed({
   get: () => model.value.label !== false,
   set: (v: boolean) => (model.value = { ...model.value, label: v }),
@@ -73,26 +77,26 @@ const label = computed({
       v-else
       class="flex flex-wrap items-center gap-x-4 gap-y-2"
     >
-      <div
+      <RadioGroupRoot
+        v-model="color"
+        orientation="horizontal"
         class="flex gap-1.5"
-        role="radiogroup"
         aria-label="Colore del segnaposto"
       >
-        <button
+        <RadioGroupItem
           v-for="(c, key) in COLORS"
           :key="key"
-          type="button"
-          role="radio"
-          class="size-6 rounded-full ring-offset-2 ring-offset-white transition"
-          :class="[c.bg, color === key ? 'ring-2 ring-ink' : `
+          :value="key"
+          class="
+            size-6 rounded-full ring-offset-2 ring-offset-white transition
             hover:ring-2 hover:ring-ink/30
-          `]"
+            data-[state=checked]:ring-2 data-[state=checked]:ring-ink
+          "
+          :class="c.bg"
           :aria-label="c.label"
-          :aria-checked="color === key"
           :title="c.label"
-          @click="model = { ...model, color: key }"
         />
-      </div>
+      </RadioGroupRoot>
       <AdminSwitch
         v-model="label"
         label="Scritta"

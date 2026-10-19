@@ -1,3 +1,4 @@
+import { isVideoSrc } from '#shared/product'
 import type { MediaSlot, ProductOverride, PRODUCT_STATUSES } from '#shared/product'
 
 // Stato del form di /admin e conversione da/verso i dati salvati.
@@ -70,10 +71,14 @@ export function toAdminForm(p: AdminSource): AdminForm {
   }
 }
 
-// Uno slot con immagine tiene src/alt, altrimenti colore e scritta
+// Uno slot con immagine tiene src/poster/alt, altrimenti colore e scritta
 const cleanSlot = (s: MediaSlot): MediaSlot =>
   s.src
-    ? { src: s.src, ...(s.alt?.trim() ? { alt: s.alt.trim() } : {}) }
+    ? {
+        src: s.src,
+        ...(s.poster && isVideoSrc(s.src) ? { poster: s.poster } : {}),
+        ...(s.alt?.trim() ? { alt: s.alt.trim() } : {}),
+      }
     : { color: s.color ?? 'ink', label: s.label !== false }
 
 export function fromAdminForm(f: AdminForm): ProductOverride {

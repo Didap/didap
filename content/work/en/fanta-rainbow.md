@@ -14,8 +14,9 @@ scope: Full-stack design and development
 stack: Nuxt 4, Vue 3, PostgreSQL, Stripe
 lede: Live fantasy football auctions. The bank keeps the score, players bid from their phone, the countdown decides.
 hero:
-  src: /covers/fanta-rainbow-hero.webp
-  alt: A football goal on a grass pitch with the Fanta Rainbow logo and the words Gioca ora
+  src: /covers/fanta-rainbow-hero.mp4
+  poster: /covers/fanta-rainbow-hero-poster.webp
+  alt: The Fanta Rainbow logo in the middle of a floodlit football goal at night, its net moving in the wind
 intro: Fanta Rainbow is the bank of a fantasy football auction. The organiser creates the auction, picks the team names and gets a personal link for each one. On auction night the board runs on the big screen and everyone else is on their phone. Whoever bids last before the countdown runs out takes the player.
 challenge:
   title: No timers on the server.
@@ -39,12 +40,15 @@ model: "One-off league credit: 10 € per league, unlimited teams, only the orga
 next: cityfix
 media:
   pair:
-    - color: ink
-      label: false
-    - color: red
-      label: false
+    - src: /covers/fanta-rainbow-logo.svg
+      alt: The Fanta Rainbow logo
+    - src: /covers/fanta-rainbow-asta.mp4
+      poster: /covers/fanta-rainbow-asta-poster.webp
+      alt: "A Fanta Rainbow live auction: teams outbid each other on Maignan, the countdown bar fills and resets on every bid until the player goes for 64 credits"
   wide:
-    color: green
+    src: /covers/fanta-rainbow-gioca.mp4
+    poster: /covers/fanta-rainbow-gioca-poster.webp
+    alt: "The Fanta Rainbow challenge picker: Ranked and Torneo split by a rainbow bolt, lighting up in turn"
   feature:
     - color: ink
     - color: red

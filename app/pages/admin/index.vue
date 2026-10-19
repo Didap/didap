@@ -1,11 +1,19 @@
 <script setup lang="ts">
+import {
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogRoot,
+  AlertDialogTitle,
+} from 'reka-ui'
 import { useDebouncedRefHistory, useEventListener, watchDebounced } from '@vueuse/core'
 import PreviewPane from '~/components/admin/PreviewPane.vue'
 import ProductForm from '~/components/admin/ProductForm.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
-import AdminToast from '~/components/admin/AdminToast.vue'
 import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 import type { ProductLocale, ProductOverride } from '#shared/product'
 import {
@@ -340,7 +348,11 @@ const open = (slug: string | null, lang: ProductLocale = locale.value) =>
 
 const isTextField = (el: EventTarget | null) =>
   el instanceof HTMLElement
-  && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
+  && (el.isContentEditable || ['INPUT', 'TEXTAREA'].includes(el.tagName))
+
+// Menu e dialoghi aperti (Reka UI) tengono per sé Esc e Ctrl+Z
+const LAYER_ROLES = '[role=listbox], [role=menu], [role=dialog], [role=alertdialog]'
+const inLayer = (el: EventTarget | null) => el instanceof Element && !!el.closest(LAYER_ROLES)
 
 useEventListener('keydown', (e: KeyboardEvent) => {
   const mod = e.ctrlKey || e.metaKey
@@ -350,7 +362,7 @@ useEventListener('keydown', (e: KeyboardEvent) => {
     if (dirty.value) save()
   }
   // Nei campi di testo Ctrl+Z resta quello del browser (annulla la digitazione)
-  if (mod && !isTextField(e.target) && form.value) {
+  if (mod && !isTextField(e.target) && !inLayer(e.target) && form.value) {
     if (key === 'z' && !e.shiftKey && history.canUndo.value) {
       e.preventDefault()
       history.undo()
@@ -362,10 +374,7 @@ useEventListener('keydown', (e: KeyboardEvent) => {
   }
   // Esc dentro un menu o un dialogo chiude solo quello (il dialogo
   // delle modifiche non salvate gestisce il suo Esc)
-  const inLayer = (e.target as Element | null)?.closest(
-    '[role=listbox], [role=menu], [role=dialog], [role=alertdialog]',
-  )
-  if (e.key === 'Escape' && !inLayer) {
+  if (e.key === 'Escape' && !inLayer(e.target)) {
     confirmReset.value = false
     previewOpen.value = false
   }
@@ -926,8 +935,6 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
       </AlertDialogPortal>
     </AlertDialogRoot>
 
-    <!-- Avvisi -->
-    <AdminToast />
   </div>
 </template>
 

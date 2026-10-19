@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Label, SwitchRoot, SwitchThumb } from 'reka-ui'
+
 // Interruttore on/off (Switch di Reka UI); anche la scritta lo accende
 const model = defineModel<boolean>({ default: false })
 defineProps<{ label: string }>()

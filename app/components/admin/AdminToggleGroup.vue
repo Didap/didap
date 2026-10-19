@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends string">
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
+
 // Scelta singola a pulsanti (ToggleGroup di Reka UI): una voce resta
 // sempre attiva, un clic su quella attiva non la spegne. Voci per
 // posizione (useIndexedOptions), come AppSelect: anche '' è una scelta.

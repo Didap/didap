@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RadioGroupItem, RadioGroupRoot } from 'reka-ui'
 import ImageDrop from '~/components/admin/ImageDrop.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
 import { PRODUCT_COLORS } from '#shared/product'

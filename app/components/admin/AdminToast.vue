@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ToastDescription, ToastProvider, ToastRoot, ToastViewport } from 'reka-ui'
+
 // Messaggio breve in basso (Toast di Reka UI). Apertura, chiusura e
 // timer li gestisce useAdminToast: il Toast è controllato da :open, così
 // Reka non lo chiude da solo (nemmeno con Esc, che resta a menu e
@@ -6,7 +8,7 @@
 // quella di Reka, che scatta anche cliccando nell'iframe dell'anteprima).
 const { toast, pause, resume } = useAdminToast()
 
-// Pagina cambiata col mouse sopra: il timer riparte
+// Uscita da /admin col mouse sopra: il timer riparte
 onBeforeUnmount(resume)
 </script>
 

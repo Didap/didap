@@ -1,4 +1,17 @@
 <script setup lang="ts" generic="T extends string | number | null">
+import {
+  SelectContent,
+  SelectIcon,
+  SelectItem,
+  SelectItemIndicator,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+} from 'reka-ui'
+
 // Menu a tendina (Select di Reka UI) per i form del sito e di /admin.
 // Voci per posizione (useIndexedOptions): anche '' e null sono scelte
 // valide. Classi e attributi passano al bottone.

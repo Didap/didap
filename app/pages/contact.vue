@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CheckboxIndicator, CheckboxRoot, RadioGroupItem, RadioGroupRoot } from 'reka-ui'
 import { Motion, AnimatePresence } from 'motion-v'
 import AppSelect from '~/components/AppSelect.vue'
 import InteractiveHoverButton from '~/components/InteractiveHoverButton.vue'
@@ -187,18 +188,18 @@ async function onSubmit() {
           :aria-label="t('contact.form.funding_legend')"
           class="flex flex-col gap-3"
         >
-          <RadioGroupItem value="have_budget" as-child>
+          <RadioGroupItem v-slot="{ checked }" value="have_budget" as-child>
             <InteractiveHoverButton
               :text="t('contact.form.funding_have')"
-              :active="form.fundingHelp === 'have_budget'"
+              :active="checked"
               tone-class="bg-ink"
               inverted-text-class="text-paper"
             />
           </RadioGroupItem>
-          <RadioGroupItem value="need_help" as-child>
+          <RadioGroupItem v-slot="{ checked }" value="need_help" as-child>
             <InteractiveHoverButton
               :text="t('contact.form.funding_need')"
-              :active="form.fundingHelp === 'need_help'"
+              :active="checked"
               tone-class="bg-finance"
               inverted-text-class="text-paper"
             />

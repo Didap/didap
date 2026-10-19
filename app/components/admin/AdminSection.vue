@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
 
 // Blocco del form = sezione della pagina prodotto. Con `toggle` ha un
@@ -37,7 +38,7 @@ watch(
       border-ink/10
     `"
     @focusin="emit('focus', props.id)"
-    @click="emit('focus', props.id)"
+    @pointerdown="emit('focus', props.id)"
   >
     <header class="flex flex-wrap items-start gap-4 px-6 pt-5 pb-4">
       <CollapsibleTrigger

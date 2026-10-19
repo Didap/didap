@@ -391,7 +391,7 @@ function setDiscountKind(kind: DiscountKind) {
                     :model-value="form.content.discount.kind"
                     :options="DISCOUNT_OPTIONS"
                     class="w-auto"
-                    label="Tipo di sconto"
+                    aria-label="Tipo di sconto"
                     @update:model-value="setDiscountKind"
                   />
                   <NumberInput

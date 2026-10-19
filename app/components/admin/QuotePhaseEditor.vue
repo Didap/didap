@@ -139,7 +139,7 @@ function askRemove() {
                 :model-value="item.kind"
                 :options="KIND_OPTIONS"
                 class="w-auto"
-                label="Tipo di voce"
+                aria-label="Tipo di voce"
                 @update:model-value="(k) => setKind(i, k)"
               />
               <template v-if="item.kind === 'days'">

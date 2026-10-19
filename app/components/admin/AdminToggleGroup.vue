@@ -37,7 +37,6 @@ const STYLES = {
     `,
   },
 }
-const style = computed(() => STYLES[props.variant])
 
 const { index, select } = useIndexedOptions(() => props.options, model)
 </script>
@@ -48,7 +47,7 @@ const { index, select } = useIndexedOptions(() => props.options, model)
     type="single"
     :disabled="disabled"
     class="flex"
-    :class="style.root"
+    :class="STYLES[variant].root"
     @update:model-value="select"
   >
     <ToggleGroupItem
@@ -56,7 +55,7 @@ const { index, select } = useIndexedOptions(() => props.options, model)
       :key="`${i}:${o.value}:${o.label}`"
       :value="String(i)"
       class="flex items-center gap-1.5 rounded-full text-sm transition"
-      :class="style.item"
+      :class="STYLES[variant].item"
     >
       <slot
         name="item"

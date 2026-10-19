@@ -25,6 +25,5 @@ async function logout() {
     />
     <AdminLogin v-if="!session?.authenticated" />
     <slot v-else />
-
   </div>
 </template>

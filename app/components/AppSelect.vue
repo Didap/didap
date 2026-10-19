@@ -21,10 +21,9 @@ const model = defineModel<T>({ required: true })
 const props = withDefaults(
   defineProps<{
     options: readonly { value: T; label: string }[]
-    label?: string
     variant?: 'admin' | 'site'
   }>(),
-  { label: undefined, variant: 'admin' },
+  { variant: 'admin' },
 )
 
 const { index, selected, select } = useIndexedOptions(() => props.options, model)
@@ -44,7 +43,6 @@ const STYLES = {
     item: 'rounded-md text-base data-[state=checked]:text-accent',
   },
 }
-const style = computed(() => STYLES[props.variant])
 </script>
 
 <template>
@@ -54,8 +52,7 @@ const style = computed(() => STYLES[props.variant])
   >
     <SelectTrigger
       class="flex items-center justify-between gap-2 text-left"
-      :class="style.trigger"
-      :aria-label="label"
+      :class="STYLES[variant].trigger"
       v-bind="$attrs"
     >
       <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
@@ -87,7 +84,7 @@ const style = computed(() => STYLES[props.variant])
           min-w-(--reka-select-trigger-width) overflow-hidden border p-1
           shadow-lg
         "
-        :class="style.content"
+        :class="STYLES[variant].content"
       >
         <SelectViewport>
           <SelectItem
@@ -98,7 +95,7 @@ const style = computed(() => STYLES[props.variant])
               relative flex items-center py-2 pr-3 pl-8 outline-none select-none
               data-highlighted:bg-ink/5
             "
-            :class="style.item"
+            :class="STYLES[variant].item"
           >
             <SelectItemIndicator class="absolute left-2.5">
               <svg

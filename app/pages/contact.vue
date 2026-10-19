@@ -35,6 +35,11 @@ const projectTypeOptions = computed(() => [
   { value: 'other', label: t('contact.form.option_other') },
 ])
 
+const FUNDING_OPTIONS = [
+  { value: 'have_budget', text: 'contact.form.funding_have', tone: 'bg-ink' },
+  { value: 'need_help', text: 'contact.form.funding_need', tone: 'bg-finance' },
+] as const
+
 const showQube = computed(() => form.fundingHelp === 'need_help')
 
 async function onSubmit() {
@@ -188,19 +193,17 @@ async function onSubmit() {
           :aria-label="t('contact.form.funding_legend')"
           class="flex flex-col gap-3"
         >
-          <RadioGroupItem v-slot="{ checked }" value="have_budget" as-child>
+          <RadioGroupItem
+            v-for="f in FUNDING_OPTIONS"
+            :key="f.value"
+            v-slot="{ checked }"
+            :value="f.value"
+            as-child
+          >
             <InteractiveHoverButton
-              :text="t('contact.form.funding_have')"
+              :text="t(f.text)"
               :active="checked"
-              tone-class="bg-ink"
-              inverted-text-class="text-paper"
-            />
-          </RadioGroupItem>
-          <RadioGroupItem v-slot="{ checked }" value="need_help" as-child>
-            <InteractiveHoverButton
-              :text="t('contact.form.funding_need')"
-              :active="checked"
-              tone-class="bg-finance"
+              :tone-class="f.tone"
               inverted-text-class="text-paper"
             />
           </RadioGroupItem>

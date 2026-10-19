@@ -350,9 +350,9 @@ const isTextField = (el: EventTarget | null) =>
   el instanceof HTMLElement
   && (el.isContentEditable || ['INPUT', 'TEXTAREA'].includes(el.tagName))
 
-// Menu e dialoghi aperti (Reka UI) tengono per sé Esc e Ctrl+Z
-const LAYER_ROLES = '[role=listbox], [role=menu], [role=dialog], [role=alertdialog]'
-const inLayer = (el: EventTarget | null) => el instanceof Element && !!el.closest(LAYER_ROLES)
+// Con un menu o un dialogo di Reka UI aperto, Esc e Ctrl+Z sono suoi.
+// data-dismissable-layer è il segno che Reka usa per la sua pila di livelli.
+const layerOpen = () => !!document.querySelector('[data-dismissable-layer]')
 
 useEventListener('keydown', (e: KeyboardEvent) => {
   const mod = e.ctrlKey || e.metaKey
@@ -362,7 +362,7 @@ useEventListener('keydown', (e: KeyboardEvent) => {
     if (dirty.value) save()
   }
   // Nei campi di testo Ctrl+Z resta quello del browser (annulla la digitazione)
-  if (mod && !isTextField(e.target) && !inLayer(e.target) && form.value) {
+  if (mod && !isTextField(e.target) && !layerOpen() && form.value) {
     if (key === 'z' && !e.shiftKey && history.canUndo.value) {
       e.preventDefault()
       history.undo()
@@ -372,9 +372,9 @@ useEventListener('keydown', (e: KeyboardEvent) => {
       history.redo()
     }
   }
-  // Esc dentro un menu o un dialogo chiude solo quello (il dialogo
+  // Esc con un menu o un dialogo aperto chiude solo quello (il dialogo
   // delle modifiche non salvate gestisce il suo Esc)
-  if (e.key === 'Escape' && !inLayer(e.target)) {
+  if (e.key === 'Escape' && !layerOpen()) {
     confirmReset.value = false
     previewOpen.value = false
   }
@@ -934,7 +934,6 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
         </AlertDialogContent>
       </AlertDialogPortal>
     </AlertDialogRoot>
-
   </div>
 </template>
 

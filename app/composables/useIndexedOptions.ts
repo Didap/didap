@@ -15,7 +15,7 @@ export function useIndexedOptions<T, O extends { value: T }>(
     const i = options().findIndex((o) => o.value === model.value)
     return i < 0 ? '' : String(i)
   })
-  const selected = computed(() => (index.value === '' ? undefined : options()[Number(index.value)]))
+  const selected = computed(() => options().find((o) => o.value === model.value))
 
   function select(i: unknown) {
     const option = typeof i === 'string' && i !== '' ? options()[Number(i)] : undefined

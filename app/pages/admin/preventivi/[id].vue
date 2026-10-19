@@ -2,8 +2,9 @@
 import { useEventListener, watchDebounced } from '@vueuse/core'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
-import AdminSelect from '~/components/admin/AdminSelect.vue'
+import AppSelect from '~/components/AppSelect.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
+import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
 import QuotePhaseEditor from '~/components/admin/QuotePhaseEditor.vue'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
@@ -167,6 +168,7 @@ const issue = () => run(async () => {
   notify('ok', `Emesso ${res.number}, rev. ${res.rev}`)
 })
 
+const STATUS_OPTIONS = SETTABLE_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))
 const setStatus = (status: SettableStatus) => run(async () => {
   await $fetch(`/api/admin/quotes/${id.value}/status`, { method: 'PUT', body: { status } })
   await load()
@@ -291,7 +293,7 @@ function setDiscountKind(kind: DiscountKind) {
               label="Cliente"
               hint="I dati dei clienti si gestiscono in Clienti."
             >
-              <AdminSelect
+              <AppSelect
                 v-model="form.clientId"
                 :options="clientOptions"
               />
@@ -385,7 +387,7 @@ function setDiscountKind(kind: DiscountKind) {
                 group
               >
                 <div class="flex gap-2">
-                  <AdminSelect
+                  <AppSelect
                     :model-value="form.content.discount.kind"
                     :options="DISCOUNT_OPTIONS"
                     class="w-auto"
@@ -584,28 +586,13 @@ function setDiscountKind(kind: DiscountKind) {
             >
               Stato
             </p>
-            <ToggleGroupRoot
+            <AdminToggleGroup
               :model-value="detail.status"
-              type="single"
+              :options="STATUS_OPTIONS"
               :disabled="busy"
-              class="flex flex-wrap gap-2"
               aria-labelledby="stato-preventivo"
-              @update:model-value="(s) => s && setStatus(s as SettableStatus)"
-            >
-              <ToggleGroupItem
-                v-for="s in SETTABLE_STATUSES"
-                :key="s"
-                :value="s"
-                class="
-                  rounded-full border border-ink/20 px-3 py-1.5 text-sm
-                  hover:border-ink
-                  data-[state=on]:border-ink data-[state=on]:bg-ink
-                  data-[state=on]:text-paper-light
-                "
-              >
-                {{ STATUS_LABELS[s] }}
-              </ToggleGroupItem>
-            </ToggleGroupRoot>
+              @update:model-value="(s) => setStatus(s as SettableStatus)"
+            />
           </div>
 
           <div

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminField from '~/components/admin/AdminField.vue'
-import AdminSelect from '~/components/admin/AdminSelect.vue'
+import AppSelect from '~/components/AppSelect.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
 import { moveInArray } from '~/utils/moveInArray'
 import { formatEuro } from '#shared/money'
@@ -135,7 +135,7 @@ function askRemove() {
               maxlength="500"
             >
             <div class="flex flex-wrap items-center gap-2 text-sm">
-              <AdminSelect
+              <AppSelect
                 :model-value="item.kind"
                 :options="KIND_OPTIONS"
                 class="w-auto"

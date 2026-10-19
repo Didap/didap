@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
-import AdminSelect from '~/components/admin/AdminSelect.vue'
+import AppSelect from '~/components/AppSelect.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
+import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 import ImageDrop from '~/components/admin/ImageDrop.vue'
 import MediaField from '~/components/admin/MediaField.vue'
 import { PRODUCT_STATUSES } from '#shared/product'
@@ -19,6 +20,10 @@ const props = defineProps<{
 const emit = defineEmits<{ focus: [section: string] }>()
 
 const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Stato da confermare' }
+const STATUS_OPTIONS = [
+  { value: 'none', label: 'Nessuno' },
+  ...PRODUCT_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+] as const
 // Le voci di Reka UI non accettano '' come valore: "nessuno" diventa 'none'
 const status = computed({
   get: () => form.value.status || 'none',
@@ -161,26 +166,10 @@ const usesMarkdownBody = computed(
           label="Stato"
           group
         >
-          <ToggleGroupRoot
-            :model-value="status"
-            type="single"
-            class="flex flex-wrap gap-2"
-            @update:model-value="(s) => s && (status = s as typeof status)"
-          >
-            <ToggleGroupItem
-              v-for="s in ['none', ...PRODUCT_STATUSES] as const"
-              :key="s"
-              :value="s"
-              class="
-                rounded-full border border-ink/20 px-3 py-1.5 text-sm transition
-                hover:border-ink
-                data-[state=on]:border-ink data-[state=on]:bg-ink
-                data-[state=on]:text-paper-light
-              "
-            >
-              {{ s === 'none' ? 'Nessuno' : STATUS_LABELS[s] }}
-            </ToggleGroupItem>
-          </ToggleGroupRoot>
+          <AdminToggleGroup
+            v-model="status"
+            :options="STATUS_OPTIONS"
+          />
         </AdminField>
         <AdminField label="Ruolo">
           <input
@@ -551,7 +540,7 @@ const usesMarkdownBody = computed(
         />
       </AdminField>
       <AdminField label="Prossimo prodotto">
-        <AdminSelect
+        <AppSelect
           v-model="form.next"
           :options="nextOptions"
         />

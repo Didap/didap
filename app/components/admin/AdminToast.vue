@@ -1,14 +1,8 @@
 <script setup lang="ts">
-// Messaggio breve in basso (Toast di Reka UI; lo stato sta in useAdminToast).
-// Si chiude da solo, ma resta aperto finché ci si passa sopra col mouse.
-const { toast } = useAdminToast()
-
-// Chiuso: si toglie dallo stato dopo l'animazione d'uscita, così non
-// ricompare nella pagina successiva
-function onOpenChange(open: boolean) {
-  const id = toast.value?.id
-  if (!open) setTimeout(() => toast.value?.id === id && (toast.value = null), 200)
-}
+// Messaggio breve in basso (Toast di Reka UI). Apertura e chiusura le
+// decide useAdminToast; qui restano l'animazione e lo swipe per chiudere.
+// Esc non lo chiude: serve a chiudere menu e dialoghi sotto.
+const { toast, dismiss } = useAdminToast()
 </script>
 
 <template>
@@ -19,7 +13,8 @@ function onOpenChange(open: boolean) {
     <ToastRoot
       v-if="toast"
       :key="toast.id"
-      :duration="toast.kind === 'ok' ? 2500 : 6000"
+      :open="toast.open"
+      :duration="Infinity"
       :type="toast.kind === 'error' ? 'foreground' : 'background'"
       class="
         rounded-full px-5 py-3 text-sm font-medium shadow-lg
@@ -29,7 +24,8 @@ function onOpenChange(open: boolean) {
       :class="toast.kind === 'ok' ? 'bg-ink text-paper-light' : `
         bg-red text-white
       `"
-      @update:open="onOpenChange"
+      @escape-key-down="(e: KeyboardEvent) => e.preventDefault()"
+      @update:open="(open: boolean) => !open && dismiss()"
     >
       <ToastDescription>{{ toast.text }}</ToastDescription>
     </ToastRoot>

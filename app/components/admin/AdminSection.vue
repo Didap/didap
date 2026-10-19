@@ -41,6 +41,7 @@ watch(
   >
     <header class="flex flex-wrap items-start gap-4 px-6 pt-5 pb-4">
       <CollapsibleTrigger
+        :aria-controls="`sezione-${id}-corpo`"
         class="
           -ml-2 flex flex-1 items-start gap-2 rounded-lg p-1 text-left
           hover:bg-ink/5
@@ -77,11 +78,18 @@ watch(
         :label="enabled ? 'Visibile' : 'Nascosta'"
       />
     </header>
+    <!-- as-child per tenere l'id fisso: quello di Reka arriva al bottone
+         solo dopo il primo clic -->
     <CollapsibleContent
       v-if="!toggle || enabled"
-      class="flex flex-col gap-5 border-t border-ink/10 px-6 py-5"
+      as-child
     >
-      <slot />
+      <div
+        :id="`sezione-${id}-corpo`"
+        class="flex flex-col gap-5 border-t border-ink/10 px-6 py-5"
+      >
+        <slot />
+      </div>
     </CollapsibleContent>
   </CollapsibleRoot>
 </template>

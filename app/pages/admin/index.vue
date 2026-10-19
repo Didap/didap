@@ -6,6 +6,7 @@ import StatusPill from '~/components/StatusPill.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
 import AdminToast from '~/components/admin/AdminToast.vue'
+import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 import type { ProductLocale, ProductOverride } from '#shared/product'
 import {
   formSignature,
@@ -81,6 +82,10 @@ const selected = computed(() =>
   typeof route.query.p === 'string' ? route.query.p : null,
 )
 const locale = computed<ProductLocale>(() => (route.query.lang === 'en' ? 'en' : 'it'))
+const LOCALES = [
+  { value: 'it', label: 'Italiano' },
+  { value: 'en', label: 'English' },
+] as const satisfies readonly { value: ProductLocale; label: string }[]
 const current = computed(() => products.value.find((p) => p.slug === selected.value))
 
 // ---- Form e stato --------------------------------------------------------
@@ -569,33 +574,22 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
             <h1 class="mr-auto text-xl font-bold">
               {{ current?.title ?? selected }}
             </h1>
-            <ToggleGroupRoot
+            <AdminToggleGroup
               :model-value="locale"
-              type="single"
-              class="flex rounded-full bg-ink/5 p-1"
+              :options="LOCALES"
+              variant="segmented"
               aria-label="Lingua"
-              @update:model-value="(l) => l && open(selected, l as typeof locale)"
+              @update:model-value="(l) => open(selected, l)"
             >
-              <ToggleGroupItem
-                v-for="l in (['it', 'en'] as const)"
-                :key="l"
-                :value="l"
-                class="
-                  flex items-center gap-1.5 rounded-full px-3 py-1 text-sm
-                  opacity-60 transition
-                  hover:opacity-100
-                  data-[state=on]:bg-white data-[state=on]:font-medium
-                  data-[state=on]:opacity-100 data-[state=on]:shadow-sm
-                "
-              >
-                {{ l === 'it' ? 'Italiano' : 'English' }}
+              <template #item="{ option }">
+                {{ option.label }}
                 <span
-                  v-if="selected && editedLocales(selected).has(l)"
+                  v-if="selected && editedLocales(selected).has(option.value)"
                   class="size-1.5 rounded-full bg-banana"
                   aria-label="modificato"
                 />
-              </ToggleGroupItem>
-            </ToggleGroupRoot>
+              </template>
+            </AdminToggleGroup>
             <button
               type="button"
               class="

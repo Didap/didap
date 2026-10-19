@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Motion, AnimatePresence } from 'motion-v'
+import AppSelect from '~/components/AppSelect.vue'
 import InteractiveHoverButton from '~/components/InteractiveHoverButton.vue'
 
 const { t } = useI18n()
@@ -25,16 +26,13 @@ const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const errorDetail = ref<string | null>(null)
 
 const projectTypeOptions = computed(() => [
+  { value: '', label: t('contact.form.project_type_default') },
   { value: 'product', label: t('contact.form.option_product') },
   { value: 'saas', label: t('contact.form.option_saas') },
   { value: 'app', label: t('contact.form.option_app') },
   { value: 'site', label: t('contact.form.option_site') },
   { value: 'other', label: t('contact.form.option_other') },
 ])
-
-const projectTypeLabel = computed(
-  () => projectTypeOptions.value.find((o) => o.value === form.projectType)?.label,
-)
 
 const showQube = computed(() => form.fundingHelp === 'need_help')
 
@@ -170,45 +168,12 @@ async function onSubmit() {
         >
           {{ t('contact.form.project_type') }}
         </span>
-        <SelectRoot v-model="form.projectType">
-          <SelectTrigger
-            class="mt-2 flex w-full items-center justify-between gap-3 rounded-lg border border-ink/20 bg-paper px-4 py-2.5 text-left text-base focus:border-accent focus:outline-none data-placeholder:text-ink-soft/60"
-          >
-            <SelectValue :placeholder="t('contact.form.project_type_default')">
-              {{ projectTypeLabel ?? t('contact.form.project_type_default') }}
-            </SelectValue>
-            <SelectIcon class="shrink-0 text-ink-soft">
-              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                <path
-                  d="M4 6l4 4 4-4"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </SelectIcon>
-          </SelectTrigger>
-          <SelectPortal>
-            <SelectContent
-              position="popper"
-              :side-offset="4"
-              class="z-50 max-h-(--reka-select-content-available-height) min-w-(--reka-select-trigger-width) overflow-hidden rounded-lg border border-ink/20 bg-paper p-1 shadow-lg"
-            >
-              <SelectViewport>
-                <SelectItem
-                  v-for="o in projectTypeOptions"
-                  :key="o.value"
-                  :value="o.value"
-                  class="rounded-md px-3 py-2 text-base outline-none select-none data-highlighted:bg-ink/5 data-[state=checked]:text-accent"
-                >
-                  <SelectItemText>{{ o.label }}</SelectItemText>
-                </SelectItem>
-              </SelectViewport>
-            </SelectContent>
-          </SelectPortal>
-        </SelectRoot>
+        <AppSelect
+          v-model="form.projectType"
+          :options="projectTypeOptions"
+          variant="site"
+          class="mt-2"
+        />
       </label>
 
       <fieldset class="space-y-4">
@@ -300,6 +265,7 @@ async function onSubmit() {
       <label class="flex items-start gap-3 text-sm text-ink-soft">
         <CheckboxRoot
           v-model="form.consent"
+          name="consent"
           required
           class="mt-1 flex size-4 shrink-0 items-center justify-center rounded-sm border border-ink/40 bg-paper focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:outline-none data-[state=checked]:border-accent data-[state=checked]:bg-accent"
         >

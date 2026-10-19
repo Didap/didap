@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminShell from '~/components/admin/AdminShell.vue'
+import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
@@ -19,6 +20,7 @@ const filter = ref<DisplayStatus | 'all'>('all')
 const query = ref('')
 const creating = ref(false)
 const FILTERS = ['all', 'draft', 'sent', 'expired', 'accepted', 'rejected'] as const
+const FILTER_OPTIONS = FILTERS.map((f) => ({ value: f, label: f === 'all' ? 'Tutti' : STATUS_LABELS[f] }))
 
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
@@ -79,27 +81,11 @@ async function create() {
       </div>
 
       <div class="mt-6 flex flex-wrap items-center gap-2">
-        <ToggleGroupRoot
-          :model-value="filter"
-          type="single"
-          class="flex flex-wrap gap-2"
+        <AdminToggleGroup
+          v-model="filter"
+          :options="FILTER_OPTIONS"
           aria-label="Filtra per stato"
-          @update:model-value="(f) => f && (filter = f as typeof filter)"
-        >
-          <ToggleGroupItem
-            v-for="f in FILTERS"
-            :key="f"
-            :value="f"
-            class="
-              rounded-full border border-ink/20 px-3 py-1.5 text-sm
-              hover:border-ink
-              data-[state=on]:border-ink data-[state=on]:bg-ink
-              data-[state=on]:text-paper-light
-            "
-          >
-            {{ f === 'all' ? 'Tutti' : STATUS_LABELS[f] }}
-          </ToggleGroupItem>
-        </ToggleGroupRoot>
+        />
         <input
           v-model="query"
           type="search"

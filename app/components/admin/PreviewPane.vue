@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDebounceFn, useElementSize } from '@vueuse/core'
 import type { ProductOverride } from '#shared/product'
+import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 
 // Anteprima live: la scheda prodotto vera in un iframe (?preview=1),
 // alla quale si manda la bozza non salvata a ogni modifica.
@@ -14,6 +15,10 @@ const emit = defineEmits<{ select: [section: string] }>()
 
 const device = ref<'desktop' | 'mobile'>('desktop')
 const WIDTH = { desktop: 1440, mobile: 390 }
+const DEVICES = [
+  { value: 'desktop', label: 'Desktop' },
+  { value: 'mobile', label: 'Mobile' },
+] as const
 
 const frame = useTemplateRef<HTMLIFrameElement>('frame')
 const box = useTemplateRef<HTMLDivElement>('box')
@@ -68,27 +73,12 @@ defineExpose({ scrollTo, reload })
 <template>
   <div class="flex h-full min-h-0 flex-col gap-3">
     <div class="flex items-center justify-between gap-3">
-      <ToggleGroupRoot
-        :model-value="device"
-        type="single"
-        class="flex rounded-full bg-ink/5 p-1"
+      <AdminToggleGroup
+        v-model="device"
+        :options="DEVICES"
+        variant="segmented"
         aria-label="Dispositivo"
-        @update:model-value="(d) => d && (device = d as typeof device)"
-      >
-        <ToggleGroupItem
-          v-for="d in (['desktop', 'mobile'] as const)"
-          :key="d"
-          :value="d"
-          class="
-            rounded-full px-3 py-1 text-sm opacity-60 transition
-            hover:opacity-100
-            data-[state=on]:bg-white data-[state=on]:font-medium
-            data-[state=on]:opacity-100 data-[state=on]:shadow-sm
-          "
-        >
-          {{ d === 'desktop' ? 'Desktop' : 'Mobile' }}
-        </ToggleGroupItem>
-      </ToggleGroupRoot>
+      />
       <a
         :href="pageUrl"
         target="_blank"

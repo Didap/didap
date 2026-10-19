@@ -2,6 +2,7 @@
 import { useEventListener, watchDebounced } from '@vueuse/core'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
+import AdminSelect from '~/components/admin/AdminSelect.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
 import QuotePhaseEditor from '~/components/admin/QuotePhaseEditor.vue'
@@ -39,6 +40,7 @@ const { notify } = useAdminToast()
 const detail = ref<QuoteDetail | null>(null)
 const form = ref<DraftInput | null>(null)
 const clients = ref<Client[]>([])
+const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.name })))
 const loadError = ref('')
 const savedSignature = ref('')
 const saving = ref(false)
@@ -215,9 +217,14 @@ function addPhase() {
 }
 
 type DiscountKind = QuoteContent['discount']['kind']
-function setDiscountKind(e: Event) {
+const DISCOUNT_OPTIONS = [
+  { value: 'none', label: 'Nessuno' },
+  { value: 'percent', label: 'Percentuale' },
+  { value: 'amount', label: 'Importo fisso' },
+] as const satisfies readonly { value: DiscountKind; label: string }[]
+
+function setDiscountKind(kind: DiscountKind) {
   if (!form.value) return
-  const kind = (e.target as HTMLSelectElement).value as DiscountKind
   form.value.content.discount = kind === 'none' ? { kind } : { kind, value: 0 }
 }
 </script>
@@ -281,21 +288,11 @@ function setDiscountKind(e: Event) {
               label="Cliente"
               hint="I dati dei clienti si gestiscono in Clienti."
             >
-              <select
+              <AdminSelect
                 v-model="form.clientId"
-                class="admin-input"
-              >
-                <option :value="null">
-                  Scegli un cliente…
-                </option>
-                <option
-                  v-for="c in clients"
-                  :key="c.id"
-                  :value="c.id"
-                >
-                  {{ c.name }}
-                </option>
-              </select>
+                :options="clientOptions"
+                placeholder="Scegli un cliente…"
+              />
             </AdminField>
             <AdminField
               label="Titolo del progetto"
@@ -386,22 +383,13 @@ function setDiscountKind(e: Event) {
                 group
               >
                 <div class="flex gap-2">
-                  <select
-                    :value="form.content.discount.kind"
-                    class="admin-input w-auto"
-                    aria-label="Tipo di sconto"
-                    @change="setDiscountKind"
-                  >
-                    <option value="none">
-                      Nessuno
-                    </option>
-                    <option value="percent">
-                      Percentuale
-                    </option>
-                    <option value="amount">
-                      Importo fisso
-                    </option>
-                  </select>
+                  <AdminSelect
+                    :model-value="form.content.discount.kind"
+                    :options="DISCOUNT_OPTIONS"
+                    class="w-auto"
+                    label="Tipo di sconto"
+                    @update:model-value="setDiscountKind"
+                  />
                   <NumberInput
                     v-if="form.content.discount.kind === 'percent'"
                     v-model="form.content.discount.value"
@@ -588,26 +576,34 @@ function setDiscountKind(e: Event) {
                 "
               >Apri ↗</a>
             </div>
-            <p class="text-sm font-medium">
+            <p
+              id="stato-preventivo"
+              class="text-sm font-medium"
+            >
               Stato
             </p>
-            <div class="flex flex-wrap gap-2">
-              <button
+            <ToggleGroupRoot
+              :model-value="detail.status"
+              type="single"
+              :disabled="busy"
+              class="flex flex-wrap gap-2"
+              aria-labelledby="stato-preventivo"
+              @update:model-value="(s) => s && setStatus(s as SettableStatus)"
+            >
+              <ToggleGroupItem
                 v-for="s in SETTABLE_STATUSES"
                 :key="s"
-                type="button"
-                class="rounded-full px-3 py-1.5 text-sm"
-                :class="detail.status === s ? 'bg-ink text-paper-light' : `
-                  border border-ink/20
+                :value="s"
+                class="
+                  rounded-full border border-ink/20 px-3 py-1.5 text-sm
                   hover:border-ink
-                `"
-                :aria-pressed="detail.status === s"
-                :disabled="busy"
-                @click="detail.status !== s && setStatus(s)"
+                  data-[state=on]:border-ink data-[state=on]:bg-ink
+                  data-[state=on]:text-paper-light
+                "
               >
                 {{ STATUS_LABELS[s] }}
-              </button>
-            </div>
+              </ToggleGroupItem>
+            </ToggleGroupRoot>
           </div>
 
           <div

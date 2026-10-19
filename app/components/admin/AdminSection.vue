@@ -3,8 +3,8 @@ import AdminSwitch from '~/components/admin/AdminSwitch.vue'
 
 // Blocco del form = sezione della pagina prodotto. Con `toggle` ha un
 // interruttore: spento, la sezione non compare nella pagina. Si può
-// chiudere per fare spazio; `highlight` lo fa lampeggiare quando lo si
-// seleziona dall'anteprima.
+// chiudere per fare spazio (Collapsible di Reka UI); `highlight` lo fa
+// lampeggiare quando lo si seleziona dall'anteprima.
 const enabled = defineModel<boolean>('enabled', { default: true })
 const props = defineProps<{
   id: string
@@ -15,19 +15,21 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ focus: [id: string] }>()
 
-const collapsed = ref(false)
+const open = ref(true)
 // Selezionata dall'anteprima: si riapre
 watch(
   () => props.highlight,
   (h) => {
-    if (h) collapsed.value = false
+    if (h) open.value = true
   },
 )
 </script>
 
 <template>
-  <section
+  <CollapsibleRoot
     :id="`sezione-${id}`"
+    v-model:open="open"
+    as="section"
     class="
       scroll-mt-44 rounded-2xl border bg-white transition-shadow duration-500
     "
@@ -38,22 +40,18 @@ watch(
     @click="emit('focus', props.id)"
   >
     <header class="flex flex-wrap items-start gap-4 px-6 pt-5 pb-4">
-      <button
-        type="button"
+      <CollapsibleTrigger
         class="
           -ml-2 flex flex-1 items-start gap-2 rounded-lg p-1 text-left
           hover:bg-ink/5
         "
-        :aria-expanded="!collapsed"
-        :aria-controls="`sezione-${id}-corpo`"
-        @click="collapsed = !collapsed"
       >
         <svg
           width="16"
           height="16"
           viewBox="0 0 16 16"
           class="mt-1 shrink-0 transition-transform"
-          :class="collapsed ? '-rotate-90' : ''"
+          :class="open ? '' : '-rotate-90'"
           aria-hidden="true"
         >
           <path
@@ -72,19 +70,18 @@ watch(
             class="text-sm opacity-60"
           >{{ description }}</span>
         </span>
-      </button>
+      </CollapsibleTrigger>
       <AdminSwitch
         v-if="toggle"
         v-model="enabled"
         :label="enabled ? 'Visibile' : 'Nascosta'"
       />
     </header>
-    <div
-      v-if="!collapsed && (!toggle || enabled)"
-      :id="`sezione-${id}-corpo`"
+    <CollapsibleContent
+      v-if="!toggle || enabled"
       class="flex flex-col gap-5 border-t border-ink/10 px-6 py-5"
     >
       <slot />
-    </div>
-  </section>
+    </CollapsibleContent>
+  </CollapsibleRoot>
 </template>

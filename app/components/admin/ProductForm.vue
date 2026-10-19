@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
+import AdminSelect from '~/components/admin/AdminSelect.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
 import ImageDrop from '~/components/admin/ImageDrop.vue'
 import MediaField from '~/components/admin/MediaField.vue'
@@ -11,13 +12,23 @@ import type { MediaSlot as MediaSlotType } from '#shared/product'
 // Form della scheda prodotto: un blocco per ogni sezione della pagina,
 // nello stesso ordine in cui compaiono.
 const form = defineModel<AdminForm>({ required: true })
-defineProps<{
+const props = defineProps<{
   others: { slug: string; title: string }[]
   highlighted?: string | null
 }>()
 const emit = defineEmits<{ focus: [section: string] }>()
 
 const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Stato da confermare' }
+// Le voci di Reka UI non accettano '' come valore: "nessuno" diventa 'none'
+const status = computed({
+  get: () => form.value.status || 'none',
+  set: (s: AdminForm['status'] | 'none') => (form.value.status = s === 'none' ? '' : s),
+})
+
+const nextOptions = computed(() => [
+  { value: '', label: 'Il successivo in ordine' },
+  ...props.others.map((p) => ({ value: p.slug, label: p.title })),
+])
 
 // ---- Voci di "Cosa fa": trascinamento (dalla maniglia) e frecce da tastiera
 const items = computed(() => form.value.features.items)
@@ -150,22 +161,26 @@ const usesMarkdownBody = computed(
           label="Stato"
           group
         >
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="s in ['', ...PRODUCT_STATUSES] as const"
+          <ToggleGroupRoot
+            :model-value="status"
+            type="single"
+            class="flex flex-wrap gap-2"
+            @update:model-value="(s) => s && (status = s as typeof status)"
+          >
+            <ToggleGroupItem
+              v-for="s in ['none', ...PRODUCT_STATUSES] as const"
               :key="s"
-              type="button"
-              class="rounded-full border px-3 py-1.5 text-sm transition"
-              :class="form.status === s ? 'border-ink bg-ink text-paper-light' : `
-                border-ink/20
+              :value="s"
+              class="
+                rounded-full border border-ink/20 px-3 py-1.5 text-sm transition
                 hover:border-ink
-              `"
-              :aria-pressed="form.status === s"
-              @click="form.status = s"
+                data-[state=on]:border-ink data-[state=on]:bg-ink
+                data-[state=on]:text-paper-light
+              "
             >
-              {{ s ? STATUS_LABELS[s] : 'Nessuno' }}
-            </button>
-          </div>
+              {{ s === 'none' ? 'Nessuno' : STATUS_LABELS[s] }}
+            </ToggleGroupItem>
+          </ToggleGroupRoot>
         </AdminField>
         <AdminField label="Ruolo">
           <input
@@ -536,21 +551,10 @@ const usesMarkdownBody = computed(
         />
       </AdminField>
       <AdminField label="Prossimo prodotto">
-        <select
+        <AdminSelect
           v-model="form.next"
-          class="admin-input"
-        >
-          <option value="">
-            Il successivo in ordine
-          </option>
-          <option
-            v-for="p in others"
-            :key="p.slug"
-            :value="p.slug"
-          >
-            {{ p.title }}
-          </option>
-        </select>
+          :options="nextOptions"
+        />
       </AdminField>
     </AdminSection>
   </div>

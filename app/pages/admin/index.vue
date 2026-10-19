@@ -569,26 +569,24 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
             <h1 class="mr-auto text-xl font-bold">
               {{ current?.title ?? selected }}
             </h1>
-            <div
+            <ToggleGroupRoot
+              :model-value="locale"
+              type="single"
               class="flex rounded-full bg-ink/5 p-1"
-              role="tablist"
               aria-label="Lingua"
+              @update:model-value="(l) => l && open(selected, l as typeof locale)"
             >
-              <button
+              <ToggleGroupItem
                 v-for="l in (['it', 'en'] as const)"
                 :key="l"
-                type="button"
-                role="tab"
-                :aria-selected="locale === l"
+                :value="l"
                 class="
                   flex items-center gap-1.5 rounded-full px-3 py-1 text-sm
-                  transition
-                "
-                :class="locale === l ? 'bg-white font-medium shadow-sm' : `
-                  opacity-60
+                  opacity-60 transition
                   hover:opacity-100
-                `"
-                @click="locale !== l && open(selected, l)"
+                  data-[state=on]:bg-white data-[state=on]:font-medium
+                  data-[state=on]:opacity-100 data-[state=on]:shadow-sm
+                "
               >
                 {{ l === 'it' ? 'Italiano' : 'English' }}
                 <span
@@ -596,8 +594,8 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
                   class="size-1.5 rounded-full bg-banana"
                   aria-label="modificato"
                 />
-              </button>
-            </div>
+              </ToggleGroupItem>
+            </ToggleGroupRoot>
             <button
               type="button"
               class="
@@ -876,59 +874,59 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
       </aside>
     </div>
 
-    <!-- Modifiche non salvate -->
-    <div
-      v-if="pending"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="unsaved-title"
+    <!-- Modifiche non salvate: Esc e "Resta qui" valgono come annulla -->
+    <AlertDialogRoot
+      :open="!!pending"
+      @update:open="(o) => !o && resolvePending('cancel')"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white p-6">
-        <h2
-          id="unsaved-title"
-          class="text-xl font-bold"
+      <AlertDialogPortal>
+        <AlertDialogOverlay class="fixed inset-0 z-50 bg-ink/40" />
+        <AlertDialogContent
+          class="
+            fixed top-1/2 left-1/2 z-50 w-[calc(100%-3rem)] max-w-md
+            -translate-1/2 rounded-2xl bg-white p-6
+          "
         >
-          Modifiche non salvate
-        </h2>
-        <p class="mt-2 opacity-70">
-          Vuoi salvarle prima di continuare?
-        </p>
-        <div class="mt-6 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            class="
-              rounded-full px-4 py-2 text-sm
-              hover:bg-ink/5
-            "
-            @click="resolvePending('cancel')"
-          >
-            Resta qui
-          </button>
-          <button
-            type="button"
-            class="
-              rounded-full border border-ink/20 px-4 py-2 text-sm
-              hover:border-ink
-            "
-            @click="resolvePending('discard')"
-          >
-            Scarta
-          </button>
-          <button
-            type="button"
-            class="
-              rounded-full bg-green px-4 py-2 text-sm font-medium
-              text-paper-light
-              hover:bg-ink
-            "
-            @click="resolvePending('save')"
-          >
-            Salva e continua
-          </button>
-        </div>
-      </div>
-    </div>
+          <AlertDialogTitle class="text-xl font-bold">
+            Modifiche non salvate
+          </AlertDialogTitle>
+          <AlertDialogDescription class="mt-2 opacity-70">
+            Vuoi salvarle prima di continuare?
+          </AlertDialogDescription>
+          <div class="mt-6 flex flex-wrap justify-end gap-2">
+            <AlertDialogCancel
+              class="
+                rounded-full px-4 py-2 text-sm
+                hover:bg-ink/5
+              "
+            >
+              Resta qui
+            </AlertDialogCancel>
+            <button
+              type="button"
+              class="
+                rounded-full border border-ink/20 px-4 py-2 text-sm
+                hover:border-ink
+              "
+              @click="resolvePending('discard')"
+            >
+              Scarta
+            </button>
+            <button
+              type="button"
+              class="
+                rounded-full bg-green px-4 py-2 text-sm font-medium
+                text-paper-light
+                hover:bg-ink
+              "
+              @click="resolvePending('save')"
+            >
+              Salva e continua
+            </button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialogPortal>
+    </AlertDialogRoot>
 
     <!-- Avvisi -->
     <AdminToast />

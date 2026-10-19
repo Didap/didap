@@ -68,27 +68,27 @@ defineExpose({ scrollTo, reload })
 <template>
   <div class="flex h-full min-h-0 flex-col gap-3">
     <div class="flex items-center justify-between gap-3">
-      <div
+      <ToggleGroupRoot
+        :model-value="device"
+        type="single"
         class="flex rounded-full bg-ink/5 p-1"
-        role="tablist"
         aria-label="Dispositivo"
+        @update:model-value="(d) => d && (device = d as typeof device)"
       >
-        <button
+        <ToggleGroupItem
           v-for="d in (['desktop', 'mobile'] as const)"
           :key="d"
-          type="button"
-          role="tab"
-          :aria-selected="device === d"
-          class="rounded-full px-3 py-1 text-sm transition"
-          :class="device === d ? 'bg-white font-medium shadow-sm' : `
-            opacity-60
+          :value="d"
+          class="
+            rounded-full px-3 py-1 text-sm opacity-60 transition
             hover:opacity-100
-          `"
-          @click="device = d"
+            data-[state=on]:bg-white data-[state=on]:font-medium
+            data-[state=on]:opacity-100 data-[state=on]:shadow-sm
+          "
         >
           {{ d === 'desktop' ? 'Desktop' : 'Mobile' }}
-        </button>
-      </div>
+        </ToggleGroupItem>
+      </ToggleGroupRoot>
       <a
         :href="pageUrl"
         target="_blank"

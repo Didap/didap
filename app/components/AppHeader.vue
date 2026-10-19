@@ -45,7 +45,9 @@ watch(
 </script>
 
 <template>
-  <header
+  <CollapsibleRoot
+    v-model:open="menuOpen"
+    as="header"
     class="sticky top-0 z-40"
     :class="cream ? 'bg-cream' : 'bg-paper-light'"
   >
@@ -209,17 +211,13 @@ watch(
             {{ t('nav.cta') }}
           </DidapButton>
         </span>
-        <button
+        <CollapsibleTrigger
           v-if="!product"
-          type="button"
           class="
             -mr-2 flex size-10 items-center justify-center
             lg:hidden
           "
-          :aria-expanded="menuOpen"
-          aria-controls="mobile-menu"
           :aria-label="menuOpen ? t('nav.close_menu') : t('nav.open_menu')"
-          @click="menuOpen = !menuOpen"
         >
           <span class="relative block h-3 w-6">
             <span
@@ -237,14 +235,12 @@ watch(
               :class="menuOpen ? 'top-1.5 -rotate-45' : 'top-3'"
             />
           </span>
-        </button>
+        </CollapsibleTrigger>
       </div>
     </div>
 
-    <div
+    <CollapsibleContent
       v-if="!product"
-      v-show="menuOpen"
-      id="mobile-menu"
       class="
         border-t-[1.5px] border-ink bg-inherit
         lg:hidden
@@ -275,6 +271,6 @@ watch(
           </NuxtLink>
         </div>
       </nav>
-    </div>
-  </header>
+    </CollapsibleContent>
+  </CollapsibleRoot>
 </template>

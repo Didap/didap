@@ -32,6 +32,10 @@ const projectTypeOptions = computed(() => [
   { value: 'other', label: t('contact.form.option_other') },
 ])
 
+const projectTypeLabel = computed(
+  () => projectTypeOptions.value.find((o) => o.value === form.projectType)?.label,
+)
+
 const showQube = computed(() => form.fundingHelp === 'need_help')
 
 async function onSubmit() {
@@ -166,19 +170,45 @@ async function onSubmit() {
         >
           {{ t('contact.form.project_type') }}
         </span>
-        <select
-          v-model="form.projectType"
-          class="mt-2 w-full rounded-lg border border-ink/20 bg-paper px-4 py-2.5 text-base focus:border-accent focus:outline-none"
-        >
-          <option value="">{{ t('contact.form.project_type_default') }}</option>
-          <option
-            v-for="o in projectTypeOptions"
-            :key="o.value"
-            :value="o.value"
+        <SelectRoot v-model="form.projectType">
+          <SelectTrigger
+            class="mt-2 flex w-full items-center justify-between gap-3 rounded-lg border border-ink/20 bg-paper px-4 py-2.5 text-left text-base focus:border-accent focus:outline-none data-placeholder:text-ink-soft/60"
           >
-            {{ o.label }}
-          </option>
-        </select>
+            <SelectValue :placeholder="t('contact.form.project_type_default')">
+              {{ projectTypeLabel ?? t('contact.form.project_type_default') }}
+            </SelectValue>
+            <SelectIcon class="shrink-0 text-ink-soft">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="M4 6l4 4 4-4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </SelectIcon>
+          </SelectTrigger>
+          <SelectPortal>
+            <SelectContent
+              position="popper"
+              :side-offset="4"
+              class="z-50 max-h-(--reka-select-content-available-height) min-w-(--reka-select-trigger-width) overflow-hidden rounded-lg border border-ink/20 bg-paper p-1 shadow-lg"
+            >
+              <SelectViewport>
+                <SelectItem
+                  v-for="o in projectTypeOptions"
+                  :key="o.value"
+                  :value="o.value"
+                  class="rounded-md px-3 py-2 text-base outline-none select-none data-highlighted:bg-ink/5 data-[state=checked]:text-accent"
+                >
+                  <SelectItemText>{{ o.label }}</SelectItemText>
+                </SelectItem>
+              </SelectViewport>
+            </SelectContent>
+          </SelectPortal>
+        </SelectRoot>
       </label>
 
       <fieldset class="space-y-4">
@@ -187,22 +217,28 @@ async function onSubmit() {
         >
           {{ t('contact.form.funding_legend') }}
         </legend>
-        <div role="radiogroup" class="flex flex-col gap-3">
-          <InteractiveHoverButton
-            :text="t('contact.form.funding_have')"
-            :active="form.fundingHelp === 'have_budget'"
-            tone-class="bg-ink"
-            inverted-text-class="text-paper"
-            @click="form.fundingHelp = 'have_budget'"
-          />
-          <InteractiveHoverButton
-            :text="t('contact.form.funding_need')"
-            :active="form.fundingHelp === 'need_help'"
-            tone-class="bg-finance"
-            inverted-text-class="text-paper"
-            @click="form.fundingHelp = 'need_help'"
-          />
-        </div>
+        <RadioGroupRoot
+          v-model="form.fundingHelp"
+          :aria-label="t('contact.form.funding_legend')"
+          class="flex flex-col gap-3"
+        >
+          <RadioGroupItem value="have_budget" as-child>
+            <InteractiveHoverButton
+              :text="t('contact.form.funding_have')"
+              :active="form.fundingHelp === 'have_budget'"
+              tone-class="bg-ink"
+              inverted-text-class="text-paper"
+            />
+          </RadioGroupItem>
+          <RadioGroupItem value="need_help" as-child>
+            <InteractiveHoverButton
+              :text="t('contact.form.funding_need')"
+              :active="form.fundingHelp === 'need_help'"
+              tone-class="bg-finance"
+              inverted-text-class="text-paper"
+            />
+          </RadioGroupItem>
+        </RadioGroupRoot>
       </fieldset>
 
       <!-- Mobile / tablet inline Qube card -->
@@ -262,12 +298,24 @@ async function onSubmit() {
       </label>
 
       <label class="flex items-start gap-3 text-sm text-ink-soft">
-        <input
+        <CheckboxRoot
           v-model="form.consent"
-          type="checkbox"
           required
-          class="mt-1 size-4 accent-accent"
-        />
+          class="mt-1 flex size-4 shrink-0 items-center justify-center rounded-sm border border-ink/40 bg-paper focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:outline-none data-[state=checked]:border-accent data-[state=checked]:bg-accent"
+        >
+          <CheckboxIndicator class="text-paper">
+            <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M3 8.5l3 3 7-7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </CheckboxIndicator>
+        </CheckboxRoot>
         <span>
           {{ t('contact.form.consent') }}
           <NuxtLink

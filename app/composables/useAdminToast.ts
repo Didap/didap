@@ -1,14 +1,13 @@
-// Messaggio breve in basso nelle pagine admin (lo mostra AdminShell)
+// Messaggio breve in basso nelle pagine admin (lo mostra AdminToast).
+// Ogni avviso ha un id: uno nuovo sostituisce quello in corso.
 
-type Toast = { kind: 'ok' | 'error'; text: string }
-let timer: ReturnType<typeof setTimeout> | undefined
+type Toast = { id: number; kind: 'ok' | 'error'; text: string }
+let nextId = 0
 
 export function useAdminToast() {
   const toast = useState<Toast | null>('admin-toast', () => null)
   function notify(kind: Toast['kind'], text: string) {
-    toast.value = { kind, text }
-    clearTimeout(timer)
-    timer = setTimeout(() => (toast.value = null), kind === 'ok' ? 2500 : 6000)
+    toast.value = { id: ++nextId, kind, text }
   }
   return { toast, notify }
 }

@@ -45,6 +45,24 @@
 
   /* Animazioni - curve "vintage" più morbide del default */
   --ease-vintage: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Entrata e uscita degli avvisi di /admin (Toast di Reka UI) */
+  --animate-toast-in: toast-in 150ms var(--ease-vintage);
+  --animate-toast-out: toast-out 150ms ease-in forwards;
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
+
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
 }
 
 /*

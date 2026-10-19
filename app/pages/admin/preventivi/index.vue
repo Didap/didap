@@ -79,20 +79,27 @@ async function create() {
       </div>
 
       <div class="mt-6 flex flex-wrap items-center gap-2">
-        <button
-          v-for="f in FILTERS"
-          :key="f"
-          type="button"
-          class="rounded-full px-3 py-1.5 text-sm"
-          :class="filter === f ? 'bg-ink text-paper-light' : `
-            border border-ink/20
-            hover:border-ink
-          `"
-          :aria-pressed="filter === f"
-          @click="filter = f"
+        <ToggleGroupRoot
+          :model-value="filter"
+          type="single"
+          class="flex flex-wrap gap-2"
+          aria-label="Filtra per stato"
+          @update:model-value="(f) => f && (filter = f as typeof filter)"
         >
-          {{ f === 'all' ? 'Tutti' : STATUS_LABELS[f] }}
-        </button>
+          <ToggleGroupItem
+            v-for="f in FILTERS"
+            :key="f"
+            :value="f"
+            class="
+              rounded-full border border-ink/20 px-3 py-1.5 text-sm
+              hover:border-ink
+              data-[state=on]:border-ink data-[state=on]:bg-ink
+              data-[state=on]:text-paper-light
+            "
+          >
+            {{ f === 'all' ? 'Tutti' : STATUS_LABELS[f] }}
+          </ToggleGroupItem>
+        </ToggleGroupRoot>
         <input
           v-model="query"
           type="search"

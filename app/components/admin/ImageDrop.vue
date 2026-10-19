@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useEventListener } from '@vueuse/core'
+import { isVideoSrc } from '#shared/product'
 import { SLOT_DRAG_TYPE } from '~/composables/useSlotSwap'
 
 // Area immagine: si carica cliccando, trascinando file dal computer o
@@ -118,8 +119,18 @@ useEventListener('paste', (e: ClipboardEvent) => {
       @mouseenter="hovered = true"
       @mouseleave="hovered = false"
     >
+      <video
+        v-if="isVideoSrc(model)"
+        :src="model"
+        draggable="false"
+        class="pointer-events-none absolute inset-0 size-full object-cover"
+        muted
+        autoplay
+        loop
+        playsinline
+      />
       <img
-        v-if="model"
+        v-else-if="model"
         :src="model"
         alt=""
         draggable="false"

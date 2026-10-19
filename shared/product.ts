@@ -25,9 +25,14 @@ const imageSrc = z
     'Immagine non valida',
   )
 
+// Uno slot con `src` .mp4/.webm è un video in loop muto (una "gif"),
+// con `poster` come fotogramma fermo finché non parte
+export const isVideoSrc = (src?: string) => !!src && /\.(mp4|webm)(?:[?#]|$)/i.test(src)
+
 export const mediaSlotSchema = z
   .object({
     src: imageSrc.optional(),
+    poster: imageSrc.optional(),
     alt: text(300).optional(),
     color: z.enum(PRODUCT_COLORS).optional(),
     label: z.boolean().optional(),

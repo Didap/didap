@@ -14,8 +14,9 @@ scope: Design e sviluppo full-stack
 stack: Nuxt 4, Vue 3, PostgreSQL, Stripe
 lede: Aste live di fantacalcio. Il banco tiene i conti, i giocatori rilanciano dal telefono, il countdown decide.
 hero:
-  src: /covers/fanta-rainbow-hero.webp
-  alt: Una porta da calcio su un campo in erba con il logo Fanta Rainbow e la scritta Gioca ora
+  src: /covers/fanta-rainbow-hero.mp4
+  poster: /covers/fanta-rainbow-hero-poster.webp
+  alt: Il logo di Fanta Rainbow al centro di una porta da calcio illuminata di notte, con la rete mossa dal vento
 intro: Fanta Rainbow è il banco di un’asta di fantacalcio. L’organizzatore crea l’asta, sceglie i nomi delle squadre e riceve un link personale per ciascuna. La sera dell’asta il tabellone gira sul grande schermo e tutti gli altri sono al telefono. Chi offre per ultimo prima che scada il countdown si prende il giocatore.
 challenge:
   title: Nessun timer sul server.
@@ -39,12 +40,15 @@ model: "Un credito lega una tantum: 10 € per lega, squadre illimitate, paga so
 next: cityfix
 media:
   pair:
-    - color: ink
-      label: false
-    - color: red
-      label: false
+    - src: /covers/fanta-rainbow-logo.svg
+      alt: Il logo di Fanta Rainbow
+    - src: /covers/fanta-rainbow-asta.mp4
+      poster: /covers/fanta-rainbow-asta-poster.webp
+      alt: "L'asta live di Fanta Rainbow: le squadre rilanciano su Maignan, la barra del countdown si riempie e riparte a ogni offerta, finché il calciatore è aggiudicato a 64 crediti"
   wide:
-    color: green
+    src: /covers/fanta-rainbow-gioca.mp4
+    poster: /covers/fanta-rainbow-gioca-poster.webp
+    alt: "La scelta della sfida di Fanta Rainbow: Ranked e Torneo divisi da un fulmine arcobaleno, che si illuminano a turno"
   feature:
     - color: ink
     - color: red

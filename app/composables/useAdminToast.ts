@@ -1,8 +1,8 @@
 // Messaggio breve in basso nelle pagine admin (lo mostra AdminToast).
 // Il timer sta qui e non nel componente: l'avviso si chiude anche se la
 // pagina che lo mostrava è cambiata. Si ferma finché ci si passa sopra
-// (pause/resume arrivano dal Toast di Reka UI). Uno nuovo sostituisce
-// quello in corso.
+// col mouse (pause/resume da AdminToast). Uno nuovo sostituisce quello
+// in corso.
 
 type Toast = { id: number; kind: 'ok' | 'error'; text: string; open: boolean }
 

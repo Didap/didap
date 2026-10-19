@@ -1,8 +1,7 @@
 <script setup lang="ts" generic="T extends string | number | null">
 // Menu a tendina (Select di Reka UI) per i form del sito e di /admin.
-// Le voci si riconoscono per posizione, così anche '' e null sono scelte
-// valide (Reka non le accetta come valore). Classi e attributi passano
-// al bottone.
+// Voci per posizione (useIndexedOptions): anche '' e null sono scelte
+// valide. Classi e attributi passano al bottone.
 defineOptions({ inheritAttrs: false })
 
 const model = defineModel<T>({ required: true })
@@ -15,14 +14,7 @@ const props = withDefaults(
   { label: undefined, variant: 'admin' },
 )
 
-const current = computed(() => props.options.findIndex((o) => o.value === model.value))
-const index = computed({
-  get: () => (current.value < 0 ? undefined : String(current.value)),
-  set: (i) => {
-    const option = i === undefined ? undefined : props.options[Number(i)]
-    if (option) model.value = option.value
-  },
-})
+const { index, selected, select } = useIndexedOptions(() => props.options, model)
 
 const STYLES = {
   admin: {
@@ -43,7 +35,10 @@ const style = computed(() => STYLES[props.variant])
 </script>
 
 <template>
-  <SelectRoot v-model="index">
+  <SelectRoot
+    :model-value="index"
+    @update:model-value="select"
+  >
     <SelectTrigger
       class="flex items-center justify-between gap-2 text-left"
       :class="style.trigger"
@@ -51,7 +46,7 @@ const style = computed(() => STYLES[props.variant])
       v-bind="$attrs"
     >
       <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
-      <SelectValue>{{ options[current]?.label }}</SelectValue>
+      <SelectValue>{{ selected?.label }}</SelectValue>
       <SelectIcon class="shrink-0 opacity-60">
         <svg
           width="16"

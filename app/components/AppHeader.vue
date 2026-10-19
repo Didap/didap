@@ -45,9 +45,7 @@ watch(
 </script>
 
 <template>
-  <CollapsibleRoot
-    v-model:open="menuOpen"
-    as="header"
+  <header
     class="sticky top-0 z-40"
     :class="cream ? 'bg-cream' : 'bg-paper-light'"
   >
@@ -211,14 +209,17 @@ watch(
             {{ t('nav.cta') }}
           </DidapButton>
         </span>
-        <CollapsibleTrigger
+        <button
           v-if="!product"
+          type="button"
           class="
             -mr-2 flex size-10 items-center justify-center
             lg:hidden
           "
+          :aria-expanded="menuOpen"
           aria-controls="mobile-menu"
           :aria-label="menuOpen ? t('nav.close_menu') : t('nav.open_menu')"
+          @click="menuOpen = !menuOpen"
         >
           <span class="relative block h-3 w-6">
             <span
@@ -236,52 +237,44 @@ watch(
               :class="menuOpen ? 'top-1.5 -rotate-45' : 'top-3'"
             />
           </span>
-        </CollapsibleTrigger>
+        </button>
       </div>
     </div>
 
-    <!-- Menu chiuso: resta nella pagina con display:none, come prima.
-         as-child per tenere l'id fisso: quello di Reka arriva al bottone
-         solo dopo il primo clic -->
-    <CollapsibleContent
+    <div
       v-if="!product"
       v-show="menuOpen"
-      force-mount
-      as-child
+      id="mobile-menu"
+      class="
+        border-t-[1.5px] border-ink bg-inherit
+        lg:hidden
+      "
     >
-      <div
-        id="mobile-menu"
-        class="
-          border-t-[1.5px] border-ink bg-inherit
-          lg:hidden
-        "
-      >
-        <nav class="page-x flex flex-col gap-5 py-8">
+      <nav class="page-x flex flex-col gap-5 py-8">
+        <NuxtLink
+          v-for="l in links"
+          :key="l.id"
+          :to="l.to"
+          aria-current="false"
+          class="text-title"
+        >
+          {{ l.label }}
+        </NuxtLink>
+        <div class="flex items-center gap-6 pt-4">
+          <DidapButton :to="localePath('/contact')">
+            {{ t('nav.cta') }}
+          </DidapButton>
           <NuxtLink
-            v-for="l in links"
-            :key="l.id"
-            :to="l.to"
-            aria-current="false"
-            class="text-title"
+            v-for="l in allLocales.filter((x) => x.code !== locale)"
+            :key="l.code"
+            :to="switchLocalePath(l.code)"
+            class="text-label opacity-60"
+            :lang="l.code"
           >
-            {{ l.label }}
+            {{ l.code }}
           </NuxtLink>
-          <div class="flex items-center gap-6 pt-4">
-            <DidapButton :to="localePath('/contact')">
-              {{ t('nav.cta') }}
-            </DidapButton>
-            <NuxtLink
-              v-for="l in allLocales.filter((x) => x.code !== locale)"
-              :key="l.code"
-              :to="switchLocalePath(l.code)"
-              class="text-label opacity-60"
-              :lang="l.code"
-            >
-              {{ l.code }}
-            </NuxtLink>
-          </div>
-        </nav>
-      </div>
-    </CollapsibleContent>
-  </CollapsibleRoot>
+        </div>
+      </nav>
+    </div>
+  </header>
 </template>

@@ -1,15 +1,10 @@
 <script setup lang="ts">
 // Messaggio breve in basso (Toast di Reka UI). Apertura, chiusura e
-// timer li gestisce useAdminToast; qui restano l'animazione e la pausa
-// col mouse sopra. Esc non lo chiude ma passa oltre: chiude menu e
-// dialoghi aperti sotto.
-const { toast, dismiss, pause, resume } = useAdminToast()
-
-let fromEscape = false
-function onOpenChange(open: boolean) {
-  if (!open && !fromEscape) dismiss()
-  fromEscape = false
-}
+// timer li gestisce useAdminToast: il Toast è controllato da :open, così
+// Reka non lo chiude da solo (nemmeno con Esc, che resta a menu e
+// dialoghi). Qui restano l'animazione e la pausa col mouse sopra (non
+// quella di Reka, che scatta anche cliccando nell'iframe dell'anteprima).
+const { toast, pause, resume } = useAdminToast()
 
 // Pagina cambiata col mouse sopra: il timer riparte
 onBeforeUnmount(resume)
@@ -34,10 +29,8 @@ onBeforeUnmount(resume)
       :class="toast.kind === 'ok' ? 'bg-ink text-paper-light' : `
         bg-red text-white
       `"
-      @escape-key-down="fromEscape = true"
-      @update:open="onOpenChange"
-      @pause="pause"
-      @resume="resume"
+      @pointerenter="pause"
+      @pointerleave="resume"
     >
       <ToastDescription>{{ toast.text }}</ToastDescription>
     </ToastRoot>

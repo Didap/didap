@@ -362,7 +362,9 @@ useEventListener('keydown', (e: KeyboardEvent) => {
   }
   // Esc dentro un menu o un dialogo chiude solo quello (il dialogo
   // delle modifiche non salvate gestisce il suo Esc)
-  const inLayer = (e.target as Element | null)?.closest('[role=listbox], [role=dialog], [role=alertdialog]')
+  const inLayer = (e.target as Element | null)?.closest(
+    '[role=listbox], [role=menu], [role=dialog], [role=alertdialog]',
+  )
   if (e.key === 'Escape' && !inLayer) {
     confirmReset.value = false
     previewOpen.value = false

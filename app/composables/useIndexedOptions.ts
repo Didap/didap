@@ -2,6 +2,10 @@
 // vogliono valori stringa non vuoti: ogni voce si riconosce per posizione,
 // così anche '' e null sono scelte valide. Senza corrispondenza l'indice
 // è '' e mai undefined, così Reka resta controllato dal genitore.
+// Riscegliere la voce attiva non cambia niente (come il change nativo).
+// Import espliciti: lo usano anche i test, fuori da Nuxt.
+
+import { computed, type Ref } from 'vue'
 
 export function useIndexedOptions<T, O extends { value: T }>(
   options: () => readonly O[],
@@ -15,7 +19,7 @@ export function useIndexedOptions<T, O extends { value: T }>(
 
   function select(i: unknown) {
     const option = typeof i === 'string' && i !== '' ? options()[Number(i)] : undefined
-    if (option) model.value = option.value
+    if (option && option.value !== model.value) model.value = option.value
   }
 
   return { index, selected, select }

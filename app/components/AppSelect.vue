@@ -79,7 +79,7 @@ const style = computed(() => STYLES[props.variant])
         <SelectViewport>
           <SelectItem
             v-for="(o, i) in options"
-            :key="i"
+            :key="`${i}:${o.value}:${o.label}`"
             :value="String(i)"
             class="
               relative flex items-center py-2 pr-3 pl-8 outline-none select-none

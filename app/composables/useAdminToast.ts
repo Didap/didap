@@ -38,5 +38,5 @@ export function useAdminToast() {
   function resume() {
     if (toast.value?.open && !timer) schedule(remaining, dismiss)
   }
-  return { toast, notify, dismiss, pause, resume }
+  return { toast, notify, pause, resume }
 }

@@ -51,7 +51,7 @@ const { index, select } = useIndexedOptions(() => props.options, model)
   >
     <ToggleGroupItem
       v-for="(o, i) in options"
-      :key="i"
+      :key="`${i}:${o.value}:${o.label}`"
       :value="String(i)"
       class="flex items-center gap-1.5 rounded-full text-sm transition"
       :class="style.item"

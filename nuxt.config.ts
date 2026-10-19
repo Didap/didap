@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-01',
   devtools: { enabled: true },
 
-  modules: ['@nuxt/content', '@nuxtjs/i18n'],
+  modules: ['@nuxt/content', '@nuxtjs/i18n', 'reka-ui/nuxt'],
 
   css: ['~/assets/css/main.css'],
 
@@ -19,9 +19,6 @@ export default defineNuxtConfig({
       { code: 'it', language: 'it-IT', name: 'Italiano', file: 'it.json' },
       { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
     ],
-    bundle: {
-      optimizeTranslationDirective: false,
-    },
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'didap_lang',

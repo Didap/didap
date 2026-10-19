@@ -1,10 +1,20 @@
 <script setup lang="ts">
 import { useEventListener, watchDebounced } from '@vueuse/core'
+import {
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+  ToggleGroupItem,
+  ToggleGroupRoot,
+} from 'reka-ui'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
-import AppSelect from '~/components/AppSelect.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
-import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
 import QuotePhaseEditor from '~/components/admin/QuotePhaseEditor.vue'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
@@ -41,10 +51,19 @@ const { notify } = useAdminToast()
 const detail = ref<QuoteDetail | null>(null)
 const form = ref<DraftInput | null>(null)
 const clients = ref<Client[]>([])
+// Reka non accetta null come valore: "nessun cliente" ha il suo, che non
+// può essere un uuid, e nel form torna null
+const NO_CLIENT = 'none'
 const clientOptions = computed(() => [
-  { value: null, label: 'Scegli un cliente…' },
+  { value: NO_CLIENT, label: 'Scegli un cliente…' },
   ...clients.value.map((c) => ({ value: c.id, label: c.name })),
 ])
+const clientValue = computed(() => form.value?.clientId ?? NO_CLIENT)
+const clientLabel = computed(() => clientOptions.value.find((o) => o.value === clientValue.value)?.label)
+
+function pickClient(v: unknown) {
+  if (form.value && typeof v === 'string') form.value.clientId = v === NO_CLIENT ? null : v
+}
 const loadError = ref('')
 const savedSignature = ref('')
 const saving = ref(false)
@@ -168,7 +187,12 @@ const issue = () => run(async () => {
   notify('ok', `Emesso ${res.number}, rev. ${res.rev}`)
 })
 
-const STATUS_OPTIONS = SETTABLE_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))
+
+// Un clic sullo stato attivo lo spegnerebbe (undefined): non cambia niente
+function pickStatus(v: unknown) {
+  const s = SETTABLE_STATUSES.find((x) => x === v)
+  if (s) setStatus(s)
+}
 const setStatus = (status: SettableStatus) => run(async () => {
   await $fetch(`/api/admin/quotes/${id.value}/status`, { method: 'PUT', body: { status } })
   await load()
@@ -227,9 +251,13 @@ const DISCOUNT_OPTIONS = [
   { value: 'percent', label: 'Percentuale' },
   { value: 'amount', label: 'Importo fisso' },
 ] as const satisfies readonly { value: DiscountKind; label: string }[]
+const discountLabel = computed(() =>
+  DISCOUNT_OPTIONS.find((o) => o.value === form.value?.content.discount.kind)?.label,
+)
 
-function setDiscountKind(kind: DiscountKind) {
-  if (!form.value) return
+function setDiscountKind(v: unknown) {
+  const kind = DISCOUNT_OPTIONS.find((o) => o.value === v)?.value
+  if (!form.value || !kind || kind === form.value.content.discount.kind) return
   form.value.content.discount = kind === 'none' ? { kind } : { kind, value: 0 }
 }
 </script>
@@ -293,10 +321,34 @@ function setDiscountKind(kind: DiscountKind) {
               label="Cliente"
               hint="I dati dei clienti si gestiscono in Clienti."
             >
-              <AppSelect
-                v-model="form.clientId"
-                :options="clientOptions"
-              />
+              <SelectRoot
+                :model-value="clientValue"
+                :disabled="busy"
+                @update:model-value="pickClient"
+              >
+                <SelectTrigger class="select-trigger admin-input">
+                  <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
+                  <SelectValue>{{ clientLabel }}</SelectValue>
+                </SelectTrigger>
+                <SelectPortal>
+                  <SelectContent
+                    position="popper"
+                    :side-offset="4"
+                    class="select-content admin-select-content"
+                  >
+                    <SelectViewport>
+                      <SelectItem
+                        v-for="o in clientOptions"
+                        :key="o.value"
+                        :value="o.value"
+                        class="select-item admin-select-item"
+                      >
+                        <SelectItemText>{{ o.label }}</SelectItemText>
+                      </SelectItem>
+                    </SelectViewport>
+                  </SelectContent>
+                </SelectPortal>
+              </SelectRoot>
             </AdminField>
             <AdminField
               label="Titolo del progetto"
@@ -358,6 +410,7 @@ function setDiscountKind(kind: DiscountKind) {
               :count="form.content.phases.length"
               :day-rate="form.content.dayRate"
               :subtotal="totals?.phases[i] ?? 0"
+              :disabled="busy"
               @move="moveInArray(form.content.phases, i, $event)"
               @remove="form.content.phases.splice(i, 1)"
             />
@@ -387,13 +440,36 @@ function setDiscountKind(kind: DiscountKind) {
                 group
               >
                 <div class="flex gap-2">
-                  <AppSelect
+                  <SelectRoot
                     :model-value="form.content.discount.kind"
-                    :options="DISCOUNT_OPTIONS"
-                    class="w-auto"
-                    aria-label="Tipo di sconto"
+                    :disabled="busy"
                     @update:model-value="setDiscountKind"
-                  />
+                  >
+                    <SelectTrigger
+                      class="select-trigger admin-input w-auto"
+                      aria-label="Tipo di sconto"
+                    >
+                      <SelectValue>{{ discountLabel }}</SelectValue>
+                    </SelectTrigger>
+                    <SelectPortal>
+                      <SelectContent
+                        position="popper"
+                        :side-offset="4"
+                        class="select-content admin-select-content"
+                      >
+                        <SelectViewport>
+                          <SelectItem
+                            v-for="o in DISCOUNT_OPTIONS"
+                            :key="o.value"
+                            :value="o.value"
+                            class="select-item admin-select-item"
+                          >
+                            <SelectItemText>{{ o.label }}</SelectItemText>
+                          </SelectItem>
+                        </SelectViewport>
+                      </SelectContent>
+                    </SelectPortal>
+                  </SelectRoot>
                   <NumberInput
                     v-if="form.content.discount.kind === 'percent'"
                     v-model="form.content.discount.value"
@@ -586,13 +662,22 @@ function setDiscountKind(kind: DiscountKind) {
             >
               Stato
             </p>
-            <AdminToggleGroup
+            <ToggleGroupRoot
               :model-value="detail.status"
-              :options="STATUS_OPTIONS"
+              type="single"
               :disabled="busy"
+              class="toggle-pills"
               aria-labelledby="stato-preventivo"
-              @update:model-value="(s) => setStatus(s as SettableStatus)"
-            />
+              @update:model-value="pickStatus"
+            >
+              <ToggleGroupItem
+                v-for="s in SETTABLE_STATUSES"
+                :key="s"
+                :value="s"
+              >
+                {{ STATUS_LABELS[s] }}
+              </ToggleGroupItem>
+            </ToggleGroupRoot>
           </div>
 
           <div

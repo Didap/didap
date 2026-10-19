@@ -1,6 +1,15 @@
 <script setup lang="ts">
+import {
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+} from 'reka-ui'
 import AdminField from '~/components/admin/AdminField.vue'
-import AppSelect from '~/components/AppSelect.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
 import { moveInArray } from '~/utils/moveInArray'
 import { formatEuro } from '#shared/money'
@@ -14,6 +23,8 @@ const props = defineProps<{
   count: number
   dayRate: number
   subtotal: number
+  /** Durante un'azione: il fieldset non ferma i menu di Reka */
+  disabled?: boolean
 }>()
 const emit = defineEmits<{ move: [delta: -1 | 1]; remove: [] }>()
 
@@ -27,9 +38,11 @@ function addItem(kind: QuoteItem['kind']) {
 }
 
 // Cambio di tipo: passando a corpo l'importo resta quello calcolato
-function setKind(i: number, kind: QuoteItem['kind']) {
+// Riscegliere il tipo attivo non azzera la voce
+function setKind(i: number, v: unknown) {
   const item = items.value[i]
-  if (!item || item.kind === kind) return
+  const kind = KIND_OPTIONS.find((o) => o.value === v)?.value
+  if (!item || !kind || item.kind === kind) return
   items.value[i] = kind === 'fixed'
     ? { id: item.id, kind, description: item.description, amount: itemAmount(item) }
     : { id: item.id, kind, description: item.description, days: 1, rate: props.dayRate }
@@ -39,6 +52,7 @@ const KIND_OPTIONS = [
   { value: 'days', label: 'A giorni' },
   { value: 'fixed', label: 'A corpo' },
 ] as const satisfies readonly { value: QuoteItem['kind']; label: string }[]
+const KIND_LABELS = Object.fromEntries(KIND_OPTIONS.map((o) => [o.value, o.label]))
 
 function askRemove() {
   if (items.value.length) confirmRemove.value = true
@@ -135,13 +149,36 @@ function askRemove() {
               maxlength="500"
             >
             <div class="flex flex-wrap items-center gap-2 text-sm">
-              <AppSelect
+              <SelectRoot
                 :model-value="item.kind"
-                :options="KIND_OPTIONS"
-                class="w-auto"
-                aria-label="Tipo di voce"
-                @update:model-value="(k) => setKind(i, k)"
-              />
+                :disabled="disabled"
+                @update:model-value="(v) => setKind(i, v)"
+              >
+                <SelectTrigger
+                  class="select-trigger admin-input w-auto"
+                  aria-label="Tipo di voce"
+                >
+                  <SelectValue>{{ KIND_LABELS[item.kind] }}</SelectValue>
+                </SelectTrigger>
+                <SelectPortal>
+                  <SelectContent
+                    position="popper"
+                    :side-offset="4"
+                    class="select-content admin-select-content"
+                  >
+                    <SelectViewport>
+                      <SelectItem
+                        v-for="o in KIND_OPTIONS"
+                        :key="o.value"
+                        :value="o.value"
+                        class="select-item admin-select-item"
+                      >
+                        <SelectItemText>{{ o.label }}</SelectItemText>
+                      </SelectItem>
+                    </SelectViewport>
+                  </SelectContent>
+                </SelectPortal>
+              </SelectRoot>
               <template v-if="item.kind === 'days'">
                 <div class="w-20">
                   <NumberInput

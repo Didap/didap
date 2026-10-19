@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDebounceFn, useElementSize } from '@vueuse/core'
 import type { ProductOverride } from '#shared/product'
-import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
 
 // Anteprima live: la scheda prodotto vera in un iframe (?preview=1),
 // alla quale si manda la bozza non salvata a ogni modifica.
@@ -19,6 +19,12 @@ const DEVICES = [
   { value: 'desktop', label: 'Desktop' },
   { value: 'mobile', label: 'Mobile' },
 ] as const
+
+// Un clic sulla voce attiva la spegnerebbe (undefined): resta com'è
+function pickDevice(v: unknown) {
+  const d = DEVICES.find((o) => o.value === v)
+  if (d) device.value = d.value
+}
 
 const frame = useTemplateRef<HTMLIFrameElement>('frame')
 const box = useTemplateRef<HTMLDivElement>('box')
@@ -73,12 +79,21 @@ defineExpose({ scrollTo, reload })
 <template>
   <div class="flex h-full min-h-0 flex-col gap-3">
     <div class="flex items-center justify-between gap-3">
-      <AdminToggleGroup
-        v-model="device"
-        :options="DEVICES"
-        variant="segmented"
+      <ToggleGroupRoot
+        :model-value="device"
+        type="single"
+        class="toggle-segmented"
         aria-label="Dispositivo"
-      />
+        @update:model-value="pickDevice"
+      >
+        <ToggleGroupItem
+          v-for="d in DEVICES"
+          :key="d.value"
+          :value="d.value"
+        >
+          {{ d.label }}
+        </ToggleGroupItem>
+      </ToggleGroupRoot>
       <a
         :href="pageUrl"
         target="_blank"

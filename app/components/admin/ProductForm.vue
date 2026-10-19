@@ -1,9 +1,19 @@
 <script setup lang="ts">
+import {
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+  ToggleGroupItem,
+  ToggleGroupRoot,
+} from 'reka-ui'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
-import AppSelect from '~/components/AppSelect.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
-import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
 import ImageDrop from '~/components/admin/ImageDrop.vue'
 import MediaField from '~/components/admin/MediaField.vue'
 import { PRODUCT_STATUSES } from '#shared/product'
@@ -25,10 +35,25 @@ const STATUS_OPTIONS = [
   ...PRODUCT_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
 ] as const
 
+// Un clic sulla voce attiva la spegnerebbe (undefined): resta com'è
+function pickStatus(v: unknown) {
+  const o = STATUS_OPTIONS.find((x) => x.value === v)
+  if (o) form.value.status = o.value
+}
+
+// Select di Reka non accetta '' come valore: "il successivo in ordine" ha
+// il suo, che nel form torna ''. '_' non può essere uno slug ([a-z0-9-])
+const NEXT_AUTO = '_'
 const nextOptions = computed(() => [
-  { value: '', label: 'Il successivo in ordine' },
+  { value: NEXT_AUTO, label: 'Il successivo in ordine' },
   ...props.others.map((p) => ({ value: p.slug, label: p.title })),
 ])
+const nextValue = computed(() => form.value.next || NEXT_AUTO)
+const nextLabel = computed(() => nextOptions.value.find((o) => o.value === nextValue.value)?.label)
+
+function pickNext(v: unknown) {
+  if (typeof v === 'string') form.value.next = v === NEXT_AUTO ? '' : v
+}
 
 // ---- Voci di "Cosa fa": trascinamento (dalla maniglia) e frecce da tastiera
 const items = computed(() => form.value.features.items)
@@ -161,10 +186,20 @@ const usesMarkdownBody = computed(
           label="Stato"
           group
         >
-          <AdminToggleGroup
-            v-model="form.status"
-            :options="STATUS_OPTIONS"
-          />
+          <ToggleGroupRoot
+            :model-value="form.status"
+            type="single"
+            class="toggle-pills"
+            @update:model-value="pickStatus"
+          >
+            <ToggleGroupItem
+              v-for="o in STATUS_OPTIONS"
+              :key="o.value"
+              :value="o.value"
+            >
+              {{ o.label }}
+            </ToggleGroupItem>
+          </ToggleGroupRoot>
         </AdminField>
         <AdminField label="Ruolo">
           <input
@@ -535,10 +570,33 @@ const usesMarkdownBody = computed(
         />
       </AdminField>
       <AdminField label="Prossimo prodotto">
-        <AppSelect
-          v-model="form.next"
-          :options="nextOptions"
-        />
+        <SelectRoot
+          :model-value="nextValue"
+          @update:model-value="pickNext"
+        >
+          <SelectTrigger class="select-trigger admin-input">
+            <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
+            <SelectValue>{{ nextLabel }}</SelectValue>
+          </SelectTrigger>
+          <SelectPortal>
+            <SelectContent
+              position="popper"
+              :side-offset="4"
+              class="select-content admin-select-content"
+            >
+              <SelectViewport>
+                <SelectItem
+                  v-for="o in nextOptions"
+                  :key="o.value"
+                  :value="o.value"
+                  class="select-item admin-select-item"
+                >
+                  <SelectItemText>{{ o.label }}</SelectItemText>
+                </SelectItem>
+              </SelectViewport>
+            </SelectContent>
+          </SelectPortal>
+        </SelectRoot>
       </AdminField>
     </AdminSection>
   </div>

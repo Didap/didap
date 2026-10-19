@@ -1,7 +1,19 @@
 <script setup lang="ts">
-import { CheckboxIndicator, CheckboxRoot, RadioGroupItem, RadioGroupRoot } from 'reka-ui'
+import {
+  CheckboxIndicator,
+  CheckboxRoot,
+  RadioGroupItem,
+  RadioGroupRoot,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+} from 'reka-ui'
 import { Motion, AnimatePresence } from 'motion-v'
-import AppSelect from '~/components/AppSelect.vue'
 import InteractiveHoverButton from '~/components/InteractiveHoverButton.vue'
 
 const { t } = useI18n()
@@ -26,14 +38,23 @@ const form = reactive({
 const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const errorDetail = ref<string | null>(null)
 
+// Reka non accetta '' come valore: "nessun tipo" ha il suo, che nel
+// form torna ''
+const NO_TYPE = 'none'
 const projectTypeOptions = computed(() => [
-  { value: '', label: t('contact.form.project_type_default') },
+  { value: NO_TYPE, label: t('contact.form.project_type_default') },
   { value: 'product', label: t('contact.form.option_product') },
   { value: 'saas', label: t('contact.form.option_saas') },
   { value: 'app', label: t('contact.form.option_app') },
   { value: 'site', label: t('contact.form.option_site') },
   { value: 'other', label: t('contact.form.option_other') },
 ])
+const projectTypeValue = computed(() => form.projectType || NO_TYPE)
+const projectTypeLabel = computed(() => projectTypeOptions.value.find((o) => o.value === projectTypeValue.value)?.label)
+
+function pickProjectType(v: unknown) {
+  if (typeof v === 'string') form.projectType = v === NO_TYPE ? '' : v
+}
 
 const FUNDING_OPTIONS = [
   { value: 'have_budget', text: 'contact.form.funding_have', tone: 'bg-ink' },
@@ -174,12 +195,42 @@ async function onSubmit() {
         >
           {{ t('contact.form.project_type') }}
         </span>
-        <AppSelect
-          v-model="form.projectType"
-          :options="projectTypeOptions"
-          variant="site"
-          class="mt-2"
-        />
+        <SelectRoot
+          :model-value="projectTypeValue"
+          @update:model-value="pickProjectType"
+        >
+          <SelectTrigger
+            class="
+              mt-2 select-trigger w-full rounded-lg border border-ink/20
+              bg-paper px-4 py-2.5 text-base
+              focus:border-accent focus:outline-none
+            "
+          >
+            <!-- Testo dalle opzioni: c'è già nell'HTML del server -->
+            <SelectValue>{{ projectTypeLabel }}</SelectValue>
+          </SelectTrigger>
+          <SelectPortal>
+            <SelectContent
+              position="popper"
+              :side-offset="4"
+              class="select-content rounded-lg border-ink/20 bg-paper"
+            >
+              <SelectViewport>
+                <SelectItem
+                  v-for="o in projectTypeOptions"
+                  :key="o.value"
+                  :value="o.value"
+                  class="
+                    select-item rounded-md text-base
+                    data-[state=checked]:text-accent
+                  "
+                >
+                  <SelectItemText>{{ o.label }}</SelectItemText>
+                </SelectItem>
+              </SelectViewport>
+            </SelectContent>
+          </SelectPortal>
+        </SelectRoot>
       </label>
 
       <fieldset class="space-y-4">

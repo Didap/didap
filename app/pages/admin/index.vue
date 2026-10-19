@@ -7,6 +7,8 @@ import {
   AlertDialogPortal,
   AlertDialogRoot,
   AlertDialogTitle,
+  ToggleGroupItem,
+  ToggleGroupRoot,
 } from 'reka-ui'
 import { useDebouncedRefHistory, useEventListener, watchDebounced } from '@vueuse/core'
 import PreviewPane from '~/components/admin/PreviewPane.vue'
@@ -14,8 +16,7 @@ import ProductForm from '~/components/admin/ProductForm.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
-import AdminToggleGroup from '~/components/admin/AdminToggleGroup.vue'
-import type { ProductLocale, ProductOverride } from '#shared/product'
+import { isProductLocale, type ProductLocale, type ProductOverride } from '#shared/product'
 import {
   formSignature,
   fromAdminForm,
@@ -346,6 +347,11 @@ const open = (slug: string | null, lang: ProductLocale = locale.value) =>
     await router.replace({ query: slug ? { p: slug, ...(lang === 'en' ? { lang } : {}) } : {} })
   })
 
+// Un clic sulla lingua attiva la spegnerebbe (undefined): non cambia niente
+function pickLocale(v: unknown) {
+  if (isProductLocale(v)) open(selected.value, v)
+}
+
 const isTextField = (el: EventTarget | null) =>
   el instanceof HTMLElement
   && (el.isContentEditable || ['INPUT', 'TEXTAREA'].includes(el.tagName))
@@ -587,22 +593,26 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
             <h1 class="mr-auto text-xl font-bold">
               {{ current?.title ?? selected }}
             </h1>
-            <AdminToggleGroup
+            <ToggleGroupRoot
               :model-value="locale"
-              :options="LOCALES"
-              variant="segmented"
+              type="single"
+              class="toggle-segmented"
               aria-label="Lingua"
-              @update:model-value="(l) => open(selected, l)"
+              @update:model-value="pickLocale"
             >
-              <template #item="{ option }">
-                {{ option.label }}
+              <ToggleGroupItem
+                v-for="o in LOCALES"
+                :key="o.value"
+                :value="o.value"
+              >
+                {{ o.label }}
                 <span
-                  v-if="selected && editedLocales(selected).has(option.value)"
+                  v-if="selected && editedLocales(selected).has(o.value)"
                   class="size-1.5 rounded-full bg-banana"
                   aria-label="modificato"
                 />
-              </template>
-            </AdminToggleGroup>
+              </ToggleGroupItem>
+            </ToggleGroupRoot>
             <button
               type="button"
               class="

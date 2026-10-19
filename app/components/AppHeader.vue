@@ -45,8 +45,10 @@ watch(
 </script>
 
 <template>
+  <!-- Menu mobile chiuso: resta nella pagina (nascosto) come prima -->
   <CollapsibleRoot
     v-model:open="menuOpen"
+    :unmount-on-hide="false"
     as="header"
     class="sticky top-0 z-40"
     :class="cream ? 'bg-cream' : 'bg-paper-light'"
@@ -241,12 +243,12 @@ watch(
 
     <CollapsibleContent
       v-if="!product"
-      class="
-        border-t-[1.5px] border-ink bg-inherit
-        lg:hidden
-      "
+      class="lg:hidden"
     >
-      <nav class="page-x flex flex-col gap-5 py-8">
+      <nav class="
+        flex flex-col gap-5 border-t-[1.5px] border-ink py-8
+        page-x
+      ">
         <NuxtLink
           v-for="l in links"
           :key="l.id"

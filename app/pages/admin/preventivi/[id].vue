@@ -40,7 +40,10 @@ const { notify } = useAdminToast()
 const detail = ref<QuoteDetail | null>(null)
 const form = ref<DraftInput | null>(null)
 const clients = ref<Client[]>([])
-const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.name })))
+const clientOptions = computed(() => [
+  { value: null, label: 'Scegli un cliente…' },
+  ...clients.value.map((c) => ({ value: c.id, label: c.name })),
+])
 const loadError = ref('')
 const savedSignature = ref('')
 const saving = ref(false)
@@ -291,7 +294,6 @@ function setDiscountKind(kind: DiscountKind) {
               <AdminSelect
                 v-model="form.clientId"
                 :options="clientOptions"
-                placeholder="Scegli un cliente…"
               />
             </AdminField>
             <AdminField

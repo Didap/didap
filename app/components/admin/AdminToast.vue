@@ -1,14 +1,24 @@
 <script setup lang="ts">
-// Messaggio breve in basso (Toast di Reka UI). Apertura e chiusura le
-// decide useAdminToast; qui restano l'animazione e lo swipe per chiudere.
-// Esc non lo chiude: serve a chiudere menu e dialoghi sotto.
-const { toast, dismiss } = useAdminToast()
+// Messaggio breve in basso (Toast di Reka UI). Apertura, chiusura e
+// timer li gestisce useAdminToast; qui restano l'animazione e la pausa
+// col mouse sopra. Esc non lo chiude ma passa oltre: chiude menu e
+// dialoghi aperti sotto.
+const { toast, dismiss, pause, resume } = useAdminToast()
+
+let fromEscape = false
+function onOpenChange(open: boolean) {
+  if (!open && !fromEscape) dismiss()
+  fromEscape = false
+}
+
+// Pagina cambiata col mouse sopra: il timer riparte
+onBeforeUnmount(resume)
 </script>
 
 <template>
   <ToastProvider
     label="Avviso"
-    swipe-direction="down"
+    disable-swipe
   >
     <ToastRoot
       v-if="toast"
@@ -24,8 +34,10 @@ const { toast, dismiss } = useAdminToast()
       :class="toast.kind === 'ok' ? 'bg-ink text-paper-light' : `
         bg-red text-white
       `"
-      @escape-key-down="(e: KeyboardEvent) => e.preventDefault()"
-      @update:open="(open: boolean) => !open && dismiss()"
+      @escape-key-down="fromEscape = true"
+      @update:open="onOpenChange"
+      @pause="pause"
+      @resume="resume"
     >
       <ToastDescription>{{ toast.text }}</ToastDescription>
     </ToastRoot>

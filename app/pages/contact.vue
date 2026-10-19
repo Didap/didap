@@ -262,7 +262,9 @@ async function onSubmit() {
         />
       </label>
 
-      <label class="flex items-start gap-3 text-sm text-ink-soft">
+      <!-- relative: il messaggio "obbligatorio" del browser compare qui,
+           accanto al checkbox nascosto di Reka -->
+      <label class="relative flex items-start gap-3 text-sm text-ink-soft">
         <CheckboxRoot
           v-model="form.consent"
           name="consent"

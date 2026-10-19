@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T extends string">
 // Scelta singola a pulsanti (ToggleGroup di Reka UI): una voce resta
-// sempre attiva, un clic su quella attiva non la spegne.
+// sempre attiva, un clic su quella attiva non la spegne. Come AppSelect,
+// le voci si riconoscono per posizione, così anche '' è una scelta valida.
 // `segmented`: pulsanti in una pista grigia; `pills`: pillole separate.
 // Con :model-value + @update:model-value il genitore può rifiutare il
 // cambio (per esempio per chiedere prima di salvare).
@@ -36,14 +37,20 @@ const STYLES = {
 }
 const style = computed(() => STYLES[props.variant])
 
+const current = computed(() => {
+  const i = props.options.findIndex((o) => o.value === model.value)
+  return i < 0 ? undefined : String(i)
+})
+
 function onUpdate(value: unknown) {
-  if (typeof value === 'string' && value) model.value = value as T
+  const option = typeof value === 'string' && value ? props.options[Number(value)] : undefined
+  if (option) model.value = option.value
 }
 </script>
 
 <template>
   <ToggleGroupRoot
-    :model-value="model"
+    :model-value="current"
     type="single"
     :disabled="disabled"
     class="flex"
@@ -51,9 +58,9 @@ function onUpdate(value: unknown) {
     @update:model-value="onUpdate"
   >
     <ToggleGroupItem
-      v-for="o in options"
-      :key="o.value"
-      :value="o.value"
+      v-for="(o, i) in options"
+      :key="i"
+      :value="String(i)"
       class="flex items-center gap-1.5 rounded-full text-sm transition"
       :class="style.item"
     >

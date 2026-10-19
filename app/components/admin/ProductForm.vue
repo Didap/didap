@@ -21,14 +21,9 @@ const emit = defineEmits<{ focus: [section: string] }>()
 
 const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Stato da confermare' }
 const STATUS_OPTIONS = [
-  { value: 'none', label: 'Nessuno' },
+  { value: '', label: 'Nessuno' },
   ...PRODUCT_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
 ] as const
-// Le voci di Reka UI non accettano '' come valore: "nessuno" diventa 'none'
-const status = computed({
-  get: () => form.value.status || 'none',
-  set: (s: AdminForm['status'] | 'none') => (form.value.status = s === 'none' ? '' : s),
-})
 
 const nextOptions = computed(() => [
   { value: '', label: 'Il successivo in ordine' },
@@ -167,7 +162,7 @@ const usesMarkdownBody = computed(
           group
         >
           <AdminToggleGroup
-            v-model="status"
+            v-model="form.status"
             :options="STATUS_OPTIONS"
           />
         </AdminField>

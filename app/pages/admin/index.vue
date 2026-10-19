@@ -360,8 +360,9 @@ useEventListener('keydown', (e: KeyboardEvent) => {
       history.redo()
     }
   }
-  if (e.key === 'Escape') {
-    pending.value = null
+  // Esc dentro un menu o un dialogo di Reka UI chiude solo quello
+  // (il dialogo delle modifiche non salvate gestisce il suo Esc)
+  if (e.key === 'Escape' && !(e.target as Element | null)?.closest('[data-dismissable-layer]')) {
     confirmReset.value = false
     previewOpen.value = false
   }

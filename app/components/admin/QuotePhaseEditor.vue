@@ -62,7 +62,8 @@ function askRemove() {
 
 <template>
   <section class="flex flex-col gap-3 py-5">
-    <header class="flex items-center gap-1">
+    <!-- Frecce ed elimina compaiono passando sulla riga: meno rumore -->
+    <header class="group/row flex items-center gap-1">
       <span class="w-5 shrink-0 text-sm tabular-nums opacity-40">{{ index + 1 }}</span>
       <input
         v-model="phase.title"
@@ -71,6 +72,12 @@ function askRemove() {
         aria-label="Titolo della fase"
         maxlength="200"
       >
+      <span class="
+        flex opacity-0 transition-opacity
+        group-focus-within/row:opacity-100
+        group-hover/row:opacity-100
+        pointer-coarse:opacity-100
+      ">
       <button
         type="button"
         class="ghost-icon"
@@ -100,6 +107,7 @@ function askRemove() {
       >
         <AdminIcon name="close" />
       </button>
+      </span>
     </header>
 
     <p
@@ -144,7 +152,7 @@ function askRemove() {
         v-for="(item, i) in items"
         :key="item.id"
         class="
-          grid items-center gap-x-1.5 gap-y-2
+          group/row grid items-center gap-x-1.5 gap-y-2
           @3xl:grid-cols-[minmax(0,1fr)_auto]
         "
       >
@@ -217,6 +225,12 @@ function askRemove() {
             />
           </div>
           <span class="ml-auto w-24 text-right tabular-nums">{{ formatEuro(itemAmount(item)) }}</span>
+          <span class="
+            flex opacity-0 transition-opacity
+            group-focus-within/row:opacity-100
+            group-hover/row:opacity-100
+            pointer-coarse:opacity-100
+          ">
           <button
             type="button"
             class="ghost-icon"
@@ -246,6 +260,7 @@ function askRemove() {
           >
             <AdminIcon name="close" />
           </button>
+          </span>
         </div>
       </li>
     </ul>

@@ -302,7 +302,7 @@ const paramsOpen = ref(false)
             @submit.prevent="save"
           >
             <div class="
-              flex flex-1 scrollbar-thin flex-col divide-y divide-ink/10
+              flex flex-1 scrollbar-none flex-col divide-y divide-ink/10
               overflow-y-auto
             ">
               <fieldset class="flex flex-col gap-1 p-5">
@@ -643,7 +643,7 @@ const paramsOpen = ref(false)
         </header>
 
         <div class="
-          min-h-0 flex-1
+          min-h-0 flex-1 scrollbar-none
           lg:overflow-y-auto
         ">
           <p
@@ -759,7 +759,8 @@ const paramsOpen = ref(false)
       <!-- Scheda del bando -->
       <aside
         class="
-          hidden min-h-0 overflow-y-auto border-l border-ink/10 bg-white
+          hidden min-h-0 scrollbar-none overflow-y-auto border-l border-ink/10
+          bg-white
           xl:block
         "
         aria-label="Scheda del bando"

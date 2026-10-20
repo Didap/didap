@@ -138,7 +138,7 @@ async function create() {
       </header>
 
       <div class="
-        min-h-0 flex-1
+        min-h-0 flex-1 scrollbar-none
         lg:overflow-y-auto
       ">
         <p

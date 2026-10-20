@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useEventListener, watchDebounced } from '@vueuse/core'
 import {
+  PopoverContent,
+  PopoverPortal,
+  PopoverRoot,
+  PopoverTrigger,
   SelectContent,
   SelectItem,
   SelectItemText,
@@ -81,11 +85,6 @@ const signature = computed(() => (form.value ? stableStringify(form.value) : '')
 const dirty = computed(() => !!form.value && signature.value !== savedSignature.value)
 const totals = computed(() => (form.value ? computeTotals(form.value.content) : null))
 const problems = computed(() => (form.value ? issueProblems(form.value, romeDate(new Date())) : []))
-// Bozza diversa da com'era all'ultima emissione
-const issuedSignature = computed(() =>
-  detail.value?.issuedDraft ? stableStringify(detail.value.issuedDraft) : '',
-)
-const unissued = computed(() => !!issuedSignature.value && issuedSignature.value !== signature.value)
 // Si può riemettere anche a bozza invariata: cambiano i dati di cliente e Didap
 const canIssue = computed(() => !!detail.value && !problems.value.length)
 const publicUrl = computed(() => (detail.value?.token ? `${origin.value}/p/${detail.value.token}` : ''))
@@ -196,6 +195,8 @@ const issue = () => run(async () => {
 // Email del cliente scelto: senza, l'invio non parte
 const clientEmail = computed(() => clients.value.find((c) => c.id === form.value?.clientId)?.email ?? '')
 const canSend = computed(() => detail.value?.status === 'confirmed' && !!clientEmail.value)
+// Confermato ma senza email del cliente: lo si dice sotto la barra
+const needsEmail = computed(() => detail.value?.status === 'confirmed' && !clientEmail.value)
 
 const sendToClient = () => run(async () => {
   const res = await $fetch<{ to: string }>(`/api/admin/quotes/${id.value}/send`, { method: 'POST' })
@@ -330,65 +331,369 @@ function setDiscountKind(v: unknown) {
       </p>
     </main>
 
-    <!-- Editor | anteprima del PDF | totali e azioni; ogni colonna scorre per conto suo -->
     <div
       v-else-if="form && detail"
-      class="
-        grid flex-1 grid-cols-[minmax(0,1fr)] content-start
-        lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_19rem] lg:content-stretch
-        xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_19rem]
-      "
+      class="flex min-h-0 flex-1 flex-col"
     >
-      <main class="
-        flex min-h-0 flex-col
-        lg:overflow-y-auto
+      <!-- Una sola barra: chi è, quanto vale, cosa si può fare -->
+      <header class="
+        flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-ink/10 px-5
+        py-3
+        lg:px-8
       ">
-        <header class="
-          flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-ink/10
-          px-5 py-4
-          lg:px-8
-        ">
-          <NuxtLink
-            to="/admin/preventivi"
-            class="-ml-1.5 ghost-icon"
-            aria-label="Torna ai preventivi"
+        <NuxtLink
+          to="/admin/preventivi"
+          class="-ml-1.5 ghost-icon"
+          aria-label="Torna ai preventivi"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-            >
-              <path
-                d="M10 4L6 8l4 4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </NuxtLink>
-          <h1 class="text-2xl font-bold">
-            {{ detail.number ?? 'Nuovo preventivo' }}
-          </h1>
-          <QuoteStatusPill :status="detail.displayStatus" />
-          <span
-            v-if="unissued"
-            class="rounded-full bg-banana px-2.5 py-1 text-xs font-medium"
-          >Da riconfermare</span>
-          <span
-            class="ml-auto text-sm opacity-50"
-            aria-live="polite"
-          >{{ saving ? 'Salvo…' : dirty ? 'Da salvare' : 'Salvato' }}</span>
-        </header>
+            <path
+              d="M10 4L6 8l4 4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </NuxtLink>
+        <h1 class="text-xl font-bold">
+          {{ detail.number ?? 'Nuovo preventivo' }}
+        </h1>
+        <QuoteStatusPill :status="detail.displayStatus" />
+        <span
+          class="text-sm opacity-50"
+          aria-live="polite"
+        >{{ saving ? 'Salvo…' : dirty ? 'Da salvare' : 'Salvato' }}</span>
 
+        <div class="ml-auto flex flex-wrap items-center gap-3">
+          <span
+            v-if="totals"
+            class="mr-2 text-lg font-bold tabular-nums"
+          >{{ formatEuro(totals.total) }}</span>
+          <ToggleGroupRoot
+            v-if="detail.token"
+            :model-value="detail.status"
+            type="single"
+            :disabled="busy"
+            class="toggle-segmented"
+            aria-label="Stato"
+            @update:model-value="pickStatus"
+          >
+            <ToggleGroupItem
+              v-for="s in SETTABLE_STATUSES"
+              :key="s"
+              :value="s"
+              class="px-2.5! text-xs"
+            >
+              {{ STATUS_LABELS[s] }}
+            </ToggleGroupItem>
+          </ToggleGroupRoot>
+          <button
+            v-if="detail.currentRev"
+            type="button"
+            class="
+              rounded-full border border-ink/25 px-4 py-2 text-sm
+              hover:border-ink
+              disabled:opacity-40
+              disabled:hover:border-ink/25
+            "
+            :disabled="!canSend || busy"
+            @click="sendToClient"
+          >
+            Invia al cliente
+          </button>
+          <button
+            type="button"
+            class="
+              rounded-full bg-green px-4 py-2 text-sm font-medium
+              text-paper-light
+              hover:bg-ink
+              disabled:opacity-40
+              disabled:hover:bg-green
+            "
+            :disabled="!canIssue || busy"
+            @click="issue"
+          >
+            {{ detail.currentRev ? `Conferma rev. ${detail.currentRev + 1}` : 'Conferma' }}
+          </button>
+
+          <PopoverRoot>
+            <PopoverTrigger
+              class="ghost-icon size-9! opacity-80!"
+              aria-label="Altro"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="4"
+                  cy="9"
+                  r="1.4"
+                  fill="currentColor"
+                />
+                <circle
+                  cx="9"
+                  cy="9"
+                  r="1.4"
+                  fill="currentColor"
+                />
+                <circle
+                  cx="14"
+                  cy="9"
+                  r="1.4"
+                  fill="currentColor"
+                />
+              </svg>
+            </PopoverTrigger>
+            <PopoverPortal>
+              <PopoverContent
+                side="bottom"
+                align="end"
+                :side-offset="6"
+                @open-auto-focus.prevent
+                class="
+                  z-50 flex w-80 flex-col divide-y divide-ink/10 rounded-2xl
+                  border border-ink/10 bg-white text-sm shadow-lg
+                "
+              >
+                <div
+                  v-if="totals"
+                  class="flex flex-col gap-1 p-4"
+                >
+                  <p class="flex justify-between">
+                    <span class="opacity-60">Imponibile</span>
+                    <span class="tabular-nums">{{ formatEuro(totals.subtotal) }}</span>
+                  </p>
+                  <p
+                    v-if="totals.discount"
+                    class="flex justify-between"
+                  >
+                    <span class="opacity-60">Sconto</span>
+                    <span class="tabular-nums">{{ formatEuro(-totals.discount) }}</span>
+                  </p>
+                  <p class="flex justify-between">
+                    <span class="opacity-60">IVA {{ formatDecimal(form.content.vatRate) }}%</span>
+                    <span class="tabular-nums">{{ formatEuro(totals.vat) }}</span>
+                  </p>
+                </div>
+
+                <div
+                  v-if="detail.token"
+                  class="flex flex-col gap-3 p-4"
+                >
+                  <div class="flex flex-col gap-1.5">
+                    Link per il cliente
+                    <div class="flex items-center gap-1">
+                      <input
+                        :value="publicUrl"
+                        readonly
+                        aria-label="Link pubblico"
+                        class="min-w-0 flex-1 panel-input text-xs"
+                        @focus="($event.target as HTMLInputElement).select()"
+                      >
+                      <button
+                        type="button"
+                        class="
+                          rounded-full px-2.5 py-1 text-xs
+                          hover:bg-ink/5
+                        "
+                        @click="copyLink"
+                      >
+                        Copia
+                      </button>
+                      <a
+                        :href="publicUrl"
+                        target="_blank"
+                        class="
+                          rounded-full px-2.5 py-1 text-xs
+                          hover:bg-ink/5
+                        "
+                      >Apri</a>
+                    </div>
+                    <span
+                      v-if="detail.sent"
+                      class="text-xs opacity-60"
+                    >Inviato a {{ detail.sent.to }} il {{ formatDateTime(detail.sent.at) }}</span>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    Copia firmata
+                    <div
+                      v-if="detail.signed.fileName"
+                      class="flex items-center gap-1"
+                    >
+                      <a
+                        :href="`/api/admin/quotes/${detail.id}/signed`"
+                        target="_blank"
+                        class="
+                          min-w-0 flex-1 truncate text-green underline
+                          underline-offset-2
+                        "
+                      >{{ detail.signed.fileName }}</a>
+                      <button
+                        type="button"
+                        class="
+                          rounded-full px-2.5 py-1 text-xs
+                          hover:bg-ink/5
+                        "
+                        :disabled="busy"
+                        @click="signedInput?.click()"
+                      >
+                        Cambia
+                      </button>
+                      <button
+                        type="button"
+                        class="
+                          ghost-icon
+                          hover:text-red
+                        "
+                        aria-label="Togli la copia firmata"
+                        :disabled="busy"
+                        @click="removeSigned"
+                      >
+                        <AdminIcon name="close" />
+                      </button>
+                    </div>
+                    <button
+                      v-else
+                      type="button"
+                      class="
+                        rounded-full border border-dashed border-ink/30 px-4
+                        py-2
+                        hover:border-ink
+                      "
+                      :disabled="busy"
+                      @click="signedInput?.click()"
+                    >
+                      Carica il PDF firmato
+                    </button>
+                  </div>
+                </div>
+
+                <ul
+                  v-if="detail.revisions.length"
+                  class="flex flex-col p-2"
+                >
+                  <li
+                    v-for="r in detail.revisions"
+                    :key="r.rev"
+                  >
+                    <a
+                      :href="`/api/admin/quotes/${detail.id}/revisions/${r.rev}`"
+                      target="_blank"
+                      class="
+                        flex justify-between gap-3 rounded-lg px-2 py-1.5
+                        hover:bg-ink/5
+                      "
+                    >
+                      <span>rev. {{ r.rev }} <span class="opacity-50">· {{ formatDateTime(r.issuedAt) }}</span></span>
+                      <span class="tabular-nums">{{ formatEuro(r.total) }}</span>
+                    </a>
+                  </li>
+                </ul>
+
+                <div class="flex flex-wrap items-center gap-1 p-2">
+                  <button
+                    type="button"
+                    class="
+                      rounded-full px-3 py-1.5
+                      hover:bg-ink/5
+                      xl:hidden
+                    "
+                    @click="preview"
+                  >
+                    Anteprima PDF
+                  </button>
+                  <button
+                    type="button"
+                    class="
+                      rounded-full px-3 py-1.5
+                      hover:bg-ink/5
+                    "
+                    :disabled="busy"
+                    @click="duplicate"
+                  >
+                    Duplica
+                  </button>
+                  <template v-if="!detail.currentRev">
+                    <button
+                      v-if="!confirmDelete"
+                      type="button"
+                      class="
+                        rounded-full px-3 py-1.5 text-red
+                        hover:bg-red/10
+                      "
+                      @click="confirmDelete = true"
+                    >
+                      Elimina bozza
+                    </button>
+                    <template v-else>
+                      <button
+                        type="button"
+                        class="rounded-full bg-red px-3 py-1.5 text-white"
+                        :disabled="busy"
+                        @click="remove"
+                      >
+                        Sì, elimina
+                      </button>
+                      <button
+                        type="button"
+                        class="rounded-full px-3 py-1.5"
+                        @click="confirmDelete = false"
+                      >
+                        Annulla
+                      </button>
+                    </template>
+                  </template>
+                </div>
+              </PopoverContent>
+            </PopoverPortal>
+          </PopoverRoot>
+          <input
+            ref="signedInput"
+            type="file"
+            accept="application/pdf"
+            class="hidden"
+            @change="uploadSigned"
+          >
+        </div>
+      </header>
+
+      <!-- Cosa manca prima di poter confermare o inviare, in una riga -->
+      <p
+        v-if="problems.length || needsEmail"
+        class="
+          border-b border-ink/10 bg-banana/15 px-5 py-2 text-sm
+          lg:px-8
+        "
+      >
+        <template v-if="problems.length">
+          Per confermare: {{ problems.join(' · ') }}
+        </template>
+        <template v-else>
+          Per inviarlo manca l'email del cliente: aggiungila in Clienti.
+        </template>
+      </p>
+
+      <div class="
+        grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)]
+        xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]
+      ">
         <!-- Durante un'azione la bozza non si modifica: load() la rimpiazzerebbe -->
         <fieldset
           :disabled="busy"
           class="
-            flex min-w-0 flex-col divide-y divide-ink/10 px-5
-            lg:px-8
+            flex min-w-0 scrollbar-none flex-col divide-y divide-ink/10 px-5
+            lg:overflow-y-auto lg:px-8
           "
         >
           <div class="flex flex-col gap-3 py-5">
@@ -588,324 +893,21 @@ function setDiscountKind(v: unknown) {
             </label>
           </div>
         </fieldset>
-      </main>
 
-      <section
-        class="
-          hidden min-h-0 scrollbar-gutter-stable overflow-y-auto border-x
-          border-ink/10 bg-ink/5 p-6
-          xl:block
-        "
-        aria-label="Anteprima del PDF"
-      >
-        <QuotePdfPreview
-          :src="`/api/admin/quotes/${detail.id}/preview`"
-          :version="previewVersion"
-        />
-      </section>
-
-      <aside class="
-        flex flex-col divide-y divide-ink/10 border-t border-ink/10
-        lg:overflow-y-auto lg:border-t-0 lg:border-l
-        xl:border-l-0
-      ">
-        <dl
-          v-if="totals"
-          class="flex flex-col gap-1.5 p-5 text-sm"
+        <section
+          class="
+            hidden min-h-0 scrollbar-none overflow-y-auto border-l border-ink/10
+            bg-ink/5 p-6
+            xl:block
+          "
+          aria-label="Anteprima del PDF"
         >
-          <div class="flex justify-between">
-            <dt class="opacity-60">
-              Imponibile
-            </dt>
-            <dd class="tabular-nums">
-              {{ formatEuro(totals.subtotal) }}
-            </dd>
-          </div>
-          <div
-            v-if="totals.discount"
-            class="flex justify-between"
-          >
-            <dt class="opacity-60">
-              Sconto
-            </dt>
-            <dd class="tabular-nums">
-              {{ formatEuro(-totals.discount) }}
-            </dd>
-          </div>
-          <div class="flex justify-between">
-            <dt class="opacity-60">
-              IVA {{ formatDecimal(form.content.vatRate) }}%
-            </dt>
-            <dd class="tabular-nums">
-              {{ formatEuro(totals.vat) }}
-            </dd>
-          </div>
-          <div class="mt-1 flex justify-between text-lg font-bold">
-            <dt>Totale</dt>
-            <dd class="tabular-nums">
-              {{ formatEuro(totals.total) }}
-            </dd>
-          </div>
-        </dl>
-
-        <div class="flex flex-col gap-2.5 p-5">
-          <ul
-            v-if="problems.length"
-            class="flex flex-col gap-1 text-sm text-red"
-          >
-            <li
-              v-for="p in problems"
-              :key="p"
-            >
-              {{ p }}
-            </li>
-          </ul>
-          <button
-            type="button"
-            class="
-              rounded-full bg-green px-5 py-2.5 font-medium text-paper-light
-              hover:bg-ink
-              disabled:opacity-40
-              disabled:hover:bg-green
-            "
-            :disabled="!canIssue || busy"
-            @click="issue"
-          >
-            {{ detail.currentRev ? `Conferma rev. ${detail.currentRev + 1}` : 'Conferma preventivo' }}
-          </button>
-          <button
-            v-if="detail.currentRev"
-            type="button"
-            class="
-              rounded-full bg-ink px-5 py-2.5 text-sm font-medium
-              text-paper-light
-              hover:bg-green
-              disabled:opacity-40
-              disabled:hover:bg-ink
-            "
-            :disabled="!canSend || busy"
-            @click="sendToClient"
-          >
-            Invia al cliente
-          </button>
-          <p
-            v-if="detail.currentRev && detail.status === 'confirmed' && !clientEmail"
-            class="text-xs text-red"
-          >
-            Manca l'email del cliente
-          </p>
-          <p
-            v-else-if="detail.sent"
-            class="text-xs opacity-60"
-          >
-            Inviato a {{ detail.sent.to }} il {{ formatDateTime(detail.sent.at) }}
-          </p>
-          <!-- Da desktop largo l'anteprima è già accanto -->
-          <button
-            type="button"
-            class="
-              rounded-full border border-ink/20 px-5 py-2 text-sm
-              hover:border-ink
-              xl:hidden
-            "
-            @click="preview"
-          >
-            Anteprima PDF
-          </button>
-        </div>
-
-        <div
-          v-if="detail.token"
-          class="flex flex-col gap-4 p-5"
-        >
-          <div
-            role="group"
-            aria-label="Stato"
-            class="flex flex-col gap-1.5 text-sm"
-          >
-            Stato
-            <ToggleGroupRoot
-              :model-value="detail.status"
-              type="single"
-              :disabled="busy"
-              class="toggle-segmented"
-              @update:model-value="pickStatus"
-            >
-              <ToggleGroupItem
-                v-for="s in SETTABLE_STATUSES"
-                :key="s"
-                :value="s"
-                class="flex-1 justify-center px-1! text-xs"
-              >
-                {{ STATUS_LABELS[s] }}
-              </ToggleGroupItem>
-            </ToggleGroupRoot>
-          </div>
-
-          <div class="flex flex-col gap-1.5 text-sm">
-            Copia firmata
-            <div
-              v-if="detail.signed.fileName"
-              class="flex items-center gap-1"
-            >
-              <a
-                :href="`/api/admin/quotes/${detail.id}/signed`"
-                target="_blank"
-                class="
-                  min-w-0 flex-1 truncate text-green underline
-                  underline-offset-2
-                "
-                :title="`rev. ${detail.signed.rev}`"
-              >{{ detail.signed.fileName }}</a>
-              <button
-                type="button"
-                class="
-                  rounded-full px-2.5 py-1 text-xs
-                  hover:bg-ink/5
-                "
-                :disabled="busy"
-                @click="signedInput?.click()"
-              >
-                Cambia
-              </button>
-              <button
-                type="button"
-                class="
-                  ghost-icon
-                  hover:text-red
-                "
-                aria-label="Togli la copia firmata"
-                :disabled="busy"
-                @click="removeSigned"
-              >
-                <AdminIcon name="close" />
-              </button>
-            </div>
-            <button
-              v-else
-              type="button"
-              class="
-                rounded-full border border-dashed border-ink/30 px-4 py-2
-                text-sm
-                hover:border-ink
-              "
-              :disabled="busy"
-              @click="signedInput?.click()"
-            >
-              Carica il PDF firmato
-            </button>
-            <input
-              ref="signedInput"
-              type="file"
-              accept="application/pdf"
-              class="hidden"
-              @change="uploadSigned"
-            >
-          </div>
-
-          <div class="flex flex-col gap-1.5 text-sm">
-            Link per il cliente
-            <div class="flex items-center gap-1">
-              <input
-                :value="publicUrl"
-                readonly
-                aria-label="Link pubblico"
-                class="min-w-0 flex-1 panel-input text-xs"
-                @focus="($event.target as HTMLInputElement).select()"
-              >
-              <button
-                type="button"
-                class="
-                  rounded-full px-2.5 py-1 text-xs
-                  hover:bg-ink/5
-                "
-                @click="copyLink"
-              >
-                Copia
-              </button>
-              <a
-                :href="publicUrl"
-                target="_blank"
-                class="
-                  rounded-full px-2.5 py-1 text-xs
-                  hover:bg-ink/5
-                "
-              >Apri</a>
-            </div>
-          </div>
-        </div>
-
-        <div
-          v-if="detail.revisions.length"
-          class="p-5"
-        >
-          <p class="text-sm">
-            Revisioni
-          </p>
-          <ul class="mt-1.5 flex flex-col text-sm">
-            <li
-              v-for="r in detail.revisions"
-              :key="r.rev"
-            >
-              <a
-                :href="`/api/admin/quotes/${detail.id}/revisions/${r.rev}`"
-                target="_blank"
-                class="
-                  -mx-2 flex justify-between gap-3 rounded-lg px-2 py-1.5
-                  hover:bg-ink/5
-                "
-              >
-                <span>rev. {{ r.rev }} <span class="opacity-50">· {{ formatDateTime(r.issuedAt) }}</span></span>
-                <span class="tabular-nums">{{ formatEuro(r.total) }}</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-1 px-5 py-4">
-          <button
-            type="button"
-            class="
-              rounded-full px-3 py-1.5 text-sm
-              hover:bg-ink/5
-            "
-            :disabled="busy"
-            @click="duplicate"
-          >
-            Duplica
-          </button>
-          <template v-if="!detail.currentRev">
-            <button
-              v-if="!confirmDelete"
-              type="button"
-              class="
-                rounded-full px-3 py-1.5 text-sm text-red
-                hover:bg-red/10
-              "
-              @click="confirmDelete = true"
-            >
-              Elimina bozza
-            </button>
-            <template v-else>
-              <button
-                type="button"
-                class="rounded-full bg-red px-3 py-1.5 text-sm text-white"
-                :disabled="busy"
-                @click="remove"
-              >
-                Sì, elimina
-              </button>
-              <button
-                type="button"
-                class="rounded-full px-3 py-1.5 text-sm"
-                @click="confirmDelete = false"
-              >
-                Annulla
-              </button>
-            </template>
-          </template>
-        </div>
-      </aside>
+          <QuotePdfPreview
+            :src="`/api/admin/quotes/${detail.id}/preview`"
+            :version="previewVersion"
+          />
+        </section>
+      </div>
     </div>
   </AdminShell>
 </template>

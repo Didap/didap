@@ -153,20 +153,42 @@ const grants = computed<EvaluatedGrant[]>(() => {
   return profile ? list.map(g => ({ ...g, ...evaluateGrant(g.requirements, profile, now) })) : list
 })
 
-const tab = ref<Eligibility>('eligible')
+// Le schede per esito, più quella dei bandi segnati col cuore
+type Tab = Eligibility | 'liked'
+const TABS: Record<Tab, string> = { ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
+const tab = ref<Tab>('eligible')
 const query = ref('')
 
 const counts = computed(() => {
-  const out: Record<Eligibility, number> = { eligible: 0, to_verify: 0, excluded: 0 }
-  for (const g of grants.value) out[g.eligibility]++
+  const out: Record<Tab, number> = { eligible: 0, to_verify: 0, excluded: 0, liked: 0 }
+  for (const g of grants.value) {
+    out[g.eligibility]++
+    if (g.liked) out.liked++
+  }
   return out
 })
 
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
   return grants.value.filter(g =>
-    g.eligibility === tab.value && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
+    (tab.value === 'liked' ? g.liked : g.eligibility === tab.value)
+    && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
 })
+
+// Il cuore cambia subito; se il salvataggio non va, torna com'era
+async function toggleLike(id: string) {
+  const g = data.value?.grants.find(x => x.id === id)
+  if (!g) return
+  const liked = !g.liked
+  g.liked = liked
+  try {
+    await $fetch(`/api/admin/radar/grants/${id}/like`, { method: 'PUT', body: { liked } })
+  }
+  catch (err) {
+    g.liked = !liked
+    notify('error', adminErrorText(err))
+  }
+}
 
 const selectedId = ref<string | null>(null)
 const selected = computed(() => visible.value.find(g => g.id === selectedId.value) ?? null)
@@ -192,10 +214,11 @@ function timeLeft(g: EvaluatedGrant) {
 
 const ELIGIBILITY_OUTCOME = { eligible: 'met', to_verify: 'to_verify', excluded: 'not_met' } as const
 
-const EMPTY: Record<Eligibility, string> = {
+const EMPTY: Record<Tab, string> = {
   eligible: 'Nessun bando candidabile.',
   to_verify: 'Nessun bando da verificare.',
   excluded: 'Nessun bando escluso.',
+  liked: 'Nessun bando segnato: usa il cuore su quelli che vi interessano.',
 }
 
 // Etichette brevi per la colonna stretta
@@ -591,10 +614,10 @@ const paramsOpen = ref(false)
               type="single"
               class="toggle-segmented max-w-full scrollbar-none overflow-x-auto"
               aria-label="Esito"
-              @update:model-value="v => v && (tab = v as Eligibility)"
+              @update:model-value="v => v && (tab = v as Tab)"
             >
               <ToggleGroupItem
-                v-for="(name, key) in ELIGIBILITY_PLURALS"
+                v-for="(name, key) in TABS"
                 :key="key"
                 :value="key"
                 class="
@@ -649,14 +672,17 @@ const paramsOpen = ref(false)
               :key="g.id"
               class="border-b border-ink/10"
             >
+              <div
+                class="flex items-stretch transition"
+                :class="selectedId === g.id ? 'bg-white' : 'hover:bg-ink/3'"
+              >
               <button
                 type="button"
                 class="
-                  grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start
-                  gap-x-4 px-5 py-4 text-left transition
-                  lg:px-8
+                  grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)_auto]
+                  items-start gap-x-4 py-4 pl-5 text-left
+                  lg:pl-8
                 "
-                :class="selectedId === g.id ? 'bg-white' : 'hover:bg-ink/3'"
                 :aria-expanded="isXl ? undefined : selectedId === g.id"
                 :aria-current="isXl && selectedId === g.id ? 'true' : undefined"
                 @click="pick(g.id)"
@@ -690,6 +716,35 @@ const paramsOpen = ref(false)
                   >{{ formatWholeEuro(g.maxAmount) }}</span>
                 </span>
               </button>
+              <button
+                type="button"
+                class="
+                  flex shrink-0 items-start px-4 pt-4 transition
+                  hover:text-red
+                  lg:pr-7
+                "
+                :class="g.liked ? 'text-red' : 'text-ink/25'"
+                :aria-pressed="g.liked"
+                :aria-label="g.liked ? 'Togli dagli interessanti' : 'Segna come interessante'"
+                :title="g.liked ? 'Togli dagli interessanti' : 'Segna come interessante'"
+                @click="toggleLike(g.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M10 17s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 6.3a3.6 3.6 0 0 1 6.5 2.1C16.5 13.1 10 17 10 17z"
+                    :fill="g.liked ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              </div>
               <div
                 v-if="!isXl && selectedId === g.id"
                 class="border-t border-ink/10 bg-white"

@@ -11,7 +11,8 @@ import {
 // il valore è in centesimi. Il modello cambia solo con un testo valido;
 // un testo non valido resta visibile e segnato in rosso.
 const model = defineModel<number>({ required: true })
-const props = defineProps<{ kind: 'euro' | 'days' | 'percent'; label?: string }>()
+// `panel`: campo compatto dei pannelli (fondo leggero, niente bordo)
+const props = defineProps<{ kind: 'euro' | 'days' | 'percent'; label?: string; panel?: boolean }>()
 
 const PARSERS = { euro: parseEuroInput, days: parseDaysInput, percent: parsePercentInput }
 const parse = (t: string) => PARSERS[props.kind](t)
@@ -45,8 +46,10 @@ function onBlur() {
     :value="text"
     inputmode="decimal"
     autocomplete="off"
-    class="admin-input text-right font-mono tabular-nums"
-    :class="invalid ? 'ring-2 ring-red' : ''"
+    class="w-full text-right tabular-nums"
+    :class="[panel ? 'panel-input' : 'admin-input font-mono', invalid ? `
+      ring-2 ring-red
+    ` : '']"
     :aria-label="label"
     :aria-invalid="invalid"
     @input="onInput(($event.target as HTMLInputElement).value)"

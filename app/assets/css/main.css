@@ -454,6 +454,28 @@ samp {
   }
 }
 
+/* Bottone a icona senza contorno: si vede al passaggio del mouse */
+@utility ghost-icon {
+  display: flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  opacity: 0.55;
+  transition: background-color 150ms, opacity 150ms, color 150ms;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+    opacity: 1;
+  }
+
+  &:disabled {
+    opacity: 0.2;
+  }
+}
+
 @utility admin-icon-btn {
   display: flex;
   width: 2rem;

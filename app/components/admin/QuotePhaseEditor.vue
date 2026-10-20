@@ -9,7 +9,7 @@ import {
   SelectValue,
   SelectViewport,
 } from 'reka-ui'
-import AdminField from '~/components/admin/AdminField.vue'
+import AdminIcon from '~/components/admin/AdminIcon.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
 import { moveInArray } from '~/utils/moveInArray'
 import { formatEuro } from '#shared/money'
@@ -61,47 +61,53 @@ function askRemove() {
 </script>
 
 <template>
-  <section class="rounded-2xl border border-ink/10 bg-white">
-    <header class="flex items-center gap-2 border-b border-ink/10 px-5 py-3">
-      <span class="font-mono text-sm opacity-50">{{ index + 1 }}.</span>
+  <section class="flex flex-col gap-3 py-5">
+    <header class="flex items-center gap-1">
+      <span class="w-5 shrink-0 text-sm tabular-nums opacity-40">{{ index + 1 }}</span>
       <input
         v-model="phase.title"
-        class="admin-input flex-1 font-bold"
+        class="min-w-0 flex-1 panel-input font-bold"
         placeholder="Titolo della fase"
         aria-label="Titolo della fase"
         maxlength="200"
       >
       <button
         type="button"
-        class="admin-icon-btn"
+        class="ghost-icon"
         :disabled="index === 0"
         aria-label="Sposta la fase in alto"
         @click="emit('move', -1)"
       >
-        ↑
+        <AdminIcon name="up" />
       </button>
       <button
         type="button"
-        class="admin-icon-btn"
+        class="ghost-icon"
         :disabled="index === count - 1"
         aria-label="Sposta la fase in basso"
         @click="emit('move', 1)"
       >
-        ↓
+        <AdminIcon name="down" />
       </button>
       <button
         type="button"
-        class="admin-icon-btn"
+        class="
+          ghost-icon
+          hover:text-red
+        "
         aria-label="Elimina la fase"
         @click="askRemove"
       >
-        ✕
+        <AdminIcon name="close" />
       </button>
     </header>
 
     <p
       v-if="confirmRemove"
-      class="flex flex-wrap items-center gap-3 bg-red/10 px-5 py-3 text-sm"
+      class="
+        ml-6 flex flex-wrap items-center gap-3 rounded-lg bg-red/10 px-3 py-2
+        text-sm
+      "
       role="alert"
     >
       Eliminare la fase e le sue {{ items.length }} voci?
@@ -121,151 +127,154 @@ function askRemove() {
       </button>
     </p>
 
-    <div class="flex flex-col gap-4 px-5 py-4">
-      <AdminField label="Descrizione della fase">
-        <textarea
-          v-model="phase.description"
-          rows="2"
-          maxlength="2000"
-          class="admin-input"
-        />
-      </AdminField>
+    <textarea
+      v-model="phase.description"
+      rows="2"
+      maxlength="2000"
+      placeholder="Descrizione della fase (facoltativa)"
+      aria-label="Descrizione della fase"
+      class="ml-6 panel-input"
+    />
 
-      <ul
-        v-if="items.length"
-        class="flex flex-col gap-3"
+    <ul
+      v-if="items.length"
+      class="@container ml-6 flex flex-col gap-3"
+    >
+      <li
+        v-for="(item, i) in items"
+        :key="item.id"
+        class="
+          grid items-center gap-x-1.5 gap-y-2
+          @3xl:grid-cols-[minmax(0,1fr)_auto]
+        "
       >
-        <li
-          v-for="(item, i) in items"
-          :key="item.id"
-          class="flex gap-2 rounded-xl bg-paper p-3"
+        <input
+          v-model="item.description"
+          class="panel-input"
+          placeholder="Descrizione della voce"
+          aria-label="Descrizione della voce"
+          maxlength="500"
         >
-          <div class="flex min-w-0 flex-1 flex-col gap-2">
-            <input
-              v-model="item.description"
-              class="admin-input"
-              placeholder="Descrizione della voce"
-              aria-label="Descrizione della voce"
-              maxlength="500"
+        <div class="flex items-center gap-1.5 text-sm">
+          <SelectRoot
+            :model-value="item.kind"
+            :disabled="disabled"
+            @update:model-value="(v) => setKind(i, v)"
+          >
+            <SelectTrigger
+              class="select-trigger w-28 panel-input"
+              aria-label="Tipo di voce"
             >
-            <div class="flex flex-wrap items-center gap-2 text-sm">
-              <SelectRoot
-                :model-value="item.kind"
-                :disabled="disabled"
-                @update:model-value="(v) => setKind(i, v)"
+              <SelectValue>{{ KIND_LABELS[item.kind] }}</SelectValue>
+            </SelectTrigger>
+            <SelectPortal>
+              <SelectContent
+                position="popper"
+                :side-offset="4"
+                class="select-content admin-select-content"
               >
-                <SelectTrigger
-                  class="select-trigger admin-input w-auto"
-                  aria-label="Tipo di voce"
-                >
-                  <SelectValue>{{ KIND_LABELS[item.kind] }}</SelectValue>
-                </SelectTrigger>
-                <SelectPortal>
-                  <SelectContent
-                    position="popper"
-                    :side-offset="4"
-                    class="select-content admin-select-content"
+                <SelectViewport>
+                  <SelectItem
+                    v-for="o in KIND_OPTIONS"
+                    :key="o.value"
+                    :value="o.value"
+                    class="select-item admin-select-item"
                   >
-                    <SelectViewport>
-                      <SelectItem
-                        v-for="o in KIND_OPTIONS"
-                        :key="o.value"
-                        :value="o.value"
-                        class="select-item admin-select-item"
-                      >
-                        <SelectItemText>{{ o.label }}</SelectItemText>
-                      </SelectItem>
-                    </SelectViewport>
-                  </SelectContent>
-                </SelectPortal>
-              </SelectRoot>
-              <template v-if="item.kind === 'days'">
-                <div class="w-20">
-                  <NumberInput
-                    v-model="item.days"
-                    kind="days"
-                    label="Giorni"
-                  />
-                </div>
-                <span class="opacity-60">gg ×</span>
-                <div class="w-28">
-                  <NumberInput
-                    v-model="item.rate"
-                    kind="euro"
-                    label="Tariffa giornaliera"
-                  />
-                </div>
-                <span class="opacity-60">€</span>
-              </template>
-              <template v-else>
-                <div class="w-32">
-                  <NumberInput
-                    v-model="item.amount"
-                    kind="euro"
-                    label="Importo"
-                  />
-                </div>
-                <span class="opacity-60">€</span>
-              </template>
-              <span class="ml-auto font-mono tabular-nums">{{ formatEuro(itemAmount(item)) }}</span>
+                    <SelectItemText>{{ o.label }}</SelectItemText>
+                  </SelectItem>
+                </SelectViewport>
+              </SelectContent>
+            </SelectPortal>
+          </SelectRoot>
+          <template v-if="item.kind === 'days'">
+            <div class="w-16">
+              <NumberInput
+                v-model="item.days"
+                kind="days"
+                label="Giorni"
+                panel
+              />
             </div>
+            <span class="opacity-50">gg ×</span>
+            <div class="w-24">
+              <NumberInput
+                v-model="item.rate"
+                kind="euro"
+                label="Tariffa giornaliera"
+                panel
+              />
+            </div>
+          </template>
+          <div
+            v-else
+            class="w-39"
+          >
+            <NumberInput
+              v-model="item.amount"
+              kind="euro"
+              label="Importo"
+              panel
+            />
           </div>
-          <div class="flex flex-col gap-1">
-            <button
-              type="button"
-              class="admin-icon-btn"
-              :disabled="i === 0"
-              aria-label="Sposta la voce in alto"
-              @click="moveInArray(items, i, -1)"
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              class="admin-icon-btn"
-              :disabled="i === items.length - 1"
-              aria-label="Sposta la voce in basso"
-              @click="moveInArray(items, i, 1)"
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              class="admin-icon-btn"
-              aria-label="Elimina la voce"
-              @click="items.splice(i, 1)"
-            >
-              ✕
-            </button>
-          </div>
-        </li>
-      </ul>
+          <span class="ml-auto w-24 text-right tabular-nums">{{ formatEuro(itemAmount(item)) }}</span>
+          <button
+            type="button"
+            class="ghost-icon"
+            :disabled="i === 0"
+            aria-label="Sposta la voce in alto"
+            @click="moveInArray(items, i, -1)"
+          >
+            <AdminIcon name="up" />
+          </button>
+          <button
+            type="button"
+            class="ghost-icon"
+            :disabled="i === items.length - 1"
+            aria-label="Sposta la voce in basso"
+            @click="moveInArray(items, i, 1)"
+          >
+            <AdminIcon name="down" />
+          </button>
+          <button
+            type="button"
+            class="
+              ghost-icon
+              hover:text-red
+            "
+            aria-label="Elimina la voce"
+            @click="items.splice(i, 1)"
+          >
+            <AdminIcon name="close" />
+          </button>
+        </div>
+      </li>
+    </ul>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="
-            rounded-full border border-ink/20 px-3 py-1.5 text-sm
-            hover:border-ink
-          "
-          @click="addItem('days')"
-        >
-          + Voce a giorni
-        </button>
-        <button
-          type="button"
-          class="
-            rounded-full border border-ink/20 px-3 py-1.5 text-sm
-            hover:border-ink
-          "
-          @click="addItem('fixed')"
-        >
-          + Voce a corpo
-        </button>
-        <span class="ml-auto text-sm">
-          Subtotale <strong class="font-mono tabular-nums">{{ formatEuro(subtotal) }}</strong>
-        </span>
-      </div>
+    <div class="ml-6 flex flex-wrap items-center gap-1 text-sm">
+      <button
+        type="button"
+        class="
+          rounded-full px-3 py-1.5 text-green
+          hover:bg-green/10
+        "
+        @click="addItem('days')"
+      >
+        + Voce a giorni
+      </button>
+      <button
+        type="button"
+        class="
+          rounded-full px-3 py-1.5 text-green
+          hover:bg-green/10
+        "
+        @click="addItem('fixed')"
+      >
+        + Voce a corpo
+      </button>
+      <span class="ml-auto pr-1">
+        <span class="opacity-60">Subtotale</span>
+        <strong class="ml-2 tabular-nums">{{ formatEuro(subtotal) }}</strong>
+      </span>
     </div>
   </section>
 </template>

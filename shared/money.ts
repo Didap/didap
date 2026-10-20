@@ -24,6 +24,8 @@ export const formatEuro = (cents: number) => euro.format(cents / 100)
 export const formatEuroPlain = (cents: number) => plain.format(cents / 100)
 // 1.5 -> "1,5"
 export const formatDecimal = (n: number) => decimal.format(n)
+// Euro interi (importi dei bandi): 50000 -> "50.000 €"
+export const formatWholeEuro = (euros: number) => `${decimal.format(Math.round(euros))} €`
 
 const clean = (input: string) => input.replace(/[\s €]/g, '')
 
@@ -56,6 +58,12 @@ export function parseEuroInput(input: string): number | null {
 export function parseDaysInput(input: string): number | null {
   const n = normalizeNumber(input)
   return n !== null && n > 0 && n <= 1000 && Number.isInteger(n * 2) ? n : null
+}
+
+// Interi non negativi ("250.000", "12"); null se non valido
+export function parseIntegerInput(input: string): number | null {
+  const s = clean(input)
+  return INTEGER.test(s) ? Number(s.replace(/\./g, '')) : null
 }
 
 // Percentuali tra 0 e 100, arrotondate al centesimo

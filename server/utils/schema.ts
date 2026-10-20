@@ -1,5 +1,5 @@
 // Schema del database, applicato a ogni avvio (idempotente).
-// Prodotti, asset e sessioni di /admin; poi preventivi e clienti.
+// Prodotti, asset e sessioni di /admin; poi preventivi, clienti e radar bandi.
 export const DB_SCHEMA = `
   create table if not exists product_overrides (
     slug text not null,
@@ -66,5 +66,51 @@ export const DB_SCHEMA = `
     pdf bytea not null,
     issued_at timestamptz not null,
     primary key (quote_id, rev)
+  );
+
+  create table if not exists radar_settings (
+    id int primary key check (id = 1),
+    data jsonb not null,
+    updated_at timestamptz not null default now()
+  );
+  create table if not exists radar_state (
+    id int primary key check (id = 1),
+    last_ingest_at timestamptz,
+    last_ingest_error text,
+    last_digest_on date,
+    last_digest_at timestamptz,
+    lease_until timestamptz
+  );
+  insert into radar_state (id) values (1) on conflict do nothing;
+  create table if not exists radar_documents (
+    id uuid primary key default gen_random_uuid(),
+    source text not null,
+    external_id text not null,
+    url text not null,
+    content text not null,
+    content_hash text not null,
+    status text not null default 'pending'
+      check (status in ('pending', 'read', 'skipped', 'failed')),
+    attempts int not null default 0,
+    error text,
+    fetched_at timestamptz not null default now(),
+    read_at timestamptz,
+    closed_at timestamptz,
+    unique (source, external_id)
+  );
+  create table if not exists radar_grants (
+    id uuid primary key default gen_random_uuid(),
+    document_id uuid not null unique references radar_documents (id) on delete cascade,
+    title text not null,
+    issuer text not null default '',
+    summary text not null default '',
+    opens_at timestamptz,
+    deadline timestamptz,
+    max_amount bigint,
+    funding text not null default '',
+    requirements jsonb not null default '[]'::jsonb,
+    notified_at timestamptz,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
   );
 `

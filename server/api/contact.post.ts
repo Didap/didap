@@ -1,4 +1,3 @@
-import { Resend } from 'resend'
 import { z } from 'zod'
 import {
   adminNotificationHtml,
@@ -34,18 +33,17 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
+  if (!hasMailer()) {
     throw createError({
       statusCode: 503,
       statusMessage: 'EMAIL_NOT_CONFIGURED',
     })
   }
 
-  const resend = new Resend(apiKey)
+  const resend = resendClient()
   const data = parsed.data
 
-  const fromAddress = process.env.RESEND_FROM ?? 'Didap <noreply@didap.it>'
+  const fromAddress = mailFrom()
   const toAddress = process.env.CONTACT_RECIPIENT ?? 'amministrazione@didap.it'
 
   // 1) Notifica admin (critica): replyTo punta all'utente che ha scritto,

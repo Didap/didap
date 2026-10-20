@@ -7,6 +7,7 @@ const LINKS = [
   { to: '/admin', label: 'Prodotti' },
   { to: '/admin/preventivi', label: 'Preventivi' },
   { to: '/admin/clienti', label: 'Clienti' },
+  { to: '/admin/bandi', label: 'Bandi' },
   { to: '/admin/impostazioni', label: 'Impostazioni' },
 ]
 const route = useRoute()

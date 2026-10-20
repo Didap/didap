@@ -44,7 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
 // Una sezione alla volta, un campo alla volta: il valore salvato resta se
 // lo schema del campo lo accetta, altrimenti si usa il default. Un cambio
 // di schema non cancella i dati di Didap; le chiavi sconosciute cadono.
-function mergeSection<T extends Record<string, unknown>>(
+export function mergeSection<T extends Record<string, unknown>>(
   shape: Record<string, { safeParse(v: unknown): { success: boolean; data?: unknown } }>,
   stored: unknown,
   defaults: T,

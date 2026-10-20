@@ -26,6 +26,12 @@ export default defineNuxtConfig({
     },
   },
 
+  // Radar bandi: un giro ogni 15 minuti, poi decide lui cosa fare
+  nitro: {
+    experimental: { tasks: true },
+    scheduledTasks: { '*/15 * * * *': ['radar:tick'] },
+  },
+
   content: {
     build: {
       markdown: {

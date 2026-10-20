@@ -28,7 +28,7 @@ const FUNDING_LABELS: Record<string, string> = {
   need_help: 'Vuole consiglio su finanza agevolata',
 }
 
-function escapeHtml(s: string) {
+export function escapeHtml(s: string) {
   return s.replace(
     /[&<>"']/g,
     (c) =>
@@ -46,10 +46,10 @@ function nl2br(s: string) {
   return escapeHtml(s).replace(/\n/g, '<br>')
 }
 
-const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL || 'https://didap.it'
+export const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL || 'https://didap.it'
 
 // Palette
-const C = {
+export const C = {
   paper: '#fbf4e2',
   paperSoft: '#f3ead0',
   ink: '#141414',
@@ -61,12 +61,12 @@ const C = {
 }
 
 // Font stack
-const FONT_DISPLAY =
+export const FONT_DISPLAY =
   "'Bricolage Grotesque','Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif"
-const FONT_BODY =
+export const FONT_BODY =
   "'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif"
 
-const HEAD = `<!DOCTYPE html>
+export const HEAD = `<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="utf-8">
@@ -105,7 +105,7 @@ const PALETTE_STRIPE = `
   </tr>
 </table>`
 
-const BRAND_HEADER = `
+export const BRAND_HEADER = `
 <tr>
   <td style="background:${C.paperSoft};padding:36px 40px 28px;text-align:center;">
     <img src="${SITE_URL}/logo_esteso.svg" alt="Didap" height="60" style="display:inline-block;height:60px;width:auto;border:0;outline:none;text-decoration:none;">
@@ -117,7 +117,7 @@ const BRAND_HEADER = `
   </td>
 </tr>`
 
-function brandFooter() {
+export function brandFooter() {
   return `
 <tr>
   <td style="background:${C.paperSoft};padding:28px 40px;text-align:center;">

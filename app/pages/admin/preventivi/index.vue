@@ -5,7 +5,7 @@ import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatEuro } from '#shared/money'
-import { STATUS_LABELS, type DisplayStatus, type QuoteListRow } from '#shared/quote'
+import type { DisplayStatus, QuoteListRow } from '#shared/quote'
 
 // Elenco dei preventivi, dal più recente
 definePageMeta({ layout: 'admin' })
@@ -16,10 +16,24 @@ await useAdminSession()
 const { notify } = useAdminToast()
 
 const rows = ref<QuoteListRow[] | null>(null)
-const filter = ref<DisplayStatus | 'all'>('all')
+// Gruppi dell'elenco: i confermati scaduti restano tra i confermati
+const GROUPS = {
+  draft: { label: 'Bozze', statuses: ['draft'] },
+  confirmed: { label: 'Confermati', statuses: ['confirmed', 'expired'] },
+  signed: { label: 'Firmati', statuses: ['signed'] },
+  rejected: { label: 'Rifiutati', statuses: ['rejected'] },
+  all: { label: 'Tutti', statuses: [] },
+} as const satisfies Record<string, { label: string, statuses: readonly DisplayStatus[] }>
+type Group = keyof typeof GROUPS
+const FILTERS = Object.keys(GROUPS) as Group[]
+const inGroup = (r: QuoteListRow, g: Group) =>
+  g === 'all' || (GROUPS[g].statuses as readonly DisplayStatus[]).includes(r.displayStatus)
+
+const filter = ref<Group>('all')
 const query = ref('')
 const creating = ref(false)
-const FILTERS = ['all', 'draft', 'sent', 'expired', 'accepted', 'rejected'] as const
+const counts = computed(() =>
+  Object.fromEntries(FILTERS.map(g => [g, (rows.value ?? []).filter(r => inGroup(r, g)).length])) as Record<Group, number>)
 
 // Un clic sul filtro attivo lo spegnerebbe (undefined): resta com'è
 function pickFilter(v: unknown) {
@@ -30,7 +44,7 @@ function pickFilter(v: unknown) {
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
   return (rows.value ?? []).filter((r) =>
-    (filter.value === 'all' || r.displayStatus === filter.value)
+    inGroup(r, filter.value)
     && (!q || [r.number ?? '', r.title, r.clientName ?? ''].some((v) => v.toLowerCase().includes(q))),
   )
 })
@@ -98,7 +112,8 @@ async function create() {
             :key="f"
             :value="f"
           >
-            {{ f === 'all' ? 'Tutti' : STATUS_LABELS[f] }}
+            {{ GROUPS[f].label }}
+            <span class="tabular-nums opacity-60">{{ counts[f] }}</span>
           </ToggleGroupItem>
         </ToggleGroupRoot>
         <input

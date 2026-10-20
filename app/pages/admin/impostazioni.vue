@@ -161,6 +161,25 @@ const COMPANY_FIELDS = [
           </AdminField>
         </AdminSection>
 
+        <AdminSection
+          id="note-legali"
+          title="Note legali"
+          description="Stampate in fondo a ogni preventivo, sopra le firme. Valgono dalla prossima conferma."
+        >
+          <AdminField
+            label="Testo"
+            :value="form.contract.legalNotes"
+            :max="20000"
+          >
+            <textarea
+              v-model="form.contract.legalNotes"
+              rows="10"
+              maxlength="20000"
+              class="admin-input text-sm"
+            />
+          </AdminField>
+        </AdminSection>
+
         <div>
           <button
             type="submit"

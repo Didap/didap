@@ -8,18 +8,20 @@ import { text } from './text'
 // Preventivi: contenuto della bozza, totali, stati e controlli prima
 // dell'emissione. Importi in centesimi interi; giorni a mezze giornate.
 
-export const QUOTE_STATUSES = ['draft', 'sent', 'accepted', 'rejected'] as const
+// Bozza finché non lo confermiamo; confermato = emesso (numero, PDF, link)
+// e pronto da mandare; firmato lo segniamo noi quando torna dal cliente
+export const QUOTE_STATUSES = ['draft', 'confirmed', 'signed', 'rejected'] as const
 export type QuoteStatus = (typeof QUOTE_STATUSES)[number]
-// Stati che si impostano a mano dopo l'emissione
-export const SETTABLE_STATUSES = ['sent', 'accepted', 'rejected'] as const
+// Stati che si impostano a mano dopo la conferma
+export const SETTABLE_STATUSES = ['confirmed', 'signed', 'rejected'] as const
 export type SettableStatus = (typeof SETTABLE_STATUSES)[number]
 // "Scaduto" non si salva: si calcola dalla scadenza
 export type DisplayStatus = QuoteStatus | 'expired'
 
 export const STATUS_LABELS: Record<DisplayStatus, string> = {
   draft: 'Bozza',
-  sent: 'Inviato',
-  accepted: 'Accettato',
+  confirmed: 'Confermato',
+  signed: 'Firmato',
   rejected: 'Rifiutato',
   expired: 'Scaduto',
 }
@@ -118,6 +120,8 @@ export type QuoteSnapshot = {
   company: Company
   content: QuoteContent
   totals: QuoteTotals
+  // Note legali del contratto da Impostazioni (assenti nelle revisioni più vecchie)
+  legalNotes?: string
 }
 
 // Riga dell'elenco /admin/preventivi
@@ -143,6 +147,9 @@ export type QuoteDetail = {
   draft: DraftInput
   issuedDraft: DraftInput | null
   revisions: { rev: number; issuedAt: string; total: number }[]
+  // Ultimo invio al cliente e firma (il PDF firmato è facoltativo)
+  sent: { at: string; to: string; rev: number } | null
+  signed: { at: string | null; rev: number | null; fileName: string | null }
   updatedAt: string
 }
 
@@ -196,9 +203,9 @@ export function issueProblems(draft: DraftInput, today: string): string[] {
   return problems
 }
 
-// Scaduto: inviato e oltre la scadenza (il giorno di scadenza vale ancora)
+// Scaduto: confermato, non firmato e oltre la scadenza (il giorno di scadenza vale ancora)
 export function effectiveStatus(status: QuoteStatus, validUntil: string, today: string): DisplayStatus {
-  return status === 'sent' && validUntil !== '' && validUntil < today ? 'expired' : status
+  return status === 'confirmed' && validUntil !== '' && validUntil < today ? 'expired' : status
 }
 
 export const quoteNumber = (year: number, seq: number) => `${year}-${String(seq).padStart(3, '0')}`
@@ -226,6 +233,7 @@ export function buildSnapshot(input: {
   client: ClientInput
   company: Company
   content: QuoteContent
+  legalNotes: string
 }): QuoteSnapshot {
   const phases = input.content.phases
     .filter((p) => p.items.length > 0)
@@ -242,6 +250,7 @@ export function buildSnapshot(input: {
     company: input.company,
     content,
     totals: computeTotals(content),
+    legalNotes: input.legalNotes,
   }
 }
 
@@ -273,6 +282,7 @@ export function toPublicSnapshot(s: QuoteSnapshot): PublicSnapshot {
     company: s.company,
     content,
     totals: s.totals,
+    legalNotes: s.legalNotes ?? '',
   }
 }
 

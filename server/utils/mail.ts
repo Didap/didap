@@ -7,7 +7,14 @@ export const hasMailer = () => !!process.env.RESEND_API_KEY
 export const mailFrom = () => process.env.RESEND_FROM ?? 'Didap <noreply@didap.it>'
 export const resendClient = () => new Resend(process.env.RESEND_API_KEY)
 
-export type Mail = { to: string[], subject: string, html: string, text: string }
+export type Mail = {
+  to: string[]
+  subject: string
+  html: string
+  text: string
+  replyTo?: string
+  attachments?: { filename: string, content: Buffer }[]
+}
 export type Mailer = (mail: Mail) => Promise<void>
 
 export function resendMailer(): Mailer {

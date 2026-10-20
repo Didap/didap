@@ -16,6 +16,7 @@ import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import NumberInput from '~/components/admin/NumberInput.vue'
+import QuotePdfPreview from '~/components/admin/QuotePdfPreview.vue'
 import QuotePhaseEditor from '~/components/admin/QuotePhaseEditor.vue'
 import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
@@ -37,8 +38,10 @@ import {
   type SettableStatus,
 } from '#shared/quote'
 
-// Editor di un preventivo. La bozza si salva da sola; "Emetti" crea una
-// revisione con numero e PDF, e il link pubblico mostra sempre l'ultima.
+// Editor di un preventivo, con accanto il PDF che si aggiorna mentre si
+// scrive. La bozza si salva da sola; "Conferma" crea una revisione con
+// numero e PDF e sblocca l'invio al cliente; "Firmato" lo segniamo noi,
+// volendo con la copia firmata in PDF.
 // key: ogni preventivo ha la sua istanza, senza stato rimasto dal precedente
 definePageMeta({ layout: 'admin', key: (route) => String(route.params.id) })
 defineI18nRoute(false)
@@ -70,6 +73,8 @@ const saving = ref(false)
 const busy = ref(false)
 const confirmDelete = ref(false)
 const origin = ref('')
+// Cresce a ogni salvataggio riuscito: l'anteprima si ridisegna
+const previewVersion = ref(0)
 
 useSeoMeta({ title: () => `${detail.value?.number ?? 'Bozza'} - Preventivi - Admin Didap` })
 
@@ -103,6 +108,7 @@ async function load() {
     }
     form.value = d.draft
     savedSignature.value = stableStringify(d.draft)
+    previewVersion.value++
   }
   catch (err) {
     loadError.value = adminErrorText(err)
@@ -132,6 +138,7 @@ function save() {
     try {
       await $fetch(`/api/admin/quotes/${id.value}`, { method: 'PUT', body: form.value })
       savedSignature.value = sent
+      previewVersion.value++
       return true
     }
     catch (err) {
@@ -184,7 +191,38 @@ async function preview() {
 const issue = () => run(async () => {
   const res = await $fetch<{ rev: number; number: string }>(`/api/admin/quotes/${id.value}/issue`, { method: 'POST' })
   await load()
-  notify('ok', `Emesso ${res.number}, rev. ${res.rev}`)
+  notify('ok', `Confermato ${res.number}, rev. ${res.rev}: ora puoi inviarlo al cliente`)
+})
+
+// Email del cliente scelto: senza, l'invio non parte
+const clientEmail = computed(() => clients.value.find((c) => c.id === form.value?.clientId)?.email ?? '')
+const canSend = computed(() => detail.value?.status === 'confirmed' && !!clientEmail.value)
+
+const sendToClient = () => run(async () => {
+  const res = await $fetch<{ to: string }>(`/api/admin/quotes/${id.value}/send`, { method: 'POST' })
+  await load()
+  notify('ok', `Inviato a ${res.to}`)
+})
+
+// Copia firmata (facoltativa): caricarla segna anche il preventivo come firmato
+const signedInput = ref<HTMLInputElement | null>(null)
+function uploadSigned(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  run(async () => {
+    const body = new FormData()
+    body.append('file', file)
+    await $fetch(`/api/admin/quotes/${id.value}/signed`, { method: 'POST', body })
+    await load()
+    notify('ok', 'Copia firmata caricata')
+  })
+}
+const removeSigned = () => run(async () => {
+  await $fetch(`/api/admin/quotes/${id.value}/signed`, { method: 'DELETE' })
+  await load()
+  notify('ok', 'Copia firmata tolta')
 })
 
 
@@ -263,11 +301,11 @@ function setDiscountKind(v: unknown) {
 </script>
 
 <template>
-  <AdminShell>
-    <main class="
-      mx-auto w-full max-w-6xl p-5
-      lg:p-8
-    ">
+  <AdminShell fill>
+    <main
+      v-if="loadError"
+      class="p-6"
+    >
       <NuxtLink
         to="/admin/preventivi"
         class="
@@ -277,26 +315,40 @@ function setDiscountKind(v: unknown) {
       >
         ← Preventivi
       </NuxtLink>
-
       <p
-        v-if="loadError"
         class="mt-6 rounded-2xl border border-red/30 bg-white p-5 text-red"
         role="alert"
       >
         {{ loadError }}
       </p>
+    </main>
 
-      <div
-        v-else-if="form && detail"
-        class="
-          mt-4 grid items-start gap-6
-          lg:grid-cols-[minmax(0,1fr)_320px]
-        "
-      >
+    <!-- Editor | anteprima del PDF | totali e azioni; ogni colonna scorre per conto suo -->
+    <div
+      v-else-if="form && detail"
+      class="
+        grid flex-1 grid-cols-[minmax(0,1fr)]
+        lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_20rem]
+        xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_20rem]
+      "
+    >
+      <main class="
+        p-5
+        lg:overflow-y-auto lg:p-8
+      ">
+        <NuxtLink
+          to="/admin/preventivi"
+          class="
+            text-sm opacity-60
+            hover:opacity-100
+          "
+        >
+          ← Preventivi
+        </NuxtLink>
         <!-- Durante un'azione la bozza non si modifica: load() la rimpiazzerebbe -->
         <fieldset
           :disabled="busy"
-          class="flex min-w-0 flex-col gap-6"
+          class="mt-4 flex min-w-0 flex-col gap-6"
         >
           <div class="flex flex-wrap items-center gap-3">
             <h1 class="text-3xl font-bold">
@@ -531,11 +583,26 @@ function setDiscountKind(v: unknown) {
             </AdminField>
           </AdminSection>
         </fieldset>
+      </main>
 
-        <aside class="
-          flex flex-col gap-4
-          lg:sticky lg:top-4
-        ">
+      <section
+        class="
+          hidden min-h-0 overflow-y-auto border-x border-ink/10 bg-ink/5 p-6
+          xl:block
+        "
+        aria-label="Anteprima del PDF"
+      >
+        <QuotePdfPreview
+          :src="`/api/admin/quotes/${detail.id}/preview`"
+          :version="previewVersion"
+        />
+      </section>
+
+      <aside class="
+        flex flex-col gap-4 p-5
+        lg:overflow-y-auto lg:border-l lg:border-ink/10
+        xl:border-l-0
+      ">
           <div class="rounded-2xl border border-ink/10 bg-white p-5">
             <dl
               v-if="totals"
@@ -599,19 +666,48 @@ function setDiscountKind(v: unknown) {
               :disabled="!canIssue || busy"
               @click="issue"
             >
-              {{ detail.currentRev ? `Emetti rev. ${detail.currentRev + 1}` : 'Emetti preventivo' }}
+              {{ detail.currentRev ? `Conferma rev. ${detail.currentRev + 1}` : 'Conferma preventivo' }}
             </button>
             <p
               v-if="detail.currentRev && !unissued"
               class="text-xs opacity-60"
             >
-              Nessuna modifica alla bozza dall'ultima emissione: emetti di nuovo solo se sono cambiati i dati del cliente o di Didap.
+              Nessuna modifica dall'ultima conferma.
             </p>
+            <button
+              v-if="detail.currentRev"
+              type="button"
+              class="
+                rounded-full bg-ink px-5 py-2.5 text-sm font-medium
+                text-paper-light
+                hover:bg-green
+                disabled:opacity-40
+                disabled:hover:bg-ink
+              "
+              :disabled="!canSend || busy"
+              @click="sendToClient"
+            >
+              Invia al cliente
+            </button>
+            <p
+              v-if="detail.currentRev && detail.status === 'confirmed' && !clientEmail"
+              class="text-xs text-red"
+            >
+              Il cliente non ha un'email in anagrafica.
+            </p>
+            <p
+              v-if="detail.sent"
+              class="text-xs opacity-60"
+            >
+              Inviato rev. {{ detail.sent.rev }} a {{ detail.sent.to }}, {{ formatDateTime(detail.sent.at) }}
+            </p>
+            <!-- Da desktop largo l'anteprima è già accanto -->
             <button
               type="button"
               class="
                 rounded-full border border-ink/20 px-5 py-2.5 text-sm
                 hover:border-ink
+                xl:hidden
               "
               @click="preview"
             >
@@ -678,6 +774,66 @@ function setDiscountKind(v: unknown) {
                 {{ STATUS_LABELS[s] }}
               </ToggleGroupItem>
             </ToggleGroupRoot>
+
+            <!-- Copia firmata dal cliente: facoltativa, tiene ordine -->
+            <p class="mt-1 text-sm font-medium">
+              Copia firmata
+            </p>
+            <div
+              v-if="detail.signed.fileName"
+              class="flex flex-col gap-2"
+            >
+              <a
+                :href="`/api/admin/quotes/${detail.id}/signed`"
+                target="_blank"
+                class="truncate text-sm text-green underline underline-offset-2"
+              >{{ detail.signed.fileName }}</a>
+              <span class="text-xs opacity-60">rev. {{ detail.signed.rev }}<template v-if="detail.signed.at">, firmato il {{ formatDateTime(detail.signed.at) }}</template></span>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="
+                    rounded-full border border-ink/20 px-3 py-1.5 text-sm
+                    hover:border-ink
+                  "
+                  :disabled="busy"
+                  @click="signedInput?.click()"
+                >
+                  Sostituisci
+                </button>
+                <button
+                  type="button"
+                  class="
+                    rounded-full px-3 py-1.5 text-sm text-red
+                    hover:bg-red/10
+                  "
+                  :disabled="busy"
+                  @click="removeSigned"
+                >
+                  Togli
+                </button>
+              </div>
+            </div>
+            <button
+              v-else
+              type="button"
+              class="
+                rounded-full border border-dashed border-ink/30 px-4 py-2.5
+                text-sm
+                hover:border-ink
+              "
+              :disabled="busy"
+              @click="signedInput?.click()"
+            >
+              Carica il PDF firmato
+            </button>
+            <input
+              ref="signedInput"
+              type="file"
+              accept="application/pdf"
+              class="hidden"
+              @change="uploadSigned"
+            >
           </div>
 
           <div
@@ -750,8 +906,7 @@ function setDiscountKind(v: unknown) {
               </template>
             </template>
           </div>
-        </aside>
-      </div>
-    </main>
+      </aside>
+    </div>
   </AdminShell>
 </template>

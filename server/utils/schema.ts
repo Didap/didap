@@ -44,7 +44,7 @@ export const DB_SCHEMA = `
     client_id uuid references clients (id) on delete restrict,
     title text not null default '',
     status text not null default 'draft'
-      check (status in ('draft', 'sent', 'accepted', 'rejected')),
+      check (status in ('draft', 'confirmed', 'signed', 'rejected')),
     year int,
     seq int,
     token text unique,
@@ -55,6 +55,27 @@ export const DB_SCHEMA = `
     updated_at timestamptz not null default now(),
     unique (year, seq)
   );
+  -- Invio al cliente e firma: l'ultimo invio e il PDF firmato (facoltativo)
+  alter table quotes add column if not exists sent_at timestamptz;
+  alter table quotes add column if not exists sent_to text;
+  alter table quotes add column if not exists sent_rev int;
+  alter table quotes add column if not exists signed_at timestamptz;
+  alter table quotes add column if not exists signed_rev int;
+  alter table quotes add column if not exists signed_pdf bytea;
+  alter table quotes add column if not exists signed_pdf_name text;
+  -- Stati vecchi (inviato, accettato) -> confermato, firmato
+  do $$ begin
+    if exists (
+      select 1 from pg_constraint
+      where conname = 'quotes_status_check' and pg_get_constraintdef(oid) like '%sent%'
+    ) then
+      alter table quotes drop constraint quotes_status_check;
+      update quotes set status = 'confirmed' where status = 'sent';
+      update quotes set status = 'signed' where status = 'accepted';
+      alter table quotes add constraint quotes_status_check
+        check (status in ('draft', 'confirmed', 'signed', 'rejected'));
+    end if;
+  end $$;
   create table if not exists quote_counters (
     year int primary key,
     last_seq int not null

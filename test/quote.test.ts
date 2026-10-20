@@ -143,11 +143,11 @@ describe('emissione', () => {
 })
 
 describe('stato, numero, firma', () => {
-  it('scade il giorno dopo la scadenza, solo se inviato', () => {
-    expect(effectiveStatus('sent', '2026-10-15', '2026-10-15')).toBe('sent')
-    expect(effectiveStatus('sent', '2026-10-15', '2026-10-16')).toBe('expired')
-    expect(effectiveStatus('accepted', '2026-10-15', '2026-12-01')).toBe('accepted')
-    expect(effectiveStatus('sent', '', '2026-12-01')).toBe('sent')
+  it('scade il giorno dopo la scadenza, solo se confermato e non firmato', () => {
+    expect(effectiveStatus('confirmed', '2026-10-15', '2026-10-15')).toBe('confirmed')
+    expect(effectiveStatus('confirmed', '2026-10-15', '2026-10-16')).toBe('expired')
+    expect(effectiveStatus('signed', '2026-10-15', '2026-12-01')).toBe('signed')
+    expect(effectiveStatus('confirmed', '', '2026-12-01')).toBe('confirmed')
   })
 
   it('numera con almeno tre cifre', () => {

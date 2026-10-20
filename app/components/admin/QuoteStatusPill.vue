@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { STATUS_LABELS, type DisplayStatus } from '#shared/quote'
 
-// Stato di un preventivo: bozza tratteggiata, inviato contorno verde,
-// accettato verde pieno, rifiutato rosso, scaduto banana
+// Stato di un preventivo: bozza tratteggiata, confermato contorno verde,
+// firmato verde pieno, rifiutato rosso, scaduto banana
 defineProps<{ status: DisplayStatus }>()
 </script>
 
@@ -14,8 +14,8 @@ defineProps<{ status: DisplayStatus }>()
     "
     :class="{
       'border border-dashed border-ink/50': status === 'draft',
-      'border border-green text-green': status === 'sent',
-      'bg-green text-paper-light': status === 'accepted',
+      'border border-green text-green': status === 'confirmed',
+      'bg-green text-paper-light': status === 'signed',
       'border border-red text-red': status === 'rejected',
       'bg-banana text-ink': status === 'expired',
     }"

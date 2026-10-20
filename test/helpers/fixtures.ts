@@ -44,6 +44,7 @@ export function sampleSnapshot(patch: Partial<QuoteContent> = {}): QuoteSnapshot
     client: { ...emptyClient(), name: 'Comune di Prova', address: 'Piazza Grande 1\n72100 Brindisi', vatNumber: '00123456789' },
     company: { ...DEFAULT_SETTINGS.company, address: 'Via Roma 1, Brindisi', iban: 'IT60X0542811101000000123456' },
     content,
+    legalNotes: '',
   })
 }
 

@@ -237,7 +237,7 @@ export async function readPending(sql: Sql, reader: GrantReader, limit = READ_BA
 async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Promise<RadarGrant[]> {
   const rows = await sql`
     select g.id, d.source, d.url, g.title, g.issuer, g.summary, g.opens_at, g.deadline, g.max_amount,
-      g.funding, g.requirements, g.notified_at, g.created_at
+      g.funding, g.requirements, g.notified_at, g.liked_at, g.created_at
     from radar_grants g join radar_documents d on d.id = g.document_id
     where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
       ${unnotified ? sql`and g.notified_at is null` : sql``}
@@ -257,6 +257,7 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Pro
     funding: r.funding,
     requirements: r.requirements as Requirement[],
     notifiedAt: iso(r.notified_at),
+    liked: r.liked_at !== null,
     createdAt: r.created_at.toISOString(),
   }))
 }
@@ -267,6 +268,16 @@ const evaluate = (grants: RadarGrant[], profile: RadarProfile, now: Date): Evalu
 export async function listEvaluatedGrants(sql: Sql, now = new Date()): Promise<EvaluatedGrant[]> {
   const [{ profile }, grants] = await Promise.all([readRadarSettings(sql), listGrants(sql, now)])
   return evaluate(grants, profile, now)
+}
+
+// Il cuore: un bando interessante per noi resta segnato anche se si rilegge
+export async function setGrantLiked(sql: Sql, id: string, liked: boolean) {
+  const [row] = await sql`
+    update radar_grants set liked_at = ${liked ? sql`coalesce(liked_at, now())` : null}
+    where id = ${id}
+    returning id
+  `
+  if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
 }
 
 // ---------- mail ----------

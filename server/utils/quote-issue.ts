@@ -7,8 +7,9 @@ import { rowToClientInput } from './clients'
 import { rowToDraft } from './quotes'
 import { readSettings } from './settings'
 
-// Emissione di una revisione in una sola transazione: numero (solo la
-// prima volta), snapshot e PDF. Se qualcosa fallisce non resta nulla,
+// Conferma (emissione) di una revisione in una sola transazione: numero
+// (solo la prima volta), snapshot e PDF. Ogni nuova revisione torna
+// "confermata": se era firmata, la versione nuova va firmata di nuovo. Se qualcosa fallisce non resta nulla,
 // né un numero consumato né una revisione a metà.
 
 export type RenderPdf = (snapshot: QuoteSnapshot) => Promise<Buffer>
@@ -55,6 +56,7 @@ export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Dat
       client: rowToClientInput(clientRow!),
       company: settings.company,
       content: draft.content,
+      legalNotes: settings.contract.legalNotes,
     })
     let pdf: Buffer
     try {
@@ -74,7 +76,7 @@ export async function issueQuote(sql: postgres.Sql, id: string, opts: { now: Dat
       update quotes set
         year = ${year}, seq = ${seq}, token = ${token}, current_rev = ${rev},
         issued_draft = ${tx.json(draft)},
-        status = case when status = 'draft' then 'sent' else status end,
+        status = 'confirmed',
         updated_at = now()
       where id = ${id}
     `

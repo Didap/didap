@@ -114,6 +114,36 @@ function summaryBlock(s: QuoteSnapshot): Content {
   }
 }
 
+// Spazio per le firme in fondo al documento: Didap e cliente, data e firma
+function signatureLine(label: string): Content {
+  return {
+    stack: [
+      { text: label, fontSize: 8, color: C.muted, margin: [0, 18, 0, 14] },
+      { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 220, y2: 0, lineWidth: 0.6, lineColor: C.muted }] },
+    ],
+  }
+}
+
+function signatureBlock(s: QuoteSnapshot): Content {
+  const party = (title: string, name: string): Content => ({
+    stack: [
+      { text: title, bold: true },
+      { text: name, fontSize: 8.5, color: C.muted },
+      signatureLine('Data'),
+      signatureLine('Firma'),
+    ],
+  })
+  return {
+    columns: [
+      party(`Per ${s.company.name}`, ''),
+      party('Per accettazione, il Cliente', s.client.name),
+    ],
+    columnGap: 40,
+    margin: [0, 28, 0, 0],
+    unbreakable: true,
+  }
+}
+
 export function buildQuoteDoc(s: QuoteSnapshot, logoSvg: string): TDocumentDefinitions {
   const { company, client: c, content } = s
   const body: Content[] = [
@@ -176,6 +206,10 @@ export function buildQuoteDoc(s: QuoteSnapshot, logoSvg: string): TDocumentDefin
   if (company.iban) {
     body.push({ text: [{ text: 'IBAN ', color: C.muted }, { text: company.iban, font: 'Mono' }], margin: [0, 14, 0, 0] })
   }
+  if (s.legalNotes?.trim()) {
+    body.push({ text: 'Note legali', style: 'h3' }, { text: s.legalNotes, fontSize: 7.5, color: C.muted })
+  }
+  body.push(signatureBlock(s))
 
   return {
     pageSize: 'A4',

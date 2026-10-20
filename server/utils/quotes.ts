@@ -40,7 +40,11 @@ export async function createQuote(sql: Sql, now: Date): Promise<{ id: string }> 
 }
 
 export async function getQuote(sql: Sql, id: string, today: string): Promise<QuoteDetail> {
-  const [q] = await sql`select * from quotes where id = ${id}`
+  const [q] = await sql`
+    select id, token, status, year, seq, current_rev, title, client_id, draft, issued_draft, updated_at,
+      sent_at, sent_to, sent_rev, signed_at, signed_rev, signed_pdf_name
+    from quotes where id = ${id}
+  `
   if (!q) throw notFound()
   const revisions = await sql`
     select rev, issued_at,
@@ -59,6 +63,12 @@ export async function getQuote(sql: Sql, id: string, today: string): Promise<Quo
     draft: rowToDraft(q),
     issuedDraft: q.issued_draft ? draftInputSchema.parse(q.issued_draft) : null,
     revisions: revisions.map((r) => ({ rev: r.rev, issuedAt: iso(r.issued_at), total: Number(r.total) })),
+    sent: q.sent_at ? { at: iso(q.sent_at), to: q.sent_to, rev: q.sent_rev } : null,
+    signed: {
+      at: q.signed_at ? iso(q.signed_at) : null,
+      rev: q.signed_rev,
+      fileName: q.signed_pdf_name,
+    },
     updatedAt: iso(q.updated_at),
   }
 }
@@ -127,13 +137,50 @@ export async function deleteQuote(sql: Sql, id: string): Promise<void> {
   if (!row) await conflictOrNotFound(sql, id, 'Un preventivo emesso non si può eliminare')
 }
 
+// Firmato registra quando e quale revisione; uscendo da firmato la data si
+// azzera, il PDF firmato (se c'è) resta finché non lo si toglie
 export async function setQuoteStatus(sql: Sql, id: string, status: SettableStatus): Promise<void> {
+  const signed = status === 'signed'
   const [row] = await sql`
-    update quotes set status = ${status}, updated_at = now()
+    update quotes set
+      status = ${status},
+      signed_at = case when ${signed} then coalesce(signed_at, now()) else null end,
+      signed_rev = case when ${signed} then current_rev else signed_rev end,
+      updated_at = now()
     where id = ${id} and current_rev > 0
     returning id
   `
-  if (!row) await conflictOrNotFound(sql, id, 'Emetti il preventivo prima di cambiarne lo stato')
+  if (!row) await conflictOrNotFound(sql, id, 'Conferma il preventivo prima di cambiarne lo stato')
+}
+
+const MAX_SIGNED_BYTES = 15 * 1024 * 1024
+
+// PDF firmato dal cliente: facoltativo, segna anche il preventivo come firmato
+export async function saveSignedPdf(sql: Sql, id: string, file: { name: string; data: Buffer }): Promise<void> {
+  if (file.data.subarray(0, 5).toString('latin1') !== '%PDF-') {
+    throw createError({ statusCode: 415, statusMessage: 'Serve un file PDF' })
+  }
+  if (file.data.length > MAX_SIGNED_BYTES) throw createError({ statusCode: 413, statusMessage: 'File oltre 15 MB' })
+  const [row] = await sql`
+    update quotes set
+      signed_pdf = ${file.data}, signed_pdf_name = ${file.name.slice(0, 200)},
+      status = 'signed', signed_at = coalesce(signed_at, now()), signed_rev = current_rev, updated_at = now()
+    where id = ${id} and current_rev > 0
+    returning id
+  `
+  if (!row) await conflictOrNotFound(sql, id, 'Conferma il preventivo prima di caricare la copia firmata')
+}
+
+export async function readSignedPdf(sql: Sql, id: string): Promise<{ pdf: Buffer; filename: string }> {
+  const [row] = await sql`select signed_pdf, signed_pdf_name from quotes where id = ${id} and signed_pdf is not null`
+  if (!row) throw createError({ statusCode: 404, statusMessage: 'Nessun PDF firmato' })
+  // Il nome lo ha scelto chi ha caricato il file: nell'intestazione solo caratteri sicuri
+  const filename = String(row.signed_pdf_name || 'Preventivo-firmato.pdf').replace(/[^\w.-]+/g, '_')
+  return { pdf: row.signed_pdf, filename }
+}
+
+export async function removeSignedPdf(sql: Sql, id: string): Promise<void> {
+  await sql`update quotes set signed_pdf = null, signed_pdf_name = null, updated_at = now() where id = ${id}`
 }
 
 export async function duplicateQuote(sql: Sql, id: string, now: Date): Promise<{ id: string }> {
@@ -168,5 +215,6 @@ export async function previewSnapshot(sql: Sql, id: string, now: Date): Promise<
     client: clientRow ? rowToClientInput(clientRow) : { ...emptyClient(), name: 'Cliente da scegliere' },
     company: settings.company,
     content: draft.content,
+    legalNotes: settings.contract.legalNotes,
   })
 }

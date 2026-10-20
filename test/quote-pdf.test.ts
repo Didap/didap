@@ -41,6 +41,15 @@ describe('renderQuotePdf', () => {
 })
 
 describe('buildQuoteDoc', () => {
+  it('ha sempre lo spazio per le firme; le note legali solo se impostate', () => {
+    const plain = JSON.stringify(buildQuoteDoc(sampleSnapshot(), assets.logoSvg))
+    expect(plain).toContain('Per accettazione, il Cliente')
+    expect(plain).not.toContain('Note legali')
+    const legal = JSON.stringify(buildQuoteDoc({ ...sampleSnapshot(), legalNotes: 'Foro competente: Brindisi' }, assets.logoSvg))
+    expect(legal).toContain('Note legali')
+    expect(legal).toContain('Foro competente: Brindisi')
+  })
+
   it('omette sezioni vuote e righe di sconto a zero', () => {
     const json = JSON.stringify(buildQuoteDoc(sampleSnapshot(), assets.logoSvg))
     expect(json).not.toContain('Esclusioni')

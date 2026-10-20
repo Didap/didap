@@ -276,6 +276,8 @@ export type RadarGrant = {
   funding: string
   requirements: Requirement[]
   notifiedAt: string | null
+  // Segnato come interessante per noi
+  liked: boolean
   createdAt: string
 }
 

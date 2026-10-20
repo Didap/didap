@@ -2,8 +2,8 @@ import { z } from 'zod'
 import { MAX_CENTS } from './money'
 import { text } from './text'
 
-// Impostazioni dei preventivi: dati di Didap stampati nei documenti e
-// valori di partenza copiati in ogni nuova bozza.
+// Impostazioni dei preventivi: dati di Didap stampati nei documenti,
+// valori di partenza copiati in ogni nuova bozza e note legali del contratto.
 
 export const companySchema = z
   .object({
@@ -30,6 +30,8 @@ export const settingsSchema = z
         notes: text(5000),
       })
       .strict(),
+    // Stampate in fondo a ogni preventivo, sopra le firme
+    contract: z.object({ legalNotes: text(20000) }).strict(),
   })
   .strict()
 
@@ -39,6 +41,7 @@ export type Settings = z.infer<typeof settingsSchema>
 export const DEFAULT_SETTINGS: Settings = {
   company: { name: 'Didap', vatNumber: '', taxCode: '', address: '', email: '', phone: '', iban: '' },
   defaults: { dayRate: 0, vatRate: 22, validityDays: 30, paymentTerms: '', exclusions: '', notes: '' },
+  contract: { legalNotes: '' },
 }
 
 // Una sezione alla volta, un campo alla volta: il valore salvato resta se
@@ -65,5 +68,6 @@ export function parseSettings(data: unknown): Settings {
   return {
     company: mergeSection(companySchema.shape, source.company, DEFAULT_SETTINGS.company),
     defaults: mergeSection(settingsSchema.shape.defaults.shape, source.defaults, DEFAULT_SETTINGS.defaults),
+    contract: mergeSection(settingsSchema.shape.contract.shape, source.contract, DEFAULT_SETTINGS.contract),
   }
 }

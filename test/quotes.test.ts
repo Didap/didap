@@ -13,10 +13,16 @@ import {
   getQuote,
   listQuotes,
   previewSnapshot,
+  readSignedPdf,
+  removeSignedPdf,
   saveDraft,
+  saveSignedPdf,
   setQuoteStatus,
 } from '../server/utils/quotes'
+import type { Mail } from '../server/utils/mail'
+import { sendQuote } from '../server/utils/quote-send'
 import { writeSettings } from '../server/utils/settings'
+import { DB_SCHEMA } from '../server/utils/schema'
 import { openTestDb, resetTestDb, TEST_DATABASE_URL } from './helpers/db'
 
 const NOW = new Date('2026-10-15T10:00:00Z')
@@ -81,7 +87,7 @@ describe.skipIf(!TEST_DATABASE_URL)('preventivi su Postgres', () => {
     expect(res).toMatchObject({ rev: 1, number: '2026-001' })
     expect(res.token).toMatch(/^[\w-]{43}$/)
     const q = await getQuote(sql, id, TODAY)
-    expect(q).toMatchObject({ status: 'sent', currentRev: 1, number: '2026-001', token: res.token })
+    expect(q).toMatchObject({ status: 'confirmed', currentRev: 1, number: '2026-001', token: res.token })
     expect(q.issuedDraft?.title).toBe('Nuovo sito')
     expect(q.revisions).toEqual([{ rev: 1, issuedAt: NOW.toISOString(), total: 97600 }])
   })
@@ -171,10 +177,75 @@ describe.skipIf(!TEST_DATABASE_URL)('preventivi su Postgres', () => {
 
   it('lo stato si cambia solo dopo l\'emissione', async () => {
     const { id } = await readyQuote()
-    await expect(setQuoteStatus(sql, id, 'accepted')).rejects.toMatchObject({ statusCode: 409 })
+    await expect(setQuoteStatus(sql, id, 'signed')).rejects.toMatchObject({ statusCode: 409 })
     await issueQuote(sql, id, { now: NOW, render })
-    await setQuoteStatus(sql, id, 'accepted')
-    expect((await getQuote(sql, id, TODAY)).status).toBe('accepted')
+    await setQuoteStatus(sql, id, 'signed')
+    const signed = await getQuote(sql, id, TODAY)
+    expect(signed.status).toBe('signed')
+    expect(signed.signed).toMatchObject({ rev: 1, fileName: null })
+    expect(signed.signed.at).not.toBeNull()
+    // Tornando indietro la data di firma si azzera
+    await setQuoteStatus(sql, id, 'confirmed')
+    expect((await getQuote(sql, id, TODAY)).signed.at).toBeNull()
+  })
+
+  it('una nuova revisione di un firmato torna confermata', async () => {
+    const { id } = await readyQuote()
+    await issueQuote(sql, id, { now: NOW, render })
+    await setQuoteStatus(sql, id, 'signed')
+    await issueQuote(sql, id, { now: NOW, render })
+    expect((await getQuote(sql, id, TODAY)).status).toBe('confirmed')
+  })
+
+  it('porta i vecchi stati inviato e accettato a confermato e firmato', async () => {
+    const { id: a } = await readyQuote('Alfa')
+    const { id: b } = await readyQuote('Beta')
+    await sql`alter table quotes drop constraint quotes_status_check`
+    await sql`alter table quotes add constraint quotes_status_check check (status in ('draft', 'sent', 'accepted', 'rejected'))`
+    await sql`update quotes set status = 'sent', current_rev = 1 where id = ${a}`
+    await sql`update quotes set status = 'accepted', current_rev = 1 where id = ${b}`
+    await sql.unsafe(DB_SCHEMA)
+    const rows = await sql`select id, status from quotes order by title`
+    expect(Object.fromEntries(rows.map(r => [r.id, r.status]))).toEqual({ [a]: 'confirmed', [b]: 'signed' })
+  })
+
+  it('la copia firmata è un PDF, segna firmato e si può togliere', async () => {
+    const { id } = await readyQuote()
+    const pdf = { name: 'firmato "rev1".pdf', data: Buffer.from('%PDF-firmato') }
+    await expect(saveSignedPdf(sql, id, pdf)).rejects.toMatchObject({ statusCode: 409 })
+    await issueQuote(sql, id, { now: NOW, render })
+    await expect(saveSignedPdf(sql, id, { name: 'x.png', data: Buffer.from('PNG') })).rejects.toMatchObject({ statusCode: 415 })
+    await saveSignedPdf(sql, id, pdf)
+    const q = await getQuote(sql, id, TODAY)
+    expect(q).toMatchObject({ status: 'signed', signed: { rev: 1, fileName: 'firmato "rev1".pdf' } })
+    const file = await readSignedPdf(sql, id)
+    expect(file.pdf.toString()).toBe('%PDF-firmato')
+    expect(file.filename).toBe('firmato_rev1_.pdf')
+    await removeSignedPdf(sql, id)
+    await expect(readSignedPdf(sql, id)).rejects.toMatchObject({ statusCode: 404 })
+    expect((await getQuote(sql, id, TODAY)).status).toBe('signed')
+  })
+
+  it('l\'invio al cliente si sblocca con la conferma e serve la sua email', async () => {
+    const sent: Mail[] = []
+    const mailer = async (m: Mail) => {
+      sent.push(m)
+    }
+    const opts = { mailer, siteUrl: 'https://didap.it/', now: NOW }
+    const { id, client } = await readyQuote()
+    await expect(sendQuote(sql, id, opts)).rejects.toMatchObject({ statusCode: 409 })
+    await issueQuote(sql, id, { now: NOW, render })
+    await expect(sendQuote(sql, id, opts)).rejects.toMatchObject({ statusCode: 422 })
+    await updateClient(sql, client.id, { ...emptyClient(), name: client.name, email: 'ufficio@comune.it' })
+    expect(await sendQuote(sql, id, opts)).toEqual({ to: 'ufficio@comune.it' })
+    const token = (await getQuote(sql, id, TODAY)).token
+    expect(sent[0]).toMatchObject({ to: ['ufficio@comune.it'], subject: 'Preventivo 2026-001 - Nuovo sito' })
+    expect(sent[0]!.text).toContain(`https://didap.it/p/${token}`)
+    expect(sent[0]!.attachments?.[0]?.filename).toBe('Preventivo-2026-001-rev1.pdf')
+    expect((await getQuote(sql, id, TODAY)).sent).toMatchObject({ to: 'ufficio@comune.it', rev: 1 })
+    // Firmato o rifiutato non si manda più
+    await setQuoteStatus(sql, id, 'rejected')
+    await expect(sendQuote(sql, id, opts)).rejects.toMatchObject({ statusCode: 409 })
   })
 
   it('duplica come nuova bozza senza numero, con scadenza ricalcolata', async () => {
@@ -194,7 +265,7 @@ describe.skipIf(!TEST_DATABASE_URL)('preventivi su Postgres', () => {
     await issueQuote(sql, id, { now: NOW, render })
     // scadenza: 15/10 + 30 giorni = 14/11
     const [onDay] = await listQuotes(sql, '2026-11-14')
-    expect(onDay).toMatchObject({ id, number: '2026-001', title: 'Nuovo sito', clientName: 'Comune di Prova', total: 97600, displayStatus: 'sent' })
+    expect(onDay).toMatchObject({ id, number: '2026-001', title: 'Nuovo sito', clientName: 'Comune di Prova', total: 97600, displayStatus: 'confirmed' })
     const [after] = await listQuotes(sql, '2026-11-15')
     expect(after?.displayStatus).toBe('expired')
     expect((await getPublicQuote(sql, (await getQuote(sql, id, TODAY)).token!, '2026-11-15'))?.expired).toBe(true)

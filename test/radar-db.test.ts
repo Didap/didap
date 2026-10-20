@@ -10,6 +10,7 @@ import {
   readRadarSettings,
   releaseLease,
   sendDigest,
+  setGrantLiked,
   writeRadarSettings,
   type Mail,
 } from '../server/utils/radar'
@@ -105,6 +106,20 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await ingestSources(sql, [fakeSource({ a: 'bando A max 900' })], NOW)
     expect(await readPending(sql, fakeReader)).toBe(1)
     expect((await listEvaluatedGrants(sql, NOW))[0]!.title).toBe('bando A max 900')
+  })
+
+  it('il cuore resta anche quando il bando si rilegge', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A' })], NOW)
+    await readPending(sql, fakeReader)
+    const [g] = await listEvaluatedGrants(sql, NOW)
+    expect(g!.liked).toBe(false)
+    await setGrantLiked(sql, g!.id, true)
+    await ingestSources(sql, [fakeSource({ a: 'bando A cambiato' })], NOW)
+    await readPending(sql, fakeReader)
+    expect((await listEvaluatedGrants(sql, NOW))[0]).toMatchObject({ title: 'bando A cambiato', liked: true })
+    await setGrantLiked(sql, g!.id, false)
+    expect((await listEvaluatedGrants(sql, NOW))[0]!.liked).toBe(false)
+    await expect(setGrantLiked(sql, '00000000-0000-4000-8000-000000000000', true)).rejects.toMatchObject({ statusCode: 404 })
   })
 
   it('una fonte lenta non si riscarica prima dei giorni previsti', async () => {

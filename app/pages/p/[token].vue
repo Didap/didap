@@ -289,6 +289,22 @@ const extras = computed(() => extraSections(s.value.content))
       <span class="opacity-60">IBAN</span> <span class="font-mono">{{ s.company.iban }}</span>
     </p>
 
+    <section
+      v-if="s.legalNotes"
+      class="mt-10"
+    >
+      <h2 class="text-sm font-bold">
+        Note legali
+      </h2>
+      <p class="mt-2 text-xs/relaxed whitespace-pre-line opacity-70">
+        {{ s.legalNotes }}
+      </p>
+    </section>
+
+    <p class="mt-10 text-sm opacity-70">
+      Per accettare il preventivo, scarica il PDF, firmalo negli spazi in fondo e rimandacelo.
+    </p>
+
     <footer class="
       mt-16 flex flex-wrap items-center justify-between gap-4 border-t
       border-ink/10 pt-6

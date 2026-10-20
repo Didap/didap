@@ -5,7 +5,7 @@ import QuoteStatusPill from '~/components/admin/QuoteStatusPill.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatEuro } from '#shared/money'
-import { STATUS_LABELS, type DisplayStatus, type QuoteListRow } from '#shared/quote'
+import type { DisplayStatus, QuoteListRow } from '#shared/quote'
 
 // Elenco dei preventivi, dal più recente
 definePageMeta({ layout: 'admin' })
@@ -16,10 +16,24 @@ await useAdminSession()
 const { notify } = useAdminToast()
 
 const rows = ref<QuoteListRow[] | null>(null)
-const filter = ref<DisplayStatus | 'all'>('all')
+// Gruppi dell'elenco: i confermati scaduti restano tra i confermati
+const GROUPS = {
+  draft: { label: 'Bozze', statuses: ['draft'] },
+  confirmed: { label: 'Confermati', statuses: ['confirmed', 'expired'] },
+  signed: { label: 'Firmati', statuses: ['signed'] },
+  rejected: { label: 'Rifiutati', statuses: ['rejected'] },
+  all: { label: 'Tutti', statuses: [] },
+} as const satisfies Record<string, { label: string, statuses: readonly DisplayStatus[] }>
+type Group = keyof typeof GROUPS
+const FILTERS = Object.keys(GROUPS) as Group[]
+const inGroup = (r: QuoteListRow, g: Group) =>
+  g === 'all' || (GROUPS[g].statuses as readonly DisplayStatus[]).includes(r.displayStatus)
+
+const filter = ref<Group>('all')
 const query = ref('')
 const creating = ref(false)
-const FILTERS = ['all', 'draft', 'sent', 'expired', 'accepted', 'rejected'] as const
+const counts = computed(() =>
+  Object.fromEntries(FILTERS.map(g => [g, (rows.value ?? []).filter(r => inGroup(r, g)).length])) as Record<Group, number>)
 
 // Un clic sul filtro attivo lo spegnerebbe (undefined): resta com'è
 function pickFilter(v: unknown) {
@@ -30,7 +44,7 @@ function pickFilter(v: unknown) {
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
   return (rows.value ?? []).filter((r) =>
-    (filter.value === 'all' || r.displayStatus === filter.value)
+    inGroup(r, filter.value)
     && (!q || [r.number ?? '', r.title, r.clientName ?? ''].some((v) => v.toLowerCase().includes(q))),
   )
 })
@@ -62,98 +76,122 @@ async function create() {
 </script>
 
 <template>
-  <AdminShell>
-    <main class="
-      mx-auto w-full max-w-5xl p-6
-      lg:p-10
-    ">
-      <div class="flex flex-wrap items-center gap-4">
-        <h1 class="mr-auto text-3xl font-bold">
-          Preventivi
-        </h1>
-        <button
-          type="button"
-          class="
-            rounded-full bg-green px-5 py-2.5 font-medium text-paper-light
-            hover:bg-ink
-            disabled:opacity-50
-          "
-          :disabled="creating"
-          @click="create"
-        >
-          + Nuovo preventivo
-        </button>
-      </div>
-
-      <div class="mt-6 flex flex-wrap items-center gap-2">
-        <ToggleGroupRoot
-          :model-value="filter"
-          type="single"
-          class="toggle-pills"
-          aria-label="Filtra per stato"
-          @update:model-value="pickFilter"
-        >
-          <ToggleGroupItem
-            v-for="f in FILTERS"
-            :key="f"
-            :value="f"
-          >
-            {{ f === 'all' ? 'Tutti' : STATUS_LABELS[f] }}
-          </ToggleGroupItem>
-        </ToggleGroupRoot>
-        <input
-          v-model="query"
-          type="search"
-          placeholder="Cerca numero, titolo o cliente"
-          aria-label="Cerca"
-          class="
-            admin-input
-            sm:ml-auto sm:max-w-xs
-          "
-        >
-      </div>
-
-      <p
-        v-if="rows && !rows.length"
-        class="mt-10 opacity-60"
-      >
-        Ancora nessun preventivo. Crea il primo con "Nuovo preventivo".
-      </p>
-      <p
-        v-else-if="rows && !visible.length"
-        class="mt-10 opacity-60"
-      >
-        Nessun preventivo corrisponde ai filtri.
-      </p>
-      <ul
-        v-else-if="rows"
-        class="mt-6 flex flex-col gap-2"
-      >
-        <li
-          v-for="r in visible"
-          :key="r.id"
-        >
-          <NuxtLink
-            :to="`/admin/preventivi/${r.id}`"
+  <AdminShell fill>
+    <section
+      class="flex min-h-0 flex-1 flex-col"
+      aria-label="Preventivi"
+    >
+      <header class="
+        flex flex-col gap-4 border-b border-ink/10 px-5 pt-5 pb-4
+        lg:px-8
+      ">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+          <h1 class="text-2xl font-bold">
+            Preventivi
+          </h1>
+          <button
+            type="button"
             class="
-              grid items-center gap-x-4 gap-y-1 rounded-2xl border border-ink/10
-              bg-white px-5 py-4 transition
-              hover:border-ink
-              sm:grid-cols-[90px_minmax(0,1fr)_auto_auto]
+              ml-auto rounded-full bg-green px-4 py-2 text-sm font-medium
+              text-paper-light
+              hover:bg-ink
+              disabled:opacity-50
+            "
+            :disabled="creating"
+            @click="create"
+          >
+            + Nuovo preventivo
+          </button>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <ToggleGroupRoot
+            :model-value="filter"
+            type="single"
+            class="toggle-segmented max-w-full scrollbar-none overflow-x-auto"
+            aria-label="Filtra per stato"
+            @update:model-value="pickFilter"
+          >
+            <ToggleGroupItem
+              v-for="f in FILTERS"
+              :key="f"
+              :value="f"
+              class="
+                px-2! whitespace-nowrap
+                sm:px-3!
+              "
+            >
+              {{ GROUPS[f].label }}
+              <span class="tabular-nums opacity-60">{{ counts[f] }}</span>
+            </ToggleGroupItem>
+          </ToggleGroupRoot>
+          <input
+            v-model="query"
+            type="search"
+            placeholder="Cerca numero, titolo o cliente"
+            aria-label="Cerca"
+            class="
+              panel-input rounded-full px-4
+              sm:ml-auto sm:w-72
             "
           >
-            <span class="font-mono text-sm">{{ r.number ?? 'Bozza' }}</span>
-            <span class="min-w-0">
-              <span class="block truncate font-medium">{{ r.title || 'Senza titolo' }}</span>
-              <span class="block truncate text-sm opacity-60">
-                {{ r.clientName ?? 'Cliente da scegliere' }} · {{ formatDay(r.updatedAt) }}
+        </div>
+      </header>
+
+      <div class="
+        min-h-0 flex-1 scrollbar-none
+        lg:overflow-y-auto
+      ">
+        <p
+          v-if="rows && !rows.length"
+          class="px-8 py-10 opacity-60"
+        >
+          Ancora nessun preventivo.
+        </p>
+        <p
+          v-else-if="rows && !visible.length"
+          class="px-8 py-10 opacity-60"
+        >
+          Nessun preventivo qui.
+        </p>
+        <ul v-else-if="rows">
+          <li
+            v-for="r in visible"
+            :key="r.id"
+            class="border-b border-ink/10"
+          >
+            <NuxtLink
+              :to="`/admin/preventivi/${r.id}`"
+              class="
+                grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-1
+                px-5 py-4 transition
+                hover:bg-ink/3
+                sm:grid-cols-[6rem_minmax(0,1fr)_auto_auto_7rem]
+                lg:px-8
+              "
+            >
+              <span class="
+                hidden text-sm tabular-nums opacity-60
+                sm:block
+              ">{{ r.number ?? 'Bozza' }}</span>
+              <span class="min-w-0">
+                <span class="block truncate font-medium">{{ r.title || 'Senza titolo' }}</span>
+                <span class="block truncate text-sm opacity-60">{{ r.clientName ?? 'Cliente da scegliere' }}</span>
               </span>
-            </span>
-            <span class="font-mono text-sm tabular-nums">{{ formatEuro(r.total) }}</span>
-            <QuoteStatusPill :status="r.displayStatus" />
-          </NuxtLink>
-        </li>
-      </ul>
-    </main>
+              <span class="
+                hidden text-sm opacity-50
+                sm:block
+              ">{{ formatDay(r.updatedAt) }}</span>
+              <span class="text-right tabular-nums">{{ formatEuro(r.total) }}</span>
+              <span class="
+                hidden justify-end
+                sm:flex
+              ">
+                <QuoteStatusPill :status="r.displayStatus" />
+              </span>
+            </NuxtLink>
+          </li>
+        </ul>
+      </div>
+    </section>
   </AdminShell>
 </template>

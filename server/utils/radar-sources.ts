@@ -1,5 +1,5 @@
 import { romeDate } from '#shared/dates'
-import { attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, innerHtml, type Attachment } from './radar-fetch'
+import { attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
 
 // Fonti del radar: per ora Regione Puglia e il catalogo di incentivi.gov.it
 // (bandi nazionali e regionali aperti alle imprese pugliesi). Ogni fonte
@@ -204,7 +204,7 @@ export function attachmentName(url: string): string {
 // Un file troppo grande o un link rotto si salta; la pagina e gli altri
 // file si leggono. Gli errori passeggeri fanno riprovare tutto il bando.
 async function pugliaAttachment(url: string): Promise<Attachment | null> {
-  const data = await fetchFromSource(url, { origin: PUGLIA, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: 20_000, optional: true })
+  const data = await fetchFromSource(url, { origin: PUGLIA, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
   return data && { name: attachmentName(url), data }
 }
 

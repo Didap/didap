@@ -8,7 +8,7 @@ import {
   type RadarProfile,
   type Requirement,
 } from '#shared/radar'
-import { parseCallDate, parseGrantReading } from '../server/utils/radar-reader'
+import { parseCallDate, parseGrantReading, parseTopic } from '../server/utils/radar-reader'
 import { attachmentName, incentiveText, isOpenToPugliaBusinesses, parsePugliaListing } from '../server/utils/radar-sources'
 import { romeClock } from '#shared/dates'
 import { shouldIngest, shouldSendDigest } from '../server/utils/radar'
@@ -92,6 +92,8 @@ describe('impostazioni del radar', () => {
     const s = parseRadarSettings({ profile: { revenue: 'tanti', employees: 4 }, notify: { emails: ['a@b.it'], time: '25:00' } })
     expect(s.profile.revenue).toBeNull()
     expect(s.profile.employees).toBe(4)
+    // Impostazioni salvate prima di "Solo digitali": il filtro è acceso
+    expect(s.profile.digitalOnly).toBe(true)
     expect(s.notify.emails).toEqual(['a@b.it'])
     expect(s.notify.time).toBe('08:00')
   })
@@ -127,6 +129,7 @@ describe('lettura del modello', () => {
       ],
     })
     if (!r.admitsCompanies) throw new Error('atteso true')
+    expect(r.digital).toBeNull()
     expect(r.maxAmount).toBe(200000)
     expect(r.deadline?.toISOString()).toBe('2026-12-31T22:59:59.000Z')
     expect(r.requirements).toHaveLength(4)
@@ -141,6 +144,21 @@ describe('lettura del modello', () => {
     expect(parseCallDate('2026-07-15T12:00', false)?.toISOString()).toBe('2026-07-15T10:00:00.000Z')
     expect(parseCallDate('2026-04-31', true)).toBeNull()
     expect(parseCallDate(null, true)).toBeNull()
+  })
+
+  it('legge se il bando è digitale; una risposta strana vale come non detta', () => {
+    const read = (digital: unknown) => {
+      const r = parseGrantReading({ admitsCompanies: true, digital, title: 'x' })
+      return r.admitsCompanies ? r.digital : undefined
+    }
+    expect(read(true)).toBe(true)
+    expect(read(false)).toBe(false)
+    expect(read('si')).toBeNull()
+  })
+
+  it('la sola classificazione vuole un sì o un no', () => {
+    expect(parseTopic({ digital: false })).toBe(false)
+    expect(() => parseTopic({ digital: 'forse' })).toThrow()
   })
 
   it('una risposta senza admitsCompanies non è valida', () => {

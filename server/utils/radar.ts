@@ -5,6 +5,7 @@ import { romeClock, romeDate } from '#shared/dates'
 import {
   evaluateGrant,
   isDigestCandidate,
+  isInScope,
   parseRadarSettings,
   type EvaluatedGrant,
   type RadarGrant,
@@ -16,7 +17,15 @@ import {
 } from '#shared/radar'
 import { digestHtml, digestSubject, digestText } from '../emails/radar-digest'
 import { hasMailer, resendMailer, type Mailer } from './mail'
-import { hasLlm, llmMaxChars, llmReader, ReaderUnavailable, type GrantReader } from './radar-reader'
+import {
+  hasLlm,
+  llmMaxChars,
+  llmReader,
+  llmTopicReader,
+  ReaderUnavailable,
+  type GrantReader,
+  type TopicReader,
+} from './radar-reader'
 import { radarSources, type Listing, type RadarSource } from './radar-sources'
 
 // Radar bandi: scarica i bandi dalle fonti, li fa leggere al modello, li
@@ -211,11 +220,11 @@ export async function readPending(sql: Sql, reader: GrantReader, limit = READ_BA
     await sql.begin(async (tx) => {
       if (reading.admitsCompanies) {
         await tx`
-          insert into radar_grants (document_id, title, issuer, summary, opens_at, deadline, max_amount, funding, requirements)
-          values (${doc.id}, ${reading.title}, ${reading.issuer}, ${reading.summary}, ${reading.opensAt},
+          insert into radar_grants (document_id, digital, title, issuer, summary, opens_at, deadline, max_amount, funding, requirements)
+          values (${doc.id}, ${reading.digital}, ${reading.title}, ${reading.issuer}, ${reading.summary}, ${reading.opensAt},
             ${reading.deadline}, ${reading.maxAmount}, ${reading.funding}, ${tx.json(reading.requirements)})
           on conflict (document_id) do update set
-            title = excluded.title, issuer = excluded.issuer, summary = excluded.summary,
+            digital = excluded.digital, title = excluded.title, issuer = excluded.issuer, summary = excluded.summary,
             opens_at = excluded.opens_at, deadline = excluded.deadline, max_amount = excluded.max_amount,
             funding = excluded.funding, requirements = excluded.requirements, updated_at = now()
         `
@@ -231,12 +240,38 @@ export async function readPending(sql: Sql, reader: GrantReader, limit = READ_BA
   return read
 }
 
+// Il tema (sviluppo IT, IA, servizi digitali) dei bandi letti che non ce
+// l'hanno: quelli letti prima del filtro, o se il modello non l'ha detto.
+// Gira col download, una volta al giorno: un errore si riprova domani.
+export async function classifyTopics(sql: Sql, topics: TopicReader): Promise<number> {
+  const grants = await sql<{ id: string, title: string, issuer: string, summary: string, funding: string }[]>`
+    select g.id, g.title, g.issuer, g.summary, g.funding
+    from radar_grants g join radar_documents d on d.id = g.document_id
+    where g.digital is null and d.status = 'read' and d.closed_at is null
+    order by g.created_at
+  `
+  let done = 0
+  for (const g of grants) {
+    let digital
+    try {
+      digital = await topics(g)
+    }
+    catch (err) {
+      if (err instanceof ReaderUnavailable) break
+      continue
+    }
+    await sql`update radar_grants set digital = ${digital} where id = ${g.id}`
+    done++
+  }
+  return done
+}
+
 // ---------- elenco e valutazione ----------
 
 // Bandi letti, aperti e non scaduti, dalla scadenza più vicina
 async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Promise<RadarGrant[]> {
   const rows = await sql`
-    select g.id, d.source, d.url, g.title, g.issuer, g.summary, g.opens_at, g.deadline, g.max_amount,
+    select g.id, d.source, d.url, g.digital, g.title, g.issuer, g.summary, g.opens_at, g.deadline, g.max_amount,
       g.funding, g.requirements, g.notified_at, g.liked_at, g.created_at
     from radar_grants g join radar_documents d on d.id = g.document_id
     where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
@@ -248,6 +283,7 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Pro
     id: r.id,
     source: r.source,
     url: r.url,
+    digital: r.digital,
     title: r.title,
     issuer: r.issuer,
     summary: r.summary,
@@ -289,7 +325,7 @@ export async function sendDigest(sql: Sql, mailer: Mailer, now = new Date(), set
   const { notify, profile } = settings ?? await readRadarSettings(sql)
   if (!notify.emails.length) throw createError({ statusCode: 422, statusMessage: 'Nessun indirizzo a cui mandare la mail' })
   const candidates = evaluate(await listGrants(sql, now, { unnotified: true }), profile, now)
-    .filter(isDigestCandidate)
+    .filter(g => isInScope(g, profile) && isDigestCandidate(g))
     .sort((a, b) => DIGEST_ORDER[a.eligibility] - DIGEST_ORDER[b.eligibility])
   if (!candidates.length) return 0
   // Si prenotano prima dell'invio: il giro e "Invia mail ora" insieme non
@@ -333,17 +369,24 @@ export function shouldSendDigest(notify: RadarNotify, lastDigestOn: string | nul
 
 // ---------- giro ----------
 
-export type RadarDeps = { sources: RadarSource[], reader: GrantReader | null, mailer: Mailer | null }
+export type RadarDeps = {
+  sources: RadarSource[]
+  reader: GrantReader | null
+  topics: TopicReader | null
+  mailer: Mailer | null
+}
 
 export const radarDeps = (): RadarDeps => ({
   sources: radarSources(),
   reader: hasLlm() ? llmReader() : null,
+  topics: hasLlm() ? llmTopicReader() : null,
   mailer: hasMailer() ? resendMailer() : null,
 })
 
 async function ingestAll(sql: Sql, deps: RadarDeps, now: Date) {
   const errors = await ingestSources(sql, deps.sources, now)
   await sql`update radar_state set last_ingest_at = ${now}, last_ingest_error = ${errors.join('\n') || null} where id = 1`
+  if (deps.topics) await classifyTopics(sql, deps.topics)
 }
 
 // Chiamato ogni 15 minuti: scarica una volta al giorno, legge la coda

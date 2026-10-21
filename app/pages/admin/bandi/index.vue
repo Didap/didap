@@ -33,6 +33,7 @@ import {
   ELIGIBILITY_PLURALS,
   evaluateGrant,
   isDigestCandidate,
+  isInScope,
   LEGAL_FORMS,
   PROVINCES,
   radarSettingsSchema,
@@ -154,7 +155,8 @@ const now = new Date()
 const grants = computed<EvaluatedGrant[]>(() => {
   const profile = form.value?.profile
   const list = data.value?.grants ?? []
-  return profile ? list.map(g => ({ ...g, ...evaluateGrant(g.requirements, profile, now) })) : list
+  if (!profile) return list
+  return list.filter(g => isInScope(g, profile)).map(g => ({ ...g, ...evaluateGrant(g.requirements, profile, now) }))
 })
 
 // Le schede per esito, più quella dei bandi segnati col cuore
@@ -431,6 +433,18 @@ const paramsOpen = ref(false)
                 <legend class="contents">
                   <span class="mb-2 block text-sm font-bold">Progetto</span>
                 </legend>
+                <label class="param-row">
+                  <span>
+                    Solo digitali
+                    <span class="block text-xs opacity-60">Sviluppo IT, IA, servizi</span>
+                  </span>
+                  <SwitchRoot
+                    v-model="form.profile.digitalOnly"
+                    class="param-switch"
+                  >
+                    <SwitchThumb />
+                  </SwitchRoot>
+                </label>
                 <label class="param-row">
                   Durata
                   <OptionalNumber

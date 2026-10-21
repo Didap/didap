@@ -1,8 +1,8 @@
 import { radarSearchSchema } from '#shared/radar'
 
-// "Importa": i moduli e i comuni spuntati a sinistra. Il giro parte in
+// "Importa": i moduli e le province spuntati a sinistra. Il giro parte in
 // background, il pannello segue lo stato e il registro.
-const scopeSchema = radarSearchSchema.pick({ groups: true, comuni: true }).strict()
+const scopeSchema = radarSearchSchema.pick({ groups: true, provinces: true }).strict()
 
 export default defineEventHandler(async (event) => {
   const scope = await readSchemaBody(event, scopeSchema)

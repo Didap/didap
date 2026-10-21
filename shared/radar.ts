@@ -38,6 +38,10 @@ export const WEEKDAYS = [
 
 type Values<T extends readonly { value: unknown }[]> = T[number]['value']
 export type LegalForm = Values<typeof LEGAL_FORMS>
+export type Province = Values<typeof PROVINCES>
+
+// Comuni per provincia, per i conteggi del pannello e le fonti
+export const comuniOf = (provinces: readonly string[]) => COMUNI_PUGLIA.filter(c => provinces.includes(c.province))
 
 const valuesOf = <T extends readonly { value: string }[]>(list: T) =>
   list.map(i => i.value) as unknown as [Values<T>, ...Values<T>[]]
@@ -66,17 +70,17 @@ export const radarProfileSchema = z
 export const SOURCE_GROUPS = [
   { value: 'governo', label: 'Governo', hint: 'Incentivi.gov.it' },
   { value: 'regione', label: 'Regione', hint: 'Regione Puglia, Sistema Puglia, Puglia Sviluppo' },
-  { value: 'comuni', label: 'Comuni', hint: 'I comuni spuntati, uno per uno' },
+  { value: 'comuni', label: 'Comuni', hint: 'Tutti i comuni delle province scelte' },
 ] as const
 
 export type SourceGroup = Values<typeof SOURCE_GROUPS>
 
-const ISTAT_CODES = new Set(COMUNI_PUGLIA.map(c => c.istat))
 
 export const radarSearchSchema = z
   .object({
     groups: z.array(z.enum(valuesOf(SOURCE_GROUPS))).max(SOURCE_GROUPS.length),
-    comuni: z.array(z.string().refine(c => ISTAT_CODES.has(c), 'Comune sconosciuto')).max(COMUNI_PUGLIA.length),
+    // Del modulo comuni si leggono tutti i comuni di queste province
+    provinces: z.array(z.enum(valuesOf(PROVINCES))).max(PROVINCES.length),
     // Solo bandi per sviluppo IT, IA o servizi digitali
     digitalOnly: z.boolean(),
   })
@@ -106,7 +110,7 @@ export type RadarNotify = z.infer<typeof radarNotifySchema>
 export type RadarSettings = z.infer<typeof radarSettingsSchema>
 
 export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
-  search: { groups: ['governo', 'regione'], comuni: [], digitalOnly: true },
+  search: { groups: ['governo', 'regione'], provinces: [], digitalOnly: true },
   profile: {
     description: 'Software house: siti web, app, software su misura e soluzioni di intelligenza artificiale',
     revenue: null,
@@ -123,11 +127,21 @@ export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
   notify: { enabled: true, emails: [], weekdays: [1, 2, 3, 4, 5], time: '08:00' },
 }
 
+// Ricerche salvate quando i comuni si spuntavano uno a uno: diventano le
+// province di quei comuni
+function withProvinces(search: unknown): unknown {
+  if (!search || typeof search !== 'object') return search
+  const s = search as { provinces?: unknown, comuni?: unknown }
+  if (s.provinces !== undefined || !Array.isArray(s.comuni)) return search
+  const provinces = new Set(s.comuni.map(c => comuneByIstat(String(c))?.province).filter(Boolean))
+  return { ...s, provinces: PROVINCES.map(p => p.value).filter(p => provinces.has(p)) }
+}
+
 // Come le impostazioni dei preventivi: i campi non validi tornano ai default
 export function parseRadarSettings(data: unknown): RadarSettings {
   const source = data && typeof data === 'object' ? (data as Record<string, unknown>) : {}
   return {
-    search: mergeSection(radarSearchSchema.shape, source.search, DEFAULT_RADAR_SETTINGS.search),
+    search: mergeSection(radarSearchSchema.shape, withProvinces(source.search), DEFAULT_RADAR_SETTINGS.search),
     profile: mergeSection(radarProfileSchema.shape, source.profile, DEFAULT_RADAR_SETTINGS.profile),
     notify: mergeSection(radarNotifySchema.shape, source.notify, DEFAULT_RADAR_SETTINGS.notify),
   }
@@ -376,7 +390,10 @@ export function sourceLabel(slug: string): string {
 export function isInScope(g: RadarGrant, search: RadarSearch): boolean {
   const group = sourceGroup(g.source)
   if (!search.groups.includes(group)) return false
-  if (group === 'comuni' && !search.comuni.includes(g.source.slice(COMUNE_PREFIX.length))) return false
+  if (group === 'comuni') {
+    const province = comuneByIstat(g.source.slice(COMUNE_PREFIX.length))?.province
+    if (!province || !search.provinces.includes(province as Province)) return false
+  }
   return !search.digitalOnly || g.digital !== false
 }
 
@@ -419,7 +436,7 @@ export type RadarRun = {
   // ripresa: coda rimasta dal giro prima; profilo: rigiudizio dopo un cambio
   trigger: 'manuale' | 'automatico' | 'ripresa' | 'profilo'
   groups: SourceGroup[]
-  comuni: string[]
+  provinces: string[]
   status: 'running' | 'done' | 'failed'
   startedAt: string
   finishedAt: string | null

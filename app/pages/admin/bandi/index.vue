@@ -23,9 +23,9 @@ import {
 } from 'reka-ui'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import OptionalNumber from '~/components/admin/OptionalNumber.vue'
-import RadarComuniPicker from '~/components/admin/RadarComuniPicker.vue'
 import RadarGrantDetail from '~/components/admin/RadarGrantDetail.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
+import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime } from '~/utils/format'
@@ -148,12 +148,12 @@ async function act(action: () => Promise<string>) {
 const view = ref<'grants' | 'runs'>('grants')
 const runLog = ref<InstanceType<typeof RadarRunLog> | null>(null)
 
-// "Importa": i moduli e i comuni spuntati, anche se non ancora salvati
+// "Importa": i moduli e le province spuntati, anche se non ancora salvati
 const importScope = computed(() => {
   const s = form.value?.search
   if (!s) return null
-  const groups = s.groups.filter(g => g !== 'comuni' || s.comuni.length)
-  return { groups, comuni: groups.includes('comuni') ? s.comuni : [] }
+  const groups = s.groups.filter(g => g !== 'comuni' || s.provinces.length)
+  return { groups, provinces: groups.includes('comuni') ? s.provinces : [] }
 })
 
 const runNow = () => act(async () => {
@@ -375,9 +375,9 @@ function toggleGroup(group: string, on: boolean) {
                         <SwitchThumb />
                       </SwitchRoot>
                     </label>
-                    <RadarComuniPicker
+                    <RadarProvincePicker
                       v-if="g.value === 'comuni' && form.search.groups.includes('comuni')"
-                      v-model="form.search.comuni"
+                      v-model="form.search.provinces"
                       class="mb-2"
                     />
                   </div>

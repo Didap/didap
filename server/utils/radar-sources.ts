@@ -1,6 +1,5 @@
-import { COMUNI_PUGLIA } from '#shared/comuni-puglia'
 import { romeDate } from '#shared/dates'
-import { comuneSlug, type RadarSearch, type SourceGroup } from '#shared/radar'
+import { comuneSlug, comuniOf, type RadarSearch, type SourceGroup } from '#shared/radar'
 import { crawlSource } from './radar-crawl'
 import { attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
@@ -328,15 +327,14 @@ const comune = (istat: string, site: string, picker: LinkPicker) => crawlSource(
 
 // ---------- moduli ----------
 
-// Le fonti della ricerca scelta: i moduli spuntati, per i comuni solo quelli spuntati
-export function radarSources(search: Pick<RadarSearch, 'groups' | 'comuni'>, picker: LinkPicker): RadarSource[] {
+// Le fonti della ricerca scelta: i moduli spuntati, per i comuni tutti
+// quelli delle province scelte
+export function radarSources(search: Pick<RadarSearch, 'groups' | 'provinces'>, picker: LinkPicker): RadarSource[] {
   const sources: RadarSource[] = []
   if (search.groups.includes('governo')) sources.push(incentiviGov())
   if (search.groups.includes('regione')) sources.push(regionePuglia(), sistemaPuglia(), pugliaSviluppo(picker))
   if (search.groups.includes('comuni')) {
-    for (const c of COMUNI_PUGLIA) {
-      if (search.comuni.includes(c.istat)) sources.push(comune(c.istat, c.site, picker))
-    }
+    for (const c of comuniOf(search.provinces)) sources.push(comune(c.istat, c.site, picker))
   }
   return sources
 }

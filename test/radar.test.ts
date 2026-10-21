@@ -18,7 +18,7 @@ import {
 import { parse as parseYaml } from 'yaml'
 import { grantExport, grantFileName } from '../server/utils/radar-export'
 import { decodeHtml, mainHtml, pageLinks } from '../server/utils/radar-fetch'
-import { parseCallDate, parseGrantReading, parseJudgement, parsePicks } from '../server/utils/radar-reader'
+import { llmModel, parseCallDate, parseGrantReading, parseJudgement, parsePicks } from '../server/utils/radar-reader'
 import {
   attachmentName,
   incentiveText,
@@ -173,6 +173,22 @@ describe('lettura del modello', () => {
     expect(read(true)).toBe(true)
     expect(read(false)).toBe(false)
     expect(read('si')).toBeNull()
+  })
+
+  it('modello: solo Claude, un valore del vecchio provider torna al default', () => {
+    const before = process.env.RADAR_LLM_MODEL
+    try {
+      process.env.RADAR_LLM_MODEL = 'openai/gpt-oss-120b'
+      expect(llmModel()).toBe('claude-haiku-5-5')
+      process.env.RADAR_LLM_MODEL = 'claude-sonnet-5-5'
+      expect(llmModel()).toBe('claude-sonnet-5-5')
+      process.env.RADAR_LLM_MODEL = ''
+      expect(llmModel()).toBe('claude-haiku-5-5')
+    }
+    finally {
+      if (before === undefined) delete process.env.RADAR_LLM_MODEL
+      else process.env.RADAR_LLM_MODEL = before
+    }
   })
 
   it('il giudizio vuole un esito tra sì, no e forse', () => {

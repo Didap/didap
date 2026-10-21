@@ -245,7 +245,21 @@ export class ReaderUnavailable extends Error {}
 export const hasLlm = () => !!process.env.ANTHROPIC_API_KEY
 // Il modello legge fino a qui: i bandi lunghi hanno i requisiti nelle prime pagine
 export const llmMaxChars = () => Number(process.env.RADAR_LLM_MAX_CHARS) || 60_000
-export const llmModel = () => process.env.RADAR_LLM_MODEL || 'claude-haiku-5-5'
+const DEFAULT_MODEL = 'claude-haiku-5-5'
+let warnedModel = false
+
+// Solo modelli Claude: un valore rimasto dal vecchio provider (es.
+// openai/gpt-oss-120b) farebbe fallire ogni chiamata, si usa il default
+export function llmModel(): string {
+  const model = process.env.RADAR_LLM_MODEL?.trim()
+  if (!model) return DEFAULT_MODEL
+  if (model.startsWith('claude-')) return model
+  if (!warnedModel) {
+    warnedModel = true
+    console.warn(`[radar] RADAR_LLM_MODEL=${model} non è un modello Claude: uso ${DEFAULT_MODEL}`)
+  }
+  return DEFAULT_MODEL
+}
 
 // La forma della risposta, imposta al modello (structured outputs): tutti i
 // campi sempre presenti, null o vuoti quando non servono
@@ -316,7 +330,9 @@ async function askLlm({ system, content, schema, effort, maxTokens, usage }: Ask
       max_tokens: maxTokens,
       system,
       output_config: { effort, format: { type: 'json_schema', schema } },
-      messages: [{ role: 'user', content }],
+      // Un taglio a metà di un'emoji lascia un surrogato spaiato, che l'API
+      // rifiuta come JSON non valido: diventa un carattere sostitutivo
+      messages: [{ role: 'user', content: content.toWellFormed() }],
     })
   }
   catch (err) {
@@ -325,9 +341,9 @@ async function askLlm({ system, content, schema, effort, maxTokens, usage }: Ask
     if (err instanceof Anthropic.APIConnectionError) throw new ReaderUnavailable(`Modello non raggiungibile: ${err.message}`)
     if (err instanceof Anthropic.APIError) {
       const message = `Il modello ha risposto ${err.status}: ${err.message.slice(0, 300)}`
-      // Chiave, limiti, servizio giù o credito finito (un 400 senza un tipo
-      // suo): non dipende dal bando
-      const unavailable = [401, 402, 403, 429].includes(err.status ?? 0) || (err.status ?? 0) >= 500
+      // Chiave, modello inesistente, limiti, servizio giù o credito finito
+      // (un 400 senza un tipo suo): non dipende dal bando
+      const unavailable = [401, 402, 403, 404, 429].includes(err.status ?? 0) || (err.status ?? 0) >= 500
         || /credit balance/i.test(err.message)
       throw unavailable ? new ReaderUnavailable(message) : new Error(message)
     }

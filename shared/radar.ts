@@ -392,7 +392,7 @@ export function sourceLabel(slug: string): string {
 // Dentro la ricerca scelta a sinistra: modulo spuntato (per i comuni, il
 // comune spuntato) e, con "Solo digitali", niente bandi su altro (trattori,
 // macchinari, film...). Quelli senza risposta del modello si vedono.
-export function isInScope(g: RadarGrant, search: RadarSearch): boolean {
+export function isInScope(g: Pick<RadarGrant, 'source' | 'digital'>, search: RadarSearch): boolean {
   const group = sourceGroup(g.source)
   if (!search.groups.includes(group)) return false
   if (group === 'comuni') {

@@ -199,7 +199,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
       throw new Error('JSON rotto')
     }
     for (let i = 0; i < 3; i++) await readPending(sql, broken)
-    expect((await readPending(sql, fakeReader)).tried).toBe(0)
+    expect((await readPending(sql, fakeReader)).tried).toEqual([])
   })
 
   it('la mail parte solo coi bandi nuovi non esclusi, e una volta sola', async () => {
@@ -245,20 +245,46 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     // Lettura senza tema: lo completa il giudizio
     await sql`update radar_grants set digital = null where title = 'trattori'`
-    const { profile } = await readRadarSettings(sql)
-    expect(await judgeGrants(sql, fakeJudge, profile, NOW)).toEqual({ judged: 4, unavailable: false })
+    const settings = await readRadarSettings(sql)
+    const { profile } = settings
+    expect(await judgeGrants(sql, fakeJudge, settings, NOW)).toEqual({ judged: 4, unavailable: false })
     const byTitle = Object.fromEntries((await listEvaluatedGrants(sql, NOW)).map(g => [g.title, g]))
     expect(byTitle['bando sicuro']!.eligibility).toBe('eligible')
     expect(byTitle['bando escluso']!.eligibility).toBe('excluded')
     expect(byTitle['bando incerto']!.eligibility).toBe('to_verify')
     expect(byTitle.trattori!.digital).toBe(false)
     // Stesso profilo: niente da rifare; profilo nuovo: tutti di nuovo
-    expect((await judgeGrants(sql, fakeJudge, profile, NOW)).judged).toBe(0)
-    expect((await judgeGrants(sql, fakeJudge, { ...profile, employees: 12 }, NOW)).judged).toBe(4)
+    expect((await judgeGrants(sql, fakeJudge, settings, NOW)).judged).toBe(0)
+    // Profilo nuovo: di nuovo tutti quelli della ricerca (i trattori, non digitali, no)
+    expect((await judgeGrants(sql, fakeJudge, { ...settings, profile: { ...profile, employees: 12 } }, NOW)).judged).toBe(3)
     const limited: GrantJudge = async () => {
       throw new ReaderUnavailable('troppi token')
     }
-    expect(await judgeGrants(sql, limited, profile, NOW)).toEqual({ judged: 0, unavailable: true })
+    expect(await judgeGrants(sql, limited, { ...settings, profile: { ...profile, employees: 20 } }, NOW))
+      .toEqual({ judged: 0, unavailable: true })
+  })
+
+  it('un testo riletto perde il giudizio vecchio finché non si rigiudica', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando sicuro' })], NOW)
+    await readPending(sql, fakeReader)
+    await judgeGrants(sql, fakeJudge, await readRadarSettings(sql), NOW)
+    expect((await listEvaluatedGrants(sql, NOW))[0]!.verdict).toBe('yes')
+    await ingestSources(sql, [fakeSource({ a: 'bando sicuro, ora per altri' })], NOW)
+    await readPending(sql, fakeReader)
+    expect((await listEvaluatedGrants(sql, NOW))[0]).toMatchObject({ verdict: null, verdictReason: '' })
+  })
+
+  it('in un giro un testo che fa errore si prova una volta sola', async () => {
+    await writeRadarSettings(sql, settings(null))
+    let calls = 0
+    const broken: GrantReader = async () => {
+      calls++
+      throw new Error('Risposta del modello troncata')
+    }
+    await radarTick(sql, { ...deps([fakeSource({ a: 'bando lungo' })]), reader: broken }, NOW)
+    expect(calls).toBe(1)
+    const [doc] = await sql`select status, attempts from radar_documents`
+    expect(doc).toMatchObject({ status: 'failed', attempts: 1 })
   })
 
   it('il giro importa la ricerca salvata, lo registra e manda la mail una volta al giorno', async () => {

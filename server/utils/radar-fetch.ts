@@ -85,11 +85,11 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
   const tooLarge = `${url} supera ${maxBytes} byte`
   if (!res.ok || Number(res.headers.get('content-length')) > maxBytes) {
     // Alcuni comuni stanno dietro un CAPTCHA per soli umani (BitNinja): non
-    // si aggira, si dice perché il sito non si legge
-    if (res.status === 403 && /captcha|anti-robot/i.test(`${res.headers.get('server')} ${(await res.text()).slice(0, 4000)}`)) {
+    // si aggira, si dice perché il sito non si legge. Basta l'inizio della pagina.
+    const head = res.status === 403 ? await readHead(res, 4000) : (await res.body?.cancel(), '')
+    if (/captcha|anti-robot/i.test(`${res.headers.get('server')} ${head}`)) {
       throw new Error(`${url}: il sito chiede un CAPTCHA anti-robot, non si legge in automatico`)
     }
-    await res.body?.cancel()
     if (res.status === 404 || res.status === 410) return skip(`${origin} ha risposto ${res.status} per ${url}`)
     const message = `${origin} ha risposto ${res.status} per ${url}`
     if (res.status >= 500 || res.status === 429) throw new TransientError(message)
@@ -121,6 +121,27 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
     }
   }
   return Buffer.concat(chunks)
+}
+
+// I primi `max` byte del corpo come testo; il resto non si scarica
+async function readHead(res: Response, max: number): Promise<string> {
+  if (!res.body) return ''
+  const reader = res.body.getReader()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  try {
+    while (size < max) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+      size += value.length
+    }
+  }
+  catch {
+    // Corpo interrotto: basta quello che è arrivato
+  }
+  await reader.cancel().catch(() => {})
+  return Buffer.concat(chunks).toString('utf-8')
 }
 
 // Il sito della Regione e quelli di alcuni comuni (Diso, Erchie) possono
@@ -166,11 +187,21 @@ export async function resolveOrigin(url: string): Promise<string> {
   throw new Error(`Troppi redirect per ${url}`)
 }
 
+// decodeURIComponent senza eccezioni: un "%" a caso nei link altrui resta com'è
+export function safeDecode(text: string): string {
+  try {
+    return decodeURIComponent(text)
+  }
+  catch {
+    return text
+  }
+}
+
 // Nome di un file dal suo URL; quelli Liferay finiscono con `/<nome file>/<uuid>`
 export function attachmentName(url: string): string {
   const segments = new URL(url).pathname.split('/').filter(Boolean)
   const file = segments.find(s => /\.pdf$/i.test(s)) ?? segments.at(-1) ?? 'allegato.pdf'
-  return decodeURIComponent(file.replace(/\+/g, ' '))
+  return safeDecode(file.replace(/\+/g, ' '))
 }
 
 // Link a un PDF, anche nello stile Liferay della Regione (/documents/.../file.pdf/<uuid>)

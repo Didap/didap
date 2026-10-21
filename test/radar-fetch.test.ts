@@ -26,6 +26,14 @@ beforeAll(async () => {
       res.writeHead(404).end()
       return
     }
+    if (path === '/vietato') {
+      res.writeHead(403, { 'content-type': 'text/html' }).end('<h1>Accesso negato</h1>')
+      return
+    }
+    if (path === '/captcha') {
+      res.writeHead(403, { 'content-type': 'text/html' }).end('<title>Visitor anti-robot validation</title>')
+      return
+    }
     if (path === '/') {
       res.writeHead(200, { 'content-type': 'text/html' }).end('<a href="/avvisi">Avvisi alle imprese</a>')
       return
@@ -62,6 +70,19 @@ describe('download dalle fonti', () => {
     expect(await get('/manca', true)).toBeNull()
     await expect(get('/manca')).rejects.toThrow('ha risposto 404')
     expect(hits['/manca']).toBe(2)
+  })
+
+  it('un 403 dice il codice, o il CAPTCHA se c\'è', async () => {
+    await expect(get('/vietato')).rejects.toThrow('ha risposto 403')
+    await expect(get('/captcha')).rejects.toThrow('CAPTCHA anti-robot')
+  })
+
+  it('con più pagine di partenza, una che non risponde si salta', async () => {
+    const source = crawlSource(
+      { slug: 'puglia-sviluppo', group: 'regione', startUrls: [`${origin}/manca`, `${origin}/`], maxDepth: 0, maxCalls: 5 },
+      async ({ links }) => links.map(l => ({ href: l.href, kind: 'call' as const })),
+    )
+    expect((await source.fetchListing()).map(l => l.externalId)).toEqual(['/avvisi'])
   })
 
   it('una pagina di partenza che dà 404 si riprova dalla home del sito', async () => {

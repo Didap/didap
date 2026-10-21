@@ -10,6 +10,7 @@ import {
   pageLinks,
   pagePdfLinks,
   resolveOrigin,
+  safeDecode,
   SOURCE_TIMEOUT_MS,
 } from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
@@ -69,8 +70,11 @@ export function crawlSource(options: CrawlOptions, picker: LinkPicker): RadarSou
     async fetchListing() {
       origin = await resolveOrigin(options.startUrls[0]!)
       const start = options.startUrls.map(u => new URL(new URL(u).pathname + new URL(u).search, origin!).toString())
+      const single = start.length === 1
       const visited = new Set<string>()
       const calls = new Map<string, Listing>()
+      let startErrors = 0
+      let lastError: unknown
       let level = start
       for (let depth = 0; depth <= options.maxDepth && level.length; depth++) {
         const next: string[] = []
@@ -83,12 +87,17 @@ export function crawlSource(options: CrawlOptions, picker: LinkPicker): RadarSou
             html = await fetchSourcePage(url, origin)
           }
           catch (err) {
-            // Un elenco interno rotto si salta. Una pagina di partenza che non
+            // Un elenco interno rotto si salta, e così una delle tante pagine
+            // di partenza (Puglia Sviluppo). La home unica di un comune che non
             // risponde (IndicePA ha a volte un percorso vecchio, es. /it che
-            // dà 404) si riprova dalla home del sito
+            // dà 404) si riprova dalla radice del sito.
             if (depth > 0) continue
             const home = `${origin}/`
-            if (url === home || visited.has(home)) throw err
+            if (!single || url === home) {
+              startErrors++
+              lastError = err
+              continue
+            }
             visited.add(home)
             page = home
             html = await fetchSourcePage(home, origin)
@@ -96,7 +105,7 @@ export function crawlSource(options: CrawlOptions, picker: LinkPicker): RadarSou
           const links = pageLinks(html, page, origin)
           if (!links.length) {
             // Una home sola senza link: meglio dirlo che restituire zero bandi in silenzio
-            if (depth === 0 && options.startUrls.length === 1) {
+            if (depth === 0 && single) {
               throw new Error(`${page}: nessun link leggibile, il sito si carica probabilmente in JavaScript`)
             }
             continue
@@ -106,7 +115,7 @@ export function crawlSource(options: CrawlOptions, picker: LinkPicker): RadarSou
           for (const p of picks) {
             if (p.kind === 'call' && !calls.has(p.href) && calls.size < options.maxCalls) {
               const u = new URL(p.href)
-              calls.set(p.href, { externalId: decodeURIComponent(u.pathname + u.search), url: p.href })
+              calls.set(p.href, { externalId: safeDecode(u.pathname + u.search), url: p.href })
             }
             else if (p.kind === 'list' && lists < LISTS_PER_PAGE && !visited.has(p.href)) {
               lists++
@@ -116,6 +125,8 @@ export function crawlSource(options: CrawlOptions, picker: LinkPicker): RadarSou
         }
         level = next
       }
+      // Nessuna pagina di partenza raggiungibile: è la fonte a essere giù
+      if (startErrors === start.length) throw lastError
       return [...calls.values()]
     },
     async fetchContent(listing) {

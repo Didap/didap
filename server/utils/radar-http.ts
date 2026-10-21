@@ -84,6 +84,8 @@ const completeChain = (url: URL) => {
   return chainByHost.get(url.host)!
 }
 
+const NULL_BODY = new Set([204, 205, 304])
+
 // Come fetch, con le autorità di sistema più gli intermedi trovati
 function fetchWithIntermediates(url: string, signal: AbortSignal): Promise<Response> {
   return new Promise((resolve, reject) => {
@@ -92,7 +94,17 @@ function fetchWithIntermediates(url: string, signal: AbortSignal): Promise<Respo
       for (const [k, v] of Object.entries(res.headers)) {
         if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(', ') : String(v))
       }
-      resolve(new Response(Readable.toWeb(res) as ReadableStream, { status: res.statusCode ?? 502, headers }))
+      const status = res.statusCode ?? 502
+      try {
+        // 204, 205 e 304 non hanno corpo: Response lo rifiuta
+        const body = NULL_BODY.has(status) ? null : Readable.toWeb(res) as ReadableStream
+        if (!body) res.resume()
+        resolve(new Response(body, { status, headers }))
+      }
+      catch (err) {
+        res.destroy()
+        reject(err)
+      }
     })
     req.on('error', reject)
     req.end()

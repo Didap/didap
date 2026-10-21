@@ -1,7 +1,18 @@
 import { romeDate } from '#shared/dates'
 import { comuneSlug, comuniOf, type RadarSearch, type SourceGroup } from '#shared/radar'
 import { crawlSource } from './radar-crawl'
-import { attachmentName, attachmentsText, fetchFromSource, isPdfLink, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
+import {
+  attachmentName,
+  attachmentsText,
+  fetchFromSource,
+  fetchSourcePage,
+  htmlToText,
+  innerHtml,
+  isPdfLink,
+  safeDecode,
+  SOURCE_TIMEOUT_MS,
+  type Attachment,
+} from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
 
 // Fonti del radar in tre moduli: governo (catalogo di incentivi.gov.it),
@@ -184,7 +195,7 @@ export function parsePugliaListing(fragment: string): { listings: Listing[], ite
     if (section && SKIPPED_SECTIONS.includes(section)) continue
     const badge = /class="badge[^"]*">([\s\S]*?)<\/span>/.exec(item)?.[1]
     const closed = badge?.replace(/\s+/g, ' ').trim().toLowerCase() === 'bando chiuso'
-    listings.push({ externalId: decodeURIComponent(url.pathname), url: url.toString(), ...(closed && { closed }) })
+    listings.push({ externalId: safeDecode(url.pathname), url: url.toString(), ...(closed && { closed }) })
   }
   return { listings, items: items.length }
 }
@@ -256,7 +267,7 @@ export function parseSistemaListing(html: string): Listing[] {
   for (const [, href] of html.matchAll(/<a\s+title="vai alla pagina di[^"]*"\s+href="([^"]+)"/gi)) {
     const url = sistemaUrl(href!)
     if (url.origin !== SISTEMA) continue
-    const id = decodeURIComponent(url.pathname.split('/').filter(Boolean).at(-1) ?? url.pathname).toLowerCase()
+    const id = safeDecode(url.pathname.split('/').filter(Boolean).at(-1) ?? url.pathname).toLowerCase()
     if (!listings.has(id)) listings.set(id, { externalId: id, url: url.toString() })
   }
   return [...listings.values()]

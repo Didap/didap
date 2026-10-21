@@ -97,6 +97,14 @@ export async function createDriveFolder(name: string, parentId: string): Promise
   }
 }
 
+// Nomi dei file già in una cartella (fino a 1000, ne bastano molti meno)
+export async function listDriveNames(folderId: string): Promise<Set<string>> {
+  const q = encodeURIComponent(`'${folderId.replace(/['\\]/g, '\\$&')}' in parents and trashed = false`)
+  const res = await driveFetch(`${API}?q=${q}&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=1000&fields=files(name)`, {})
+  const { files } = (await res.json()) as { files: { name: string }[] }
+  return new Set(files.map(f => f.name))
+}
+
 // Caricamento "resumable", valido a ogni dimensione: si apre la sessione
 // coi metadati, poi si manda il file all'indirizzo che Google restituisce
 export async function uploadDriveFile(name: string, mime: string, data: Buffer, parentId: string): Promise<void> {

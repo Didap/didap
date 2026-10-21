@@ -1,13 +1,29 @@
 <script setup lang="ts">
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
+import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
-import { sourceLabel, VERDICT_LABELS, type EvaluatedGrant } from '#shared/radar'
+import { sourceLabel, VERDICT_LABELS, type DriveStart, type EvaluatedGrant } from '#shared/radar'
 
 // Scheda di un bando: giudizio, dati, sintesi, requisiti e come si
 // presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
 // guardare; la frase del bando si apre col clic.
-const props = defineProps<{ grant: EvaluatedGrant }>()
+const props = defineProps<{ grant: EvaluatedGrant, driveConfigured: boolean }>()
+// La cartella si crea in background: il pannello segna il bando e lo
+// ricarica finché non è pronta
+const emit = defineEmits<{ drive: [id: string, start: DriveStart] }>()
+
+const { notify } = useAdminToast()
+
+async function createFolder() {
+  const id = props.grant.id
+  try {
+    emit('drive', id, await $fetch<DriveStart>(`/api/admin/radar/grants/${id}/drive`, { method: 'POST' }))
+  }
+  catch (err) {
+    notify('error', adminErrorText(err))
+  }
+}
 
 const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
 
@@ -51,47 +67,83 @@ const note = (i: number) => {
         </div>
       </div>
       <div class="ml-9 flex flex-wrap gap-2">
-      <a
-        :href="grant.url"
-        target="_blank"
-        rel="noopener"
-        class="
-          inline-flex w-fit items-center gap-2 rounded-full bg-ink px-4 py-2
-          text-sm font-medium text-paper-light
-          hover:bg-green
-        "
-      >
-        Apri il bando
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          aria-hidden="true"
+        <a
+          :href="grant.url"
+          target="_blank"
+          rel="noopener"
+          class="
+            inline-flex w-fit items-center gap-2 rounded-full bg-ink px-4 py-2
+            text-sm font-medium text-paper-light
+            hover:bg-green
+          "
         >
-          <path
-            d="M5 3h6v6M11 3L3.5 10.5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </a>
-      <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
-      <a
-        :href="`/api/admin/radar/grants/${grant.id}/export`"
-        download
-        class="
-          inline-flex w-fit items-center rounded-full border border-ink/20 px-4
-          py-2 text-sm
-          hover:border-ink
-        "
-        title="Scarica il bando in un file da dare a Claude Code"
-      >
-        Esporta per Claude
-      </a>
+          Apri il bando
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            aria-hidden="true"
+          >
+            <path
+              d="M5 3h6v6M11 3L3.5 10.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </a>
+        <!-- La cartella condivisa del bando: si crea una volta, poi si apre -->
+        <a
+          v-if="grant.driveUrl"
+          :href="grant.driveUrl"
+          target="_blank"
+          rel="noopener"
+          class="
+            inline-flex w-fit items-center rounded-full border border-ink/20
+            px-4 py-2 text-sm
+            hover:border-ink
+          "
+        >
+          Apri cartella Drive
+        </a>
+        <button
+          v-else
+          type="button"
+          class="
+            inline-flex w-fit items-center rounded-full border border-ink/20
+            px-4 py-2 text-sm
+            hover:border-ink
+            disabled:opacity-40
+          "
+          :disabled="!driveConfigured || grant.driveCreating"
+          :title="driveConfigured ? 'Crea la cartella del bando nel Drive condiviso, col bando e i suoi PDF' : 'Google Drive non configurato'"
+          @click="createFolder"
+        >
+          {{ grant.driveCreating ? 'Creo la cartella…' : 'Crea cartella su Drive' }}
+        </button>
+        <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
+        <a
+          :href="`/api/admin/radar/grants/${grant.id}/export`"
+          download
+          class="
+            inline-flex w-fit items-center rounded-full border border-ink/20
+            px-4 py-2 text-sm
+            hover:border-ink
+          "
+          title="Scarica il bando in un file da dare a Claude Code"
+        >
+          Esporta per Claude
+        </a>
       </div>
+      <p
+        v-if="grant.driveNote && !grant.driveCreating"
+        class="ml-9 text-xs"
+        :class="grant.driveUrl ? 'opacity-60' : 'text-red'"
+      >
+        Drive: {{ grant.driveNote }}
+      </p>
     </header>
 
     <div

@@ -166,6 +166,20 @@ export async function resolveOrigin(url: string): Promise<string> {
   throw new Error(`Troppi redirect per ${url}`)
 }
 
+// Nome di un file dal suo URL; quelli Liferay finiscono con `/<nome file>/<uuid>`
+export function attachmentName(url: string): string {
+  const segments = new URL(url).pathname.split('/').filter(Boolean)
+  const file = segments.find(s => /\.pdf$/i.test(s)) ?? segments.at(-1) ?? 'allegato.pdf'
+  return decodeURIComponent(file.replace(/\+/g, ' '))
+}
+
+// Link a un PDF, anche nello stile Liferay della Regione (/documents/.../file.pdf/<uuid>)
+export const isPdfLink = (url: string) => /\.pdf(\/|$)/i.test(new URL(url).pathname)
+
+// I PDF linkati nell'area principale di una pagina, stessa origine
+export const pagePdfLinks = (html: string, url: string, origin: string, max: number) =>
+  pageLinks(mainHtml(html), url, origin).map(l => l.href).filter(isPdfLink).slice(0, max)
+
 const SKIPPED_FILES = /\.(jpe?g|png|gif|svg|webp|ico|css|js|zip|rar|7z|mp4|mp3|docx?|xlsx?|odt|ods|p7m|xml|rss)(\?|$)/i
 
 // Link di una pagina dentro la stessa origine, col testo che li accompagna:

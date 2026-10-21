@@ -41,6 +41,7 @@ import {
   radarSettingsSchema,
   SOURCE_GROUPS,
   WEEKDAYS,
+  type DriveStart,
   type Eligibility,
   type EvaluatedGrant,
   type LegalForm,
@@ -102,9 +103,11 @@ onAdminReady(async () => {
   }
 })
 
-// Mentre il radar gira l'elenco si ricarica da solo
+// Mentre il radar gira, o una cartella su Drive si sta creando, l'elenco
+// si ricarica da solo
 const { pause, resume } = useIntervalFn(loadGrants, 10_000, { immediate: false })
-watch(() => data.value?.status.running, r => (r ? resume() : pause()))
+const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.driveCreating))
+watch(busyRadar, r => (r ? resume() : pause()))
 
 async function save() {
   const body = current()
@@ -221,6 +224,15 @@ async function toggleLike(id: string) {
     g.liked = !liked
     notify('error', adminErrorText(err))
   }
+}
+
+// Cartella su Drive: già pronta, o partita (l'elenco si ricarica finché
+// c'è una cartella in creazione)
+function setDrive(id: string, start: DriveStart) {
+  const g = data.value?.grants.find(x => x.id === id)
+  if (!g) return
+  if (start.status === 'ready') g.driveUrl = start.url
+  else g.driveCreating = true
 }
 
 const selectedId = ref<string | null>(null)
@@ -1011,7 +1023,11 @@ function toggleGroup(group: string, on: boolean) {
                 v-if="!isXl && selectedId === g.id"
                 class="border-t border-ink/10 bg-white"
               >
-                <RadarGrantDetail :grant="g" />
+                <RadarGrantDetail
+                  :grant="g"
+                  :drive-configured="!!data?.status.driveConfigured"
+                  @drive="setDrive"
+                />
               </div>
             </li>
           </ul>
@@ -1030,6 +1046,8 @@ function toggleGroup(group: string, on: boolean) {
         <RadarGrantDetail
           v-if="selected"
           :grant="selected"
+          :drive-configured="!!data?.status.driveConfigured"
+          @drive="setDrive"
         />
       </aside>
     </div>

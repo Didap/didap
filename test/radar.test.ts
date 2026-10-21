@@ -18,10 +18,9 @@ import {
 } from '#shared/radar'
 import { parse as parseYaml } from 'yaml'
 import { grantExport, grantFileName } from '../server/utils/radar-export'
-import { decodeHtml, mainHtml, pageLinks } from '../server/utils/radar-fetch'
+import { attachmentName, decodeHtml, isPdfLink, mainHtml, pageLinks } from '../server/utils/radar-fetch'
 import { parseCallDate, parseGrantReading, parseJudgement, parsePicks } from '../server/utils/radar-reader'
 import {
-  attachmentName,
   incentiveText,
   isOpenToPugliaBusinesses,
   parsePugliaListing,
@@ -231,6 +230,7 @@ describe('ricerca e giudizio', () => {
     application: null,
     notifiedAt: null,
     liked: false,
+    driveUrl: null,
     createdAt: NOW.toISOString(),
     ...over,
   })
@@ -385,6 +385,9 @@ describe('fonti', () => {
 
   it('nome degli allegati Liferay', () => {
     expect(attachmentName('https://www.regione.puglia.it/documents/1/2/Avviso+pubblico.pdf/abc-123')).toBe('Avviso pubblico.pdf')
+    expect(isPdfLink('https://www.regione.puglia.it/documents/1/2/Avviso+pubblico.pdf/abc-123')).toBe(true)
+    expect(isPdfLink('https://c.it/avviso.PDF')).toBe(true)
+    expect(isPdfLink('https://c.it/avvisi')).toBe(false)
   })
 })
 

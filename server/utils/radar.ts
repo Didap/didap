@@ -3,6 +3,7 @@ import { createError } from 'h3'
 import type postgres from 'postgres'
 import { romeClock, romeDate } from '#shared/dates'
 import {
+  DRIVE_CLAIM_MINUTES,
   emptyStats,
   emptyUsage,
   evaluateRadarGrant,
@@ -24,6 +25,7 @@ import {
   type TokenUsage,
 } from '#shared/radar'
 import { digestHtml, digestSubject, digestText } from '../emails/radar-digest'
+import { driveFolderUrl, hasDrive } from './drive'
 import { hasMailer, resendMailer, type Mailer } from './mail'
 import {
   hasLlm,
@@ -48,7 +50,7 @@ type Sql = postgres.Sql
 type Scope = Pick<RadarSearch, 'groups' | 'provinces'>
 
 // Al massimo `size` lavori insieme, nell'ordine della lista
-async function inPool<T, R>(items: T[], size: number, work: (item: T) => Promise<R>): Promise<R[]> {
+export async function inPool<T, R>(items: T[], size: number, work: (item: T) => Promise<R>): Promise<R[]> {
   const results: R[] = Array.from({ length: items.length })
   let next = 0
   const worker = async () => {
@@ -439,14 +441,19 @@ export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
 // ---------- elenco e valutazione ----------
 
 // Bandi letti, aperti e non scaduti, dalla scadenza più vicina
-async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Promise<RadarGrant[]> {
+// `id`: solo quel bando
+async function listGrants(sql: Sql, now: Date, { unnotified = false, id = '' } = {}): Promise<RadarGrant[]> {
   const rows = await sql`
     select g.id, d.source, d.url, g.digital, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
-      g.liked_at, g.created_at
+      g.liked_at, g.drive_folder_id, g.drive_ready_at, g.drive_note,
+      coalesce(g.drive_ready_at is null and g.drive_claimed_at > now() - ${`${DRIVE_CLAIM_MINUTES} minutes`}::interval, false)
+        as drive_creating,
+      g.created_at
     from radar_grants g join radar_documents d on d.id = g.document_id
     where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
       ${unnotified ? sql`and g.notified_at is null` : sql``}
+      ${id ? sql`and g.id = ${id}` : sql``}
     order by g.deadline asc nulls last, g.created_at desc
   `
   const iso = (d: Date | null) => d?.toISOString() ?? null
@@ -468,6 +475,9 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Pro
     application: r.application as Application | null,
     notifiedAt: iso(r.notified_at),
     liked: r.liked_at !== null,
+    driveUrl: r.drive_ready_at ? driveFolderUrl(r.drive_folder_id) : null,
+    driveCreating: r.drive_creating,
+    driveNote: r.drive_note,
     createdAt: r.created_at.toISOString(),
   }))
 }
@@ -481,14 +491,18 @@ export async function listEvaluatedGrants(sql: Sql, now = new Date()): Promise<E
 }
 
 // Un bando con il testo letto, per l'esportazione
+// Un bando aperto, valutato, col testo letto e il profilo (esportazione, Drive)
 export async function readGrantDocument(sql: Sql, id: string, now = new Date()) {
-  const [row] = await sql<{ content: string }[]>`
-    select d.content from radar_grants g join radar_documents d on d.id = g.document_id where g.id = ${id}
-  `
+  const [[row], [grant], { profile }] = await Promise.all([
+    sql<{ content: string }[]>`
+      select d.content from radar_grants g join radar_documents d on d.id = g.document_id where g.id = ${id}
+    `,
+    listGrants(sql, now, { id }),
+    readRadarSettings(sql),
+  ])
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
-  const grant = (await listEvaluatedGrants(sql, now)).find(g => g.id === id)
   if (!grant) throw createError({ statusCode: 404, statusMessage: 'Bando chiuso o scaduto' })
-  return { grant, content: row.content }
+  return { grant: { ...grant, ...evaluateRadarGrant(grant, profile, now) }, content: row.content, profile }
 }
 
 // Il cuore: un bando interessante per noi resta segnato anche se si rilegge
@@ -733,5 +747,6 @@ export async function radarStatus(sql: Sql, deps: RadarDeps): Promise<RadarStatu
     pending: state.pending,
     llmConfigured: !!deps.reader,
     emailConfigured: !!deps.mailer,
+    driveConfigured: hasDrive(),
   }
 }

@@ -2,6 +2,10 @@
 import { useIntervalFn, useMediaQuery } from '@vueuse/core'
 import {
   CollapsibleContent,
+  PopoverContent,
+  PopoverPortal,
+  PopoverRoot,
+  PopoverTrigger,
   CollapsibleRoot,
   CollapsibleTrigger,
   SelectContent,
@@ -29,6 +33,7 @@ import {
   ELIGIBILITY_PLURALS,
   evaluateGrant,
   isDigestCandidate,
+  isInScope,
   LEGAL_FORMS,
   PROVINCES,
   radarSettingsSchema,
@@ -150,7 +155,8 @@ const now = new Date()
 const grants = computed<EvaluatedGrant[]>(() => {
   const profile = form.value?.profile
   const list = data.value?.grants ?? []
-  return profile ? list.map(g => ({ ...g, ...evaluateGrant(g.requirements, profile, now) })) : list
+  if (!profile) return list
+  return list.filter(g => isInScope(g, profile)).map(g => ({ ...g, ...evaluateGrant(g.requirements, profile, now) }))
 })
 
 // Le schede per esito, più quella dei bandi segnati col cuore
@@ -428,6 +434,18 @@ const paramsOpen = ref(false)
                   <span class="mb-2 block text-sm font-bold">Progetto</span>
                 </legend>
                 <label class="param-row">
+                  <span>
+                    Solo digitali
+                    <span class="block text-xs opacity-60">Sviluppo IT, IA, servizi</span>
+                  </span>
+                  <SwitchRoot
+                    v-model="form.profile.digitalOnly"
+                    class="param-switch"
+                  >
+                    <SwitchThumb />
+                  </SwitchRoot>
+                </label>
+                <label class="param-row">
                   Durata
                   <OptionalNumber
                     v-model="form.profile.projectMonths"
@@ -602,10 +620,39 @@ const paramsOpen = ref(false)
           >
             <span v-if="!data.status.llmConfigured">Modello AI non configurato</span>
             <span v-if="!data.status.emailConfigured">Mail non configurata</span>
-            <span
-              v-if="sourceErrors.length"
-              :title="sourceErrors.join('\n')"
-            >{{ sourceErrors.length === 1 ? '1 errore' : `${sourceErrors.length} errori` }} delle fonti</span>
+            <!-- Il dettaglio si apre col clic: le fonti riprovano da sole al giro dopo -->
+            <PopoverRoot v-if="sourceErrors.length">
+              <PopoverTrigger class="
+                underline decoration-dotted underline-offset-2
+                hover:decoration-solid
+              ">
+                {{ sourceErrors.length === 1 ? '1 errore' : `${sourceErrors.length} errori` }} delle fonti
+              </PopoverTrigger>
+              <PopoverPortal>
+                <PopoverContent
+                  side="bottom"
+                  align="start"
+                  :side-offset="6"
+                  class="
+                    z-50 flex max-w-xl flex-col gap-2 rounded-2xl border
+                    border-ink/10 bg-white p-4 text-sm shadow-lg
+                  "
+                >
+                  <p class="opacity-60">
+                    Pagine che non si sono scaricate all'ultimo aggiornamento. Si riprovano da sole al prossimo.
+                  </p>
+                  <ul class="flex flex-col gap-1.5">
+                    <li
+                      v-for="(e, i) in sourceErrors"
+                      :key="i"
+                      class="text-xs/relaxed break-all text-ink/80"
+                    >
+                      {{ e }}
+                    </li>
+                  </ul>
+                </PopoverContent>
+              </PopoverPortal>
+            </PopoverRoot>
           </p>
 
           <div class="flex flex-wrap items-center gap-3">

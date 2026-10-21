@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { DEFAULT_RADAR_SETTINGS, type RadarSettings } from '#shared/radar'
 import {
   acquireLease,
+  classifyTopics,
   ingestSources,
   listEvaluatedGrants,
   radarTick,
@@ -14,7 +15,7 @@ import {
   writeRadarSettings,
   type Mail,
 } from '../server/utils/radar'
-import { ReaderUnavailable, type GrantReader, type GrantReading } from '../server/utils/radar-reader'
+import { ReaderUnavailable, type GrantReader, type GrantReading, type TopicReader } from '../server/utils/radar-reader'
 import type { RadarSource } from '../server/utils/radar-sources'
 import { openTestDb, resetTestDb, TEST_DATABASE_URL } from './helpers/db'
 
@@ -41,12 +42,14 @@ function fakeSource(
   }
 }
 
-// Il "modello": il testo dice se il bando è per le imprese e il tetto di fatturato
+// Il "modello": il testo dice se il bando è per le imprese, se è digitale
+// (i trattori no) e il tetto di fatturato
 const fakeReader: GrantReader = async ({ content }): Promise<GrantReading> => {
   if (content.startsWith('enti')) return { admitsCompanies: false }
   const max = Number(/max (\d+)/.exec(content)?.[1])
   return {
     admitsCompanies: true,
+    digital: !content.includes('trattori'),
     title: content,
     issuer: 'Regione Puglia',
     summary: '',
@@ -57,6 +60,8 @@ const fakeReader: GrantReader = async ({ content }): Promise<GrantReading> => {
     requirements: max ? [{ kind: 'revenue', params: { max }, label: `Fatturato fino a ${max}`, quote: '', page: null }] : [],
   }
 }
+
+const fakeTopics: TopicReader = async g => !g.title.includes('trattori')
 
 const NOW = new Date('2026-10-20T08:00:00Z')
 
@@ -196,9 +201,47 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     expect(sent[1]!.text).toContain('bando B')
   })
 
+  it('con "Solo digitali" i bandi su altro non vanno in mail', async () => {
+    await writeRadarSettings(sql, settings(null))
+    await ingestSources(sql, [fakeSource({ a: 'bando A', t: 'trattori agricoli' })], NOW)
+    await readPending(sql, fakeReader)
+    // Il pannello li riceve tutti e nasconde da sé, anche coi parametri non salvati
+    expect((await listEvaluatedGrants(sql, NOW)).map(g => [g.title, g.digital]).sort()).toEqual([
+      ['bando A', true],
+      ['trattori agricoli', false],
+    ])
+    expect(await sendDigest(sql, mailer, NOW)).toBe(1)
+    expect(sent[0]!.text).not.toContain('trattori')
+
+    const all = settings(null)
+    all.profile.digitalOnly = false
+    await writeRadarSettings(sql, all)
+    expect(await sendDigest(sql, mailer, NOW)).toBe(1)
+    expect(sent[1]!.text).toContain('trattori')
+  })
+
+  it('i bandi letti senza tema si classificano dal riassunto', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', t: 'trattori agricoli', r: 'bando rotto' })], NOW)
+    await readPending(sql, fakeReader)
+    // Come i bandi letti prima del filtro
+    await sql`update radar_grants set digital = null`
+    const topics: TopicReader = async (g) => {
+      if (g.title === 'bando rotto') throw new Error('JSON rotto')
+      return fakeTopics(g)
+    }
+    expect(await classifyTopics(sql, topics)).toBe(2)
+    const digital = Object.fromEntries((await listEvaluatedGrants(sql, NOW)).map(g => [g.title, g.digital]))
+    expect(digital).toEqual({ 'bando A': true, 'trattori agricoli': false, 'bando rotto': null })
+    // Il limite del modello ferma tutto: si riprova al prossimo download
+    const limited: TopicReader = async () => {
+      throw new ReaderUnavailable('troppi token')
+    }
+    expect(await classifyTopics(sql, limited)).toBe(0)
+  })
+
   it('il giro scarica, legge e manda la mail una volta al giorno', async () => {
     await writeRadarSettings(sql, settings(null))
-    const deps = { sources: [fakeSource({ a: 'bando A' })], reader: fakeReader, mailer }
+    const deps = { sources: [fakeSource({ a: 'bando A' })], reader: fakeReader, topics: fakeTopics, mailer }
     expect(await radarTick(sql, deps, NOW)).toBe('ok')
     expect(sent).toHaveLength(1)
     expect(await radarTick(sql, deps, new Date('2026-10-20T08:15:00Z'))).toBe('ok')
@@ -209,7 +252,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     const lease = await acquireLease(sql)
     expect(lease).toBeInstanceOf(Date)
     expect(await acquireLease(sql)).toBeNull()
-    expect(await radarTick(sql, { sources: [], reader: null, mailer: null }, NOW)).toBe('busy')
+    expect(await radarTick(sql, { sources: [], reader: null, topics: null, mailer: null }, NOW)).toBe('busy')
     await releaseLease(sql, new Date(0))
     expect(await acquireLease(sql)).toBeNull()
     await releaseLease(sql, lease!)

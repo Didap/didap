@@ -6,13 +6,20 @@ import { LEGAL_FORMS, PROVINCES, REQUIREMENT_KINDS, type Requirement, type Requi
 // default, ma basta cambiare RADAR_LLM_BASE_URL e RADAR_LLM_MODEL).
 // Il prompt nasce da quello del Radar Bandi di cityfix, girato sulle imprese.
 
+// Il filtro sul tema, uguale nella lettura completa e nella sola
+// classificazione dei bandi letti prima che esistesse
+const DIGITAL_RULE = `"digital" is for a software house that builds websites, apps, software and AI solutions: true only if the call funds IT or digital work as its purpose or as one of its main, explicitly named activities: software, web or app development, artificial intelligence, data, cloud, cybersecurity, e-commerce, digital transformation of business processes, digital services or ICT consulting, research and innovation projects in the digital field, calls for innovative or high-tech startups (startup innovative), which usually fund digital products. It is false when the call funds something else, such as machinery, vehicles, tractors or farm equipment, buildings, energy plants, agriculture, tourism facilities, film or audiovisual production, hiring, training, liquidity, guarantees, trade fairs or exports, even if software or digital costs appear as one eligible expense among many.`
+
 const SYSTEM_PROMPT = `You read Italian calls for funding ("bandi", "avvisi", "incentivi") and extract structured data for a private company based in Puglia, Italy. Answer with one JSON object and nothing else.
 
 First decide "admitsCompanies": true only if the text says that private businesses can apply as beneficiaries: imprese, PMI, micro/piccole/medie imprese, startup, liberi professionisti, lavoratori autonomi, or people who will start a new business (imprese da costituire, aspiranti imprenditori). Calls reserved to public bodies, comuni, schools, universities, associations, private citizens, farmers only, or job applicants (concorsi, selezioni di personale, mobilita) are false. Procurement notices where the public body buys services (gare d'appalto, manifestazioni di interesse per fornitori, short list di professionisti) are false. The company must receive something (a grant, a subsidised loan, a voucher, a tax credit, free services): calls where companies give something, such as sponsors, donors or suppliers of goods for events, are false. A text that does not say who can apply is false: never assume it. If false, return {"admitsCompanies": false} and stop.
 
-If true, return:
+Then decide ${DIGITAL_RULE}
+
+Then return:
 {
   "admitsCompanies": true,
+  "digital": boolean,
   "title": string,
   "issuer": string (the body that publishes the call),
   "summary": string (2-4 sentences in Italian: what is funded, for whom, how much),
@@ -75,6 +82,8 @@ const requirementSchema = z.object({
 })
 
 const grantSchema = z.object({
+  // Senza risposta resta da capire: il bando si mostra
+  digital: z.boolean().nullish().catch(null).transform(v => v ?? null),
   title: z.string().trim().min(1),
   issuer: str,
   summary: str,
@@ -138,6 +147,8 @@ export type GrantReading =
   | { admitsCompanies: false }
   | {
     admitsCompanies: true
+    // Sviluppo IT, IA o servizi digitali; null se il modello non lo dice
+    digital: boolean | null
     title: string
     issuer: string
     summary: string
@@ -169,6 +180,7 @@ export function parseGrantReading(raw: unknown): GrantReading {
   }
   return {
     admitsCompanies: true,
+    digital: g.digital,
     title: g.title.slice(0, 500),
     issuer: g.issuer.slice(0, 300),
     summary: g.summary.slice(0, 3000),
@@ -198,54 +210,77 @@ const MAX_WAIT_MS = 60_000
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-export function llmReader(): GrantReader {
+// Una richiesta al modello con risposta JSON. Se il testo supera i token al
+// minuto del piano (413 su Groq) si riprova più corto.
+async function askLlm(system: string, content: string, prefix = ''): Promise<unknown> {
   const baseUrl = (process.env.RADAR_LLM_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/$/, '')
   const model = process.env.RADAR_LLM_MODEL || 'openai/gpt-oss-120b'
-  return async ({ url, content }) => {
-    let chars = llmMaxChars()
-    for (let attempt = 1; ; attempt++) {
-      let res: Response
-      try {
-        res = await fetch(`${baseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${llmKey()}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model,
-            temperature: 0,
-            response_format: { type: 'json_object' },
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: `Fonte: ${url}\n\n${content.slice(0, chars)}` },
-            ],
-          }),
-          signal: AbortSignal.timeout(120_000),
-        })
-      }
-      catch (err) {
-        // Un timeout può dipendere dal testo (troppo lungo): conta sul bando
-        if ((err as Error).name === 'TimeoutError') throw err
-        throw new ReaderUnavailable(`Modello non raggiungibile: ${(err as Error).message}`)
-      }
-      if (res.ok) {
-        const body = (await res.json()) as { choices?: { message?: { content?: string } }[] }
-        const answer = body.choices?.[0]?.message?.content
-        if (!answer) throw new Error('Il modello non ha risposto')
-        return parseGrantReading(JSON.parse(answer))
-      }
-      const detail = (await res.text()).slice(0, 300)
-      // Testo oltre i token al minuto del piano (413 su Groq): si riprova più corto
-      if (res.status === 413 && content.length > chars * 0.6 && attempt < SHRINKS) {
-        chars = Math.floor(chars * 0.6)
-        continue
-      }
-      const retryable = res.status === 429 || res.status >= 500
-      if (!retryable || attempt >= RETRIES) {
-        const message = `Il modello ha risposto ${res.status}: ${detail}`
-        if ([401, 403, 429].includes(res.status) || res.status >= 500) throw new ReaderUnavailable(message)
-        throw new Error(message)
-      }
-      const wait = Number(res.headers.get('retry-after')) * 1000 || 3_000 * attempt
-      await sleep(Math.min(wait, MAX_WAIT_MS))
+  let chars = llmMaxChars()
+  for (let attempt = 1; ; attempt++) {
+    let res: Response
+    try {
+      res = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${llmKey()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          temperature: 0,
+          response_format: { type: 'json_object' },
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: `${prefix}${content.slice(0, chars)}` },
+          ],
+        }),
+        signal: AbortSignal.timeout(120_000),
+      })
     }
+    catch (err) {
+      // Un timeout può dipendere dal testo (troppo lungo): conta sul bando
+      if ((err as Error).name === 'TimeoutError') throw err
+      throw new ReaderUnavailable(`Modello non raggiungibile: ${(err as Error).message}`)
+    }
+    if (res.ok) {
+      const body = (await res.json()) as { choices?: { message?: { content?: string } }[] }
+      const answer = body.choices?.[0]?.message?.content
+      if (!answer) throw new Error('Il modello non ha risposto')
+      return JSON.parse(answer)
+    }
+    const detail = (await res.text()).slice(0, 300)
+    if (res.status === 413 && content.length > chars * 0.6 && attempt < SHRINKS) {
+      chars = Math.floor(chars * 0.6)
+      continue
+    }
+    const retryable = res.status === 429 || res.status >= 500
+    if (!retryable || attempt >= RETRIES) {
+      const message = `Il modello ha risposto ${res.status}: ${detail}`
+      if ([401, 403, 429].includes(res.status) || res.status >= 500) throw new ReaderUnavailable(message)
+      throw new Error(message)
+    }
+    const wait = Number(res.headers.get('retry-after')) * 1000 || 3_000 * attempt
+    await sleep(Math.min(wait, MAX_WAIT_MS))
   }
+}
+
+export function llmReader(): GrantReader {
+  return async ({ url, content }) => parseGrantReading(await askLlm(SYSTEM_PROMPT, content, `Fonte: ${url}\n\n`))
+}
+
+// ---------- solo il tema ----------
+
+const TOPIC_PROMPT = `You read the summary of an Italian call for funding open to private companies. Decide ${DIGITAL_RULE}
+
+Answer with one JSON object, {"digital": boolean}, and nothing else.`
+
+export type GrantSummary = { title: string, issuer: string, summary: string, funding: string }
+export type TopicReader = (grant: GrantSummary) => Promise<boolean>
+
+export const summaryText = (g: GrantSummary) =>
+  [`Titolo: ${g.title}`, `Ente: ${g.issuer}`, `Agevolazione: ${g.funding}`, '', g.summary].join('\n')
+
+export const parseTopic = (raw: unknown) => z.object({ digital: z.boolean() }).parse(raw).digital
+
+// Per i bandi già letti senza il tema: titolo e riassunto bastano, costa
+// poche centinaia di token invece di rileggere tutto il bando
+export function llmTopicReader(): TopicReader {
+  return async grant => parseTopic(await askLlm(TOPIC_PROMPT, summaryText(grant)))
 }

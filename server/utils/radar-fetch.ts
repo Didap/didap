@@ -8,14 +8,32 @@ const MAX_REDIRECTS = 5
 
 type FetchOptions = { origin: string, maxBytes: number, timeoutMs: number }
 
+// Errore che può sparire riprovando: niente risposta in tempo, rete, 5xx, 429
+class TransientError extends Error {}
+
+const RETRY_AFTER_MS = 3_000
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 // Con `optional` un file che non c'è (più) o troppo grande dà null invece di
-// un errore: un link rotto si salta, un errore passeggero fa riprovare
+// un errore: un link rotto si salta. Un errore passeggero si riprova una
+// volta; se torna, fa riprovare il bando al giro successivo.
 export async function fetchFromSource(url: string, options: FetchOptions & { optional: true }): Promise<Buffer | null>
 export async function fetchFromSource(url: string, options: FetchOptions): Promise<Buffer>
 export async function fetchFromSource(
   url: string,
   options: FetchOptions & { optional?: boolean },
 ): Promise<Buffer | null> {
+  try {
+    return await fetchOnce(url, options)
+  }
+  catch (err) {
+    if (!(err instanceof TransientError)) throw err
+    await sleep(RETRY_AFTER_MS)
+    return fetchOnce(url, options)
+  }
+}
+
+async function fetchOnce(url: string, options: FetchOptions & { optional?: boolean }): Promise<Buffer | null> {
   const { origin, maxBytes, timeoutMs, optional } = options
   const signal = AbortSignal.timeout(timeoutMs)
   const skip = (message: string) => {
@@ -30,7 +48,15 @@ export async function fetchFromSource(
     if (new URL(target).origin !== origin) {
       throw new Error(hops ? `Rifiutato ${url}: redirect fuori da ${origin}` : `Rifiutato ${url}: fuori da ${origin}`)
     }
-    res = await fetch(target, { headers: { 'User-Agent': USER_AGENT }, redirect: 'manual', signal })
+    try {
+      res = await fetch(target, { headers: { 'User-Agent': USER_AGENT }, redirect: 'manual', signal })
+    }
+    catch (err) {
+      const timedOut = (err as Error).name === 'TimeoutError'
+      throw new TransientError(timedOut
+        ? `Nessuna risposta in ${timeoutMs / 1000} s da ${url}`
+        : `Rete non raggiungibile per ${url}: ${(err as Error).message}`)
+    }
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) break
     await res.body?.cancel()
@@ -42,7 +68,9 @@ export async function fetchFromSource(
   if (!res.ok || Number(res.headers.get('content-length')) > maxBytes) {
     await res.body?.cancel()
     if (res.status === 404 || res.status === 410) return skip(`${origin} ha risposto ${res.status} per ${url}`)
-    if (!res.ok) throw new Error(`${origin} ha risposto ${res.status} per ${url}`)
+    const message = `${origin} ha risposto ${res.status} per ${url}`
+    if (res.status >= 500 || res.status === 429) throw new TransientError(message)
+    if (!res.ok) throw new Error(message)
     return skip(tooLarge)
   }
 
@@ -51,7 +79,15 @@ export async function fetchFromSource(
   if (res.body) {
     const reader = res.body.getReader()
     for (;;) {
-      const { done, value } = await reader.read()
+      let chunk
+      try {
+        chunk = await reader.read()
+      }
+      catch {
+        // Tempo scaduto o connessione caduta a metà del download (file grandi, sito lento)
+        throw new TransientError(`Download interrotto per ${url}`)
+      }
+      const { done, value } = chunk
       if (done) break
       size += value.length
       if (size > maxBytes) {
@@ -64,8 +100,11 @@ export async function fetchFromSource(
   return Buffer.concat(chunks)
 }
 
+// Il sito della Regione può metterci decine di secondi a rispondere
+export const SOURCE_TIMEOUT_MS = 45_000
+
 export async function fetchSourcePage(url: string, origin: string): Promise<string> {
-  const body = await fetchFromSource(url, { origin, maxBytes: 5 * 1024 * 1024, timeoutMs: 20_000 })
+  const body = await fetchFromSource(url, { origin, maxBytes: 5 * 1024 * 1024, timeoutMs: SOURCE_TIMEOUT_MS })
   return body.toString('utf-8')
 }
 

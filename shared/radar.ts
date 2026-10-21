@@ -55,6 +55,8 @@ export const radarProfileSchema = z
     femaleLed: z.boolean(),
     projectMonths: z.number().int().min(1).max(240).nullable(),
     investment: euro,
+    // Solo bandi per sviluppo IT, IA o servizi digitali
+    digitalOnly: z.boolean(),
   })
   .strict()
 
@@ -92,6 +94,7 @@ export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
     femaleLed: false,
     projectMonths: null,
     investment: null,
+    digitalOnly: true,
   },
   notify: { enabled: true, emails: [], weekdays: [1, 2, 3, 4, 5], time: '08:00' },
 }
@@ -267,6 +270,8 @@ export type RadarGrant = {
   id: string
   source: string
   url: string
+  // Sviluppo IT, IA o servizi digitali; null se il modello non l'ha detto
+  digital: boolean | null
   title: string
   issuer: string
   summary: string
@@ -282,6 +287,10 @@ export type RadarGrant = {
 }
 
 export type EvaluatedGrant = RadarGrant & ReturnType<typeof evaluateGrant>
+
+// Con "Solo digitali" i bandi su altro (trattori, macchinari, film...) non si
+// vedono e non vanno in mail; quelli senza risposta del modello sì
+export const isInScope = (g: RadarGrant, profile: RadarProfile) => !profile.digitalOnly || g.digital !== false
 
 // Va nella prossima mail: mai mandato e non escluso dai parametri. Cambiare
 // i parametri può rendere candidabile un bando già visto: parte allora.

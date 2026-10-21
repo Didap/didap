@@ -103,8 +103,6 @@ export const DB_SCHEMA = `
     lease_until timestamptz
   );
   insert into radar_state (id) values (1) on conflict do nothing;
-  -- Bandi segnati come interessanti per noi (il cuore nel pannello)
-  alter table radar_grants add column if not exists liked_at timestamptz;
   create table if not exists radar_documents (
     id uuid primary key default gen_random_uuid(),
     source text not null,
@@ -136,4 +134,8 @@ export const DB_SCHEMA = `
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   );
+  -- Bandi segnati come interessanti per noi (il cuore nel pannello)
+  alter table radar_grants add column if not exists liked_at timestamptz;
+  -- Sviluppo IT, IA o servizi digitali secondo il modello (null: non detto)
+  alter table radar_grants add column if not exists digital boolean;
 `

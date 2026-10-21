@@ -45,9 +45,18 @@ export function serviceJwt(account: ServiceAccount, now = Date.now()): string {
 }
 
 let token: { value: string, expires: number } | null = null
+// Caricamenti in parallelo a freddo: una sola richiesta di token
+let pending: Promise<string> | null = null
 
-async function accessToken(): Promise<string> {
-  if (token && token.expires > Date.now() + 60_000) return token.value
+function accessToken(): Promise<string> {
+  if (token && token.expires > Date.now() + 60_000) return Promise.resolve(token.value)
+  pending ??= requestToken().finally(() => {
+    pending = null
+  })
+  return pending
+}
+
+async function requestToken(): Promise<string> {
   const account = serviceAccount()
   if (!account) throw new Error('Google Drive non configurato (GOOGLE_SERVICE_ACCOUNT_JSON)')
   const res = await fetch(TOKEN_URL, {
@@ -69,8 +78,14 @@ async function driveFetch(url: string, init: RequestInit): Promise<Response> {
     headers: { ...init.headers, Authorization: `Bearer ${await accessToken()}` },
     signal: AbortSignal.timeout(120_000),
   })
-  if (!res.ok) throw new Error(`Google Drive ha risposto ${res.status}: ${(await res.text()).slice(0, 300)}`)
+  if (!res.ok) throw new DriveError(res.status, `Google Drive ha risposto ${res.status}: ${(await res.text()).slice(0, 300)}`)
   return res
+}
+
+class DriveError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message)
+  }
 }
 
 // I nomi su Drive possono contenere quasi tutto: niente a capo, lunghezza ragionevole
@@ -90,11 +105,19 @@ export async function createDriveFolder(name: string, parentId: string): Promise
   }
   catch (err) {
     // Un 404 qui è quasi sempre la cartella "Bandi" non condivisa con l'account
-    if (/risposto 404/.test((err as Error).message)) {
+    if (err instanceof DriveError && err.status === 404) {
       throw new Error(`Cartella "Bandi" non trovata o non condivisa con l'account di servizio. ${(err as Error).message}`)
     }
     throw err
   }
+}
+
+// Nomi dei file già in una cartella (fino a 1000, ne bastano molti meno)
+export async function listDriveNames(folderId: string): Promise<Set<string>> {
+  const q = encodeURIComponent(`'${folderId.replace(/['\\]/g, '\\$&')}' in parents and trashed = false`)
+  const res = await driveFetch(`${API}?q=${q}&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=1000&fields=files(name)`, {})
+  const { files } = (await res.json()) as { files: { name: string }[] }
+  return new Set(files.map(f => f.name))
 }
 
 // Caricamento "resumable", valido a ogni dimensione: si apre la sessione

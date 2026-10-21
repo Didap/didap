@@ -154,7 +154,7 @@ export const DB_SCHEMA = `
     id uuid primary key default gen_random_uuid(),
     trigger text not null,
     groups text[] not null default '{}',
-    comuni text[] not null default '{}',
+    provinces text[] not null default '{}',
     status text not null default 'running' check (status in ('running', 'done', 'failed')),
     started_at timestamptz not null default now(),
     finished_at timestamptz,
@@ -163,6 +163,6 @@ export const DB_SCHEMA = `
     usage jsonb not null default '{}'::jsonb,
     error text
   );
-  -- Comuni per provincia (prima si spuntavano uno a uno, colonna comuni)
+  -- Tabelle create quando i comuni si spuntavano uno a uno
   alter table radar_runs add column if not exists provinces text[] not null default '{}';
 `

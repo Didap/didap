@@ -84,6 +84,11 @@ export async function writeRadarSettings(sql: Sql, data: RadarSettings): Promise
 
 const MAX_ATTEMPTS = 3
 
+// Bando letto, aperto e non scaduto (g: radar_grants, d: radar_documents)
+const openGrant = (sql: Sql, now: Date) => sql`
+  d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
+`
+
 // Bandi ancora da leggere: la stessa condizione per la coda e per il contatore
 const queued = (sql: Sql) => sql`
   closed_at is null and (status = 'pending' or (status = 'failed' and attempts < ${MAX_ATTEMPTS}))
@@ -282,7 +287,7 @@ const READ_BATCH = 40
 const READ_CONCURRENCY = 4
 
 // `tried`: testi presi dalla coda; `read`: letti; `grants`: per imprese
-export type ReadResult = { tried: number, read: number, grants: number, unavailable: boolean }
+export type ReadResult = { tried: string[], read: number, grants: number, unavailable: boolean }
 
 // Legge un lotto della coda. Se il modello non risponde (limiti, chiave,
 // servizio giù) si ferma: il resto resta in coda per il giro successivo,
@@ -290,16 +295,17 @@ export type ReadResult = { tried: number, read: number, grants: number, unavaila
 export async function readPending(
   sql: Sql,
   reader: GrantReader,
-  { limit = READ_BATCH, concurrency = 1 } = {},
+  // `skip`: testi già tentati in questo giro (un errore si riprova al giro dopo)
+  { limit = READ_BATCH, concurrency = 1, skip = [] as string[] } = {},
 ): Promise<ReadResult> {
   // Il modello legge solo l'inizio: il resto non serve caricarlo
   const docs = await sql<{ id: string, url: string, content: string }[]>`
     select id, url, left(content, ${llmMaxChars()}) as content from radar_documents
-    where ${queued(sql)}
+    where ${queued(sql)} and not (id = any(${skip}::uuid[]))
     order by fetched_at, id
     limit ${limit}
   `
-  const result: ReadResult = { tried: docs.length, read: 0, grants: 0, unavailable: false }
+  const result: ReadResult = { tried: docs.map(d => d.id), read: 0, grants: 0, unavailable: false }
   await inPool(docs, concurrency, async (doc) => {
     if (result.unavailable) return
     let reading
@@ -330,7 +336,7 @@ export async function readPending(
             digital = excluded.digital, title = excluded.title, issuer = excluded.issuer, summary = excluded.summary,
             opens_at = excluded.opens_at, deadline = excluded.deadline, max_amount = excluded.max_amount,
             funding = excluded.funding, requirements = excluded.requirements, application = excluded.application,
-            judged_profile = null, updated_at = now()
+            verdict = null, verdict_reason = '', judged_profile = null, updated_at = now()
         `
       }
       else {
@@ -356,20 +362,31 @@ export const profileKey = (profile: RadarProfile) => sha256(JSON.stringify({ v: 
 
 // Giudica i bandi aperti mai giudicati con questo profilo. Il tema
 // (digitale o no) completa quello della lettura se mancava.
+// Solo i bandi della ricerca scelta: gli altri non si vedono e si giudicano
+// quando la ricerca li comprende
 export async function judgeGrants(
   sql: Sql,
   judge: GrantJudge,
-  profile: RadarProfile,
+  { profile, search }: Pick<RadarSettings, 'profile' | 'search'>,
   now = new Date(),
 ): Promise<{ judged: number, unavailable: boolean }> {
   const key = profileKey(profile)
-  const grants = await sql<{ id: string, title: string, issuer: string, summary: string, funding: string, requirements: Requirement[] }[]>`
-    select g.id, g.title, g.issuer, g.summary, g.funding, g.requirements
+  const rows = await sql<{
+    id: string
+    source: string
+    digital: boolean | null
+    title: string
+    issuer: string
+    summary: string
+    funding: string
+    requirements: Requirement[]
+  }[]>`
+    select g.id, d.source, g.digital, g.title, g.issuer, g.summary, g.funding, g.requirements
     from radar_grants g join radar_documents d on d.id = g.document_id
-    where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
-      and g.judged_profile is distinct from ${key}
+    where ${openGrant(sql, now)} and g.judged_profile is distinct from ${key}
     order by g.created_at
   `
+  const grants = rows.filter(g => isInScope(g, search))
   const result = { judged: 0, unavailable: false }
   await inPool(grants, JUDGE_CONCURRENCY, async (g) => {
     if (result.unavailable) return
@@ -384,7 +401,7 @@ export async function judgeGrants(
     }
     await sql`
       update radar_grants set verdict = ${j.verdict}, verdict_reason = ${j.reason},
-        digital = coalesce(digital, ${j.digital}), judged_profile = ${key}
+        judged_profile = ${key}
       where id = ${g.id}
     `
     result.judged++
@@ -441,8 +458,9 @@ export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
 // ---------- elenco e valutazione ----------
 
 // Bandi letti, aperti e non scaduti, dalla scadenza più vicina
-// `id`: solo quel bando
-async function listGrants(sql: Sql, now: Date, { unnotified = false, id = '' } = {}): Promise<RadarGrant[]> {
+// Bandi aperti, dalla scadenza più vicina; `id`: solo quel bando. Il
+// pannello li valuta da sé coi parametri del modulo, anche non salvati.
+export async function listGrants(sql: Sql, now: Date, { unnotified = false, id = '' } = {}): Promise<RadarGrant[]> {
   const rows = await sql`
     select g.id, d.source, d.url, g.digital, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
@@ -451,7 +469,7 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false, id = '' } =
         as drive_creating,
       g.created_at
     from radar_grants g join radar_documents d on d.id = g.document_id
-    where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
+    where ${openGrant(sql, now)}
       ${unnotified ? sql`and g.notified_at is null` : sql``}
       ${id ? sql`and g.id = ${id}` : sql``}
     order by g.deadline asc nulls last, g.created_at desc
@@ -597,8 +615,10 @@ export const radarDeps = (): RadarDeps => {
 // Legge tutta la coda (a lotti, più testi insieme) e giudica i bandi nuovi
 // o con un profilo cambiato. Aggiorna `stats` man mano.
 async function readAndJudge(sql: Sql, deps: RadarDeps, stats: RunStats, progress: () => Promise<void>, now: Date) {
+  const tried: string[] = []
   for (;;) {
-    const r = await readPending(sql, deps.reader!, { concurrency: READ_CONCURRENCY })
+    const r = await readPending(sql, deps.reader!, { concurrency: READ_CONCURRENCY, skip: tried })
+    tried.push(...r.tried)
     stats.read += r.read
     stats.grants += r.grants
     await progress()
@@ -606,10 +626,9 @@ async function readAndJudge(sql: Sql, deps: RadarDeps, stats: RunStats, progress
       stats.errors.push('Modello AI non disponibile: il resto della coda si legge al prossimo giro')
       return
     }
-    if (!r.tried) break
+    if (!r.tried.length) break
   }
-  const { profile } = await readRadarSettings(sql)
-  const j = await judgeGrants(sql, deps.judge!, profile, now)
+  const j = await judgeGrants(sql, deps.judge!, await readRadarSettings(sql), now)
   stats.judged += j.judged
   if (j.unavailable) stats.errors.push('Modello AI non disponibile: il giudizio dei bandi rimasti si fa al prossimo giro')
 }

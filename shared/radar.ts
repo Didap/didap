@@ -200,6 +200,9 @@ export const ELIGIBILITY_LABELS: Record<Eligibility, string> = {
   excluded: 'Escluso',
 }
 
+// L'icona di un bando: l'esito come se fosse un requisito
+export const ELIGIBILITY_OUTCOME: Record<Eligibility, Outcome> = { eligible: 'met', to_verify: 'to_verify', excluded: 'not_met' }
+
 export const ELIGIBILITY_PLURALS: Record<Eligibility, string> = {
   eligible: 'Candidabili',
   to_verify: 'Da verificare',
@@ -392,7 +395,7 @@ export function sourceLabel(slug: string): string {
 // Dentro la ricerca scelta a sinistra: modulo spuntato (per i comuni, il
 // comune spuntato) e, con "Solo digitali", niente bandi su altro (trattori,
 // macchinari, film...). Quelli senza risposta del modello si vedono.
-export function isInScope(g: RadarGrant, search: RadarSearch): boolean {
+export function isInScope(g: Pick<RadarGrant, 'source' | 'digital'>, search: RadarSearch): boolean {
   const group = sourceGroup(g.source)
   if (!search.groups.includes(group)) return false
   if (group === 'comuni') {

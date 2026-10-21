@@ -18,7 +18,7 @@ import {
 } from '#shared/radar'
 import { parse as parseYaml } from 'yaml'
 import { grantExport, grantFileName } from '../server/utils/radar-export'
-import { attachmentName, decodeHtml, isPdfLink, mainHtml, pageLinks } from '../server/utils/radar-fetch'
+import { attachmentName, decodeHtml, isPdfLink, mainHtml, pageLinks, safeDecode } from '../server/utils/radar-fetch'
 import { parseCallDate, parseGrantReading, parseJudgement, parsePicks } from '../server/utils/radar-reader'
 import {
   incentiveText,
@@ -181,9 +181,8 @@ describe('lettura del modello', () => {
   })
 
   it('il giudizio vuole un esito tra sì, no e forse', () => {
-    expect(parseJudgement({ verdict: 'no', reason: 'Fuori provincia', digital: false }))
-      .toEqual({ verdict: 'no', reason: 'Fuori provincia', digital: false })
-    expect(() => parseJudgement({ verdict: 'boh', reason: '', digital: true })).toThrow()
+    expect(parseJudgement({ verdict: 'no', reason: 'Fuori provincia' })).toEqual({ verdict: 'no', reason: 'Fuori provincia' })
+    expect(() => parseJudgement({ verdict: 'boh', reason: '' })).toThrow()
   })
 
   it('i link scelti dal modello: solo indici esistenti, una volta', () => {
@@ -388,6 +387,9 @@ describe('fonti', () => {
     expect(isPdfLink('https://www.regione.puglia.it/documents/1/2/Avviso+pubblico.pdf/abc-123')).toBe(true)
     expect(isPdfLink('https://c.it/avviso.PDF')).toBe(true)
     expect(isPdfLink('https://c.it/avvisi')).toBe(false)
+    // Un "%" che non è una sequenza valida non fa cadere niente
+    expect(safeDecode('/contributo-50%-imprese')).toBe('/contributo-50%-imprese')
+    expect(attachmentName('https://c.it/avviso%.pdf')).toBe('avviso%.pdf')
   })
 })
 

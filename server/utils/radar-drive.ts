@@ -1,10 +1,10 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import { DRIVE_CLAIM_MINUTES, type DriveStart } from '#shared/radar'
-import { createDriveFolder, driveFolderId, driveFolderUrl, hasDrive, uploadDriveFile } from './drive'
+import { createDriveFolder, driveFolderId, driveFolderUrl, driveName, hasDrive, listDriveNames, uploadDriveFile } from './drive'
 import { inPool, readGrantDocument } from './radar'
 import { grantExport, grantFileName } from './radar-export'
-import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, pagePdfLinks, SOURCE_TIMEOUT_MS } from './radar-fetch'
+import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, mainHtml, pagePdfLinks, SOURCE_TIMEOUT_MS } from './radar-fetch'
 
 // "Crea cartella su Drive": una cartella per il bando dentro la cartella
 // "Bandi" del Drive condiviso, col bando esportato per Claude e i PDF
@@ -24,7 +24,7 @@ const FILE_CONCURRENCY = 4
 export async function grantPdfLinks(url: string): Promise<string[]> {
   if (isPdfLink(url)) return [url]
   const origin = new URL(url).origin
-  return pagePdfLinks(await fetchSourcePage(url, origin), url, origin, MAX_FILES)
+  return pagePdfLinks(mainHtml(await fetchSourcePage(url, origin)), url, origin, MAX_FILES)
 }
 
 export async function startGrantFolder(
@@ -40,18 +40,23 @@ export async function startGrantFolder(
   `
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
   if (row.drive_ready_at && row.drive_folder_id) return { status: 'ready', url: driveFolderUrl(row.drive_folder_id) }
-  const claimed = await sql`
-    update radar_grants set drive_claimed_at = now(), drive_note = ''
+  // La cartella già creata si legge dal turno appena preso, non da prima:
+  // un altro lavoro può averla salvata nel frattempo
+  // Ora del turno decisa qui, al millisecondo: fa da gettone per liberarlo
+  const claimedAt = new Date()
+  const [claim] = await sql<{ drive_folder_id: string | null }[]>`
+    update radar_grants set drive_claimed_at = ${claimedAt}, drive_note = ''
     where id = ${id} and drive_ready_at is null
       and (drive_claimed_at is null or drive_claimed_at < now() - ${`${DRIVE_CLAIM_MINUTES} minutes`}::interval)
-    returning id
+    returning drive_folder_id
   `
   // Già in corso (altro clic, altra istanza): il pannello aspetta lo stesso lavoro
-  if (claimed.length) run(() => fillFolder(sql, id, row.drive_folder_id))
+  if (claim) run(() => fillFolder(sql, id, claim.drive_folder_id, claimedAt))
   return { status: 'creating' }
 }
 
-async function fillFolder(sql: postgres.Sql, id: string, existingFolder: string | null) {
+// `claimedAt`: il turno di questo lavoro; un errore libera solo quello
+async function fillFolder(sql: postgres.Sql, id: string, existingFolder: string | null, claimedAt: Date) {
   try {
     const { grant, content, profile } = await readGrantDocument(sql, id)
     let folderId = existingFolder
@@ -60,9 +65,13 @@ async function fillFolder(sql: postgres.Sql, id: string, existingFolder: string 
       // Salvata subito: un errore dopo non crea una seconda cartella al prossimo clic
       await sql`update radar_grants set drive_folder_id = ${folderId} where id = ${id}`
     }
+    // Ripresa dopo un errore: i file già caricati non si ricaricano
+    const present = existingFolder ? await listDriveNames(folderId) : new Set<string>()
+    const upload = (name: string, mime: string, data: Buffer) =>
+      present.has(driveName(name)) ? Promise.resolve() : uploadDriveFile(name, mime, data, folderId)
     const [, note] = await Promise.all([
-      uploadDriveFile(grantFileName(grant), 'text/markdown', Buffer.from(grantExport(grant, content, profile)), folderId),
-      uploadPdfs(grant.url, folderId),
+      upload(grantFileName(grant), 'text/markdown', Buffer.from(grantExport(grant, content, profile))),
+      uploadPdfs(grant.url, upload),
     ])
     // Anche il cuore, come setGrantLiked: chi crea la cartella ci lavora
     await sql`
@@ -75,22 +84,23 @@ async function fillFolder(sql: postgres.Sql, id: string, existingFolder: string 
     console.error('[radar] cartella su Drive non creata', err)
     await sql`
       update radar_grants set drive_claimed_at = null, drive_note = ${`Non riuscita: ${(err as Error).message}`.slice(0, 500)}
-      where id = ${id}
+      where id = ${id} and drive_claimed_at = ${claimedAt}
     `
   }
 }
 
 type PdfOutcome = 'loaded' | 'notDownloaded' | 'notUploaded'
+type Upload = (name: string, mime: string, data: Buffer) => Promise<void>
 
-async function uploadPdf(href: string, folderId: string): Promise<PdfOutcome> {
+async function uploadPdf(href: string, upload: Upload): Promise<PdfOutcome> {
   const data = await fetchFromSource(href, { origin: new URL(href).origin, maxBytes: MAX_FILE_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
     .catch(() => null)
   if (!data) return 'notDownloaded'
-  return uploadDriveFile(attachmentName(href), 'application/pdf', data, folderId).then(() => 'loaded' as const, () => 'notUploaded' as const)
+  return upload(attachmentName(href), 'application/pdf', data).then(() => 'loaded' as const, () => 'notUploaded' as const)
 }
 
 // Carica i PDF del bando, quattro alla volta; la nota dice cosa manca
-async function uploadPdfs(url: string, folderId: string): Promise<string> {
+async function uploadPdfs(url: string, upload: Upload): Promise<string> {
   let pdfs: string[]
   try {
     pdfs = await grantPdfLinks(url)
@@ -99,7 +109,7 @@ async function uploadPdfs(url: string, folderId: string): Promise<string> {
     return 'Pagina del bando non raggiungibile: i PDF vanno aggiunti a mano'
   }
   if (!pdfs.length) return 'Nessun PDF trovato sulla pagina del bando'
-  const outcomes = await inPool(pdfs, FILE_CONCURRENCY, href => uploadPdf(href, folderId))
+  const outcomes = await inPool(pdfs, FILE_CONCURRENCY, href => uploadPdf(href, upload))
   const count = (o: PdfOutcome) => outcomes.filter(x => x === o).length
   return [
     `${count('loaded')} PDF del bando caricati`,

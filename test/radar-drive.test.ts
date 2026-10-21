@@ -71,19 +71,24 @@ describe('caricamento su Drive', () => {
 type Call = { url: string, method: string, body: string }
 
 // `failFile`: il file il cui caricamento su Drive fallisce
-function fakeWeb(calls: Call[], { failFile = '' } = {}) {
+// I nomi caricati restano in `stored`, come in una cartella vera
+function fakeWeb(calls: Call[], { failFile = '', stored = new Set<string>() } = {}) {
   let folders = 0
   return vi.fn(async (input: string | URL, init?: RequestInit) => {
     const url = String(input)
     const body = init?.body instanceof Uint8Array ? Buffer.from(init.body).toString('latin1') : String(init?.body ?? '')
     calls.push({ url, method: init?.method ?? 'GET', body })
     if (url.startsWith('https://oauth2.googleapis.com/token')) return Response.json({ access_token: 'tok', expires_in: 3600 })
+    if (url.startsWith('https://www.googleapis.com/drive/v3/files') && (init?.method ?? 'GET') === 'GET') {
+      return Response.json({ files: [...stored].map(name => ({ name })) })
+    }
     if (url.startsWith('https://www.googleapis.com/drive/v3/files')) {
       folders++
       return Response.json({ id: `cartella-${folders}` })
     }
     if (url.startsWith('https://www.googleapis.com/upload/drive/v3/files')) {
       if (failFile && body.includes(`"name":"${failFile}"`)) return new Response('quota', { status: 500 })
+      stored.add(JSON.parse(body).name)
       return new Response(null, { headers: { location: 'https://upload.example/sessione' } })
     }
     if (url === 'https://upload.example/sessione') return Response.json({ id: 'file' })
@@ -97,7 +102,6 @@ function fakeWeb(calls: Call[], { failFile = '' } = {}) {
 
 const source: RadarSource = {
   slug: 'finta',
-  group: 'regione',
   refreshDays: 0,
   complete: true,
   fetchListing: async () => [{ externalId: 'a', url: 'https://example.com/a', content: 'bando A' }],
@@ -188,7 +192,8 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Drive', () => {
 
   it('se Drive si ferma a metà, il clic dopo riprende nella stessa cartella', async () => {
     const grant = await oneGrant()
-    vi.stubGlobal('fetch', fakeWeb(calls, { failFile: 'bando-voucher-bando-a.md' }))
+    const stored = new Set<string>()
+    vi.stubGlobal('fetch', fakeWeb(calls, { failFile: 'bando-voucher-bando-a.md', stored }))
     await startGrantFolder(sql, grant.id, run)
     await finish()
     expect((await listEvaluatedGrants(sql))[0]).toMatchObject({ driveUrl: null, driveCreating: false })
@@ -196,11 +201,13 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Drive', () => {
 
     // Drive torna a funzionare
     calls.length = 0
-    vi.stubGlobal('fetch', fakeWeb(calls))
+    vi.stubGlobal('fetch', fakeWeb(calls, { stored }))
     await startGrantFolder(sql, grant.id, run)
     await finish()
-    // Nessuna cartella nuova: si usa quella già creata
-    expect(calls.some(c => c.url.startsWith('https://www.googleapis.com/drive/v3/files'))).toBe(false)
+    // Nessuna cartella nuova, e il PDF già caricato non si ricarica
+    expect(calls.some(c => c.url.startsWith('https://www.googleapis.com/drive/v3/files') && c.method === 'POST')).toBe(false)
+    expect(calls.filter(c => c.url.startsWith('https://www.googleapis.com/upload')).map(c => JSON.parse(c.body).name))
+      .toEqual(['bando-voucher-bando-a.md'])
     expect((await listEvaluatedGrants(sql))[0]!.driveUrl).toBe('https://drive.google.com/drive/folders/cartella-1')
   })
 

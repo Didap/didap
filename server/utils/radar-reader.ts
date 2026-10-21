@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
-import { ISO_DATE, romeLocalToDate } from '#shared/dates'
+import { ISO_DATE, romeLocalToDate, romeYear } from '#shared/dates'
 import {
   LEGAL_FORMS,
   PROVINCES,
@@ -17,7 +17,7 @@ import {
 // cambiarlo). Il prompt nasce da quello del Radar Bandi di cityfix, girato
 // sulle imprese.
 
-// Il filtro sul tema, uguale nella lettura completa e nel giudizio
+// Il filtro sul tema, deciso alla lettura del bando
 const DIGITAL_RULE = `"digital" is for a software house that builds websites, apps, software and AI solutions: true only if the call funds IT or digital work as its purpose or as one of its main, explicitly named activities: software, web or app development, artificial intelligence, data, cloud, cybersecurity, e-commerce, digital transformation of business processes, digital services or ICT consulting, research and innovation projects in the digital field, calls for innovative or high-tech startups (startup innovative), which usually fund digital products. It is false when the call funds something else, such as machinery, vehicles, tractors or farm equipment, buildings, energy plants, agriculture, tourism facilities, film or audiovisual production, hiring, training, liquidity, guarantees, trade fairs or exports, even if software or digital costs appear as one eligible expense among many.`
 
 const SYSTEM_PROMPT = `You read Italian calls for funding ("bandi", "avvisi", "incentivi") and extract structured data for a private company based in Puglia, Italy. Answer with one JSON object and nothing else.
@@ -371,14 +371,11 @@ Decide "verdict":
 - "maybe" when the answer depends on facts the profile does not give.
 "reason" is one short sentence in Italian that names the deciding condition, addressed to the company ("Siete...", "Il bando chiede...").
 
-Then decide ${DIGITAL_RULE}
-
 Answer with one JSON object.`
 
 const JUDGE_SCHEMA = object({
   verdict: { type: 'string', enum: ['yes', 'no', 'maybe'] },
   reason: STRING,
-  digital: { type: 'boolean' },
 })
 
 export type GrantSummary = {
@@ -389,7 +386,7 @@ export type GrantSummary = {
   requirements: Requirement[]
 }
 
-export type Judgement = { verdict: Verdict, reason: string, digital: boolean }
+export type Judgement = { verdict: Verdict, reason: string }
 export type GrantJudge = (grant: GrantSummary, profile: RadarProfile) => Promise<Judgement>
 
 const LEGAL_FORM_LABELS: Record<string, string> = Object.fromEntries(LEGAL_FORMS.map(f => [f.value, f.label]))
@@ -401,7 +398,7 @@ const orUnknown = (v: number | string | null, show: (v: string) => string) =>
 export function profileText(p: RadarProfile, now = new Date()): string {
   const founded = p.legalForm === 'da_costituire'
     ? 'da costituire'
-    : orUnknown(p.foundedYear, v => `${v} (oggi siamo nel ${now.getFullYear()})`)
+    : orUnknown(p.foundedYear, v => `${v} (oggi siamo nel ${romeYear(now)})`)
   return [
     `Attività: ${p.description || 'non indicata'}`,
     `Forma giuridica: ${LEGAL_FORM_LABELS[p.legalForm]}`,
@@ -429,7 +426,7 @@ export const summaryText = (g: GrantSummary) => [
 ].join('\n')
 
 export const parseJudgement = (raw: unknown): Judgement => z
-  .object({ verdict: z.enum(['yes', 'no', 'maybe']), reason: str, digital: z.boolean() })
+  .object({ verdict: z.enum(['yes', 'no', 'maybe']), reason: str })
   .parse(raw)
 
 // Poche centinaia di token: si rifà quando cambia il profilo, senza

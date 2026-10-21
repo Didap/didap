@@ -26,8 +26,15 @@ const CERT_ERRORS: Record<string, string> = {
 
 const certificateProblem = (err: unknown) => CERT_ERRORS[errorCode(err)]
 
-// Il motivo in breve: il codice di rete (ENOTFOUND, ECONNRESET...) dice più di "fetch failed"
-const networkReason = (err: unknown) => errorCode(err) || (err as Error).message
+// Perché una richiesta non è arrivata: tempo scaduto, certificato (che non
+// si aggiusta riprovando) o rete, col codice (ENOTFOUND, ECONNRESET...) che
+// dice più di "fetch failed"
+function requestError(err: unknown, url: string, timeoutMs: number, signal: AbortSignal) {
+  if (signal.aborted) return { message: `Nessuna risposta in ${timeoutMs / 1000} s da ${url}`, transient: true }
+  const cert = certificateProblem(err)
+  if (cert) return { message: `${url}: ${cert}`, transient: false }
+  return { message: `Rete non raggiungibile per ${url}: ${errorCode(err) || (err as Error).message}`, transient: true }
+}
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // Con `optional` un file che non c'è (più) o troppo grande dà null invece di
@@ -68,12 +75,8 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
       res = await webRequest(target, signal)
     }
     catch (err) {
-      const cert = certificateProblem(err)
-      // Un certificato sbagliato non si aggiusta riprovando
-      if (cert) throw new Error(`${url}: ${cert}`)
-      throw new TransientError(signal.aborted
-        ? `Nessuna risposta in ${timeoutMs / 1000} s da ${url}`
-        : `Rete non raggiungibile per ${url}: ${networkReason(err)}`)
+      const { message, transient } = requestError(err, url, timeoutMs, signal)
+      throw transient ? new TransientError(message) : new Error(message)
     }
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) break
@@ -85,11 +88,11 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
   const tooLarge = `${url} supera ${maxBytes} byte`
   if (!res.ok || Number(res.headers.get('content-length')) > maxBytes) {
     // Alcuni comuni stanno dietro un CAPTCHA per soli umani (BitNinja): non
-    // si aggira, si dice perché il sito non si legge
-    if (res.status === 403 && /captcha|anti-robot/i.test(`${res.headers.get('server')} ${(await res.text()).slice(0, 4000)}`)) {
+    // si aggira, si dice perché il sito non si legge. Basta l'inizio della pagina.
+    const head = res.status === 403 ? await readHead(res, 4000) : (await res.body?.cancel(), '')
+    if (/captcha|anti-robot/i.test(`${res.headers.get('server')} ${head}`)) {
       throw new Error(`${url}: il sito chiede un CAPTCHA anti-robot, non si legge in automatico`)
     }
-    await res.body?.cancel()
     if (res.status === 404 || res.status === 410) return skip(`${origin} ha risposto ${res.status} per ${url}`)
     const message = `${origin} ha risposto ${res.status} per ${url}`
     if (res.status >= 500 || res.status === 429) throw new TransientError(message)
@@ -123,6 +126,27 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
   return Buffer.concat(chunks)
 }
 
+// I primi `max` byte del corpo come testo; il resto non si scarica
+async function readHead(res: Response, max: number): Promise<string> {
+  if (!res.body) return ''
+  const reader = res.body.getReader()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  try {
+    while (size < max) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+      size += value.length
+    }
+  }
+  catch {
+    // Corpo interrotto: basta quello che è arrivato
+  }
+  await reader.cancel().catch(() => {})
+  return Buffer.concat(chunks).toString('utf-8')
+}
+
 // Il sito della Regione e quelli di alcuni comuni (Diso, Erchie) possono
 // metterci decine di secondi a rispondere
 export const SOURCE_TIMEOUT_MS = 90_000
@@ -153,10 +177,7 @@ export async function resolveOrigin(url: string): Promise<string> {
       res = await webRequest(target, signal)
     }
     catch (err) {
-      const cert = certificateProblem(err)
-      throw new Error(signal.aborted
-        ? `Nessuna risposta in ${SOURCE_TIMEOUT_MS / 1000} s da ${url}`
-        : cert ? `${url}: ${cert}` : `Rete non raggiungibile per ${url}: ${networkReason(err)}`)
+      throw new Error(requestError(err, url, SOURCE_TIMEOUT_MS, signal).message)
     }
     await res.body?.cancel()
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
@@ -166,19 +187,45 @@ export async function resolveOrigin(url: string): Promise<string> {
   throw new Error(`Troppi redirect per ${url}`)
 }
 
+// decodeURIComponent senza eccezioni: un "%" a caso nei link altrui resta com'è
+export function safeDecode(text: string): string {
+  try {
+    return decodeURIComponent(text)
+  }
+  catch {
+    return text
+  }
+}
+
 // Nome di un file dal suo URL; quelli Liferay finiscono con `/<nome file>/<uuid>`
 export function attachmentName(url: string): string {
   const segments = new URL(url).pathname.split('/').filter(Boolean)
   const file = segments.find(s => /\.pdf$/i.test(s)) ?? segments.at(-1) ?? 'allegato.pdf'
-  return decodeURIComponent(file.replace(/\+/g, ' '))
+  return safeDecode(file.replace(/\+/g, ' '))
 }
 
 // Link a un PDF, anche nello stile Liferay della Regione (/documents/.../file.pdf/<uuid>)
 export const isPdfLink = (url: string) => /\.pdf(\/|$)/i.test(new URL(url).pathname)
 
 // I PDF linkati nell'area principale di una pagina, stessa origine
-export const pagePdfLinks = (html: string, url: string, origin: string, max: number) =>
-  pageLinks(mainHtml(html), url, origin).map(l => l.href).filter(isPdfLink).slice(0, max)
+// `main`: l'area principale della pagina (mainHtml), calcolata una volta da chi chiama
+export const pagePdfLinks = (main: string, url: string, origin: string, max = 10) =>
+  pageLinks(main, url, origin).map(l => l.href).filter(isPdfLink).slice(0, max)
+
+const MAX_ATTACHMENTS = 5
+const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024
+
+// Il testo di una pagina più quello dei PDF che collega (i primi 5, fino a
+// 15 MB). Un file troppo grande o un link rotto si salta; gli errori
+// passeggeri fanno riprovare tutto il bando.
+export async function withAttachments(content: string, urls: string[], origin: string): Promise<string> {
+  const files = await Promise.all(urls.slice(0, MAX_ATTACHMENTS).map(async (href) => {
+    const data = await fetchFromSource(href, { origin, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
+    return data && { name: attachmentName(href), data }
+  }))
+  const pdf = await attachmentsText(files.filter(f => f !== null))
+  return pdf ? `${content}\n\n${pdf}` : content
+}
 
 const SKIPPED_FILES = /\.(jpe?g|png|gif|svg|webp|ico|css|js|zip|rar|7z|mp4|mp3|docx?|xlsx?|odt|ods|p7m|xml|rss)(\?|$)/i
 

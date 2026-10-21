@@ -21,6 +21,7 @@ import {
   ToggleGroupItem,
   ToggleGroupRoot,
 } from 'reka-ui'
+import AdminIcon from '~/components/admin/AdminIcon.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import OptionalNumber from '~/components/admin/OptionalNumber.vue'
 import RadarGrantDetail from '~/components/admin/RadarGrantDetail.vue'
@@ -32,6 +33,7 @@ import { formatDateTime } from '~/utils/format'
 import { romeDate } from '#shared/dates'
 import { formatWholeEuro } from '#shared/money'
 import {
+  ELIGIBILITY_OUTCOME,
   ELIGIBILITY_PLURALS,
   evaluateRadarGrant,
   isDigestCandidate,
@@ -45,6 +47,7 @@ import {
   type Eligibility,
   type EvaluatedGrant,
   type LegalForm,
+  type RadarGrant,
   type RadarSettings,
   type RadarStatus,
 } from '#shared/radar'
@@ -60,7 +63,8 @@ useSeoMeta({ title: 'Bandi - Admin Didap' })
 await useAdminSession()
 const { notify } = useAdminToast()
 
-type RadarList = { grants: EvaluatedGrant[], status: RadarStatus }
+// Bandi grezzi dal server: si valutano qui coi parametri del modulo
+type RadarList = { grants: RadarGrant[], status: RadarStatus }
 const data = ref<RadarList | null>(null)
 const form = ref<RadarSettings | null>(null)
 // Un indirizzo per riga; diventa la lista al salvataggio
@@ -185,7 +189,7 @@ const now = new Date()
 const grants = computed<EvaluatedGrant[]>(() => {
   const f = form.value
   const list = data.value?.grants ?? []
-  if (!f) return list
+  if (!f) return []
   return list.filter(g => isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
 })
 
@@ -256,8 +260,6 @@ function timeLeft(g: EvaluatedGrant) {
   const text = days <= 0 ? 'Scade oggi' : days === 1 ? 'Scade domani' : `${days} giorni`
   return { text, urgent: days <= 14 }
 }
-
-const ELIGIBILITY_OUTCOME = { eligible: 'met', to_verify: 'to_verify', excluded: 'not_met' } as const
 
 const EMPTY: Record<Tab, string> = {
   eligible: 'Nessun bando candidabile.',
@@ -474,23 +476,11 @@ function toggleGroup(group: string, on: boolean) {
                   hover:bg-ink/3
                 ">
                   Filtri aggiuntivi
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    class="opacity-50 transition-transform"
+                  <AdminIcon
+                    name="down"
+                    class="size-3.5 opacity-50 transition-transform"
                     :class="extraOpen ? 'rotate-180' : ''"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M4 6l4 4 4-4"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.75"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent class="
                   divide-y divide-ink/10 border-t border-ink/10
@@ -654,23 +644,11 @@ function toggleGroup(group: string, on: boolean) {
                   hover:bg-ink/3
                 ">
                   Mail di riepilogo
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    class="opacity-50 transition-transform"
+                  <AdminIcon
+                    name="down"
+                    class="size-3.5 opacity-50 transition-transform"
                     :class="mailOpen ? 'rotate-180' : ''"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M4 6l4 4 4-4"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.75"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent class="
                   divide-y divide-ink/10 border-t border-ink/10

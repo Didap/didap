@@ -262,4 +262,5 @@ export const COMUNI_PUGLIA: Comune[] = [
   { istat: '075094', name: 'Zollino', province: 'LE', site: 'https://www.comune.zollino.le.it' },
 ]
 
-export const comuneByIstat = (istat: string) => COMUNI_PUGLIA.find(c => c.istat === istat)
+const BY_ISTAT = new Map(COMUNI_PUGLIA.map(c => [c.istat, c]))
+export const comuneByIstat = (istat: string) => BY_ISTAT.get(istat)

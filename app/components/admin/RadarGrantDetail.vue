@@ -2,17 +2,23 @@
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
-import type { EvaluatedGrant } from '#shared/radar'
+import { sourceLabel, VERDICT_LABELS, type EvaluatedGrant } from '#shared/radar'
 
-// Scheda di un bando: dati, sintesi e requisiti. Il motivo compare solo
-// quando c'è qualcosa da guardare; la frase del bando si apre col clic.
+// Scheda di un bando: giudizio, dati, sintesi, requisiti e come si
+// presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
+// guardare; la frase del bando si apre col clic.
 const props = defineProps<{ grant: EvaluatedGrant }>()
+
+const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
 
 const ELIGIBILITY_OUTCOME = { eligible: 'met', to_verify: 'to_verify', excluded: 'not_met' } as const
 
 const facts = computed(() => {
   const g = props.grant
-  const rows: [string, string][] = [['Scadenza', g.deadline ? formatDay(g.deadline) : 'A sportello']]
+  const rows: [string, string][] = [
+    ['Scadenza', g.deadline ? formatDay(g.deadline) : 'A sportello'],
+    ['Fonte', sourceLabel(g.source)],
+  ]
   if (g.opensAt && new Date(g.opensAt) > new Date()) rows.push(['Apre', formatDay(g.opensAt)])
   if (g.maxAmount) rows.push(['Fino a', formatWholeEuro(g.maxAmount)])
   if (g.funding) rows.push(['Aiuto', g.funding])
@@ -44,13 +50,14 @@ const note = (i: number) => {
           </p>
         </div>
       </div>
+      <div class="ml-9 flex flex-wrap gap-2">
       <a
         :href="grant.url"
         target="_blank"
         rel="noopener"
         class="
-          ml-9 inline-flex w-fit items-center gap-2 rounded-full bg-ink px-4
-          py-2 text-sm font-medium text-paper-light
+          inline-flex w-fit items-center gap-2 rounded-full bg-ink px-4 py-2
+          text-sm font-medium text-paper-light
           hover:bg-green
         "
       >
@@ -71,7 +78,36 @@ const note = (i: number) => {
           />
         </svg>
       </a>
+      <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
+      <a
+        :href="`/api/admin/radar/grants/${grant.id}/export`"
+        download
+        class="
+          inline-flex w-fit items-center rounded-full border border-ink/20 px-4
+          py-2 text-sm
+          hover:border-ink
+        "
+        title="Scarica il bando in un file da dare a Claude Code"
+      >
+        Esporta per Claude
+      </a>
+      </div>
     </header>
+
+    <div
+      v-if="grant.verdict"
+      class="flex items-start gap-3 rounded-xl bg-ink/4 p-3 text-sm"
+    >
+      <RadarOutcomeIcon
+        :outcome="VERDICT_OUTCOME[grant.verdict]"
+        :size="18"
+        class="mt-px"
+      />
+      <p>
+        <span class="font-medium">{{ VERDICT_LABELS[grant.verdict] }}.</span>
+        {{ grant.verdictReason }}
+      </p>
+    </div>
 
     <dl class="
       grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-1.5 border-y
@@ -178,6 +214,37 @@ const note = (i: number) => {
           </span>
         </div>
       </template>
+    </section>
+
+    <section
+      v-if="grant.application"
+      class="flex flex-col gap-2"
+    >
+      <h3 class="text-sm font-bold">
+        Come si presenta
+      </h3>
+      <p
+        v-if="grant.application.platform"
+        class="text-sm"
+      >
+        {{ grant.application.platform }}
+      </p>
+      <ul
+        v-if="grant.application.documents.length"
+        class="flex flex-col gap-1.5 text-sm"
+      >
+        <li
+          v-for="(d, i) in grant.application.documents"
+          :key="i"
+          class="flex flex-col"
+        >
+          <span>{{ d.name }}</span>
+          <span
+            v-if="d.format || d.notes"
+            class="opacity-60"
+          >{{ [d.format, d.notes].filter(Boolean).join(' · ') }}</span>
+        </li>
+      </ul>
     </section>
   </article>
 </template>

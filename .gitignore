@@ -27,3 +27,6 @@ logs
 
 # TypeScript incremental build
 *.tsbuildinfo
+
+# Bandi esportati dal radar e cartelle di lavoro (skill gestisci-bando)
+/bandi/

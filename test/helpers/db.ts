@@ -29,6 +29,6 @@ export async function openTestDb() {
 
 export async function resetTestDb(sql: postgres.Sql) {
   await sql`truncate quote_revisions, quote_counters, quotes, clients, settings`
-  await sql`truncate radar_grants, radar_documents, radar_state, radar_settings`
+  await sql`truncate radar_grants, radar_documents, radar_state, radar_settings, radar_runs`
   await sql`insert into radar_state (id) values (1)`
 }

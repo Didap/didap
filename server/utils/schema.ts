@@ -138,4 +138,24 @@ export const DB_SCHEMA = `
   alter table radar_grants add column if not exists liked_at timestamptz;
   -- Sviluppo IT, IA o servizi digitali secondo il modello (null: non detto)
   alter table radar_grants add column if not exists digital boolean;
+  -- Giudizio del modello col profilo salvato (judged_profile: quale)
+  alter table radar_grants add column if not exists verdict text;
+  alter table radar_grants add column if not exists verdict_reason text not null default '';
+  alter table radar_grants add column if not exists judged_profile text;
+  -- Piattaforma e documenti da presentare
+  alter table radar_grants add column if not exists application jsonb;
+  -- Registro degli import: moduli, tempi, conteggi e token
+  create table if not exists radar_runs (
+    id uuid primary key default gen_random_uuid(),
+    trigger text not null,
+    groups text[] not null default '{}',
+    comuni text[] not null default '{}',
+    status text not null default 'running' check (status in ('running', 'done', 'failed')),
+    started_at timestamptz not null default now(),
+    finished_at timestamptz,
+    model text not null default '',
+    stats jsonb not null default '{}'::jsonb,
+    usage jsonb not null default '{}'::jsonb,
+    error text
+  );
 `

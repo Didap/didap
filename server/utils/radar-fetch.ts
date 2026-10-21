@@ -12,6 +12,22 @@ type FetchOptions = { origin: string, maxBytes: number, timeoutMs: number }
 class TransientError extends Error {}
 
 const RETRY_AFTER_MS = 3_000
+
+// Siti di enti col certificato HTTPS rotto: il radar non li legge (non si
+// spegne la verifica), ma l'errore dice perché
+const CERT_ERRORS: Record<string, string> = {
+  UNABLE_TO_VERIFY_LEAF_SIGNATURE: 'certificato HTTPS incompleto (manca il certificato intermedio)',
+  CERT_HAS_EXPIRED: 'certificato HTTPS scaduto',
+  ERR_TLS_CERT_ALTNAME_INVALID: 'certificato HTTPS di un altro dominio',
+  INVALID_PURPOSE: 'certificato HTTPS non valido',
+  DEPTH_ZERO_SELF_SIGNED_CERT: 'certificato HTTPS autofirmato',
+  SELF_SIGNED_CERT_IN_CHAIN: 'certificato HTTPS autofirmato',
+}
+
+const certificateProblem = (err: unknown) => {
+  const code = ((err as { cause?: { code?: string } }).cause?.code) ?? ''
+  return CERT_ERRORS[code]
+}
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // Con `optional` un file che non c'è (più) o troppo grande dà null invece di
@@ -53,6 +69,9 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
     }
     catch (err) {
       const timedOut = (err as Error).name === 'TimeoutError'
+      const cert = certificateProblem(err)
+      // Un certificato sbagliato non si aggiusta riprovando
+      if (cert) throw new Error(`${url}: ${cert}`)
       throw new TransientError(timedOut
         ? `Nessuna risposta in ${timeoutMs / 1000} s da ${url}`
         : `Rete non raggiungibile per ${url}: ${(err as Error).message}`)
@@ -105,7 +124,76 @@ export const SOURCE_TIMEOUT_MS = 45_000
 
 export async function fetchSourcePage(url: string, origin: string): Promise<string> {
   const body = await fetchFromSource(url, { origin, maxBytes: 5 * 1024 * 1024, timeoutMs: SOURCE_TIMEOUT_MS })
-  return body.toString('utf-8')
+  return decodeHtml(body)
+}
+
+// Utf-8 salvo che la pagina dichiari un charset latino (Sistema Puglia, siti
+// di comuni datati)
+export function decodeHtml(body: Buffer): string {
+  const head = body.subarray(0, 4096).toString('latin1')
+  const charset = /<meta[^>]+charset=["']?([\w-]+)/i.exec(head)?.[1]?.toLowerCase()
+  const latin = charset && /^(iso-8859-1|iso-8859-15|latin1|windows-1252|cp1252)$/.test(charset)
+  return new TextDecoder(latin ? 'windows-1252' : 'utf-8').decode(body)
+}
+
+// Dove porta davvero un indirizzo (http -> https, senza o con www): i siti
+// dei comuni si leggono poi solo dentro questa origine
+export async function resolveOrigin(url: string): Promise<string> {
+  let res: Response
+  try {
+    res = await fetch(url, {
+      headers: { 'User-Agent': USER_AGENT },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(SOURCE_TIMEOUT_MS),
+    })
+  }
+  catch (err) {
+    const cert = certificateProblem(err)
+    throw new Error((err as Error).name === 'TimeoutError'
+      ? `Nessuna risposta in ${SOURCE_TIMEOUT_MS / 1000} s da ${url}`
+      : cert ? `${url}: ${cert}` : `Rete non raggiungibile per ${url}: ${(err as Error).message}`)
+  }
+  await res.body?.cancel()
+  if (!res.ok) throw new Error(`${url} ha risposto ${res.status}`)
+  return new URL(res.url || url).origin
+}
+
+const SKIPPED_FILES = /\.(jpe?g|png|gif|svg|webp|ico|css|js|zip|rar|7z|mp4|mp3|docx?|xlsx?|odt|ods|p7m|xml|rss)(\?|$)/i
+
+// Link di una pagina dentro la stessa origine, col testo che li accompagna:
+// quello che il modello vede per scegliere dove andare
+export function pageLinks(html: string, pageUrl: string, origin: string, max = 400): { text: string, href: string }[] {
+  const out = new Map<string, string>()
+  for (const [, attrs, inner] of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+    const href = /href\s*=\s*["']([^"']+)["']/i.exec(attrs!)?.[1]
+    if (!href || /^(mailto|tel|javascript):|^#/i.test(href)) continue
+    let url: URL
+    try {
+      url = new URL(href.replace(/&amp;/g, '&'), pageUrl)
+    }
+    catch {
+      continue
+    }
+    url.hash = ''
+    if (url.origin !== origin || SKIPPED_FILES.test(url.pathname)) continue
+    const label = htmlToText(inner!).replace(/\s+/g, ' ').trim()
+      || /(?:title|aria-label)\s*=\s*["']([^"']+)["']/i.exec(attrs!)?.[1]?.trim()
+      || ''
+    const key = url.toString()
+    if (!label || key === pageUrl) continue
+    if (!out.has(key) || out.get(key)!.length < label.length) out.set(key, label.slice(0, 160))
+    if (out.size >= max) break
+  }
+  return [...out].map(([href, text]) => ({ text, href }))
+}
+
+// L'area principale di una pagina qualunque: <main>, poi <article>, poi il <body>
+export function mainHtml(html: string): string {
+  for (const re of [/<main\b[^>]*>([\s\S]*?)<\/main>/i, /<article\b[^>]*>([\s\S]*?)<\/article>/i, /<body\b[^>]*>([\s\S]*?)<\/body>/i]) {
+    const m = re.exec(html)
+    if (m?.[1] && htmlToText(m[1]).length > 200) return m[1]
+  }
+  return html
 }
 
 const ENTITIES: Record<string, string> = {

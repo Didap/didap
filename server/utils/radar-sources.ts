@@ -1,9 +1,14 @@
+import { COMUNI_PUGLIA } from '#shared/comuni-puglia'
 import { romeDate } from '#shared/dates'
+import { comuneSlug, type RadarSearch, type SourceGroup } from '#shared/radar'
+import { crawlSource } from './radar-crawl'
 import { attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
+import type { LinkPicker } from './radar-reader'
 
-// Fonti del radar: per ora Regione Puglia e il catalogo di incentivi.gov.it
-// (bandi nazionali e regionali aperti alle imprese pugliesi). Ogni fonte
-// elenca i bandi e ne restituisce il testo; il resto lo fa radar.ts.
+// Fonti del radar in tre moduli: governo (catalogo di incentivi.gov.it),
+// regione (Regione Puglia, Sistema Puglia, Puglia Sviluppo) e comuni, uno
+// per uno. Ogni fonte elenca i bandi e ne restituisce il testo; il resto lo
+// fa radar.ts.
 
 // `closed`: la fonte lo elenca ancora ma lo segna come chiuso.
 // `content`: il testo, se l'elenco lo dà già (niente fetchContent)
@@ -11,6 +16,7 @@ export type Listing = { externalId: string, url: string, closed?: boolean, conte
 
 export type RadarSource = {
   slug: string
+  group: SourceGroup
   // Giorni prima di riscaricare un bando già visto (0 = ogni volta)
   refreshDays: number
   // L'elenco contiene tutti i bandi aperti: chi sparisce è chiuso
@@ -116,6 +122,7 @@ export function incentiveText(inc: Incentive): string {
 function incentiviGov(): RadarSource {
   return {
     slug: 'incentivi-gov',
+    group: 'governo',
     refreshDays: 0,
     complete: true,
     async fetchListing() {
@@ -211,6 +218,7 @@ async function pugliaAttachment(url: string): Promise<Attachment | null> {
 function regionePuglia(): RadarSource {
   return {
     slug: 'regione-puglia',
+    group: 'regione',
     // Pagina e PDF costano: un bando già letto si ricontrolla ogni settimana
     refreshDays: 7,
     // Si leggono solo le voci più recenti: chi esce dalla finestra non è
@@ -235,4 +243,100 @@ function regionePuglia(): RadarSource {
   }
 }
 
-export const radarSources = (): RadarSource[] => [regionePuglia(), incentiviGov()]
+// ---------- Sistema Puglia ----------
+
+const SISTEMA = 'https://www.sistema.puglia.it'
+// "Bandi aperti" del motore di ricerca del portale (fase 2): tutti in una pagina
+const SISTEMA_LIST = `${SISTEMA}/portal/pls/portal/SISPUGLIA.RPT_MOTORE_RICERCA_BANDI.show?p_arg_names=p_testo&p_arg_values=&p_arg_names=p_fase&p_arg_values=2`
+
+// Il portale linka sé stesso un po' in http e un po' in https
+const sistemaUrl = (href: string) => {
+  const url = new URL(decode(href), SISTEMA)
+  if (url.hostname === 'www.sistema.puglia.it' || url.hostname === 'sistema.puglia.it') {
+    url.protocol = 'https:'
+    url.hostname = 'www.sistema.puglia.it'
+  }
+  return url
+}
+
+export function parseSistemaListing(html: string): Listing[] {
+  const listings = new Map<string, Listing>()
+  for (const [, href] of html.matchAll(/<a\s+title="vai alla pagina di[^"]*"\s+href="([^"]+)"/gi)) {
+    const url = sistemaUrl(href!)
+    if (url.origin !== SISTEMA) continue
+    const id = decodeURIComponent(url.pathname.split('/').filter(Boolean).at(-1) ?? url.pathname).toLowerCase()
+    if (!listings.has(id)) listings.set(id, { externalId: id, url: url.toString() })
+  }
+  return [...listings.values()]
+}
+
+// La pagina di un avviso è una cornice: la scheda di sintesi sta
+// nell'iframe DYN_DETTAGLIO_DOC (gli altri sono immagini di servizio)
+export function sistemaFrame(page: string): string | undefined {
+  const frames = [...page.matchAll(/<iframe[^>]+src="([^"]+)"/gi)].map(m => m[1]!)
+  return frames.find(f => /dettaglio_doc/i.test(f)) ?? frames.find(f => !/\.(gif|png|jpe?g|svg)(\?|$)/i.test(f))
+}
+
+function sistemaPuglia(): RadarSource {
+  return {
+    slug: 'sistema-puglia',
+    group: 'regione',
+    refreshDays: 7,
+    complete: true,
+    async fetchListing() {
+      return parseSistemaListing(await fetchSourcePage(SISTEMA_LIST, SISTEMA))
+    },
+    async fetchContent(listing) {
+      const page = await fetchSourcePage(listing.url, SISTEMA)
+      const src = sistemaFrame(page)
+      const frame = src && sistemaUrl(src)
+      const html = frame && frame.origin === SISTEMA ? await fetchSourcePage(frame.toString(), SISTEMA) : page
+      const content = htmlToText(html)
+      if (!content) throw new Error(`Pagina vuota: ${listing.url}`)
+      return content
+    },
+  }
+}
+
+// ---------- Puglia Sviluppo ----------
+
+// Le pagine per tipo di finanziamento; dentro, elenchi per dimensione
+// d'impresa e poi le misure
+const PUGLIA_SVILUPPO_PAGES = [
+  'finanziamenti-per-la-creazione-di-impresa',
+  'finanziamenti-per-lo-sviluppo-aziendale',
+  'finanziamenti-per-lo-sviluppo-aziendale-nel-settore-turistico',
+  'finanziamenti-straordinari',
+  'internazionalizzazione-e-attrazione-investimenti',
+  'step',
+  'Just-Transition-Fund-Avvisi-per-la-provincia-di-Taranto',
+].map(p => `https://pugliasviluppo.eu/it/${p}`)
+
+const pugliaSviluppo = (picker: LinkPicker) => crawlSource(
+  { slug: 'puglia-sviluppo', group: 'regione', startUrls: PUGLIA_SVILUPPO_PAGES, maxDepth: 2, maxCalls: 40 },
+  picker,
+)
+
+// ---------- comuni ----------
+
+// Dalla home del sito istituzionale: il modello trova gli elenchi di avvisi
+// e notizie, e da lì i bandi per le imprese
+const comune = (istat: string, site: string, picker: LinkPicker) => crawlSource(
+  { slug: comuneSlug(istat), group: 'comuni', startUrls: [site], maxDepth: 2, maxCalls: 15 },
+  picker,
+)
+
+// ---------- moduli ----------
+
+// Le fonti della ricerca scelta: i moduli spuntati, per i comuni solo quelli spuntati
+export function radarSources(search: Pick<RadarSearch, 'groups' | 'comuni'>, picker: LinkPicker): RadarSource[] {
+  const sources: RadarSource[] = []
+  if (search.groups.includes('governo')) sources.push(incentiviGov())
+  if (search.groups.includes('regione')) sources.push(regionePuglia(), sistemaPuglia(), pugliaSviluppo(picker))
+  if (search.groups.includes('comuni')) {
+    for (const c of COMUNI_PUGLIA) {
+      if (search.comuni.includes(c.istat)) sources.push(comune(c.istat, c.site, picker))
+    }
+  }
+  return sources
+}

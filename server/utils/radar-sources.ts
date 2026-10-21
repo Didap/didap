@@ -1,5 +1,5 @@
 import { romeDate } from '#shared/dates'
-import { comuneSlug, comuniOf, type RadarSearch, type SourceGroup } from '#shared/radar'
+import { comuneSlug, comuniOf, type RadarSearch } from '#shared/radar'
 import { crawlSource } from './radar-crawl'
 import {
   attachmentName,
@@ -26,7 +26,6 @@ export type Listing = { externalId: string, url: string, closed?: boolean, conte
 
 export type RadarSource = {
   slug: string
-  group: SourceGroup
   // Giorni prima di riscaricare un bando già visto (0 = ogni volta)
   refreshDays: number
   // L'elenco contiene tutti i bandi aperti: chi sparisce è chiuso
@@ -132,7 +131,6 @@ export function incentiveText(inc: Incentive): string {
 function incentiviGov(): RadarSource {
   return {
     slug: 'incentivi-gov',
-    group: 'governo',
     refreshDays: 0,
     complete: true,
     async fetchListing() {
@@ -176,8 +174,6 @@ const listPage = (page: number) =>
   + `&_${PORTLET}_cur=${page}&_${PORTLET}_delta=${PAGE_SIZE}`
 // Concorsi per il personale, pubblicati nella stessa lista
 const SKIPPED_SECTIONS = ['concorsi']
-const MAX_ATTACHMENTS = 5
-const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024
 
 const decode = (v: string) => v.replace(/&amp;/g, '&')
 const DOCUMENT_LINK = new RegExp(`href="((?:${PUGLIA.replace(/\./g, '\\.')})?/documents/[^"]+)"`, 'g')
@@ -211,17 +207,9 @@ function parsePugliaDetail(html: string): { content: string, attachmentUrls: str
   return { content: htmlToText(main), attachmentUrls: [...urls] }
 }
 
-// Un file troppo grande o un link rotto si salta; la pagina e gli altri
-// file si leggono. Gli errori passeggeri fanno riprovare tutto il bando.
-async function pugliaAttachment(url: string): Promise<Attachment | null> {
-  const data = await fetchFromSource(url, { origin: PUGLIA, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
-  return data && { name: attachmentName(url), data }
-}
-
 function regionePuglia(): RadarSource {
   return {
     slug: 'regione-puglia',
-    group: 'regione',
     // Pagina e PDF costano: un bando già letto si ricontrolla ogni settimana
     refreshDays: 7,
     // Si leggono solo le voci più recenti: chi esce dalla finestra non è
@@ -239,9 +227,7 @@ function regionePuglia(): RadarSource {
     async fetchContent(listing) {
       const { content, attachmentUrls } = parsePugliaDetail(await fetchSourcePage(listing.url, PUGLIA))
       if (!content) throw new Error(`Pagina vuota: ${listing.url}`)
-      const files = await Promise.all(attachmentUrls.slice(0, MAX_ATTACHMENTS).map(pugliaAttachment))
-      const pdf = await attachmentsText(files.filter(f => f !== null))
-      return pdf ? `${content}\n\n${pdf}` : content
+      return withAttachments(content, attachmentUrls, PUGLIA)
     },
   }
 }
@@ -283,7 +269,6 @@ export function sistemaFrame(page: string): string | undefined {
 function sistemaPuglia(): RadarSource {
   return {
     slug: 'sistema-puglia',
-    group: 'regione',
     refreshDays: 7,
     complete: true,
     async fetchListing() {
@@ -316,7 +301,7 @@ const PUGLIA_SVILUPPO_PAGES = [
 ].map(p => `https://pugliasviluppo.eu/it/${p}`)
 
 const pugliaSviluppo = (picker: LinkPicker) => crawlSource(
-  { slug: 'puglia-sviluppo', group: 'regione', startUrls: PUGLIA_SVILUPPO_PAGES, maxDepth: 2, maxCalls: 40 },
+  { slug: 'puglia-sviluppo', startUrls: PUGLIA_SVILUPPO_PAGES, maxDepth: 2, maxCalls: 40 },
   picker,
 )
 
@@ -325,7 +310,7 @@ const pugliaSviluppo = (picker: LinkPicker) => crawlSource(
 // Dalla home del sito istituzionale: il modello trova gli elenchi di avvisi
 // e notizie, e da lì i bandi per le imprese
 const comune = (istat: string, site: string, picker: LinkPicker) => crawlSource(
-  { slug: comuneSlug(istat), group: 'comuni', startUrls: [site], maxDepth: 2, maxCalls: 15 },
+  { slug: comuneSlug(istat), startUrls: [site], maxDepth: 2, maxCalls: 15 },
   picker,
 )
 

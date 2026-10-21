@@ -181,9 +181,8 @@ describe('lettura del modello', () => {
   })
 
   it('il giudizio vuole un esito tra sì, no e forse', () => {
-    expect(parseJudgement({ verdict: 'no', reason: 'Fuori provincia', digital: false }))
-      .toEqual({ verdict: 'no', reason: 'Fuori provincia', digital: false })
-    expect(() => parseJudgement({ verdict: 'boh', reason: '', digital: true })).toThrow()
+    expect(parseJudgement({ verdict: 'no', reason: 'Fuori provincia' })).toEqual({ verdict: 'no', reason: 'Fuori provincia' })
+    expect(() => parseJudgement({ verdict: 'boh', reason: '' })).toThrow()
   })
 
   it('i link scelti dal modello: solo indici esistenti, una volta', () => {

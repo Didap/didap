@@ -2,6 +2,7 @@
 import { useIntervalFn } from '@vueuse/core'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime } from '~/utils/format'
+import { formatDecimal } from '#shared/money'
 import { comuniOf, PROVINCES, SOURCE_GROUPS, usageCost, type RadarRun } from '#shared/radar'
 
 // Registro degli import: quando, cosa, quanto è durato, cosa ha trovato e
@@ -39,8 +40,7 @@ const STATUS: Record<RadarRun['status'], { text: string, cls: string }> = {
   failed: { text: 'Fallito', cls: 'bg-red/15 text-red' },
 }
 
-const number = new Intl.NumberFormat('it-IT')
-const fmt = (n: number) => number.format(n)
+const fmt = formatDecimal
 const dollars = (n: number | null) =>
   n === null ? 'prezzo n.d.' : `≈ ${n.toLocaleString('it-IT', { style: 'currency', currency: 'USD', minimumFractionDigits: n < 1 ? 3 : 2 })}`
 

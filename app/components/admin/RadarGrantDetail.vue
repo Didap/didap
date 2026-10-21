@@ -3,7 +3,7 @@ import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
-import { sourceLabel, VERDICT_LABELS, type DriveStart, type EvaluatedGrant } from '#shared/radar'
+import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type DriveStart, type EvaluatedGrant } from '#shared/radar'
 
 // Scheda di un bando: giudizio, dati, sintesi, requisiti e come si
 // presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
@@ -26,8 +26,6 @@ async function createFolder() {
 }
 
 const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
-
-const ELIGIBILITY_OUTCOME = { eligible: 'met', to_verify: 'to_verify', excluded: 'not_met' } as const
 
 const facts = computed(() => {
   const g = props.grant

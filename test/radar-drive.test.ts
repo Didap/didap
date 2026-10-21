@@ -102,7 +102,6 @@ function fakeWeb(calls: Call[], { failFile = '', stored = new Set<string>() } = 
 
 const source: RadarSource = {
   slug: 'finta',
-  group: 'regione',
   refreshDays: 0,
   complete: true,
   fetchListing: async () => [{ externalId: 'a', url: 'https://example.com/a', content: 'bando A' }],

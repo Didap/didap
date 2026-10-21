@@ -200,6 +200,9 @@ export const ELIGIBILITY_LABELS: Record<Eligibility, string> = {
   excluded: 'Escluso',
 }
 
+// L'icona di un bando: l'esito come se fosse un requisito
+export const ELIGIBILITY_OUTCOME: Record<Eligibility, Outcome> = { eligible: 'met', to_verify: 'to_verify', excluded: 'not_met' }
+
 export const ELIGIBILITY_PLURALS: Record<Eligibility, string> = {
   eligible: 'Candidabili',
   to_verify: 'Da verificare',

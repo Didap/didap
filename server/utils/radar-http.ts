@@ -87,9 +87,19 @@ const completeChain = (url: URL) => {
 const NULL_BODY = new Set([204, 205, 304])
 
 // Come fetch, con le autorità di sistema più gli intermedi trovati
+// Un agente solo, rifatto quando si aggiunge un intermedio: le autorità si
+// caricano una volta e le connessioni si riusano
+let agent: { size: number, value: https.Agent } | null = null
+const caAgent = () => {
+  if (agent?.size !== intermediates.length) {
+    agent = { size: intermediates.length, value: new https.Agent({ ca: [...tls.rootCertificates, ...intermediates], keepAlive: true }) }
+  }
+  return agent.value
+}
+
 function fetchWithIntermediates(url: string, signal: AbortSignal): Promise<Response> {
   return new Promise((resolve, reject) => {
-    const req = https.request(url, { headers: BROWSER_HEADERS, ca: [...tls.rootCertificates, ...intermediates], signal }, (res) => {
+    const req = https.request(url, { headers: BROWSER_HEADERS, agent: caAgent(), signal }, (res) => {
       const headers = new Headers()
       for (const [k, v] of Object.entries(res.headers)) {
         if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(', ') : String(v))

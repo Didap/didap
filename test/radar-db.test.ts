@@ -31,7 +31,6 @@ function fakeSource(
   const fetched: string[] = []
   return {
     slug: 'finta',
-    group: 'regione',
     refreshDays,
     complete,
     fetched,
@@ -70,7 +69,6 @@ const fakeReader: GrantReader = async ({ content }): Promise<GrantReading> => {
 const fakeJudge: GrantJudge = async g => ({
   verdict: g.title.includes('sicuro') ? 'yes' : g.title.includes('escluso') ? 'no' : 'maybe',
   reason: 'Motivo',
-  digital: !g.title.includes('trattori'),
 })
 
 const deps = (sources: ReturnType<typeof fakeSource>[], mailer: RadarDeps['mailer'] = null): RadarDeps => ({
@@ -243,19 +241,18 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
   it('il giudizio decide i casi aperti, esclude, e si rifà quando cambia il profilo', async () => {
     await ingestSources(sql, [fakeSource({ a: 'bando sicuro', b: 'bando escluso', c: 'bando incerto', t: 'trattori' })], NOW)
     await readPending(sql, fakeReader)
-    // Lettura senza tema: lo completa il giudizio
-    await sql`update radar_grants set digital = null where title = 'trattori'`
     const settings = await readRadarSettings(sql)
     const { profile } = settings
-    expect(await judgeGrants(sql, fakeJudge, settings, NOW)).toEqual({ judged: 4, unavailable: false })
+    // I trattori (non digitali) sono fuori dalla ricerca: non si giudicano
+    expect(await judgeGrants(sql, fakeJudge, settings, NOW)).toEqual({ judged: 3, unavailable: false })
     const byTitle = Object.fromEntries((await listEvaluatedGrants(sql, NOW)).map(g => [g.title, g]))
     expect(byTitle['bando sicuro']!.eligibility).toBe('eligible')
     expect(byTitle['bando escluso']!.eligibility).toBe('excluded')
     expect(byTitle['bando incerto']!.eligibility).toBe('to_verify')
-    expect(byTitle.trattori!.digital).toBe(false)
+    expect(byTitle.trattori!.verdict).toBeNull()
     // Stesso profilo: niente da rifare; profilo nuovo: tutti di nuovo
     expect((await judgeGrants(sql, fakeJudge, settings, NOW)).judged).toBe(0)
-    // Profilo nuovo: di nuovo tutti quelli della ricerca (i trattori, non digitali, no)
+    // Profilo nuovo: di nuovo tutti quelli della ricerca
     expect((await judgeGrants(sql, fakeJudge, { ...settings, profile: { ...profile, employees: 12 } }, NOW)).judged).toBe(3)
     const limited: GrantJudge = async () => {
       throw new ReaderUnavailable('troppi token')
@@ -308,7 +305,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
   })
 
   it('i comuni delle province non scelte restano fuori dalla mail', async () => {
-    const comune = { ...fakeSource({ a: 'bando del comune' }), slug: 'comune-072006', group: 'comuni' as const }
+    const comune = { ...fakeSource({ a: 'bando del comune' }), slug: 'comune-072006' }
     await ingestSources(sql, [comune], NOW)
     await readPending(sql, fakeReader)
     await writeRadarSettings(sql, settings(null))

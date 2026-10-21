@@ -4,7 +4,7 @@ import { DRIVE_CLAIM_MINUTES, type DriveStart } from '#shared/radar'
 import { createDriveFolder, driveFolderId, driveFolderUrl, driveName, hasDrive, listDriveNames, uploadDriveFile } from './drive'
 import { inPool, readGrantDocument } from './radar'
 import { grantExport, grantFileName } from './radar-export'
-import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, pagePdfLinks, SOURCE_TIMEOUT_MS } from './radar-fetch'
+import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, mainHtml, pagePdfLinks, SOURCE_TIMEOUT_MS } from './radar-fetch'
 
 // "Crea cartella su Drive": una cartella per il bando dentro la cartella
 // "Bandi" del Drive condiviso, col bando esportato per Claude e i PDF
@@ -24,7 +24,7 @@ const FILE_CONCURRENCY = 4
 export async function grantPdfLinks(url: string): Promise<string[]> {
   if (isPdfLink(url)) return [url]
   const origin = new URL(url).origin
-  return pagePdfLinks(await fetchSourcePage(url, origin), url, origin, MAX_FILES)
+  return pagePdfLinks(mainHtml(await fetchSourcePage(url, origin)), url, origin, MAX_FILES)
 }
 
 export async function startGrantFolder(

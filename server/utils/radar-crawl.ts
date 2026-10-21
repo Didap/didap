@@ -1,4 +1,3 @@
-import type { SourceGroup } from '#shared/radar'
 import {
   attachmentName,
   attachmentsText,
@@ -12,6 +11,7 @@ import {
   resolveOrigin,
   safeDecode,
   SOURCE_TIMEOUT_MS,
+  withAttachments,
 } from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
 import type { Listing, RadarSource } from './radar-sources'
@@ -21,8 +21,6 @@ import type { Listing, RadarSource } from './radar-sources'
 // per pagina, fino a una profondità fissa. Le pagine scelte come "bando"
 // diventano le voci della fonte.
 
-const MAX_ATTACHMENTS = 5
-const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024
 // Un link diretto a un PDF è il bando stesso: si accetta più grande
 const MAX_CALL_PDF_BYTES = 40 * 1024 * 1024
 // Elenchi aperti per pagina: il modello ne indica al massimo 3, se ne seguono 2
@@ -30,7 +28,6 @@ const LISTS_PER_PAGE = 2
 
 export type CrawlOptions = {
   slug: string
-  group: SourceGroup
   startUrls: string[]
   // Livelli di elenchi da attraversare dopo le pagine di partenza
   maxDepth: number
@@ -46,23 +43,16 @@ export async function pageWithAttachments(url: string, origin: string): Promise<
     if (!text) throw new Error(`PDF senza testo leggibile: ${url}`)
     return text
   }
-  const html = await fetchSourcePage(url, origin)
-  const content = htmlToText(mainHtml(html))
+  const main = mainHtml(await fetchSourcePage(url, origin))
+  const content = htmlToText(main)
   if (!content) throw new Error(`Pagina vuota: ${url}`)
-  const pdfs = pagePdfLinks(html, url, origin, MAX_ATTACHMENTS)
-  const files = await Promise.all(pdfs.map(async (href) => {
-    const data = await fetchFromSource(href, { origin, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
-    return data && { name: attachmentName(href), data }
-  }))
-  const pdf = await attachmentsText(files.filter(f => f !== null))
-  return pdf ? `${content}\n\n${pdf}` : content
+  return withAttachments(content, pagePdfLinks(main, url, origin), origin)
 }
 
 export function crawlSource(options: CrawlOptions, picker: LinkPicker): RadarSource {
   let origin: string | null = null
   return {
     slug: options.slug,
-    group: options.group,
     // Pagine e PDF costano: un bando già letto si ricontrolla ogni settimana
     refreshDays: 7,
     // Si vede solo quello che il modello sceglie: chi non c'è non è per forza chiuso

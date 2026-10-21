@@ -84,6 +84,11 @@ export async function writeRadarSettings(sql: Sql, data: RadarSettings): Promise
 
 const MAX_ATTEMPTS = 3
 
+// Bando letto, aperto e non scaduto (g: radar_grants, d: radar_documents)
+const openGrant = (sql: Sql, now: Date) => sql`
+  d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
+`
+
 // Bandi ancora da leggere: la stessa condizione per la coda e per il contatore
 const queued = (sql: Sql) => sql`
   closed_at is null and (status = 'pending' or (status = 'failed' and attempts < ${MAX_ATTEMPTS}))
@@ -378,8 +383,7 @@ export async function judgeGrants(
   }[]>`
     select g.id, d.source, g.digital, g.title, g.issuer, g.summary, g.funding, g.requirements
     from radar_grants g join radar_documents d on d.id = g.document_id
-    where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
-      and g.judged_profile is distinct from ${key}
+    where ${openGrant(sql, now)} and g.judged_profile is distinct from ${key}
     order by g.created_at
   `
   const grants = rows.filter(g => isInScope(g, search))
@@ -397,7 +401,7 @@ export async function judgeGrants(
     }
     await sql`
       update radar_grants set verdict = ${j.verdict}, verdict_reason = ${j.reason},
-        digital = coalesce(digital, ${j.digital}), judged_profile = ${key}
+        judged_profile = ${key}
       where id = ${g.id}
     `
     result.judged++
@@ -454,8 +458,9 @@ export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
 // ---------- elenco e valutazione ----------
 
 // Bandi letti, aperti e non scaduti, dalla scadenza più vicina
-// `id`: solo quel bando
-async function listGrants(sql: Sql, now: Date, { unnotified = false, id = '' } = {}): Promise<RadarGrant[]> {
+// Bandi aperti, dalla scadenza più vicina; `id`: solo quel bando. Il
+// pannello li valuta da sé coi parametri del modulo, anche non salvati.
+export async function listGrants(sql: Sql, now: Date, { unnotified = false, id = '' } = {}): Promise<RadarGrant[]> {
   const rows = await sql`
     select g.id, d.source, d.url, g.digital, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
@@ -464,7 +469,7 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false, id = '' } =
         as drive_creating,
       g.created_at
     from radar_grants g join radar_documents d on d.id = g.document_id
-    where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
+    where ${openGrant(sql, now)}
       ${unnotified ? sql`and g.notified_at is null` : sql``}
       ${id ? sql`and g.id = ${id}` : sql``}
     order by g.deadline asc nulls last, g.created_at desc

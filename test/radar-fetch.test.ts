@@ -79,7 +79,7 @@ describe('download dalle fonti', () => {
 
   it('con più pagine di partenza, una che non risponde si salta', async () => {
     const source = crawlSource(
-      { slug: 'puglia-sviluppo', group: 'regione', startUrls: [`${origin}/manca`, `${origin}/`], maxDepth: 0, maxCalls: 5 },
+      { slug: 'puglia-sviluppo', startUrls: [`${origin}/manca`, `${origin}/`], maxDepth: 0, maxCalls: 5 },
       async ({ links }) => links.map(l => ({ href: l.href, kind: 'call' as const })),
     )
     expect((await source.fetchListing()).map(l => l.externalId)).toEqual(['/avvisi'])
@@ -89,7 +89,7 @@ describe('download dalle fonti', () => {
     expect(await resolveOrigin(`${origin}/manca`)).toBe(origin)
     const seen: string[] = []
     const source = crawlSource(
-      { slug: 'comune-072006', group: 'comuni', startUrls: [`${origin}/manca`], maxDepth: 0, maxCalls: 5 },
+      { slug: 'comune-072006', startUrls: [`${origin}/manca`], maxDepth: 0, maxCalls: 5 },
       async ({ url, links }) => {
         seen.push(url)
         return links.map(l => ({ href: l.href, kind: 'call' as const }))

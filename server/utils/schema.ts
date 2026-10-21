@@ -158,4 +158,6 @@ export const DB_SCHEMA = `
     usage jsonb not null default '{}'::jsonb,
     error text
   );
+  -- Comuni per provincia (prima si spuntavano uno a uno, colonna comuni)
+  alter table radar_runs add column if not exists provinces text[] not null default '{}';
 `

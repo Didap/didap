@@ -10,6 +10,8 @@ import type { Listing, RadarSource } from './radar-sources'
 
 const MAX_ATTACHMENTS = 5
 const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024
+// Un link diretto a un PDF è il bando stesso: si accetta più grande
+const MAX_CALL_PDF_BYTES = 40 * 1024 * 1024
 // Elenchi aperti per pagina: il modello ne indica al massimo 3, se ne seguono 2
 const LISTS_PER_PAGE = 2
 
@@ -30,7 +32,7 @@ const fileName = (url: string) => decodeURIComponent(new URL(url).pathname.split
 // Testo di una pagina e dei PDF che collega; un link diretto a un PDF è il bando stesso
 export async function pageWithAttachments(url: string, origin: string): Promise<string> {
   if (isPdfUrl(url)) {
-    const data = await fetchFromSource(url, { origin, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS })
+    const data = await fetchFromSource(url, { origin, maxBytes: MAX_CALL_PDF_BYTES, timeoutMs: SOURCE_TIMEOUT_MS })
     const text = await attachmentsText([{ name: fileName(url), data }])
     if (!text) throw new Error(`PDF senza testo leggibile: ${url}`)
     return text
@@ -68,18 +70,31 @@ export function crawlSource(options: CrawlOptions, picker: LinkPicker): RadarSou
         for (const url of level) {
           if (visited.has(url) || calls.size >= options.maxCalls) continue
           visited.add(url)
+          let page = url
           let html
           try {
             html = await fetchSourcePage(url, origin)
           }
           catch (err) {
-            // Le pagine di partenza devono rispondere; un elenco interno rotto si salta
-            if (depth === 0) throw err
+            // Un elenco interno rotto si salta. Una pagina di partenza che non
+            // risponde (IndicePA ha a volte un percorso vecchio, es. /it che
+            // dà 404) si riprova dalla home del sito
+            if (depth > 0) continue
+            const home = `${origin}/`
+            if (url === home || visited.has(home)) throw err
+            visited.add(home)
+            page = home
+            html = await fetchSourcePage(home, origin)
+          }
+          const links = pageLinks(html, page, origin)
+          if (!links.length) {
+            // Una home sola senza link: meglio dirlo che restituire zero bandi in silenzio
+            if (depth === 0 && options.startUrls.length === 1) {
+              throw new Error(`${page}: nessun link leggibile, il sito si carica probabilmente in JavaScript`)
+            }
             continue
           }
-          const links = pageLinks(html, url, origin)
-          if (!links.length) continue
-          const picks = await picker({ url, links })
+          const picks = await picker({ url: page, links })
           let lists = 0
           for (const p of picks) {
             if (p.kind === 'call' && !calls.has(p.href) && calls.size < options.maxCalls) {

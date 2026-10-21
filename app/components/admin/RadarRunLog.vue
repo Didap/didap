@@ -2,8 +2,7 @@
 import { useIntervalFn } from '@vueuse/core'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime } from '~/utils/format'
-import { comuneByIstat } from '#shared/comuni-puglia'
-import { SOURCE_GROUPS, usageCost, type RadarRun } from '#shared/radar'
+import { comuniOf, PROVINCES, SOURCE_GROUPS, usageCost, type RadarRun } from '#shared/radar'
 
 // Registro degli import: quando, cosa, quanto è durato, cosa ha trovato e
 // quanti token ha consumato. Mentre un import gira si aggiorna da solo.
@@ -60,8 +59,8 @@ function scope(r: RadarRun) {
   return r.groups.map((g) => {
     const label = SOURCE_GROUPS.find(x => x.value === g)?.label ?? g
     if (g !== 'comuni') return label
-    if (r.comuni.length === 1) return `Comune di ${comuneByIstat(r.comuni[0]!)?.name ?? r.comuni[0]}`
-    return `${r.comuni.length} comuni`
+    const names = r.provinces.map(p => PROVINCES.find(x => x.value === p)?.label ?? p)
+    return `Comuni di ${names.join(', ')} (${comuniOf(r.provinces).length})`
   }).join(', ')
 }
 

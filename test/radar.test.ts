@@ -11,6 +11,7 @@ import {
   sourceLabel,
   usageCost,
   type RadarGrant,
+  type Province,
   type RadarProfile,
   type Requirement,
   type SourceGroup,
@@ -104,6 +105,11 @@ describe('impostazioni del radar', () => {
   it('senza dati usa i default, dal lunedì al venerdì alle 8', () => {
     expect(parseRadarSettings(undefined)).toEqual(DEFAULT_RADAR_SETTINGS)
     expect(DEFAULT_RADAR_SETTINGS.notify.weekdays).toEqual([1, 2, 3, 4, 5])
+  })
+
+  it('una ricerca coi comuni spuntati uno a uno diventa le loro province', () => {
+    const s = parseRadarSettings({ search: { groups: ['comuni'], comuni: ['072006', '075035', '072004'], digitalOnly: true } })
+    expect(s.search).toEqual({ groups: ['comuni'], provinces: ['BA', 'LE'], digitalOnly: true })
   })
 
   it('un campo non valido torna al default, gli altri restano', () => {
@@ -229,8 +235,8 @@ describe('ricerca e giudizio', () => {
     ...over,
   })
 
-  it('moduli, comuni spuntati e solo digitali', () => {
-    const search = { groups: ['governo', 'comuni'] as SourceGroup[], comuni: ['072006'], digitalOnly: true }
+  it('moduli, province dei comuni e solo digitali', () => {
+    const search = { groups: ['governo', 'comuni'] as SourceGroup[], provinces: ['BA'] as Province[], digitalOnly: true }
     expect(isInScope(grant(), search)).toBe(true)
     expect(isInScope(grant({ source: 'sistema-puglia' }), search)).toBe(false)
     expect(isInScope(grant({ source: 'comune-072006' }), search)).toBe(true)
@@ -261,10 +267,12 @@ describe('ricerca e giudizio', () => {
 
   it('le fonti della ricerca: un crawler per ogni comune spuntato', () => {
     const picker = async () => []
-    const slugs = (groups: SourceGroup[], comuni: string[] = []) => radarSources({ groups, comuni }, picker).map(s => s.slug)
+    const slugs = (groups: SourceGroup[], provinces: Province[] = []) => radarSources({ groups, provinces }, picker).map(s => s.slug)
     expect(slugs(['governo'])).toEqual(['incentivi-gov'])
     expect(slugs(['regione'])).toEqual(['regione-puglia', 'sistema-puglia', 'puglia-sviluppo'])
-    expect(slugs(['comuni'], ['072006', '071001'])).toEqual(['comune-071001', 'comune-072006'])
+    expect(slugs(['comuni'], ['BT'])).toHaveLength(10)
+    expect(slugs(['comuni'], ['BT'])).toContain('comune-110001')
+    expect(slugs(['comuni', 'governo'], [])).toEqual(['incentivi-gov'])
   })
 
   it('esporta il bando con un front matter YAML leggibile', () => {

@@ -281,14 +281,14 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     expect(await listRuns(sql)).toHaveLength(1)
   })
 
-  it('i comuni non spuntati restano fuori da elenco e mail', async () => {
+  it('i comuni delle province non scelte restano fuori dalla mail', async () => {
     const comune = { ...fakeSource({ a: 'bando del comune' }), slug: 'comune-072006', group: 'comuni' as const }
     await ingestSources(sql, [comune], NOW)
     await readPending(sql, fakeReader)
     await writeRadarSettings(sql, settings(null))
     expect(await sendDigest(sql, mailer, NOW)).toBe(0)
     const s = settings(null)
-    s.search = { ...s.search, groups: ['comuni'], comuni: ['072006'] }
+    s.search = { ...s.search, groups: ['comuni'], provinces: ['BA'] }
     await writeRadarSettings(sql, s)
     expect(await sendDigest(sql, mailer, NOW)).toBe(1)
   })

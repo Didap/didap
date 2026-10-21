@@ -1,7 +1,8 @@
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { fetchFromSource } from '../server/utils/radar-fetch'
+import { crawlSource } from '../server/utils/radar-crawl'
+import { fetchFromSource, resolveOrigin } from '../server/utils/radar-fetch'
 
 // Un sito finto: ogni percorso decide come risponde alla richiesta n
 const hits: Record<string, number> = {}
@@ -23,6 +24,10 @@ beforeAll(async () => {
     }
     if (path === '/manca') {
       res.writeHead(404).end()
+      return
+    }
+    if (path === '/') {
+      res.writeHead(200, { 'content-type': 'text/html' }).end('<a href="/avvisi">Avvisi alle imprese</a>')
       return
     }
     res.writeHead(200).end('ok')
@@ -57,5 +62,19 @@ describe('download dalle fonti', () => {
     expect(await get('/manca', true)).toBeNull()
     await expect(get('/manca')).rejects.toThrow('ha risposto 404')
     expect(hits['/manca']).toBe(2)
+  })
+
+  it('una pagina di partenza che dà 404 si riprova dalla home del sito', async () => {
+    expect(await resolveOrigin(`${origin}/manca`)).toBe(origin)
+    const seen: string[] = []
+    const source = crawlSource(
+      { slug: 'comune-072006', group: 'comuni', startUrls: [`${origin}/manca`], maxDepth: 0, maxCalls: 5 },
+      async ({ url, links }) => {
+        seen.push(url)
+        return links.map(l => ({ href: l.href, kind: 'call' as const }))
+      },
+    )
+    expect(await source.fetchListing()).toEqual([{ externalId: '/avvisi', url: `${origin}/avvisi` }])
+    expect(seen).toEqual([`${origin}/`])
   })
 })

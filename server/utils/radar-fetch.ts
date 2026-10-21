@@ -1,8 +1,8 @@
+import { errorCode, webRequest } from './radar-http'
+
 // Download e testo delle pagine dei siti letti dal radar (portati dal Radar
 // Bandi di cityfix). Gli URL li decide l'HTML altrui: l'origine resta
 // bloccata anche dopo i redirect e il corpo ha un tetto di byte.
-
-const USER_AGENT = 'Mozilla/5.0 (compatible; DidapRadar/1.0; +https://didap.it)'
 
 const MAX_REDIRECTS = 5
 
@@ -24,10 +24,10 @@ const CERT_ERRORS: Record<string, string> = {
   SELF_SIGNED_CERT_IN_CHAIN: 'certificato HTTPS autofirmato',
 }
 
-const certificateProblem = (err: unknown) => {
-  const code = ((err as { cause?: { code?: string } }).cause?.code) ?? ''
-  return CERT_ERRORS[code]
-}
+const certificateProblem = (err: unknown) => CERT_ERRORS[errorCode(err)]
+
+// Il motivo in breve: il codice di rete (ENOTFOUND, ECONNRESET...) dice più di "fetch failed"
+const networkReason = (err: unknown) => errorCode(err) || (err as Error).message
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // Con `optional` un file che non c'è (più) o troppo grande dà null invece di
@@ -65,16 +65,15 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
       throw new Error(hops ? `Rifiutato ${url}: redirect fuori da ${origin}` : `Rifiutato ${url}: fuori da ${origin}`)
     }
     try {
-      res = await fetch(target, { headers: { 'User-Agent': USER_AGENT }, redirect: 'manual', signal })
+      res = await webRequest(target, signal)
     }
     catch (err) {
-      const timedOut = (err as Error).name === 'TimeoutError'
       const cert = certificateProblem(err)
       // Un certificato sbagliato non si aggiusta riprovando
       if (cert) throw new Error(`${url}: ${cert}`)
-      throw new TransientError(timedOut
+      throw new TransientError(signal.aborted
         ? `Nessuna risposta in ${timeoutMs / 1000} s da ${url}`
-        : `Rete non raggiungibile per ${url}: ${(err as Error).message}`)
+        : `Rete non raggiungibile per ${url}: ${networkReason(err)}`)
     }
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) break
@@ -85,6 +84,11 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
 
   const tooLarge = `${url} supera ${maxBytes} byte`
   if (!res.ok || Number(res.headers.get('content-length')) > maxBytes) {
+    // Alcuni comuni stanno dietro un CAPTCHA per soli umani (BitNinja): non
+    // si aggira, si dice perché il sito non si legge
+    if (res.status === 403 && /captcha|anti-robot/i.test(`${res.headers.get('server')} ${(await res.text()).slice(0, 4000)}`)) {
+      throw new Error(`${url}: il sito chiede un CAPTCHA anti-robot, non si legge in automatico`)
+    }
     await res.body?.cancel()
     if (res.status === 404 || res.status === 410) return skip(`${origin} ha risposto ${res.status} per ${url}`)
     const message = `${origin} ha risposto ${res.status} per ${url}`
@@ -119,8 +123,9 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
   return Buffer.concat(chunks)
 }
 
-// Il sito della Regione può metterci decine di secondi a rispondere
-export const SOURCE_TIMEOUT_MS = 45_000
+// Il sito della Regione e quelli di alcuni comuni (Diso, Erchie) possono
+// metterci decine di secondi a rispondere
+export const SOURCE_TIMEOUT_MS = 90_000
 
 export async function fetchSourcePage(url: string, origin: string): Promise<string> {
   const body = await fetchFromSource(url, { origin, maxBytes: 5 * 1024 * 1024, timeoutMs: SOURCE_TIMEOUT_MS })
@@ -137,25 +142,28 @@ export function decodeHtml(body: Buffer): string {
 }
 
 // Dove porta davvero un indirizzo (http -> https, senza o con www): i siti
-// dei comuni si leggono poi solo dentro questa origine
+// dei comuni si leggono poi solo dentro questa origine. Conta l'origine,
+// non la risposta: una home che dà 404 si gestisce dopo.
 export async function resolveOrigin(url: string): Promise<string> {
-  let res: Response
-  try {
-    res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(SOURCE_TIMEOUT_MS),
-    })
+  const signal = AbortSignal.timeout(SOURCE_TIMEOUT_MS)
+  let target = url
+  for (let hops = 0; hops <= MAX_REDIRECTS; hops++) {
+    let res: Response
+    try {
+      res = await webRequest(target, signal)
+    }
+    catch (err) {
+      const cert = certificateProblem(err)
+      throw new Error(signal.aborted
+        ? `Nessuna risposta in ${SOURCE_TIMEOUT_MS / 1000} s da ${url}`
+        : cert ? `${url}: ${cert}` : `Rete non raggiungibile per ${url}: ${networkReason(err)}`)
+    }
+    await res.body?.cancel()
+    const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
+    if (!location) return new URL(target).origin
+    target = new URL(location, target).toString()
   }
-  catch (err) {
-    const cert = certificateProblem(err)
-    throw new Error((err as Error).name === 'TimeoutError'
-      ? `Nessuna risposta in ${SOURCE_TIMEOUT_MS / 1000} s da ${url}`
-      : cert ? `${url}: ${cert}` : `Rete non raggiungibile per ${url}: ${(err as Error).message}`)
-  }
-  await res.body?.cancel()
-  if (!res.ok) throw new Error(`${url} ha risposto ${res.status}`)
-  return new URL(res.url || url).origin
+  throw new Error(`Troppi redirect per ${url}`)
 }
 
 const SKIPPED_FILES = /\.(jpe?g|png|gif|svg|webp|ico|css|js|zip|rar|7z|mp4|mp3|docx?|xlsx?|odt|ods|p7m|xml|rss)(\?|$)/i

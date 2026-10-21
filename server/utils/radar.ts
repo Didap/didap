@@ -45,7 +45,7 @@ import { radarSources, type Listing, type RadarSource } from './radar-sources'
 // parametro (testabile senza Nitro).
 
 type Sql = postgres.Sql
-type Scope = Pick<RadarSearch, 'groups' | 'comuni'>
+type Scope = Pick<RadarSearch, 'groups' | 'provinces'>
 
 // Al massimo `size` lavori insieme, nell'ordine della lista
 async function inPool<T, R>(items: T[], size: number, work: (item: T) => Promise<R>): Promise<R[]> {
@@ -401,8 +401,8 @@ async function startRun(sql: Sql, trigger: RunTrigger, scope: Scope, model: stri
     where status = 'running'
   `
   const [row] = await sql<{ id: string }[]>`
-    insert into radar_runs (trigger, groups, comuni, model, stats, usage)
-    values (${trigger}, ${scope.groups}, ${scope.comuni}, ${model}, ${sql.json(emptyStats())}, ${sql.json(emptyUsage())})
+    insert into radar_runs (trigger, groups, provinces, model, stats, usage)
+    values (${trigger}, ${scope.groups}, ${scope.provinces}, ${model}, ${sql.json(emptyStats())}, ${sql.json(emptyUsage())})
     returning id
   `
   return row!.id
@@ -418,14 +418,14 @@ async function saveRun(sql: Sql, id: string, stats: RunStats, usage: TokenUsage,
 
 export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
   const rows = await sql`
-    select id, trigger, groups, comuni, status, started_at, finished_at, model, stats, usage, error
+    select id, trigger, groups, provinces, status, started_at, finished_at, model, stats, usage, error
     from radar_runs order by started_at desc limit ${limit}
   `
   return rows.map(r => ({
     id: r.id,
     trigger: r.trigger,
     groups: r.groups,
-    comuni: r.comuni,
+    provinces: r.provinces,
     status: r.status,
     startedAt: r.started_at.toISOString(),
     finishedAt: r.finished_at?.toISOString() ?? null,
@@ -634,7 +634,7 @@ async function resumeQueue(sql: Sql, deps: RadarDeps, trigger: RunTrigger, now: 
   await readAndJudge(sql, deps, stats, async () => {}, now)
   if (!stats.read && !stats.judged) return
   await sql`
-    insert into radar_runs (trigger, groups, comuni, model, status, started_at, finished_at, stats, usage)
+    insert into radar_runs (trigger, groups, provinces, model, status, started_at, finished_at, stats, usage)
     values (${trigger}, ${[]}, ${[]}, ${deps.model}, 'done', ${now}, now(), ${sql.json(stats)}, ${sql.json(deps.usage)})
   `
 }

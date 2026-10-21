@@ -1,10 +1,12 @@
 import { z } from 'zod'
+import { comuneByIstat, COMUNI_PUGLIA } from './comuni-puglia'
 import { romeYear } from './dates'
 import { formatDecimal, formatWholeEuro } from './money'
 import { mergeSection } from './settings'
 
-// Radar bandi: parametri dell'azienda (Didap o un'altra) con cui si
-// valutano i bandi, e impostazioni della mail di riepilogo.
+// Radar bandi: dove cercare (governo, regione, comuni), parametri
+// dell'azienda (Didap o un'altra) con cui si valutano i bandi, e
+// impostazioni della mail di riepilogo.
 
 export const PROVINCES = [
   { value: 'BA', label: 'Bari' },
@@ -45,6 +47,8 @@ const euro = z.number().int().min(0).max(10_000_000_000).nullable()
 // Un campo lasciato vuoto (null) rende "da verificare" i requisiti che lo usano
 export const radarProfileSchema = z
   .object({
+    // Cosa fa l'azienda, in poche parole: il modello giudica i bandi su questo
+    description: z.string().trim().max(500),
     revenue: euro,
     employees: z.number().int().min(0).max(1_000_000).nullable(),
     foundedYear: z.number().int().min(1800).max(2100).nullable(),
@@ -55,6 +59,24 @@ export const radarProfileSchema = z
     femaleLed: z.boolean(),
     projectMonths: z.number().int().min(1).max(240).nullable(),
     investment: euro,
+  })
+  .strict()
+
+// I tre moduli di fonti, importabili insieme o uno alla volta
+export const SOURCE_GROUPS = [
+  { value: 'governo', label: 'Governo', hint: 'Incentivi.gov.it' },
+  { value: 'regione', label: 'Regione', hint: 'Regione Puglia, Sistema Puglia, Puglia Sviluppo' },
+  { value: 'comuni', label: 'Comuni', hint: 'I comuni spuntati, uno per uno' },
+] as const
+
+export type SourceGroup = Values<typeof SOURCE_GROUPS>
+
+const ISTAT_CODES = new Set(COMUNI_PUGLIA.map(c => c.istat))
+
+export const radarSearchSchema = z
+  .object({
+    groups: z.array(z.enum(valuesOf(SOURCE_GROUPS))).max(SOURCE_GROUPS.length),
+    comuni: z.array(z.string().refine(c => ISTAT_CODES.has(c), 'Comune sconosciuto')).max(COMUNI_PUGLIA.length),
     // Solo bandi per sviluppo IT, IA o servizi digitali
     digitalOnly: z.boolean(),
   })
@@ -70,7 +92,7 @@ export const radarNotifySchema = z
   .strict()
 
 export const radarSettingsSchema = z
-  .object({ profile: radarProfileSchema, notify: radarNotifySchema })
+  .object({ search: radarSearchSchema, profile: radarProfileSchema, notify: radarNotifySchema })
   .strict()
   .superRefine((s, ctx) => {
     if (s.notify.enabled && !s.notify.emails.length) {
@@ -78,12 +100,15 @@ export const radarSettingsSchema = z
     }
   })
 
+export type RadarSearch = z.infer<typeof radarSearchSchema>
 export type RadarProfile = z.infer<typeof radarProfileSchema>
 export type RadarNotify = z.infer<typeof radarNotifySchema>
 export type RadarSettings = z.infer<typeof radarSettingsSchema>
 
 export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
+  search: { groups: ['governo', 'regione'], comuni: [], digitalOnly: true },
   profile: {
+    description: 'Software house: siti web, app, software su misura e soluzioni di intelligenza artificiale',
     revenue: null,
     employees: null,
     foundedYear: null,
@@ -94,7 +119,6 @@ export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
     femaleLed: false,
     projectMonths: null,
     investment: null,
-    digitalOnly: true,
   },
   notify: { enabled: true, emails: [], weekdays: [1, 2, 3, 4, 5], time: '08:00' },
 }
@@ -103,6 +127,7 @@ export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
 export function parseRadarSettings(data: unknown): RadarSettings {
   const source = data && typeof data === 'object' ? (data as Record<string, unknown>) : {}
   return {
+    search: mergeSection(radarSearchSchema.shape, source.search, DEFAULT_RADAR_SETTINGS.search),
     profile: mergeSection(radarProfileSchema.shape, source.profile, DEFAULT_RADAR_SETTINGS.profile),
     notify: mergeSection(radarNotifySchema.shape, source.notify, DEFAULT_RADAR_SETTINGS.notify),
   }
@@ -265,6 +290,21 @@ export function evaluateGrant(requirements: Requirement[], profile: RadarProfile
   return { eligibility, evaluations }
 }
 
+// Come si presenta la domanda: piattaforma e documenti da caricare
+export type Application = {
+  platform: string
+  documents: { name: string, format: string, notes: string }[]
+}
+
+// Giudizio del modello: Didap (col profilo salvato) può candidarsi?
+export type Verdict = 'yes' | 'no' | 'maybe'
+
+export const VERDICT_LABELS: Record<Verdict, string> = {
+  yes: 'Potete candidarvi',
+  no: 'Non potete candidarvi',
+  maybe: 'Da capire',
+}
+
 // Bando come lo vedono il pannello e la mail
 export type RadarGrant = {
   id: string
@@ -272,6 +312,8 @@ export type RadarGrant = {
   url: string
   // Sviluppo IT, IA o servizi digitali; null se il modello non l'ha detto
   digital: boolean | null
+  verdict: Verdict | null
+  verdictReason: string
   title: string
   issuer: string
   summary: string
@@ -280,17 +322,63 @@ export type RadarGrant = {
   maxAmount: number | null
   funding: string
   requirements: Requirement[]
+  application: Application | null
   notifiedAt: string | null
   // Segnato come interessante per noi
   liked: boolean
   createdAt: string
 }
 
+// I requisiti letti li valuta il codice coi parametri; il giudizio del
+// modello pesa di più: decide i casi che il codice lascia aperti ("altro",
+// dati mancanti), esclude per motivi che il codice non vede e, se ha dubbi,
+// lascia da verificare anche un bando senza requisiti espliciti. Senza
+// giudizio (non ancora dato) conta solo il codice.
+export function evaluateRadarGrant(g: RadarGrant, profile: RadarProfile, now: Date) {
+  const { eligibility: byRules, evaluations } = evaluateGrant(g.requirements, profile, now)
+  let eligibility: Eligibility = byRules
+  if (byRules === 'excluded' || g.verdict === 'no') eligibility = 'excluded'
+  else if (g.verdict === 'yes') eligibility = 'eligible'
+  else if (g.verdict === 'maybe') eligibility = 'to_verify'
+  return { eligibility, evaluations }
+}
+
 export type EvaluatedGrant = RadarGrant & ReturnType<typeof evaluateGrant>
 
-// Con "Solo digitali" i bandi su altro (trattori, macchinari, film...) non si
-// vedono e non vanno in mail; quelli senza risposta del modello sì
-export const isInScope = (g: RadarGrant, profile: RadarProfile) => !profile.digitalOnly || g.digital !== false
+// ---------- fonti ----------
+
+export const SOURCE_LABELS: Record<string, string> = {
+  'incentivi-gov': 'Incentivi.gov.it',
+  'regione-puglia': 'Regione Puglia',
+  'sistema-puglia': 'Sistema Puglia',
+  'puglia-sviluppo': 'Puglia Sviluppo',
+}
+
+const COMUNE_PREFIX = 'comune-'
+export const comuneSlug = (istat: string) => `${COMUNE_PREFIX}${istat}`
+
+export function sourceGroup(slug: string): SourceGroup {
+  if (slug.startsWith(COMUNE_PREFIX)) return 'comuni'
+  return slug === 'incentivi-gov' ? 'governo' : 'regione'
+}
+
+export function sourceLabel(slug: string): string {
+  if (slug.startsWith(COMUNE_PREFIX)) {
+    const comune = comuneByIstat(slug.slice(COMUNE_PREFIX.length))
+    return comune ? `Comune di ${comune.name}` : slug
+  }
+  return SOURCE_LABELS[slug] ?? slug
+}
+
+// Dentro la ricerca scelta a sinistra: modulo spuntato (per i comuni, il
+// comune spuntato) e, con "Solo digitali", niente bandi su altro (trattori,
+// macchinari, film...). Quelli senza risposta del modello si vedono.
+export function isInScope(g: RadarGrant, search: RadarSearch): boolean {
+  const group = sourceGroup(g.source)
+  if (!search.groups.includes(group)) return false
+  if (group === 'comuni' && !search.comuni.includes(g.source.slice(COMUNE_PREFIX.length))) return false
+  return !search.digitalOnly || g.digital !== false
+}
 
 // Va nella prossima mail: mai mandato e non escluso dai parametri. Cambiare
 // i parametri può rendere candidabile un bando già visto: parte allora.
@@ -306,7 +394,53 @@ export type RadarStatus = {
   emailConfigured: boolean
 }
 
-export const SOURCE_LABELS: Record<string, string> = {
-  'regione-puglia': 'Regione Puglia',
-  'incentivi-gov': 'Incentivi.gov.it',
+// ---------- registro degli import ----------
+
+export type TokenUsage = { calls: number, input: number, output: number, cacheWrite: number, cacheRead: number }
+
+export const emptyUsage = (): TokenUsage => ({ calls: 0, input: 0, output: 0, cacheWrite: 0, cacheRead: 0 })
+
+export type RunStats = {
+  // Voci trovate nelle fonti, testi nuovi o cambiati da leggere
+  listed: number
+  queued: number
+  // Testi letti dal modello, di cui bandi per imprese
+  read: number
+  grants: number
+  // Bandi giudicati col profilo
+  judged: number
+  errors: string[]
+}
+
+export const emptyStats = (): RunStats => ({ listed: 0, queued: 0, read: 0, grants: 0, judged: 0, errors: [] })
+
+export type RadarRun = {
+  id: string
+  // ripresa: coda rimasta dal giro prima; profilo: rigiudizio dopo un cambio
+  trigger: 'manuale' | 'automatico' | 'ripresa' | 'profilo'
+  groups: SourceGroup[]
+  comuni: string[]
+  status: 'running' | 'done' | 'failed'
+  startedAt: string
+  finishedAt: string | null
+  model: string
+  stats: RunStats
+  usage: TokenUsage
+  error: string | null
+}
+
+// Dollari per milione di token: input, output. La scrittura in cache costa
+// 1,25 volte l'input, la lettura un decimo.
+const PRICES: Record<string, [number, number]> = {
+  'claude-haiku-5-5': [0.10, 0.50],
+  'claude-sonnet-5-5': [2, 10],
+  'claude-opus-5-5': [4, 20],
+}
+
+// Costo stimato in dollari; null per un modello senza prezzo in tabella
+export function usageCost(model: string, u: TokenUsage): number | null {
+  const price = PRICES[model]
+  if (!price) return null
+  const [input, output] = price
+  return (u.input * input + u.cacheWrite * input * 1.25 + u.cacheRead * input * 0.1 + u.output * output) / 1_000_000
 }

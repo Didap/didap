@@ -2,14 +2,32 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_RADAR_SETTINGS,
   evaluateGrant,
+  evaluateRadarGrant,
   evaluateRequirement,
+  isInScope,
   parseRadarSettings,
   radarSettingsSchema,
+  sourceGroup,
+  sourceLabel,
+  usageCost,
+  type RadarGrant,
   type RadarProfile,
   type Requirement,
+  type SourceGroup,
 } from '#shared/radar'
-import { parseCallDate, parseGrantReading, parseTopic } from '../server/utils/radar-reader'
-import { attachmentName, incentiveText, isOpenToPugliaBusinesses, parsePugliaListing } from '../server/utils/radar-sources'
+import { parse as parseYaml } from 'yaml'
+import { grantExport, grantFileName } from '../server/utils/radar-export'
+import { decodeHtml, mainHtml, pageLinks } from '../server/utils/radar-fetch'
+import { parseCallDate, parseGrantReading, parseJudgement, parsePicks } from '../server/utils/radar-reader'
+import {
+  attachmentName,
+  incentiveText,
+  isOpenToPugliaBusinesses,
+  parsePugliaListing,
+  parseSistemaListing,
+  radarSources,
+  sistemaFrame,
+} from '../server/utils/radar-sources'
 import { romeClock } from '#shared/dates'
 import { shouldIngest, shouldSendDigest } from '../server/utils/radar'
 
@@ -93,7 +111,8 @@ describe('impostazioni del radar', () => {
     expect(s.profile.revenue).toBeNull()
     expect(s.profile.employees).toBe(4)
     // Impostazioni salvate prima di "Solo digitali": il filtro è acceso
-    expect(s.profile.digitalOnly).toBe(true)
+    expect(s.search.digitalOnly).toBe(true)
+    expect(s.search.groups).toEqual(['governo', 'regione'])
     expect(s.notify.emails).toEqual(['a@b.it'])
     expect(s.notify.time).toBe('08:00')
   })
@@ -156,13 +175,122 @@ describe('lettura del modello', () => {
     expect(read('si')).toBeNull()
   })
 
-  it('la sola classificazione vuole un sì o un no', () => {
-    expect(parseTopic({ digital: false })).toBe(false)
-    expect(() => parseTopic({ digital: 'forse' })).toThrow()
+  it('il giudizio vuole un esito tra sì, no e forse', () => {
+    expect(parseJudgement({ verdict: 'no', reason: 'Fuori provincia', digital: false }))
+      .toEqual({ verdict: 'no', reason: 'Fuori provincia', digital: false })
+    expect(() => parseJudgement({ verdict: 'boh', reason: '', digital: true })).toThrow()
+  })
+
+  it('i link scelti dal modello: solo indici esistenti, una volta', () => {
+    const links = [{ text: 'Avvisi', href: 'https://c.it/avvisi' }, { text: 'Bando', href: 'https://c.it/bando' }]
+    const raw = { picks: [{ index: 1, kind: 'call' }, { index: 7, kind: 'call' }, { index: 0, kind: 'list' }, { index: 1, kind: 'list' }] }
+    expect(parsePicks(raw, links)).toEqual([
+      { href: 'https://c.it/bando', kind: 'call' },
+      { href: 'https://c.it/avvisi', kind: 'list' },
+    ])
+  })
+
+  it('legge la presentazione della domanda, se c\'è', () => {
+    const base = { admitsCompanies: true, title: 'x' }
+    const read = (application: unknown) => {
+      const r = parseGrantReading({ ...base, application })
+      return r.admitsCompanies ? r.application : undefined
+    }
+    expect(read({ platform: '', documents: [] })).toBeNull()
+    expect(read({ platform: 'PEC', documents: [{ name: 'Domanda', format: 'PDF firmato', notes: '' }, { name: '' }] }))
+      .toEqual({ platform: 'PEC', documents: [{ name: 'Domanda', format: 'PDF firmato', notes: '' }] })
   })
 
   it('una risposta senza admitsCompanies non è valida', () => {
     expect(() => parseGrantReading({ title: 'x' })).toThrow()
+  })
+})
+
+describe('ricerca e giudizio', () => {
+  const grant = (over: Partial<RadarGrant> = {}): RadarGrant => ({
+    id: 'g1',
+    source: 'incentivi-gov',
+    url: 'https://example.com',
+    digital: true,
+    verdict: null,
+    verdictReason: '',
+    title: 'Voucher digitale',
+    issuer: 'Ministero',
+    summary: '',
+    opensAt: null,
+    deadline: null,
+    maxAmount: null,
+    funding: '',
+    requirements: [],
+    application: null,
+    notifiedAt: null,
+    liked: false,
+    createdAt: NOW.toISOString(),
+    ...over,
+  })
+
+  it('moduli, comuni spuntati e solo digitali', () => {
+    const search = { groups: ['governo', 'comuni'] as SourceGroup[], comuni: ['072006'], digitalOnly: true }
+    expect(isInScope(grant(), search)).toBe(true)
+    expect(isInScope(grant({ source: 'sistema-puglia' }), search)).toBe(false)
+    expect(isInScope(grant({ source: 'comune-072006' }), search)).toBe(true)
+    expect(isInScope(grant({ source: 'comune-071001' }), search)).toBe(false)
+    expect(isInScope(grant({ digital: false }), search)).toBe(false)
+    expect(isInScope(grant({ digital: null }), search)).toBe(true)
+    expect(isInScope(grant({ digital: false }), { ...search, digitalOnly: false })).toBe(true)
+    expect(sourceLabel('comune-072006')).toBe('Comune di Bari')
+    expect(sourceGroup('puglia-sviluppo')).toBe('regione')
+  })
+
+  it('il giudizio pesa più delle regole, tranne che per escludere', () => {
+    const p = { ...DEFAULT_RADAR_SETTINGS.profile, revenue: 100_000 }
+    const rich = [req('revenue', { max: 50_000 })]
+    const e = (over: Partial<RadarGrant>) => evaluateRadarGrant(grant(over), p, NOW).eligibility
+    expect(e({})).toBe('eligible')
+    expect(e({ verdict: 'maybe' })).toBe('to_verify')
+    expect(e({ verdict: 'no' })).toBe('excluded')
+    expect(e({ requirements: [req('other')], verdict: 'yes' })).toBe('eligible')
+    expect(e({ requirements: rich, verdict: 'yes' })).toBe('excluded')
+  })
+
+  it('costo stimato dei token', () => {
+    const u = { calls: 1, input: 1_000_000, output: 100_000, cacheWrite: 0, cacheRead: 1_000_000 }
+    expect(usageCost('claude-haiku-5-5', u)).toBeCloseTo(0.1 + 0.05 + 0.01)
+    expect(usageCost('modello-ignoto', u)).toBeNull()
+  })
+
+  it('le fonti della ricerca: un crawler per ogni comune spuntato', () => {
+    const picker = async () => []
+    const slugs = (groups: SourceGroup[], comuni: string[] = []) => radarSources({ groups, comuni }, picker).map(s => s.slug)
+    expect(slugs(['governo'])).toEqual(['incentivi-gov'])
+    expect(slugs(['regione'])).toEqual(['regione-puglia', 'sistema-puglia', 'puglia-sviluppo'])
+    expect(slugs(['comuni'], ['072006', '071001'])).toEqual(['comune-071001', 'comune-072006'])
+  })
+
+  it('esporta il bando con un front matter YAML leggibile', () => {
+    const g = {
+      ...grant({
+        title: 'Voucher "digitale": PMI',
+        verdict: 'yes' as const,
+        verdictReason: 'Siete una PMI',
+        requirements: [req('other')],
+        application: { platform: 'PEC', documents: [{ name: 'Domanda', format: 'PDF firmato', notes: '' }] },
+      }),
+      eligibility: 'eligible' as const,
+      evaluations: [{ outcome: 'to_verify' as const, reason: 'Da verificare a mano' }],
+    }
+    const md = grantExport(g, 'Testo del bando: art. 1', DEFAULT_RADAR_SETTINGS.profile)
+    const [, front, body] = md.split(/^---$/m)
+    const data = parseYaml(front!)
+    expect(data).toMatchObject({
+      titolo: 'Voucher "digitale": PMI',
+      giudizio: { esito: 'Potete candidarvi', motivo: 'Siete una PMI' },
+      requisiti: [{ esito: 'da verificare' }],
+      presentazione: { piattaforma: 'PEC', documenti: [{ nome: 'Domanda', formato: 'PDF firmato' }] },
+    })
+    expect(data.azienda).toContain('Software house')
+    expect(body).toContain('Testo del bando: art. 1')
+    expect(grantFileName(g)).toBe('bando-voucher-digitale-pmi.md')
   })
 })
 
@@ -203,6 +331,48 @@ describe('fonti', () => {
       ['/web/europuglia/-/relativo', false],
     ])
     expect(listings[2]!.url).toBe('https://www.regione.puglia.it/web/europuglia/-/relativo?a=1&b=2')
+  })
+
+  it('Sistema Puglia: gli avvisi aperti, in https', () => {
+    const html = [
+      '<td> <a title="vai alla pagina di CIG 2025" href="http://www.sistema.puglia.it/SistemaPuglia/cig2025" target="blank">CIG</a>',
+      '<td> <a title="vai alla pagina di Taranto" href="https://www.sistema.puglia.it/portal/page/portal/SistemaPuglia/TrasformazioniPerTaranto">T</a>',
+      '<td> <a title="vai alla pagina di Doppio" href="https://www.sistema.puglia.it/SistemaPuglia/cig2025">D</a>',
+      '<a href="https://www.sistema.puglia.it/altro">altro</a>',
+    ].join('')
+    expect(parseSistemaListing(html)).toEqual([
+      { externalId: 'cig2025', url: 'https://www.sistema.puglia.it/SistemaPuglia/cig2025' },
+      { externalId: 'trasformazionipertaranto', url: 'https://www.sistema.puglia.it/portal/page/portal/SistemaPuglia/TrasformazioniPerTaranto' },
+    ])
+  })
+
+  it('Sistema Puglia: la scheda sta nell\'iframe di dettaglio, non nelle immagini', () => {
+    const page = '<iframe src="/images/pobtrans.gif"></iframe><iframe src="https://www.sistema.puglia.it/portal/pls/portal/sispuglia.DYN_DETTAGLIO_DOC.SHOW?id=1"></iframe>'
+    expect(sistemaFrame(page)).toContain('DYN_DETTAGLIO_DOC')
+    expect(sistemaFrame('<iframe src="/images/x.gif"></iframe>')).toBeUndefined()
+  })
+
+  it('link di una pagina: stessa origine, col testo, senza file e ancore', () => {
+    const html = `
+      <a href="/avvisi">Avvisi <b>e bandi</b></a>
+      <a href="https://www.comune.bari.it/avvisi#top">Avvisi pubblici</a>
+      <a href="https://altro.it/x">Fuori</a>
+      <a href="/logo.png">Logo</a>
+      <a href="mailto:a@b.it">Scrivi</a>
+      <a href="/contributi" title="Contributi alle imprese"><img src="x.png"></a>
+      <a href="/vuoto"></a>`
+    expect(pageLinks(html, 'https://www.comune.bari.it/', 'https://www.comune.bari.it')).toEqual([
+      { text: 'Avvisi pubblici', href: 'https://www.comune.bari.it/avvisi' },
+      { text: 'Contributi alle imprese', href: 'https://www.comune.bari.it/contributi' },
+    ])
+  })
+
+  it('pagine in latin1 e area principale', () => {
+    const latin = Buffer.from('<meta charset="ISO-8859-1"><p>Modalit\xe0</p>', 'latin1')
+    expect(decodeHtml(latin)).toContain('Modalità')
+    expect(decodeHtml(Buffer.from('<p>Modalità</p>'))).toContain('Modalità')
+    const body = `<body><nav>menu</nav><main>${'Testo del bando. '.repeat(20)}</main></body>`
+    expect(mainHtml(body)).not.toContain('menu')
   })
 
   it('nome degli allegati Liferay', () => {

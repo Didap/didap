@@ -1,5 +1,5 @@
 import { formatWholeEuro } from '#shared/money'
-import { ELIGIBILITY_LABELS, SOURCE_LABELS, type EvaluatedGrant } from '#shared/radar'
+import { ELIGIBILITY_LABELS, sourceLabel, type EvaluatedGrant } from '#shared/radar'
 import { BRAND_HEADER, brandFooter, C, escapeHtml, FONT_BODY, FONT_DISPLAY, HEAD, SITE_URL } from './contact-templates'
 
 // Mail di riepilogo del radar: bandi nuovi candidabili, poi quelli con
@@ -35,10 +35,11 @@ function grantHtml(g: EvaluatedGrant) {
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border:1px solid #e8e1cc;border-radius:12px;">
       <tr>
         <td style="padding:20px 22px;">
-          <p style="margin:0 0 8px;font-family:${FONT_BODY};font-size:11px;font-weight:700;color:${pill};text-transform:uppercase;letter-spacing:2px;">${ELIGIBILITY_LABELS[g.eligibility]} · ${escapeHtml(SOURCE_LABELS[g.source] ?? g.source)}</p>
+          <p style="margin:0 0 8px;font-family:${FONT_BODY};font-size:11px;font-weight:700;color:${pill};text-transform:uppercase;letter-spacing:2px;">${ELIGIBILITY_LABELS[g.eligibility]} · ${escapeHtml(sourceLabel(g.source))}</p>
           <p style="margin:0 0 6px;font-family:${FONT_DISPLAY};font-size:19px;font-weight:800;line-height:1.25;color:${C.ink};">${escapeHtml(g.title)}</p>
           <p style="margin:0 0 10px;font-family:${FONT_BODY};font-size:13px;color:${C.inkSoft};">${escapeHtml(g.issuer)}</p>
           <p style="margin:0 0 12px;font-family:${FONT_BODY};font-size:15px;line-height:1.5;color:${C.ink};">${escapeHtml(g.summary)}</p>
+          ${g.verdictReason ? `<p style="margin:0 0 12px;font-family:${FONT_BODY};font-size:14px;line-height:1.5;color:${C.ink};"><strong>Per voi:</strong> ${escapeHtml(g.verdictReason)}</p>` : ''}
           ${facts(g).map(row).join('')}
           ${toCheck ? `<p style="margin:12px 0 4px;font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${C.ink};">Da verificare:</p><ul style="margin:0;padding-left:18px;font-family:${FONT_BODY};font-size:13px;color:${C.inkSoft};">${toCheck}</ul>` : ''}
           <p style="margin:14px 0 0;font-family:${FONT_BODY};font-size:14px;"><a href="${escapeHtml(g.url)}" style="color:${C.accent};font-weight:600;">Apri il bando</a></p>
@@ -88,6 +89,7 @@ export function digestText(grants: EvaluatedGrant[]) {
     `${ELIGIBILITY_LABELS[g.eligibility].toUpperCase()} - ${g.title}`,
     g.issuer,
     g.summary,
+    g.verdictReason && `Per voi: ${g.verdictReason}`,
     ...facts(g).map(([label, value]) => `${label}: ${value}`),
     ...toVerify(g).map(r => `Da verificare: ${r.label}`),
     g.url,

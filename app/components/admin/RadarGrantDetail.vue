@@ -3,7 +3,7 @@ import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
-import { sourceLabel, VERDICT_LABELS, type EvaluatedGrant } from '#shared/radar'
+import { sourceLabel, VERDICT_LABELS, type DriveStart, type EvaluatedGrant } from '#shared/radar'
 
 // Scheda di un bando: giudizio, dati, sintesi, requisiti e come si
 // presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
@@ -12,8 +12,6 @@ const props = defineProps<{ grant: EvaluatedGrant, driveConfigured: boolean }>()
 // La cartella si crea in background: il pannello segna il bando e lo
 // ricarica finché non è pronta
 const emit = defineEmits<{ drive: [id: string, start: DriveStart] }>()
-
-type DriveStart = { status: 'ready', url: string } | { status: 'creating' }
 
 const { notify } = useAdminToast()
 
@@ -26,9 +24,6 @@ async function createFolder() {
     notify('error', adminErrorText(err))
   }
 }
-
-// La nota dell'ultimo tentativo: com'è andata coi PDF, o perché non è riuscita
-const driveFailed = computed(() => !props.grant.driveUrl && !props.grant.driveCreating && !!props.grant.driveNote)
 
 const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
 
@@ -145,7 +140,7 @@ const note = (i: number) => {
       <p
         v-if="grant.driveNote && !grant.driveCreating"
         class="ml-9 text-xs"
-        :class="driveFailed ? 'text-red' : 'opacity-60'"
+        :class="grant.driveUrl ? 'opacity-60' : 'text-red'"
       >
         Drive: {{ grant.driveNote }}
       </p>

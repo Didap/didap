@@ -176,6 +176,10 @@ export function attachmentName(url: string): string {
 // Link a un PDF, anche nello stile Liferay della Regione (/documents/.../file.pdf/<uuid>)
 export const isPdfLink = (url: string) => /\.pdf(\/|$)/i.test(new URL(url).pathname)
 
+// I PDF linkati nell'area principale di una pagina, stessa origine
+export const pagePdfLinks = (html: string, url: string, origin: string, max: number) =>
+  pageLinks(mainHtml(html), url, origin).map(l => l.href).filter(isPdfLink).slice(0, max)
+
 const SKIPPED_FILES = /\.(jpe?g|png|gif|svg|webp|ico|css|js|zip|rar|7z|mp4|mp3|docx?|xlsx?|odt|ods|p7m|xml|rss)(\?|$)/i
 
 // Link di una pagina dentro la stessa origine, col testo che li accompagna:

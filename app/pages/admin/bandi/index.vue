@@ -41,6 +41,7 @@ import {
   radarSettingsSchema,
   SOURCE_GROUPS,
   WEEKDAYS,
+  type DriveStart,
   type Eligibility,
   type EvaluatedGrant,
   type LegalForm,
@@ -227,7 +228,7 @@ async function toggleLike(id: string) {
 
 // Cartella su Drive: già pronta, o partita (l'elenco si ricarica finché
 // c'è una cartella in creazione)
-function setDrive(id: string, start: { status: 'ready', url: string } | { status: 'creating' }) {
+function setDrive(id: string, start: DriveStart) {
   const g = data.value?.grants.find(x => x.id === id)
   if (!g) return
   if (start.status === 'ready') g.driveUrl = start.url

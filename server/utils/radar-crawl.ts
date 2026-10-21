@@ -8,6 +8,7 @@ import {
   isPdfLink,
   mainHtml,
   pageLinks,
+  pagePdfLinks,
   resolveOrigin,
   SOURCE_TIMEOUT_MS,
 } from './radar-fetch'
@@ -45,10 +46,9 @@ export async function pageWithAttachments(url: string, origin: string): Promise<
     return text
   }
   const html = await fetchSourcePage(url, origin)
-  const main = mainHtml(html)
-  const content = htmlToText(main)
+  const content = htmlToText(mainHtml(html))
   if (!content) throw new Error(`Pagina vuota: ${url}`)
-  const pdfs = pageLinks(main, url, origin).map(l => l.href).filter(isPdfLink).slice(0, MAX_ATTACHMENTS)
+  const pdfs = pagePdfLinks(html, url, origin, MAX_ATTACHMENTS)
   const files = await Promise.all(pdfs.map(async (href) => {
     const data = await fetchFromSource(href, { origin, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
     return data && { name: attachmentName(href), data }

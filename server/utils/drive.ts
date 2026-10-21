@@ -1,4 +1,4 @@
-import { createSign, randomBytes } from 'node:crypto'
+import { createSign } from 'node:crypto'
 
 // Google Drive con un account di servizio, senza SDK: un JWT firmato si
 // scambia con un token, poi le API REST. L'account di servizio non ha
@@ -14,7 +14,7 @@ const TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const API = 'https://www.googleapis.com/drive/v3/files'
 const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files'
 const SCOPE = 'https://www.googleapis.com/auth/drive'
-export const FOLDER_MIME = 'application/vnd.google-apps.folder'
+const FOLDER_MIME = 'application/vnd.google-apps.folder'
 
 export function parseServiceAccount(raw: string | undefined): ServiceAccount | null {
   const text = raw?.trim()
@@ -62,72 +62,59 @@ async function accessToken(): Promise<string> {
   return token.value
 }
 
-async function driveCall<T>(url: string, init: RequestInit): Promise<T> {
+// Una chiamata autenticata; gli errori di Google con il loro testo
+async function driveFetch(url: string, init: RequestInit): Promise<Response> {
   const res = await fetch(url, {
     ...init,
     headers: { ...init.headers, Authorization: `Bearer ${await accessToken()}` },
     signal: AbortSignal.timeout(120_000),
   })
-  if (!res.ok) {
-    const detail = (await res.text()).slice(0, 300)
-    throw new Error(res.status === 404
-      ? `Cartella di Drive non trovata o non condivisa con l'account di servizio: ${detail}`
-      : `Google Drive ha risposto ${res.status}: ${detail}`)
-  }
-  return res.json() as Promise<T>
+  if (!res.ok) throw new Error(`Google Drive ha risposto ${res.status}: ${(await res.text()).slice(0, 300)}`)
+  return res
 }
 
 // I nomi su Drive possono contenere quasi tutto: niente a capo, lunghezza ragionevole
 export const driveName = (name: string) => name.replace(/\s+/g, ' ').trim().slice(0, 150) || 'Senza titolo'
 
-export type DriveFile = { id: string, webViewLink: string }
-
-export function createDriveFolder(name: string, parentId: string): Promise<DriveFile> {
-  return driveCall<DriveFile>(`${API}?supportsAllDrives=true&fields=id,webViewLink`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: driveName(name), mimeType: FOLDER_MIME, parents: [parentId] }),
-  })
-}
-
-// Corpo multipart/related: metadati JSON e contenuto del file
-export function multipartBody(metadata: object, mime: string, data: Buffer, boundary = randomBytes(12).toString('hex')) {
-  const head = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`
-    + `--${boundary}\r\nContent-Type: ${mime}\r\n\r\n`
-  return {
-    contentType: `multipart/related; boundary=${boundary}`,
-    body: Buffer.concat([Buffer.from(head), data, Buffer.from(`\r\n--${boundary}--`)]),
-  }
-}
-
 export const driveFolderUrl = (id: string) => `https://drive.google.com/drive/folders/${id}`
 
-// Google accetta il caricamento in un colpo solo fino a 5 MB; oltre serve
-// la sessione "resumable": si apre, poi si manda il file all'indirizzo dato
-const MULTIPART_MAX = 5 * 1024 * 1024
-
-export async function uploadDriveFile(name: string, mime: string, data: Buffer, parentId: string): Promise<DriveFile> {
-  const metadata = { name: driveName(name), parents: [parentId] }
-  if (data.length <= MULTIPART_MAX) {
-    const { contentType, body } = multipartBody(metadata, mime, data)
-    return driveCall<DriveFile>(`${UPLOAD}?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink`, {
+// L'id della cartella creata dentro `parentId`
+export async function createDriveFolder(name: string, parentId: string): Promise<string> {
+  try {
+    const res = await driveFetch(`${API}?supportsAllDrives=true&fields=id`, {
       method: 'POST',
-      headers: { 'Content-Type': contentType },
-      body,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: driveName(name), mimeType: FOLDER_MIME, parents: [parentId] }),
     })
+    return ((await res.json()) as { id: string }).id
   }
-  const session = await fetch(`${UPLOAD}?uploadType=resumable&supportsAllDrives=true&fields=id,webViewLink`, {
+  catch (err) {
+    // Un 404 qui è quasi sempre la cartella "Bandi" non condivisa con l'account
+    if (/risposto 404/.test((err as Error).message)) {
+      throw new Error(`Cartella "Bandi" non trovata o non condivisa con l'account di servizio. ${(err as Error).message}`)
+    }
+    throw err
+  }
+}
+
+// Caricamento "resumable", valido a ogni dimensione: si apre la sessione
+// coi metadati, poi si manda il file all'indirizzo che Google restituisce
+export async function uploadDriveFile(name: string, mime: string, data: Buffer, parentId: string): Promise<void> {
+  const session = await driveFetch(`${UPLOAD}?uploadType=resumable&supportsAllDrives=true&fields=id`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${await accessToken()}`,
       'Content-Type': 'application/json; charset=UTF-8',
       'X-Upload-Content-Type': mime,
       'X-Upload-Content-Length': String(data.length),
     },
-    body: JSON.stringify(metadata),
-    signal: AbortSignal.timeout(60_000),
+    body: JSON.stringify({ name: driveName(name), parents: [parentId] }),
   })
   const location = session.headers.get('location')
-  if (!session.ok || !location) throw new Error(`Google Drive ha risposto ${session.status}: ${(await session.text()).slice(0, 300)}`)
-  return driveCall<DriveFile>(location, { method: 'PUT', headers: { 'Content-Type': mime }, body: new Uint8Array(data) })
+  if (!location) throw new Error('Google Drive non ha aperto la sessione di caricamento')
+  // Vista sullo stesso buffer, senza copiare PDF da decine di MB
+  await driveFetch(location, {
+    method: 'PUT',
+    headers: { 'Content-Type': mime },
+    body: new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.byteLength),
+  })
 }

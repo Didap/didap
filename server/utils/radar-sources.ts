@@ -1,7 +1,7 @@
 import { romeDate } from '#shared/dates'
 import { comuneSlug, comuniOf, type RadarSearch, type SourceGroup } from '#shared/radar'
 import { crawlSource } from './radar-crawl'
-import { attachmentName, attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
+import { attachmentName, attachmentsText, fetchFromSource, isPdfLink, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
 
 // Fonti del radar in tre moduli: governo (catalogo di incentivi.gov.it),
@@ -195,7 +195,7 @@ function parsePugliaDetail(html: string): { content: string, attachmentUrls: str
   const urls = new Set<string>()
   for (const [, href] of main.matchAll(DOCUMENT_LINK)) {
     const url = new URL(decode(href!), PUGLIA)
-    if (/\.pdf(\/|$)/i.test(url.pathname)) urls.add(url.toString())
+    if (isPdfLink(url.toString())) urls.add(url.toString())
   }
   return { content: htmlToText(main), attachmentUrls: [...urls] }
 }

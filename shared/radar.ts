@@ -421,6 +421,9 @@ export type RadarStatus = {
 // si può rifare
 export const DRIVE_CLAIM_MINUTES = 15
 
+// Risposta di "Crea cartella su Drive": già pronta, o partita in background
+export type DriveStart = { status: 'ready', url: string } | { status: 'creating' }
+
 // ---------- registro degli import ----------
 
 export type TokenUsage = { calls: number, input: number, output: number, cacheWrite: number, cacheRead: number }

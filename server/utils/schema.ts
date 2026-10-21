@@ -146,7 +146,7 @@ export const DB_SCHEMA = `
   alter table radar_grants add column if not exists application jsonb;
   -- Cartella di Google Drive coi file del bando
   alter table radar_grants add column if not exists drive_folder_id text;
-  alter table radar_grants add column if not exists drive_folder_url text;
+  alter table radar_grants add column if not exists drive_ready_at timestamptz;
   alter table radar_grants add column if not exists drive_claimed_at timestamptz;
   alter table radar_grants add column if not exists drive_note text not null default '';
   -- Registro degli import: moduli, tempi, conteggi e token

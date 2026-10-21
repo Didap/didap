@@ -3,6 +3,7 @@ import { createError } from 'h3'
 import type postgres from 'postgres'
 import { romeClock, romeDate } from '#shared/dates'
 import {
+  DRIVE_CLAIM_MINUTES,
   emptyStats,
   emptyUsage,
   evaluateRadarGrant,
@@ -444,7 +445,10 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Pro
   const rows = await sql`
     select g.id, d.source, d.url, g.digital, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
-      g.liked_at, g.drive_folder_url, g.created_at
+      g.liked_at, g.drive_folder_url, g.drive_note,
+      coalesce(g.drive_folder_url is null and g.drive_claimed_at > now() - ${`${DRIVE_CLAIM_MINUTES} minutes`}::interval, false)
+        as drive_creating,
+      g.created_at
     from radar_grants g join radar_documents d on d.id = g.document_id
     where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
       ${unnotified ? sql`and g.notified_at is null` : sql``}
@@ -470,6 +474,8 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Pro
     notifiedAt: iso(r.notified_at),
     liked: r.liked_at !== null,
     driveUrl: r.drive_folder_url,
+    driveCreating: r.drive_creating,
+    driveNote: r.drive_note,
     createdAt: r.created_at.toISOString(),
   }))
 }

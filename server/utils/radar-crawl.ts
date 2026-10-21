@@ -1,5 +1,16 @@
 import type { SourceGroup } from '#shared/radar'
-import { attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, mainHtml, pageLinks, resolveOrigin, SOURCE_TIMEOUT_MS } from './radar-fetch'
+import {
+  attachmentName,
+  attachmentsText,
+  fetchFromSource,
+  fetchSourcePage,
+  htmlToText,
+  isPdfLink,
+  mainHtml,
+  pageLinks,
+  resolveOrigin,
+  SOURCE_TIMEOUT_MS,
+} from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
 import type { Listing, RadarSource } from './radar-sources'
 
@@ -25,15 +36,11 @@ export type CrawlOptions = {
   maxCalls: number
 }
 
-const isPdfUrl = (url: string) => /\.pdf$/i.test(new URL(url).pathname)
-
-const fileName = (url: string) => decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).at(-1) ?? 'allegato.pdf')
-
 // Testo di una pagina e dei PDF che collega; un link diretto a un PDF è il bando stesso
 export async function pageWithAttachments(url: string, origin: string): Promise<string> {
-  if (isPdfUrl(url)) {
+  if (isPdfLink(url)) {
     const data = await fetchFromSource(url, { origin, maxBytes: MAX_CALL_PDF_BYTES, timeoutMs: SOURCE_TIMEOUT_MS })
-    const text = await attachmentsText([{ name: fileName(url), data }])
+    const text = await attachmentsText([{ name: attachmentName(url), data }])
     if (!text) throw new Error(`PDF senza testo leggibile: ${url}`)
     return text
   }
@@ -41,10 +48,10 @@ export async function pageWithAttachments(url: string, origin: string): Promise<
   const main = mainHtml(html)
   const content = htmlToText(main)
   if (!content) throw new Error(`Pagina vuota: ${url}`)
-  const pdfs = pageLinks(main, url, origin).map(l => l.href).filter(isPdfUrl).slice(0, MAX_ATTACHMENTS)
+  const pdfs = pageLinks(main, url, origin).map(l => l.href).filter(isPdfLink).slice(0, MAX_ATTACHMENTS)
   const files = await Promise.all(pdfs.map(async (href) => {
     const data = await fetchFromSource(href, { origin, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
-    return data && { name: fileName(href), data }
+    return data && { name: attachmentName(href), data }
   }))
   const pdf = await attachmentsText(files.filter(f => f !== null))
   return pdf ? `${content}\n\n${pdf}` : content

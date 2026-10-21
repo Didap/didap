@@ -9,31 +9,26 @@ import { sourceLabel, VERDICT_LABELS, type EvaluatedGrant } from '#shared/radar'
 // presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
 // guardare; la frase del bando si apre col clic.
 const props = defineProps<{ grant: EvaluatedGrant, driveConfigured: boolean }>()
-// La cartella creata: il pannello aggiorna il bando (link e cuore)
-const emit = defineEmits<{ drive: [url: string] }>()
+// La cartella si crea in background: il pannello segna il bando e lo
+// ricarica finché non è pronta
+const emit = defineEmits<{ drive: [id: string, start: DriveStart] }>()
+
+type DriveStart = { status: 'ready', url: string } | { status: 'creating' }
 
 const { notify } = useAdminToast()
-const creatingFolder = ref(false)
 
 async function createFolder() {
-  creatingFolder.value = true
+  const id = props.grant.id
   try {
-    const { url, files, missing } = await $fetch<{ url: string, files: number, missing: number }>(
-      `/api/admin/radar/grants/${props.grant.id}/drive`,
-      { method: 'POST' },
-    )
-    emit('drive', url)
-    notify('ok', missing
-      ? `Cartella creata con ${files} file; ${missing} PDF non scaricati, aggiungili a mano`
-      : `Cartella creata con ${files} file`)
+    emit('drive', id, await $fetch<DriveStart>(`/api/admin/radar/grants/${id}/drive`, { method: 'POST' }))
   }
   catch (err) {
     notify('error', adminErrorText(err))
   }
-  finally {
-    creatingFolder.value = false
-  }
 }
+
+// La nota dell'ultimo tentativo: com'è andata coi PDF, o perché non è riuscita
+const driveFailed = computed(() => !props.grant.driveUrl && !props.grant.driveCreating && !!props.grant.driveNote)
 
 const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
 
@@ -127,11 +122,11 @@ const note = (i: number) => {
             hover:border-ink
             disabled:opacity-40
           "
-          :disabled="!driveConfigured || creatingFolder"
+          :disabled="!driveConfigured || grant.driveCreating"
           :title="driveConfigured ? 'Crea la cartella del bando nel Drive condiviso, col bando e i suoi PDF' : 'Google Drive non configurato'"
           @click="createFolder"
         >
-          {{ creatingFolder ? 'Creo la cartella…' : 'Crea cartella su Drive' }}
+          {{ grant.driveCreating ? 'Creo la cartella…' : 'Crea cartella su Drive' }}
         </button>
         <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
         <a
@@ -147,6 +142,13 @@ const note = (i: number) => {
           Esporta per Claude
         </a>
       </div>
+      <p
+        v-if="grant.driveNote && !grant.driveCreating"
+        class="ml-9 text-xs"
+        :class="driveFailed ? 'text-red' : 'opacity-60'"
+      >
+        Drive: {{ grant.driveNote }}
+      </p>
     </header>
 
     <div

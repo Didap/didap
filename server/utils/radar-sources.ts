@@ -1,7 +1,7 @@
 import { romeDate } from '#shared/dates'
 import { comuneSlug, comuniOf, type RadarSearch, type SourceGroup } from '#shared/radar'
 import { crawlSource } from './radar-crawl'
-import { attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
+import { attachmentName, attachmentsText, fetchFromSource, fetchSourcePage, htmlToText, innerHtml, SOURCE_TIMEOUT_MS, type Attachment } from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
 
 // Fonti del radar in tre moduli: governo (catalogo di incentivi.gov.it),
@@ -198,13 +198,6 @@ function parsePugliaDetail(html: string): { content: string, attachmentUrls: str
     if (/\.pdf(\/|$)/i.test(url.pathname)) urls.add(url.toString())
   }
   return { content: htmlToText(main), attachmentUrls: [...urls] }
-}
-
-// Gli URL dei documenti Liferay finiscono con `/<nome file>/<uuid>`
-export function attachmentName(url: string): string {
-  const segments = new URL(url).pathname.split('/').filter(Boolean)
-  const file = segments.find(s => /\.pdf$/i.test(s)) ?? segments.at(-1) ?? 'allegato.pdf'
-  return decodeURIComponent(file.replace(/\+/g, ' '))
 }
 
 // Un file troppo grande o un link rotto si salta; la pagina e gli altri

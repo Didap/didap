@@ -100,11 +100,34 @@ export function multipartBody(metadata: object, mime: string, data: Buffer, boun
   }
 }
 
-export function uploadDriveFile(name: string, mime: string, data: Buffer, parentId: string): Promise<DriveFile> {
-  const { contentType, body } = multipartBody({ name: driveName(name), parents: [parentId] }, mime, data)
-  return driveCall<DriveFile>(`${UPLOAD}?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink`, {
+export const driveFolderUrl = (id: string) => `https://drive.google.com/drive/folders/${id}`
+
+// Google accetta il caricamento in un colpo solo fino a 5 MB; oltre serve
+// la sessione "resumable": si apre, poi si manda il file all'indirizzo dato
+const MULTIPART_MAX = 5 * 1024 * 1024
+
+export async function uploadDriveFile(name: string, mime: string, data: Buffer, parentId: string): Promise<DriveFile> {
+  const metadata = { name: driveName(name), parents: [parentId] }
+  if (data.length <= MULTIPART_MAX) {
+    const { contentType, body } = multipartBody(metadata, mime, data)
+    return driveCall<DriveFile>(`${UPLOAD}?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink`, {
+      method: 'POST',
+      headers: { 'Content-Type': contentType },
+      body,
+    })
+  }
+  const session = await fetch(`${UPLOAD}?uploadType=resumable&supportsAllDrives=true&fields=id,webViewLink`, {
     method: 'POST',
-    headers: { 'Content-Type': contentType },
-    body,
+    headers: {
+      'Authorization': `Bearer ${await accessToken()}`,
+      'Content-Type': 'application/json; charset=UTF-8',
+      'X-Upload-Content-Type': mime,
+      'X-Upload-Content-Length': String(data.length),
+    },
+    body: JSON.stringify(metadata),
+    signal: AbortSignal.timeout(60_000),
   })
+  const location = session.headers.get('location')
+  if (!session.ok || !location) throw new Error(`Google Drive ha risposto ${session.status}: ${(await session.text()).slice(0, 300)}`)
+  return driveCall<DriveFile>(location, { method: 'PUT', headers: { 'Content-Type': mime }, body: new Uint8Array(data) })
 }

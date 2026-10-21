@@ -1,3 +1,3 @@
-// "Crea cartella su Drive": la cartella del bando col bando esportato e i
-// suoi PDF; se esiste già, il suo link
-export default defineEventHandler(async event => createGrantFolder(await useDb(), uuidParam(event)))
+// "Crea cartella su Drive": parte in background (il pannello segue lo
+// stato del bando); se la cartella c'è già, il suo link
+export default defineEventHandler(async event => startGrantFolder(await useDb(), uuidParam(event)))

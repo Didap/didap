@@ -1,9 +1,9 @@
 import { createVerify, generateKeyPairSync } from 'node:crypto'
 import type postgres from 'postgres'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { driveName, multipartBody, parseServiceAccount, serviceJwt } from '../server/utils/drive'
+import { driveName, multipartBody, parseServiceAccount, serviceJwt, uploadDriveFile } from '../server/utils/drive'
 import { ingestSources, listEvaluatedGrants, readPending } from '../server/utils/radar'
-import { createGrantFolder } from '../server/utils/radar-drive'
+import { startGrantFolder } from '../server/utils/radar-drive'
 import type { GrantReader } from '../server/utils/radar-reader'
 import type { RadarSource } from '../server/utils/radar-sources'
 import { openTestDb, resetTestDb, TEST_DATABASE_URL } from './helpers/db'
@@ -46,10 +46,35 @@ describe('account di servizio Google', () => {
   })
 })
 
+describe('caricamento su Drive', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+  })
+
+  it('oltre i 5 MB usa la sessione resumable', async () => {
+    vi.stubEnv('GOOGLE_SERVICE_ACCOUNT_JSON', JSON.stringify(account))
+    const seen: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = String(input)
+      seen.push(`${init?.method ?? 'GET'} ${url.split('?')[0]}${url.includes('resumable') ? ' resumable' : ''}`)
+      if (url.startsWith('https://oauth2.googleapis.com/token')) return Response.json({ access_token: 'tok', expires_in: 3600 })
+      if (url.includes('uploadType=resumable')) return new Response(null, { headers: { location: 'https://upload.example/sessione' } })
+      return Response.json({ id: 'file', webViewLink: 'https://drive.google.com/file' })
+    }))
+    await uploadDriveFile('grande.pdf', 'application/pdf', Buffer.alloc(6 * 1024 * 1024), 'cartella')
+    expect(seen.slice(-2)).toEqual([
+      'POST https://www.googleapis.com/upload/drive/v3/files resumable',
+      'PUT https://upload.example/sessione',
+    ])
+  })
+})
+
 // Google e il sito del bando finti: ogni chiamata finisce in `calls`
 type Call = { url: string, method: string, body: string }
 
-function fakeWeb(calls: Call[]) {
+// `failUploads`: quanti caricamenti su Drive falliscono prima di andare
+function fakeWeb(calls: Call[], { failUploads = 0 } = {}) {
   let folders = 0
   return vi.fn(async (input: string | URL, init?: RequestInit) => {
     const url = String(input)
@@ -60,7 +85,10 @@ function fakeWeb(calls: Call[]) {
       folders++
       return Response.json({ id: `cartella-${folders}`, webViewLink: `https://drive.google.com/drive/folders/cartella-${folders}` })
     }
-    if (url.startsWith('https://www.googleapis.com/upload/drive/v3/files')) return Response.json({ id: 'file', webViewLink: 'https://drive.google.com/file' })
+    if (url.startsWith('https://www.googleapis.com/upload/drive/v3/files')) {
+      if (failUploads-- > 0) return new Response('quota', { status: 500 })
+      return Response.json({ id: 'file', webViewLink: 'https://drive.google.com/file' })
+    }
     if (url === 'https://example.com/a') {
       return new Response('<main><p>Bando</p><a href="/docs/avviso.pdf">Avviso</a><a href="/docs/rotto.pdf">Rotto</a></main>', { headers: { 'content-type': 'text/html' } })
     }
@@ -112,14 +140,31 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Drive', () => {
     vi.unstubAllGlobals()
   })
 
-  it('crea la cartella col bando e i suoi PDF, una volta sola', async () => {
+  // Il lavoro in background si raccoglie qui e parte quando il test lo dice
+  const jobs: (() => Promise<void>)[] = []
+  const run = (job: () => Promise<void>) => {
+    jobs.push(job)
+  }
+  const finish = async () => {
+    for (const job of jobs.splice(0)) await job()
+  }
+
+  async function oneGrant() {
     await ingestSources(sql, [source])
     await readPending(sql, reader)
-    const [grant] = await listEvaluatedGrants(sql)
+    return (await listEvaluatedGrants(sql))[0]!
+  }
+
+  it('crea la cartella col bando e i suoi PDF, una volta sola', async () => {
+    const grant = await oneGrant()
     vi.stubGlobal('fetch', fakeWeb(calls))
 
-    const result = await createGrantFolder(sql, grant!.id)
-    expect(result).toEqual({ url: 'https://drive.google.com/drive/folders/cartella-1', files: 2, missing: 1 })
+    expect(await startGrantFolder(sql, grant.id, run)).toEqual({ status: 'creating' })
+    // Un secondo clic mentre lavora non apre un altro lavoro
+    expect(await startGrantFolder(sql, grant.id, run)).toEqual({ status: 'creating' })
+    expect(jobs).toHaveLength(1)
+    expect((await listEvaluatedGrants(sql))[0]).toMatchObject({ driveCreating: true, driveUrl: null })
+    await finish()
 
     const folder = calls.find(c => c.url.startsWith('https://www.googleapis.com/drive/v3/files'))!
     expect(JSON.parse(folder.body)).toEqual({ name: 'Voucher bando A', mimeType: 'application/vnd.google-apps.folder', parents: ['cartella-bandi'] })
@@ -127,15 +172,38 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Drive', () => {
     expect(uploads.map(u => /"name":"([^"]+)"/.exec(u.body)?.[1])).toEqual(['bando-voucher-bando-a.md', 'avviso.pdf'])
     expect(uploads[0]!.body).toContain('titolo: "Voucher bando A"')
 
-    // Salvata sul bando, che diventa interessante; un secondo clic non ne crea un'altra
-    expect((await listEvaluatedGrants(sql))[0]).toMatchObject({ driveUrl: result.url, liked: true })
+    // Pronta, salvata sul bando, che diventa interessante; poi solo il link
+    const url = 'https://drive.google.com/drive/folders/cartella-1'
+    expect((await listEvaluatedGrants(sql))[0]).toMatchObject({
+      driveUrl: url,
+      driveCreating: false,
+      driveNote: '1 PDF del bando caricati, 1 non scaricati dal sito',
+      liked: true,
+    })
     calls.length = 0
-    expect((await createGrantFolder(sql, grant!.id)).url).toBe(result.url)
+    expect(await startGrantFolder(sql, grant.id, run)).toEqual({ status: 'ready', url })
+    expect(jobs).toHaveLength(0)
     expect(calls).toEqual([])
+  })
+
+  it('se Drive si ferma a metà, il clic dopo riprende nella stessa cartella', async () => {
+    const grant = await oneGrant()
+    vi.stubGlobal('fetch', fakeWeb(calls, { failUploads: 1 }))
+    await startGrantFolder(sql, grant.id, run)
+    await finish()
+    expect((await listEvaluatedGrants(sql))[0]).toMatchObject({ driveUrl: null, driveCreating: false })
+    expect((await listEvaluatedGrants(sql))[0]!.driveNote).toMatch(/^Non riuscita: Google Drive ha risposto 500/)
+
+    calls.length = 0
+    await startGrantFolder(sql, grant.id, run)
+    await finish()
+    // Nessuna cartella nuova: si usa quella già creata
+    expect(calls.some(c => c.url.startsWith('https://www.googleapis.com/drive/v3/files'))).toBe(false)
+    expect((await listEvaluatedGrants(sql))[0]!.driveUrl).toBe('https://drive.google.com/drive/folders/cartella-1')
   })
 
   it('senza configurazione non chiama Google', async () => {
     vi.stubEnv('GOOGLE_SERVICE_ACCOUNT_JSON', '')
-    await expect(createGrantFolder(sql, '00000000-0000-4000-8000-000000000000')).rejects.toMatchObject({ statusCode: 503 })
+    await expect(startGrantFolder(sql, '00000000-0000-4000-8000-000000000000')).rejects.toMatchObject({ statusCode: 503 })
   })
 })

@@ -340,8 +340,11 @@ export type RadarGrant = {
   notifiedAt: string | null
   // Segnato come interessante per noi
   liked: boolean
-  // Cartella di Google Drive coi file del bando, se creata
+  // Cartella di Google Drive coi file del bando: pronta (link), in
+  // creazione, e com'è andata l'ultima volta (PDF mancanti, errore)
   driveUrl: string | null
+  driveCreating: boolean
+  driveNote: string
   createdAt: string
 }
 
@@ -413,6 +416,10 @@ export type RadarStatus = {
   emailConfigured: boolean
   driveConfigured: boolean
 }
+
+// Una cartella su Drive in creazione da più di così è morta col processo:
+// si può rifare
+export const DRIVE_CLAIM_MINUTES = 15
 
 // ---------- registro degli import ----------
 

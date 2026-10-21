@@ -231,6 +231,7 @@ describe('ricerca e giudizio', () => {
     application: null,
     notifiedAt: null,
     liked: false,
+    driveUrl: null,
     createdAt: NOW.toISOString(),
     ...over,
   })

@@ -24,6 +24,7 @@ import {
   type TokenUsage,
 } from '#shared/radar'
 import { digestHtml, digestSubject, digestText } from '../emails/radar-digest'
+import { hasDrive } from './drive'
 import { hasMailer, resendMailer, type Mailer } from './mail'
 import {
   hasLlm,
@@ -443,7 +444,7 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Pro
   const rows = await sql`
     select g.id, d.source, d.url, g.digital, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
-      g.liked_at, g.created_at
+      g.liked_at, g.drive_folder_url, g.created_at
     from radar_grants g join radar_documents d on d.id = g.document_id
     where d.status = 'read' and d.closed_at is null and (g.deadline is null or g.deadline >= ${now})
       ${unnotified ? sql`and g.notified_at is null` : sql``}
@@ -468,6 +469,7 @@ async function listGrants(sql: Sql, now: Date, { unnotified = false } = {}): Pro
     application: r.application as Application | null,
     notifiedAt: iso(r.notified_at),
     liked: r.liked_at !== null,
+    driveUrl: r.drive_folder_url,
     createdAt: r.created_at.toISOString(),
   }))
 }
@@ -733,5 +735,6 @@ export async function radarStatus(sql: Sql, deps: RadarDeps): Promise<RadarStatu
     pending: state.pending,
     llmConfigured: !!deps.reader,
     emailConfigured: !!deps.mailer,
+    driveConfigured: hasDrive(),
   }
 }

@@ -340,6 +340,8 @@ export type RadarGrant = {
   notifiedAt: string | null
   // Segnato come interessante per noi
   liked: boolean
+  // Cartella di Google Drive coi file del bando, se creata
+  driveUrl: string | null
   createdAt: string
 }
 
@@ -409,6 +411,7 @@ export type RadarStatus = {
   pending: number
   llmConfigured: boolean
   emailConfigured: boolean
+  driveConfigured: boolean
 }
 
 // ---------- registro degli import ----------

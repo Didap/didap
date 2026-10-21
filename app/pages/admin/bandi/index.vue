@@ -223,6 +223,15 @@ async function toggleLike(id: string) {
   }
 }
 
+// Cartella su Drive appena creata: link nella scheda e bando tra gli interessanti
+function setDrive(id: string, url: string) {
+  const g = data.value?.grants.find(x => x.id === id)
+  if (g) {
+    g.driveUrl = url
+    g.liked = true
+  }
+}
+
 const selectedId = ref<string | null>(null)
 const selected = computed(() => visible.value.find(g => g.id === selectedId.value) ?? null)
 
@@ -1011,7 +1020,11 @@ function toggleGroup(group: string, on: boolean) {
                 v-if="!isXl && selectedId === g.id"
                 class="border-t border-ink/10 bg-white"
               >
-                <RadarGrantDetail :grant="g" />
+                <RadarGrantDetail
+                  :grant="g"
+                  :drive-configured="!!data?.status.driveConfigured"
+                  @drive="url => setDrive(g.id, url)"
+                />
               </div>
             </li>
           </ul>
@@ -1030,6 +1043,8 @@ function toggleGroup(group: string, on: boolean) {
         <RadarGrantDetail
           v-if="selected"
           :grant="selected"
+          :drive-configured="!!data?.status.driveConfigured"
+          @drive="url => setDrive(selected!.id, url)"
         />
       </aside>
     </div>

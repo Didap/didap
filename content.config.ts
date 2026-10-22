@@ -3,9 +3,13 @@ import { defineCollection, defineContentConfig, z } from '@nuxt/content'
 // Slot immagine della scheda prodotto: con `src` mostra l'immagine,
 // senza resta il segnaposto colorato del Figma. Un `src` .mp4/.webm
 // diventa un video in loop muto, con `poster` come fotogramma fermo.
+// `srcMobile` e `posterMobile` sono la versione da telefono del video,
+// in verticale, sotto il breakpoint sm.
 const mediaSlot = z.object({
   src: z.string().optional(),
   poster: z.string().optional(),
+  srcMobile: z.string().optional(),
+  posterMobile: z.string().optional(),
   alt: z.string().optional(),
   color: z.enum(['ink', 'red', 'green', 'banana']).default('ink'),
   label: z.boolean().default(true),

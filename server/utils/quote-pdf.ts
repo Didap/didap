@@ -21,7 +21,7 @@ const PDF_TIMEOUT_MS = 20_000
 const C = {
   ink: '#161412',
   muted: '#6f6a64',
-  cream: '#fbf4e2',
+  cream: '#fffbf2',
   green: '#2e5d4a',
   paper: '#fffbf2',
 }

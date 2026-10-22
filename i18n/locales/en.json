@@ -17,28 +17,31 @@
     "hero_sub": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
     "products_title": "Living products. Open them.",
     "products_intro": "We design them, write them and keep them in production ourselves. \nThe fastest way to see how we work is to use them.",
-    "featured_category": "Fantasy football",
-    "featured_desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides.",
-    "featured_cta": "Open fantarainbow.com",
     "featured_more": "Read the case",
-    "featured_alt": "Fanta Rainbow: a football goal on a grass pitch with the Fanta Rainbow logo and the words Gioca ora",
     "status_live": "Live",
     "status_pilot": "Pilot",
     "status_pending": "Status to be confirmed",
-    "placeholder_image": "Image",
     "open_product": "Open the product",
     "products": {
+      "fanta_rainbow": {
+        "category": "Fantasy football",
+        "desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides.",
+        "alt": "Fanta Rainbow: a rainbow bolt splits the pitch at night and leaves the logo, with the line Il fantacalcio come non l'hai mai giocato"
+      },
       "bin_or_deal": {
         "category": "Marketplace",
-        "desc": "Listings aggregator across European marketplaces for collectors, with an automatic “bin vs deal” score."
+        "desc": "Listings aggregator across European marketplaces for collectors, with an automatic “bin vs deal” score.",
+        "alt": "Bin or Deal: the logo on newsprint, marketplace listings scrolling by and a stamp judging the price, Deal, Fair or Bin"
       },
       "cityfix": {
         "category": "Cities",
-        "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city."
+        "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city.",
+        "alt": "CityFix: the logo and the line Nessuna città è mai finita, with reports around it going from open to taken on to solved"
       },
       "cruciverba_lab": {
         "category": "Games",
-        "desc": "The home of Italian crosswords online. Seven new word games every day, in the browser."
+        "desc": "The home of Italian crosswords online. Seven new word games every day, in the browser.",
+        "alt": "Cruciverba Lab: a crossword grid fills in with CRUCIVERBA and LAB, with the daily games around it like Chiave, Setaccio, Alveare and Nessi"
       }
     },
     "how_label": "How we work",

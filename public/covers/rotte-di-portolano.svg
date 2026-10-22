@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
-  <rect width="1600" height="900" fill="#fbf4e2"/>
+  <rect width="1600" height="900" fill="#fffbf2"/>
   <circle cx="1500" cy="120" r="8" fill="none" stroke="#141414" stroke-width="3"/>
   <text x="80" y="150" font-family="'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="700" fill="#141414" letter-spacing="6">GESTIONALE</text>
   <text x="80" y="400" font-family="'Helvetica Neue', Arial, sans-serif" font-size="150" font-weight="800" fill="#141414" letter-spacing="-4">

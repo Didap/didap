@@ -386,8 +386,8 @@ const usesMarkdownBody = computed(
         />
         <MediaField
           v-model="form.feature[1]!"
-          title="Piccola · 408×385"
-          aspect="aspect-[408/385]"
+          title="Stretta · 408×760"
+          aspect="aspect-[408/760]"
         />
       </div>
       <AdminField

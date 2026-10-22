@@ -16,6 +16,8 @@ lede: Live fantasy football auctions. The bank keeps the score, players bid from
 hero:
   src: /covers/fanta-rainbow-hero.mp4
   poster: /covers/fanta-rainbow-hero-poster.webp
+  srcMobile: /covers/fanta-rainbow-hero-mobile.mp4
+  posterMobile: /covers/fanta-rainbow-hero-mobile-poster.webp
   alt: The Fanta Rainbow logo in the middle of a floodlit football goal at night, its net moving in the wind
 intro: Fanta Rainbow is the bank of a fantasy football auction. The organiser creates the auction, picks the team names and gets a personal link for each one. On auction night the board runs on the big screen and everyone else is on their phone. Whoever bids last before the countdown runs out takes the player.
 challenge:
@@ -48,14 +50,30 @@ media:
   wide:
     src: /covers/fanta-rainbow-gioca.mp4
     poster: /covers/fanta-rainbow-gioca-poster.webp
-    alt: "The Fanta Rainbow challenge picker: Ranked and Torneo split by a rainbow bolt, lighting up in turn"
+    srcMobile: /covers/fanta-rainbow-gioca-mobile.mp4
+    posterMobile: /covers/fanta-rainbow-gioca-mobile-poster.webp
+    alt: "The Fanta Rainbow challenge picker: Ranked and Torneo split by a rainbow bolt, lighting up in turn and pushing the seam aside, then Entrambi in the middle"
   feature:
-    - color: ink
-    - color: red
+    - src: /covers/fanta-rainbow-formazione.mp4
+      poster: /covers/fanta-rainbow-formazione-poster.webp
+      srcMobile: /covers/fanta-rainbow-formazione-mobile.mp4
+      posterMobile: /covers/fanta-rainbow-formazione-mobile-poster.webp
+      alt: "Setting a lineup on Fanta Rainbow: four players moved from the available list to the open spots on the pitch, then Schiera confirms the lineup for the matchday"
+    - src: /covers/fanta-rainbow-stagione.mp4
+      poster: /covers/fanta-rainbow-stagione-poster.webp
+      alt: "The Fanta Rainbow season page: the price ticker scrolls along the top, player prices move up and down with their trend lines, then the matchday results arrive with one game still live"
   triple:
-    - color: red
-    - color: ink
-    - color: green
+    - src: /covers/fanta-rainbow-ultimora.mp4
+      poster: /covers/fanta-rainbow-ultimora-poster.webp
+      alt: "Breaking news on the Gazzetta Rainbow: two injury stories take turns over the photo, the headline lands word by word and a coral stamp says how long the player is out"
+    - src: /covers/fanta-rainbow-feed.mp4
+      poster: /covers/fanta-rainbow-feed-poster.webp
+      srcMobile: /covers/fanta-rainbow-feed-mobile.mp4
+      posterMobile: /covers/fanta-rainbow-feed-mobile-poster.webp
+      alt: "Gazzetta Rainbow news in two scrolling columns, with the Tutte, Mercato and Infortuni filters lighting up the stories of their category in turn"
+    - src: /covers/fanta-rainbow-mercato.mp4
+      poster: /covers/fanta-rainbow-mercato-poster.webp
+      alt: "A Gazzetta Rainbow transfer story: the contract year rolls from 2026 to 2030, a signature draws itself and an Ufficiale stamp lands on Rabiot's new deal with Milan"
 ---
 
 ## The product

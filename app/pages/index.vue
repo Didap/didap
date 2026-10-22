@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
+import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import type { ProductStatus } from '~/components/StatusPill.vue'
 
@@ -9,6 +10,9 @@ import type { ProductStatus } from '~/components/StatusPill.vue'
 const { t } = useI18n()
 const localePath = useLocalePath()
 
+// I quattro prodotti, ognuno con la sua splash animata (2:1, il centro
+// regge anche il taglio delle card). Quello in evidenza si estrae a caso
+// a ogni visita: lo sceglie il server e lo passa al client nel payload.
 const products: {
   key: string
   slug: string
@@ -16,6 +20,13 @@ const products: {
   url: string
   status: ProductStatus
 }[] = [
+  {
+    key: 'fanta_rainbow',
+    slug: 'fanta-rainbow',
+    name: 'Fanta Rainbow',
+    url: 'https://fantarainbow.com',
+    status: 'live',
+  },
   {
     key: 'bin_or_deal',
     slug: 'bin-or-deal',
@@ -38,6 +49,20 @@ const products: {
     status: 'pending',
   },
 ]
+
+const featuredIndex = useState('home-featured', () =>
+  Math.floor(Math.random() * products.length),
+)
+const featured = computed(() => products[featuredIndex.value]!)
+const others = computed(() => products.filter((_, i) => i !== featuredIndex.value))
+
+const splash = (p: (typeof products)[number]) => ({
+  src: `/covers/splash-${p.slug}.mp4`,
+  poster: `/covers/splash-${p.slug}-poster.webp`,
+  alt: t(`home.products.${p.key}.alt`),
+})
+
+const host = (url: string) => new URL(url).hostname.replace(/^www\./, '')
 
 const statusLabel = (s: ProductStatus) => t(`home.status_${s}`)
 
@@ -163,15 +188,23 @@ useSeoMeta({
           </p>
         </header>
 
-        <!-- In evidenza - Fanta Rainbow -->
-        <article class="flex flex-col gap-6">
-          <img
-            src="/covers/fanta-rainbow-hero.webp"
-            :alt="t('home.featured_alt')"
-            width="1280"
-            height="640"
-            class="aspect-2/1 w-full object-cover"
+        <!-- In evidenza: uno dei quattro, a caso. Video e titolo aprono la
+             scheda; il video è un doppione del titolo per il lettore di schermo. -->
+        <article class="group flex flex-col gap-6">
+          <NuxtLink
+            :to="localePath(`/work/${featured.slug}`)"
+            tabindex="-1"
+            aria-hidden="true"
+            class="block"
           >
+            <MediaSlot
+              :media="splash(featured)"
+              class="
+                aspect-2/1 w-full transition-opacity
+                group-hover:opacity-90
+              "
+            />
+          </NuxtLink>
           <div class="
             grid gap-6
             lg:grid-cols-[588fr_692fr] lg:gap-x-0
@@ -179,26 +212,34 @@ useSeoMeta({
             <div class="flex flex-col gap-3.5">
               <div class="flex items-center gap-3">
                 <span class="text-label opacity-60">
-                  {{ t('home.featured_category') }}
+                  {{ t(`home.products.${featured.key}.category`) }}
                 </span>
-                <StatusPill status="live">
-                  {{ statusLabel('live') }}
+                <StatusPill :status="featured.status">
+                  {{ statusLabel(featured.status) }}
                 </StatusPill>
               </div>
               <h3 class="text-title">
-                Fanta Rainbow
+                <NuxtLink
+                  :to="localePath(`/work/${featured.slug}`)"
+                  class="
+                    transition-colors
+                    hover:text-green
+                  "
+                >
+                  {{ featured.name }}
+                </NuxtLink>
               </h3>
             </div>
             <div class="flex flex-col gap-6">
               <p class="text-body">
-                {{ t('home.featured_desc') }}
+                {{ t(`home.products.${featured.key}.desc`) }}
               </p>
               <div class="flex flex-wrap items-center gap-6">
-                <DidapButton href="https://fantarainbow.com">
-                  {{ t('home.featured_cta') }}
+                <DidapButton :href="featured.url">
+                  {{ t('product.open', { host: host(featured.url) }) }}
                 </DidapButton>
                 <NuxtLink
-                  :to="localePath('/work/fanta-rainbow')"
+                  :to="localePath(`/work/${featured.slug}`)"
                   class="
                     text-label underline transition-colors
                     hover:text-green
@@ -217,20 +258,24 @@ useSeoMeta({
           md:grid-cols-3 md:gap-6
         ">
           <article
-            v-for="p in products"
+            v-for="p in others"
             :key="p.key"
-            class="flex flex-col gap-5"
+            class="group flex flex-col gap-5"
           >
-            <div
-              class="
-                flex aspect-[410.7/300] w-full items-center justify-center
-                bg-ink
-              "
+            <NuxtLink
+              :to="localePath(`/work/${p.slug}`)"
+              tabindex="-1"
+              aria-hidden="true"
+              class="block"
             >
-              <span class="text-label text-paper-light">
-                {{ t('home.placeholder_image') }}
-              </span>
-            </div>
+              <MediaSlot
+                :media="splash(p)"
+                class="
+                  aspect-[410.7/300] w-full transition-opacity
+                  group-hover:opacity-90
+                "
+              />
+            </NuxtLink>
             <div class="flex flex-wrap items-center justify-between gap-3">
               <span class="text-label opacity-60">
                 {{ t(`home.products.${p.key}.category`) }}
@@ -240,7 +285,15 @@ useSeoMeta({
               </StatusPill>
             </div>
             <h3 class="text-title">
-              {{ p.name }}
+              <NuxtLink
+                :to="localePath(`/work/${p.slug}`)"
+                class="
+                  transition-colors
+                  hover:text-green
+                "
+              >
+                {{ p.name }}
+              </NuxtLink>
             </h3>
             <p class="text-body">
               {{ t(`home.products.${p.key}.desc`) }}

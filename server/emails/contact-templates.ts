@@ -50,8 +50,8 @@ export const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL || 'https://didap.it'
 
 // Palette
 export const C = {
-  paper: '#fbf4e2',
-  paperSoft: '#f3ead0',
+  paper: '#fffbf2',
+  paperSoft: '#fffbf2',
   ink: '#141414',
   inkSoft: '#3a3a3a',
   accent: '#c8412c',

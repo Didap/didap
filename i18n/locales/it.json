@@ -17,28 +17,31 @@
     "hero_sub": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
     "products_title": "Prodotti vivi. Aprili.",
     "products_intro": "Li progettiamo, li scriviamo e li teniamo in produzione noi. \nIl modo più rapido per capire come lavoriamo è usarli.",
-    "featured_category": "Fantacalcio",
-    "featured_desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide.",
-    "featured_cta": "Apri fantarainbow.com",
     "featured_more": "Leggi la scheda",
-    "featured_alt": "Fanta Rainbow: una porta da calcio su un campo in erba con il logo Fanta Rainbow e la scritta Gioca ora",
     "status_live": "Live",
     "status_pilot": "Pilot",
     "status_pending": "Stato da confermare",
-    "placeholder_image": "Immagine",
     "open_product": "Apri il prodotto",
     "products": {
+      "fanta_rainbow": {
+        "category": "Fantacalcio",
+        "desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide.",
+        "alt": "Fanta Rainbow: un fulmine arcobaleno spacca il campo di notte e lascia il logo, con la frase Il fantacalcio come non l'hai mai giocato"
+      },
       "bin_or_deal": {
         "category": "Marketplace",
-        "desc": "Aggregatore di annunci dai marketplace europei per collezionisti, con punteggio automatico “bin vs deal”."
+        "desc": "Aggregatore di annunci dai marketplace europei per collezionisti, con punteggio automatico “bin vs deal”.",
+        "alt": "Bin or Deal: il logo su carta di giornale, gli annunci dei marketplace che scorrono e un timbro che giudica il prezzo, Deal, Fair o Bin"
       },
       "cityfix": {
         "category": "Città",
-        "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città."
+        "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città.",
+        "alt": "CityFix: il logo e la frase Nessuna città è mai finita, intorno le segnalazioni che passano da aperte a prese in carico a risolte"
       },
       "cruciverba_lab": {
         "category": "Giochi",
-        "desc": "La casa dei cruciverba italiani online. Sette nuovi giochi di parole ogni giorno, nel browser."
+        "desc": "La casa dei cruciverba italiani online. Sette nuovi giochi di parole ogni giorno, nel browser.",
+        "alt": "Cruciverba Lab: una griglia si riempie con CRUCIVERBA e LAB, intorno i giochi del giorno come Chiave, Setaccio, Alveare e Nessi"
       }
     },
     "how_label": "Come lavoriamo",

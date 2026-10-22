@@ -23,7 +23,7 @@ useSeoMeta({
 
 <template>
   <section class="mx-auto max-w-6xl px-6 py-20">
-    <header class="mb-12 max-w-2xl space-y-4">
+    <header class="mb-12 space-y-4">
       <p class="text-xs uppercase tracking-[0.3em] text-ink-soft">
         {{ t('clients.kicker') }}
       </p>

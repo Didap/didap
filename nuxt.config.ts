@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import { typesetBody } from './shared/typeset'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-01',
@@ -30,6 +31,14 @@ export default defineNuxtConfig({
   nitro: {
     experimental: { tasks: true },
     scheduledTasks: { '*/15 * * * *': ['radar:tick'] },
+  },
+
+  // Il corpo in markdown dei contenuti segue le regole di sbandieramento
+  // (docs/copy/sbandieramento.md): una frase per riga, parole brevi legate.
+  hooks: {
+    'content:file:afterParse'(ctx) {
+      if (ctx.content.body) typesetBody(ctx.content.body)
+    },
   },
 
   content: {

@@ -2,6 +2,7 @@
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
+import { typeset, typesetLines } from '#shared/typeset'
 
 // Scheda prodotto - Figma "Scheda prodotto · Fanta Rainbow · Desktop 1440".
 // Le sezioni compaiono solo se il frontmatter ha i dati; i prodotti senza
@@ -161,8 +162,8 @@ useSeoMeta({
           </dl>
 
           <div class="flex flex-col items-start gap-8">
-            <p class="text-title">
-              {{ project.lede || project.summary }}
+            <p class="text-title whitespace-pre-line">
+              {{ typesetLines(project.lede || project.summary) }}
             </p>
             <DidapButton
               v-if="project.url"
@@ -201,8 +202,8 @@ useSeoMeta({
         v-if="project.intro"
         class="page-x"
       >
-        <p class="max-w-[1245px] pb-10 text-intro">
-          {{ project.intro }}
+        <p class="pb-10 text-intro whitespace-pre-line">
+          {{ typesetLines(project.intro) }}
         </p>
       </section>
 
@@ -232,11 +233,11 @@ useSeoMeta({
           flex flex-col gap-7 py-16
           lg:pt-[69px] lg:pb-20
         ">
-          <h2 class="max-w-[898px] text-hero">
-            {{ project.challenge.title }}
+          <h2 class="text-hero whitespace-pre-line">
+            {{ typesetLines(project.challenge.title) }}
           </h2>
-          <p class="max-w-[845px] text-body-medium">
-            {{ project.challenge.body }}
+          <p class="text-body-medium whitespace-pre-line">
+            {{ typesetLines(project.challenge.body) }}
           </p>
         </div>
       </section>
@@ -257,7 +258,7 @@ useSeoMeta({
           <MediaSlot
             :media="project.media.feature[0]"
             class="w-full"
-            :class="project.media.feature[0].srcMobile ? `
+            :class="project.media.feature[0]?.srcMobile ? `
               aspect-9/16
               sm:aspect-848/760
             ` : 'aspect-848/760'"
@@ -272,8 +273,8 @@ useSeoMeta({
           flex flex-col gap-7 py-16
           lg:py-28
         ">
-          <h2 class="max-w-[932px] text-title">
-            {{ project.features.title }}
+          <h2 class="text-title whitespace-pre-line">
+            {{ typesetLines(project.features.title) }}
           </h2>
           <ul>
             <li
@@ -284,12 +285,12 @@ useSeoMeta({
                 md:grid-cols-[302fr_954fr] md:gap-6
               "
             >
-              <span class="text-body">{{ f.name }}</span>
+              <span class="text-body">{{ typeset(f.name) }}</span>
               <span class="
-                text-base/normal opacity-70
+                text-base/normal whitespace-pre-line opacity-70
                 md:pt-px
               ">
-                {{ f.desc }}
+                {{ typesetLines(f.desc) }}
               </span>
             </li>
           </ul>
@@ -322,10 +323,10 @@ useSeoMeta({
         class="page-x"
       >
         <p class="
-          py-16 text-body
+          py-16 text-body whitespace-pre-line
           lg:py-28
         ">
-          {{ project.model }}
+          {{ typesetLines(project.model) }}
         </p>
       </section>
     </template>
@@ -336,7 +337,7 @@ useSeoMeta({
       class="page-x"
     >
       <div class="
-        product-body max-w-[954px] pb-16
+        product-body pb-16
         lg:pb-28
       ">
         <ContentRenderer :value="project" />
@@ -390,6 +391,11 @@ useSeoMeta({
 
 .product-body :deep(h2:first-child) {
   margin-top: 0;
+}
+
+.product-body :deep(p),
+.product-body :deep(li) {
+  white-space: pre-line;
 }
 
 .product-body :deep(p),

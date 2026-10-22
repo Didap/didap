@@ -14,9 +14,9 @@
   "home": {
     "seo_description": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
     "hero_tagline": "Free the\nmonkey.",
-    "hero_sub": "We design, write and ship bespoke digital products.\nFrom the foundations to the final polish.",
-    "products_title": "Living products.\nOpen them.",
-    "products_intro": "We design them, write them and keep them in production ourselves.\nThe fastest way to see how we work is to use them.",
+    "hero_sub": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
+    "products_title": "Living products. Open them.",
+    "products_intro": "We design them, write them and keep them in production ourselves. The fastest way to see how we work is to use them.",
     "featured_more": "Read the case",
     "status_live": "Live",
     "status_pilot": "Pilot",
@@ -25,7 +25,7 @@
     "products": {
       "fanta_rainbow": {
         "category": "Fantasy football",
-        "desc": "Live fantasy football auctions.\nThe bank keeps the score, players open a link and bid from their phone, the countdown decides.",
+        "desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides.",
         "alt": "Fanta Rainbow: a rainbow bolt splits the pitch at night and leaves the logo, with the line Il fantacalcio come non l'hai mai giocato"
       },
       "bin_or_deal": {
@@ -40,7 +40,7 @@
       },
       "cruciverba_lab": {
         "category": "Games",
-        "desc": "The home of Italian crosswords online.\nSeven new word games every day, in the browser.",
+        "desc": "The home of Italian crosswords online. Seven new word games every day, in the browser.",
         "alt": "Cruciverba Lab: a crossword grid fills in with CRUCIVERBA and LAB, with the daily games around it like Chiave, Setaccio, Alveare and Nessi"
       }
     },
@@ -56,7 +56,7 @@
       },
       "design": {
         "title": "Design lives\nin the code.",
-        "body": "Built to go to production, not to look good on slides.\nProducts grow with real use."
+        "body": "Built to go to production, not to look good on slides. Products grow with real use."
       }
     },
     "partners_label": "Partners and clients",
@@ -66,7 +66,7 @@
       "app": "App"
     },
     "team_title": "The team is the feature.",
-    "team_intro": "Three full-stack engineers, a designer, a project manager.\nAnd Didi.",
+    "team_intro": "Three full-stack engineers, a designer, a project manager. And Didi.",
     "roles": {
       "ceo": "CEO & Founder",
       "fullstack": "Full-stack developer",
@@ -82,7 +82,7 @@
   "work": {
     "kicker": "Studio",
     "title": "PROd by Didap",
-    "intro": "Products we design, build and ship on our own.\nFor design, for cities, for markets.",
+    "intro": "Products we design, build and ship on our own. For design, for cities, for markets.",
     "search_placeholder": "Search a product…",
     "filter_by": "Filter:",
     "clear_filters": "Clear filters",
@@ -98,18 +98,18 @@
   "about": {
     "kicker": "About",
     "title": "Didap, in two lines.",
-    "intro": "Five of us, independent: three full-stack engineers, one designer, one project manager.\nFree the monkey.",
-    "body_1": "We work full-stack for real - backend, frontend, infrastructure, mobile, integrations.\nNo outsourcing on what matters: the code we ship is written, tested and run by us.",
-    "body_2": "Design lives inside the code: built to actually ship, not just look good in slides.\nProducts grow through real use, not the perfect brief."
+    "intro": "Five of us, independent: three full-stack engineers, one designer, one project manager. Free the monkey.",
+    "body_1": "We work full-stack for real - backend, frontend, infrastructure, mobile, integrations. No outsourcing on what matters: the code we ship is written, tested and run by us.",
+    "body_2": "Design lives inside the code: built to actually ship, not just look good in slides. Products grow through real use, not the perfect brief."
   },
   "contact": {
     "kicker": "Contact",
     "title": "Let's talk.",
-    "intro": "If you have a project in mind, write to us.\nWe answer everyone - even just to say no.",
+    "intro": "If you have a project in mind, write to us. We answer everyone - even just to say no.",
     "info_title": "Before you write",
     "info_response": "We reply within 2 working days.",
     "info_scope": "We work on bespoke products, native apps, internal SaaS and management platforms, and websites.",
-    "info_ethics": "We only take on projects we believe in - ethically, creatively, humanly.\nIf we say no, no offence: everyone does what feels right.",
+    "info_ethics": "We only take on projects we believe in - ethically, creatively, humanly. If we say no, no offence: everyone does what feels right.",
     "info_email": "Prefer to write directly?",
     "form": {
       "name": "Name",
@@ -130,7 +130,7 @@
       "funding_have": "Yes, the project is funded",
       "funding_need": "I'd like advice on public funding",
       "qube_kicker": "Recommended partner",
-      "qube_description": "The Qube is a MIMIT-certified business incubator.\nThey help startups and SMEs access calls, grants and subsidised finance.\nWe don't deliver that ourselves: we handle the technical side of your project, they handle covering the cost.",
+      "qube_description": "The Qube is a MIMIT-certified business incubator. They help startups and SMEs access calls, grants and subsidised finance. We don't deliver that ourselves: we handle the technical side of your project, they handle covering the cost.",
       "qube_visit": "Visit theqube.it",
       "qube_more": "Partner page",
       "message": "Tell us",
@@ -139,8 +139,8 @@
       "privacy_link": "privacy policy",
       "submit": "Send",
       "submitting": "Sending…",
-      "success": "Thanks.\nWe'll reply soon.",
-      "error": "Something went wrong.\nWrite to amministrazione{'@'}didap.it"
+      "success": "Thanks. We'll reply soon.",
+      "error": "Something went wrong. Write to amministrazione{'@'}didap.it"
     }
   },
   "footer": {
@@ -156,14 +156,14 @@
     "title": "Privacy policy",
     "intro": "How we handle the personal data collected through this site.",
     "updated": "Last updated: May 4, 2026",
-    "placeholder": "Work in progress.\nWe'll replace this with the full notice once PostHog analytics is integrated and the data-collection flows are finalised."
+    "placeholder": "Work in progress. We'll replace this with the full notice once PostHog analytics is integrated and the data-collection flows are finalised."
   },
   "cookies": {
     "kicker": "Legal",
     "title": "Cookie policy",
     "intro": "Which cookies we use, why we use them, and how to opt out.",
     "updated": "Last updated: May 4, 2026",
-    "placeholder": "Work in progress.\nWill be completed alongside the PostHog analytics integration."
+    "placeholder": "Work in progress. Will be completed alongside the PostHog analytics integration."
   },
   "common": {
     "visit": "Visit the site",

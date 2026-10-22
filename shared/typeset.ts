@@ -1,7 +1,7 @@
 // Regole di sbandieramento del copy (docs/copy/sbandieramento.md).
 // Il testo resta lo stesso: cambiano solo gli spazi, così una riga non
 // finisce mai su un articolo, su un numero staccato dalla sua unità o su
-// una parola rimasta da sola.
+// un trattino, e l'ultima riga non resta con una parola sola.
 
 const NBSP = String.fromCharCode(160)
 // Uno spazio qualsiasi, normale o indivisibile
@@ -26,10 +26,10 @@ const WIDOW_MAX = 12
 
 const WORDS = new RegExp(`${ANY_SPACE}+`)
 const LAST_WORD = new RegExp(` +([^ ${NBSP}]+)\\s*$`)
-const SENTENCE_END = new RegExp(`([.!?…])${ANY_SPACE}+(?=[\\p{Lu}\\d«“"])`, 'gu')
 
 /**
- * Lega le parole brevi, i numeri e l'ultima parola di ogni riga. Con
+ * Lega le parole brevi, i numeri, i trattini e l'ultima parola di ogni
+ * riga. Gli a capo restano solo dove il testo li scrive (\n). Con
  * `tail: false` il testo è un pezzo di un paragrafo che continua (prima di
  * un grassetto, di un link): la sua ultima riga non finisce qui, e l'ultima
  * parola non va legata.
@@ -48,6 +48,8 @@ export function typeset(text: string, { tail = true }: { tail?: boolean } = {}):
         .replace(/(\d)( +)(?=[\p{L}€%°])/gu, `$1${NBSP}`)
         // simbolo e numero: € 10
         .replace(/([€$£])( +)(?=\d)/g, `$1${NBSP}`)
+        // il trattino che fa da inciso chiude la riga, non la apre
+        .replace(/(?<=\S) +(?=- )/g, NBSP)
       // niente parole orfane: l'ultima si lega alla penultima (se è già
       // legata a una parola breve, la riga è a posto così)
       const words = out.trim().split(WORDS)
@@ -59,15 +61,6 @@ export function typeset(text: string, { tail = true }: { tail?: boolean } = {}):
       return out
     })
     .join('\n')
-}
-
-/**
- * Testi che si vedono: dopo il punto si va a capo.
- * Va mostrato in un elemento con `whitespace-pre-line`.
- */
-export function typesetLines(text: string, options?: { tail?: boolean }): string {
-  if (!text) return text
-  return typeset(text.replace(SENTENCE_END, '$1\n'), options)
 }
 
 // Nodi del corpo markdown di Nuxt Content: minimark ([tag, props, ...figli])
@@ -84,9 +77,9 @@ const BLOCKS = new Set(['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquo
 const SKIP = new Set(['code', 'pre'])
 
 /**
- * Applica le regole al corpo in markdown di un contenuto: i testi dei
- * paragrafi e delle voci vanno a capo dopo il punto, gli a capo del sorgente
- * diventano spazi. Va mostrato con `whitespace-pre-line` sui blocchi.
+ * Applica le regole al corpo in markdown di un contenuto: gli a capo del
+ * sorgente diventano spazi e i testi dei paragrafi e delle voci vanno a
+ * bandiera, con le parole brevi e l'ultima parola legate.
  */
 export function typesetBody<T>(body: T): T {
   const b = body as { type?: string, value?: MinimarkNode[], children?: MdcNode[] }
@@ -95,12 +88,10 @@ export function typesetBody<T>(body: T): T {
   return body
 }
 
-// Un pezzo di testo: gli a capo del sorgente diventano spazi; se il pezzo
-// chiude una frase e dopo c'è altro (un grassetto, un link), si va a capo.
+// Un pezzo di testo: gli a capo del sorgente diventano spazi; se dopo c'è
+// altro (un grassetto, un link) la sua ultima parola non va legata.
 function piece(text: string, last: boolean): string {
-  let t = text.replace(/\s*\n\s*/g, ' ')
-  if (!last && /[.!?…] +$/.test(t)) t = t.replace(/ +$/, '\n')
-  return typesetLines(t, { tail: last })
+  return typeset(text.replace(/\s*\n\s*/g, ' '), { tail: last })
 }
 
 function minimark(node: MinimarkNode, inBlock: boolean): void {

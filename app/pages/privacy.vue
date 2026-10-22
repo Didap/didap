@@ -18,7 +18,7 @@ useSeoMeta({
     </p>
 
     <div class="prose prose-stone mt-12 max-w-none">
-      <p class="whitespace-pre-line">{{ t('privacy.placeholder') }}</p>
+      <p>{{ t('privacy.placeholder') }}</p>
     </div>
   </section>
 </template>

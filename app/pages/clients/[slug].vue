@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { typesetLines } from '#shared/typeset'
+import { typeset } from '#shared/typeset'
 
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -48,7 +48,7 @@ useSeoMeta({
         <span v-if="project.year">{{ project.year }}</span>
       </div>
       <h1 class="font-display text-5xl leading-tight">{{ project.title }}</h1>
-      <p class="text-xl whitespace-pre-line text-ink-soft">{{ typesetLines(project.summary) }}</p>
+      <p class="text-xl text-ink-soft">{{ typeset(project.summary) }}</p>
     </header>
 
     <div
@@ -58,7 +58,7 @@ useSeoMeta({
       <img :src="project.cover" :alt="project.title" class="w-full" />
     </div>
 
-    <div class="prose prose-stone mt-10 max-w-none [&_li]:whitespace-pre-line [&_p]:whitespace-pre-line">
+    <div class="prose prose-stone mt-10 max-w-none">
       <ContentRenderer :value="project" />
     </div>
 

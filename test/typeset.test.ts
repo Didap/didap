@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { typeset, typesetBody, typesetLines } from '#shared/typeset'
+import { typeset, typesetBody } from '#shared/typeset'
 import itMessages from '../i18n/locales/it.json'
 import enMessages from '../i18n/locales/en.json'
 
-const NB = '\u00A0'
+const NB = ' '
 
 describe('sbandieramento', () => {
   it('lega articoli e preposizioni alla parola dopo', () => {
@@ -26,16 +26,17 @@ describe('sbandieramento', () => {
     expect(typeset('Apri il prodotto')).toBe(`Apri il${NB}prodotto`)
   })
 
-  it('nei testi brevi va a capo dopo il punto', () => {
-    expect(typesetLines('Tre full-stack, un designer. E Didi.')).toBe(`Tre full-stack, un${NB}designer.\nE${NB}Didi.`)
+  it('non apre una riga con il trattino di un inciso', () => {
+    expect(typeset('Rispondiamo a tutti - anche per dire di no')).toContain(`tutti${NB}- anche`)
+  })
+
+  it('lascia il testo a bandiera: nessun a capo aggiunto', () => {
+    expect(typeset('Tre full-stack, un designer. E Didi.')).toBe(`Tre full-stack, un${NB}designer. E${NB}Didi.`)
   })
 })
 
-// Ogni testo che si vede va a capo dopo ogni frase: il punto seguito da
-// spazio e maiuscola vuol dire che manca un a capo. Fuori dalla regola solo
-// i testi che non si vedono (alt, SEO).
-const FLOW = [/\.alt$/, /seo_description$/]
-
+// I testi vanno a bandiera: si va a capo solo dove lo vuole il design (i
+// titoli spezzati a mano), mai per chiudere una frase.
 function strings(o: Record<string, unknown>, prefix = ''): [string, string][] {
   return Object.entries(o).flatMap(([k, v]) =>
     typeof v === 'string' ? [[prefix + k, v] as [string, string]] : strings(v as Record<string, unknown>, `${prefix}${k}.`),
@@ -43,12 +44,11 @@ function strings(o: Record<string, unknown>, prefix = ''): [string, string][] {
 }
 
 describe.each([['it', itMessages], ['en', enMessages]])('copy %s', (_, messages) => {
-  it('ogni testo ha una frase per riga', () => {
-    const missing = strings(messages)
-      .filter(([key]) => !FLOW.some((re) => re.test(key)))
-      .filter(([, v]) => /[.!?][ \u00A0]+[\p{Lu}]/u.test(v))
+  it('nessun a capo dopo la fine di una frase', () => {
+    const broken = strings(messages)
+      .filter(([, v]) => /[.!?…][  ]*\n/.test(v))
       .map(([key]) => key)
-    expect(missing).toEqual([])
+    expect(broken).toEqual([])
   })
 })
 
@@ -59,12 +59,12 @@ describe('i18n', () => {
     const { createI18n } = await import('vue-i18n')
     const config = (await import('../i18n/i18n.config')).default as unknown as () => object
     const i18n = createI18n({ legacy: false, locale: 'it', messages: { it: itMessages }, ...config() })
-    expect(i18n.global.t('home.team_intro')).toBe(`Tre full-stack engineer, un${NB}designer, un${NB}project${NB}manager.\nE${NB}Didi.`)
+    expect(i18n.global.t('home.team_intro')).toBe(`Tre full-stack engineer, un${NB}designer, un${NB}project manager. E${NB}Didi.`)
   })
 })
 
 describe('corpo markdown', () => {
-  it('va a capo dopo il punto anche tra un grassetto e l\'altro', () => {
+  it('unisce le righe del sorgente e lega le parole, senza a capo dopo il punto', () => {
     const body = {
       type: 'minimark',
       value: [
@@ -74,7 +74,7 @@ describe('corpo markdown', () => {
     }
     typesetBody(body)
     const p = body.value[0] as unknown[]
-    expect(p[2]).toBe(`Il${NB}banco tiene i${NB}conti.\nLa${NB}sera dell'asta.\n`)
+    expect(p[2]).toBe(`Il${NB}banco tiene i${NB}conti. La${NB}sera dell'asta. `)
     expect(p[4]).toBe(` rilanciano dal${NB}telefono.`)
     expect((body.value[1] as unknown[])[2]).toEqual(['code', {}, 'a. B'])
   })

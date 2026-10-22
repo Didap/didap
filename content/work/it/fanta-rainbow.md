@@ -16,6 +16,8 @@ lede: Aste live di fantacalcio. Il banco tiene i conti, i giocatori rilanciano d
 hero:
   src: /covers/fanta-rainbow-hero.mp4
   poster: /covers/fanta-rainbow-hero-poster.webp
+  srcMobile: /covers/fanta-rainbow-hero-mobile.mp4
+  posterMobile: /covers/fanta-rainbow-hero-mobile-poster.webp
   alt: Il logo di Fanta Rainbow al centro di una porta da calcio illuminata di notte, con la rete mossa dal vento
 intro: Fanta Rainbow è il banco di un’asta di fantacalcio. L’organizzatore crea l’asta, sceglie i nomi delle squadre e riceve un link personale per ciascuna. La sera dell’asta il tabellone gira sul grande schermo e tutti gli altri sono al telefono. Chi offre per ultimo prima che scada il countdown si prende il giocatore.
 challenge:
@@ -48,14 +50,30 @@ media:
   wide:
     src: /covers/fanta-rainbow-gioca.mp4
     poster: /covers/fanta-rainbow-gioca-poster.webp
-    alt: "La scelta della sfida di Fanta Rainbow: Ranked e Torneo divisi da un fulmine arcobaleno, che si illuminano a turno"
+    srcMobile: /covers/fanta-rainbow-gioca-mobile.mp4
+    posterMobile: /covers/fanta-rainbow-gioca-mobile-poster.webp
+    alt: "La scelta della sfida di Fanta Rainbow: Ranked e Torneo divisi da un fulmine arcobaleno, che si illuminano a turno e spostano la cucitura, poi Entrambi al centro"
   feature:
-    - color: ink
-    - color: red
+    - src: /covers/fanta-rainbow-formazione.mp4
+      poster: /covers/fanta-rainbow-formazione-poster.webp
+      srcMobile: /covers/fanta-rainbow-formazione-mobile.mp4
+      posterMobile: /covers/fanta-rainbow-formazione-mobile-poster.webp
+      alt: "La formazione su Fanta Rainbow: quattro calciatori portati dai Disponibili ai posti liberi del campo, poi Schiera conferma la formazione della giornata"
+    - src: /covers/fanta-rainbow-stagione.mp4
+      poster: /covers/fanta-rainbow-stagione-poster.webp
+      alt: "La pagina Stagione di Fanta Rainbow: il listino scorre in alto, le quotazioni salgono e scendono con il loro andamento, poi arrivano i risultati della giornata con una partita ancora in corso"
   triple:
-    - color: red
-    - color: ink
-    - color: green
+    - src: /covers/fanta-rainbow-ultimora.mp4
+      poster: /covers/fanta-rainbow-ultimora-poster.webp
+      alt: "L'ultim'ora della Gazzetta Rainbow: due notizie di infortuni si danno il cambio sulla foto, il titolo entra parola per parola e un timbro corallo dice quanto resta fuori il giocatore"
+    - src: /covers/fanta-rainbow-feed.mp4
+      poster: /covers/fanta-rainbow-feed-poster.webp
+      srcMobile: /covers/fanta-rainbow-feed-mobile.mp4
+      posterMobile: /covers/fanta-rainbow-feed-mobile-poster.webp
+      alt: "Le notizie della Gazzetta Rainbow in due colonne che scorrono, con i filtri Tutte, Mercato e Infortuni che accendono a turno le notizie della propria categoria"
+    - src: /covers/fanta-rainbow-mercato.mp4
+      poster: /covers/fanta-rainbow-mercato-poster.webp
+      alt: "Una notizia di mercato della Gazzetta Rainbow: l'anno del contratto rotola da 2026 a 2030, una firma si disegna e arriva il timbro Ufficiale sul rinnovo di Rabiot con il Milan"
 ---
 
 ## Il prodotto

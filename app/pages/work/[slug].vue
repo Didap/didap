@@ -211,9 +211,14 @@ useSeoMeta({
         v-if="project.media?.wide"
         class="page-x"
       >
+        <!-- Con la versione da telefono lo slot è verticale sotto sm -->
         <MediaSlot
           :media="project.media.wide"
-          class="aspect-video w-full"
+          class="w-full"
+          :class="project.media.wide.srcMobile ? `
+            aspect-4/5
+            sm:aspect-video
+          ` : 'aspect-video'"
         />
       </section>
 
@@ -251,12 +256,16 @@ useSeoMeta({
         >
           <MediaSlot
             :media="project.media.feature[0]"
-            class="aspect-848/760 w-full"
+            class="w-full"
+            :class="project.media.feature[0].srcMobile ? `
+              aspect-9/16
+              sm:aspect-848/760
+            ` : 'aspect-848/760'"
           />
           <MediaSlot
             v-if="project.media.feature[1]"
             :media="project.media.feature[1]"
-            class="aspect-408/385 w-full"
+            class="aspect-408/760 w-full"
           />
         </div>
         <div class="

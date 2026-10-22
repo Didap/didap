@@ -77,6 +77,11 @@ const cleanSlot = (s: MediaSlot): MediaSlot =>
     ? {
         src: s.src,
         ...(s.poster && isVideoSrc(s.src) ? { poster: s.poster } : {}),
+        // La versione da telefono non si carica da qui, ma si conserva
+        ...(s.srcMobile && isVideoSrc(s.src) ? { srcMobile: s.srcMobile } : {}),
+        ...(s.posterMobile && s.srcMobile && isVideoSrc(s.src)
+          ? { posterMobile: s.posterMobile }
+          : {}),
         ...(s.alt?.trim() ? { alt: s.alt.trim() } : {}),
       }
     : { color: s.color ?? 'ink', label: s.label !== false }

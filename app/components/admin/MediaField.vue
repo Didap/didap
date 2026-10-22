@@ -26,7 +26,14 @@ const COLORS: Record<(typeof PRODUCT_COLORS)[number], { label: string; bg: strin
 
 const src = computed({
   get: () => model.value.src ?? '',
-  set: (v: string) => (model.value = { ...model.value, src: v || undefined }),
+  // Un file nuovo non ha la sua versione da telefono: quella del vecchio va via
+  set: (v: string) =>
+    (model.value = {
+      ...model.value,
+      src: v || undefined,
+      srcMobile: undefined,
+      posterMobile: undefined,
+    }),
 })
 const color = computed({
   get: () => model.value.color ?? 'ink',

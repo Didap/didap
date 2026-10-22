@@ -33,6 +33,8 @@ export const mediaSlotSchema = z
   .object({
     src: imageSrc.optional(),
     poster: imageSrc.optional(),
+    srcMobile: imageSrc.optional(),
+    posterMobile: imageSrc.optional(),
     alt: text(300).optional(),
     color: z.enum(PRODUCT_COLORS).optional(),
     label: z.boolean().optional(),

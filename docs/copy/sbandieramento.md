@@ -55,5 +55,7 @@ lettere, che reggono una riga da sole.
   testo in `app/assets/css/main.css` non usano `text-wrap`.
 - Un test (`test/typeset.test.ts`) fallisce se un testo nei file di traduzione
   ha due frasi sulla stessa riga.
-- Il corpo in markdown delle schede senza scheda strutturata non passa ancora
-  da queste regole.
+- Il corpo in markdown dei contenuti (schede, casi cliente) passa da
+  `typesetBody()` al caricamento, con l’hook `content:file:afterParse` in
+  `nuxt.config.ts`: gli a capo del sorgente diventano spazi e ogni frase va
+  su una riga sua. I blocchi lo mostrano con `whitespace-pre-line`.

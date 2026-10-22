@@ -9,7 +9,7 @@
 
 Full rules in `docs/copy/sbandieramento.md`. In short:
 
-- Text fills its column: no `max-w-*` on text blocks, no `text-wrap: balance` or `pretty`.
-- Every visible text puts each sentence on its own line: write `\n` after the full stop in `i18n/locales/*.json` and give the element `whitespace-pre-line`. Only alt text and SEO descriptions keep flowing.
-- Never end a line on a short word, never split a number from its unit, never leave a single word on the last line. `typeset()` in `shared/typeset.ts` does this for every translated string; text from content frontmatter goes through `typesetLines()` in the template, and markdown bodies through `typesetBody()` in the `content:file:afterParse` hook.
-- `test/typeset.test.ts` fails if a translated text has two sentences on one line.
+- Text fills its column: no `max-w-*` on text blocks, no `text-wrap: balance`.
+- Ragged right: left aligned, never justified, no hyphenation, `text-wrap: pretty` evens the rag (base styles in `app/assets/css/main.css`). Sentences flow in the same paragraph: never break the line after a full stop. A manual `\n` (with `whitespace-pre-line`) only where the design splits a title on purpose.
+- Never end a line on a short word, never split a number from its unit, never start a line with the hyphen of an aside, never leave a single word on the last line. `typeset()` in `shared/typeset.ts` does this for every translated string and for text from content frontmatter in the template; markdown bodies go through `typesetBody()` in the `content:file:afterParse` hook.
+- `test/typeset.test.ts` fails if a translated text breaks the line after a full stop.

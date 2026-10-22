@@ -86,7 +86,7 @@ useSeoMeta({
         {{ t('work.kicker') }}
       </p>
       <h1 class="font-display text-5xl">{{ t('work.title') }}</h1>
-      <p class="text-lg whitespace-pre-line text-ink-soft">{{ t('work.intro') }}</p>
+      <p class="text-lg text-ink-soft">{{ t('work.intro') }}</p>
     </header>
 
     <div v-if="items?.length" class="mb-12 space-y-5">

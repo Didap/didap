@@ -6,25 +6,20 @@ pagina pubblica. Le parole non cambiano: cambiano solo gli spazi e gli a capo.
 ## 1. I testi occupano lo spazio che hanno
 
 Un testo arriva fino in fondo alla sua colonna. Niente larghezze massime sui
-blocchi di testo e niente bilanciamento delle righe: una riga va a capo solo
-quando è piena o quando finisce la frase.
+blocchi di testo e niente bilanciamento delle righe (`text-wrap: balance`),
+che accorcia tutte le righe per pareggiarle.
 
-## 2. Dopo il punto si va a capo
+## 2. Testo a bandiera, non a blocchi
 
-Ogni frase comincia su una riga nuova. Il punto (o il punto interrogativo o
-esclamativo) chiude la riga, la frase dopo comincia sotto. Vale per tutti i
-testi che si vedono: titoli, intro, descrizioni, paragrafi delle schede e
-delle pagine, testi dei moduli.
+I testi sono allineati a sinistra, mai giustificati, senza sillabazione. Una
+riga va a capo quando è piena: le frasi scorrono una dopo l'altra nello
+stesso paragrafo, il punto non manda a capo.
 
-Ne restano fuori solo i testi che non si vedono: alt delle immagini e
-descrizioni SEO.
+Il bordo destro lo uniforma il browser (`text-wrap: pretty`): sposta qualche
+parola tra le ultime righe perché non restino molto più corte delle altre.
 
-Esempio:
-
-> Ogni offerta scrive la scadenza del lotto.
-> La prima richiesta che la trova nel passato assegna il giocatore.
-> Due offerte nello stesso istante non si sovrascrivono mai: la seconda viene
-> rigiocata sull’offerta aggiornata.
+Un a capo scritto a mano c'è solo dove il design spezza un titolo apposta:
+lo slogan in apertura, i titoli di "Come lavoriamo". Mai dopo un punto.
 
 ## 3. Una riga non finisce su una parola breve
 
@@ -37,25 +32,32 @@ alla parola che segue. Mai "il" a fine riga e "prodotto" a capo.
 Un numero non si separa da ciò che conta: 10 €, € 10, 3 novembre, 24 crediti,
 5 MB.
 
-## 5. Niente parola orfana
+## 5. Il trattino di un inciso non apre una riga
 
-L’ultima riga di una frase non è mai una parola sola: l’ultima parola resta
+Nelle frasi con un inciso tra trattini ("Rispondiamo a tutti - anche solo per
+dirti di no") il trattino resta in fondo alla riga, attaccato alla parola
+prima. Una riga non comincia mai con un trattino.
+
+## 6. Niente parola orfana
+
+L'ultima riga di un paragrafo non è mai una parola sola: l'ultima parola resta
 legata alla penultima. Fanno eccezione le parole molto lunghe, oltre 12
 lettere, che reggono una riga da sole.
 
 ## Come è fatto nel codice
 
-- **Regole 3, 4 e 5**: `typeset()` in `shared/typeset.ts`. Si applica da sola a
-  ogni testo tradotto (`postTranslation` in `i18n/i18n.config.ts`).
-- **Regola 2**: nei file `i18n/locales/*.json` l’a capo si scrive come `\n` e
-  l’elemento che mostra il testo ha la classe `whitespace-pre-line`. I testi
-  che arrivano dai contenuti delle schede passano da `typesetLines()` nel
-  template, che aggiunge l’a capo e applica le altre regole.
-- **Regola 1**: i blocchi di testo non hanno classi `max-w-*` e le utility di
-  testo in `app/assets/css/main.css` non usano `text-wrap`.
-- Un test (`test/typeset.test.ts`) fallisce se un testo nei file di traduzione
-  ha due frasi sulla stessa riga.
+- **Regole 3, 4, 5 e 6**: `typeset()` in `shared/typeset.ts` mette spazi
+  indivisibili dove serve. Si applica da sola a ogni testo tradotto
+  (`postTranslation` in `i18n/i18n.config.ts`); i testi dal frontmatter dei
+  contenuti passano da `typeset()` nel template.
 - Il corpo in markdown dei contenuti (schede, casi cliente) passa da
-  `typesetBody()` al caricamento, con l’hook `content:file:afterParse` in
-  `nuxt.config.ts`: gli a capo del sorgente diventano spazi e ogni frase va
-  su una riga sua. I blocchi lo mostrano con `whitespace-pre-line`.
+  `typesetBody()` al caricamento, con l'hook `content:file:afterParse` in
+  `nuxt.config.ts`: gli a capo del sorgente diventano spazi e le parole si
+  legano come sopra.
+- **Regola 2**: in `app/assets/css/main.css` paragrafi, voci di elenco e
+  titoli hanno `text-align: start`, `hyphens: manual` e `text-wrap: pretty`.
+  Gli a capo voluti si scrivono come `\n` nei file `i18n/locales/*.json` e
+  l'elemento ha la classe `whitespace-pre-line`; gli altri testi non la hanno.
+- **Regola 1**: i blocchi di testo non hanno classi `max-w-*`.
+- Un test (`test/typeset.test.ts`) fallisce se un testo nei file di traduzione
+  va a capo dopo la fine di una frase.

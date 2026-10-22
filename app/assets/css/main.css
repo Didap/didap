@@ -197,6 +197,24 @@
     font-weight: 900;
     letter-spacing: -0.03em;
   }
+
+  /* Testo a bandiera (docs/copy/sbandieramento.md): a sinistra, senza
+     sillabazione, con il bordo destro uniformato dal browser dove può */
+  p,
+  li,
+  dd,
+  blockquote,
+  figcaption,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-align: start;
+    hyphens: manual;
+    text-wrap: pretty;
+  }
 }
 
 /* Caption / micro-copy in JetBrains Mono - usato dove c'è

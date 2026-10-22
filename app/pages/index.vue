@@ -161,7 +161,7 @@ useSeoMeta({
           <p class="text-hero whitespace-pre-line">
             {{ t('home.hero_tagline') }}
           </p>
-          <p class="text-body-medium whitespace-pre-line">
+          <p class="text-body-medium">
             {{ t('home.hero_sub') }}
           </p>
         </div>
@@ -180,10 +180,10 @@ useSeoMeta({
         "
       >
         <header class="flex flex-col gap-7">
-          <h2 class="text-title whitespace-pre-line">
+          <h2 class="text-title">
             {{ t('home.products_title') }}
           </h2>
-          <p class="text-body whitespace-pre-line">
+          <p class="text-body">
             {{ t('home.products_intro') }}
           </p>
         </header>
@@ -231,7 +231,7 @@ useSeoMeta({
               </h3>
             </div>
             <div class="flex flex-col gap-6">
-              <p class="text-body whitespace-pre-line">
+              <p class="text-body">
                 {{ t(`home.products.${featured.key}.desc`) }}
               </p>
               <div class="flex flex-wrap items-center gap-6">
@@ -295,7 +295,7 @@ useSeoMeta({
                 {{ p.name }}
               </NuxtLink>
             </h3>
-            <p class="text-body whitespace-pre-line">
+            <p class="text-body">
               {{ t(`home.products.${p.key}.desc`) }}
             </p>
             <a
@@ -352,7 +352,7 @@ useSeoMeta({
               <h3 class="text-title whitespace-pre-line">
                 {{ t(`home.how.${f}.title`) }}
               </h3>
-              <p class="text-body whitespace-pre-line">
+              <p class="text-body">
                 {{ t(`home.how.${f}.body`) }}
               </p>
             </li>
@@ -415,7 +415,7 @@ useSeoMeta({
           <h2 class="text-title">
             {{ t('home.team_title') }}
           </h2>
-          <p class="text-body whitespace-pre-line">
+          <p class="text-body">
             {{ t('home.team_intro') }}
           </p>
         </div>
@@ -491,7 +491,7 @@ useSeoMeta({
             <p class="text-title">
               {{ t('home.qube_title') }}
             </p>
-            <p class="text-body whitespace-pre-line">
+            <p class="text-body">
               {{ t('home.qube_body') }}
             </p>
           </div>

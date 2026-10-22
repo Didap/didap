@@ -34,7 +34,7 @@ export default defineNuxtConfig({
   },
 
   // Il corpo in markdown dei contenuti segue le regole di sbandieramento
-  // (docs/copy/sbandieramento.md): una frase per riga, parole brevi legate.
+  // (docs/copy/sbandieramento.md): a bandiera, parole brevi legate.
   hooks: {
     'content:file:afterParse'(ctx) {
       if (ctx.content.body) typesetBody(ctx.content.body)

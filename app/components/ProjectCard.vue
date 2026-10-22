@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { typeset } from '#shared/typeset'
+import { typesetLines } from '#shared/typeset'
 
 const props = defineProps<{
   to: string
@@ -56,7 +56,7 @@ const sortedTags = computed(() =>
         <span v-if="year">{{ year }}</span>
       </div>
       <h3 class="font-display text-2xl leading-tight">{{ title }}</h3>
-      <p class="text-sm text-ink-soft line-clamp-2">{{ typeset(summary) }}</p>
+      <p class="text-sm whitespace-pre-line text-ink-soft line-clamp-2">{{ typesetLines(summary) }}</p>
       <div v-if="sortedTags.length" class="flex flex-wrap gap-1.5 pt-2">
         <span
           v-for="tag in sortedTags"

@@ -58,7 +58,7 @@ useSeoMeta({
       <img :src="project.cover" :alt="project.title" class="w-full" />
     </div>
 
-    <div class="prose prose-stone mt-10 max-w-none">
+    <div class="prose prose-stone mt-10 max-w-none [&_li]:whitespace-pre-line [&_p]:whitespace-pre-line">
       <ContentRenderer :value="project" />
     </div>
 

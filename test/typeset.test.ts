@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { typeset, typesetLines } from '#shared/typeset'
+import { typeset, typesetBody, typesetLines } from '#shared/typeset'
 import itMessages from '../i18n/locales/it.json'
 import enMessages from '../i18n/locales/en.json'
 
@@ -60,5 +60,22 @@ describe('i18n', () => {
     const config = (await import('../i18n/i18n.config')).default as unknown as () => object
     const i18n = createI18n({ legacy: false, locale: 'it', messages: { it: itMessages }, ...config() })
     expect(i18n.global.t('home.team_intro')).toBe(`Tre full-stack engineer, un${NB}designer, un${NB}project${NB}manager.\nE${NB}Didi.`)
+  })
+})
+
+describe('corpo markdown', () => {
+  it('va a capo dopo il punto anche tra un grassetto e l\'altro', () => {
+    const body = {
+      type: 'minimark',
+      value: [
+        ['p', {}, 'Il banco tiene i conti.\nLa sera dell\'asta. ', ['strong', {}, 'Tutti'], ' rilanciano dal telefono.'],
+        ['pre', {}, ['code', {}, 'a. B']],
+      ],
+    }
+    typesetBody(body)
+    const p = body.value[0] as unknown[]
+    expect(p[2]).toBe(`Il${NB}banco tiene i${NB}conti.\nLa${NB}sera dell'asta.\n`)
+    expect(p[4]).toBe(` rilanciano dal${NB}telefono.`)
+    expect((body.value[1] as unknown[])[2]).toEqual(['code', {}, 'a. B'])
   })
 })

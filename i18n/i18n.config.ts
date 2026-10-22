@@ -5,5 +5,5 @@ import { typeset } from '#shared/typeset'
 // tra numero e unità e prima dell'ultima parola. Gli a capo dopo il punto
 // stanno invece nei testi stessi, come \n.
 export default defineI18nConfig(() => ({
-  postTranslation: (text: unknown) => (typeof text === 'string' ? typeset(text) : text),
+  postTranslation: <T>(text: T): T => (typeof text === 'string' ? (typeset(text) as T) : text),
 }))

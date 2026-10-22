@@ -258,7 +258,7 @@ useSeoMeta({
           <MediaSlot
             :media="project.media.feature[0]"
             class="w-full"
-            :class="project.media.feature[0].srcMobile ? `
+            :class="project.media.feature[0]?.srcMobile ? `
               aspect-9/16
               sm:aspect-848/760
             ` : 'aspect-848/760'"
@@ -391,6 +391,11 @@ useSeoMeta({
 
 .product-body :deep(h2:first-child) {
   margin-top: 0;
+}
+
+.product-body :deep(p),
+.product-body :deep(li) {
+  white-space: pre-line;
 }
 
 .product-body :deep(p),

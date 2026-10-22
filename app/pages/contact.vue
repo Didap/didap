@@ -21,7 +21,7 @@ const localePath = useLocalePath()
 
 useSeoMeta({
   title: `${t('nav.contact')} - Didap`,
-  description: t('contact.intro'),
+  description: t('contact.intro').replace(/\s+/g, ' '),
 })
 
 const form = reactive({
@@ -106,7 +106,7 @@ async function onSubmit() {
       {{ t('contact.kicker') }}
     </p>
     <h1 class="mt-4 font-display text-5xl">{{ t('contact.title') }}</h1>
-    <p class="mt-6 text-lg text-ink-soft">{{ t('contact.intro') }}</p>
+    <p class="mt-6 text-lg whitespace-pre-line text-ink-soft">{{ t('contact.intro') }}</p>
 
     <aside
       class="mt-10 rounded-xl border border-ink/10 bg-paper-soft px-6 py-5 text-sm"
@@ -117,7 +117,7 @@ async function onSubmit() {
       <ul class="mt-3 space-y-2 text-ink-soft">
         <li>· {{ t('contact.info_response') }}</li>
         <li>· {{ t('contact.info_scope') }}</li>
-        <li>· {{ t('contact.info_ethics') }}</li>
+        <li class="whitespace-pre-line">· {{ t('contact.info_ethics') }}</li>
         <li>
           · {{ t('contact.info_email') }}
           <a
@@ -280,7 +280,7 @@ async function onSubmit() {
             {{ t('contact.form.qube_kicker') }}
           </p>
           <h3 class="font-display text-2xl text-ink">The Qube</h3>
-          <p class="text-sm text-ink-soft">
+          <p class="text-sm whitespace-pre-line text-ink-soft">
             {{ t('contact.form.qube_description') }}
           </p>
           <div class="flex flex-wrap gap-2 pt-1">
@@ -362,10 +362,10 @@ async function onSubmit() {
               : t('contact.form.submit')
           }}
         </button>
-        <p v-if="status === 'success'" class="text-sm text-finance">
+        <p v-if="status === 'success'" class="text-sm whitespace-pre-line text-finance">
           {{ t('contact.form.success') }}
         </p>
-        <p v-else-if="status === 'error'" class="text-sm text-accent">
+        <p v-else-if="status === 'error'" class="text-sm whitespace-pre-line text-accent">
           {{ t('contact.form.error') }}
         </p>
       </div>
@@ -389,7 +389,7 @@ async function onSubmit() {
             {{ t('contact.form.qube_kicker') }}
           </p>
           <h3 class="font-display text-2xl text-ink">The Qube</h3>
-          <p class="text-sm text-ink-soft">
+          <p class="text-sm whitespace-pre-line text-ink-soft">
             {{ t('contact.form.qube_description') }}
           </p>
           <div class="flex flex-wrap gap-2 pt-1">

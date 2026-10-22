@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { typesetLines } from '#shared/typeset'
+
 const route = useRoute()
 const { t, locale } = useI18n()
 const collection = useProjectCollection('clients')
@@ -46,7 +48,7 @@ useSeoMeta({
         <span v-if="project.year">{{ project.year }}</span>
       </div>
       <h1 class="font-display text-5xl leading-tight">{{ project.title }}</h1>
-      <p class="text-xl text-ink-soft">{{ project.summary }}</p>
+      <p class="text-xl whitespace-pre-line text-ink-soft">{{ typesetLines(project.summary) }}</p>
     </header>
 
     <div

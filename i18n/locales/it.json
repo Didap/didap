@@ -14,9 +14,9 @@
   "home": {
     "seo_description": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
     "hero_tagline": "Free the\nmonkey.",
-    "hero_sub": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
-    "products_title": "Prodotti vivi. Aprili.",
-    "products_intro": "Li progettiamo, li scriviamo e li teniamo in produzione noi. \nIl modo più rapido per capire come lavoriamo è usarli.",
+    "hero_sub": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura.\nDalle fondamenta all’ultima rifinitura.",
+    "products_title": "Prodotti vivi.\nAprili.",
+    "products_intro": "Li progettiamo, li scriviamo e li teniamo in produzione noi.\nIl modo più rapido per capire come lavoriamo è usarli.",
     "featured_more": "Leggi la scheda",
     "status_live": "Live",
     "status_pilot": "Pilot",
@@ -25,7 +25,7 @@
     "products": {
       "fanta_rainbow": {
         "category": "Fantacalcio",
-        "desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide.",
+        "desc": "Aste live di fantacalcio.\nIl banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide.",
         "alt": "Fanta Rainbow: un fulmine arcobaleno spacca il campo di notte e lascia il logo, con la frase Il fantacalcio come non l'hai mai giocato"
       },
       "bin_or_deal": {
@@ -40,23 +40,23 @@
       },
       "cruciverba_lab": {
         "category": "Giochi",
-        "desc": "La casa dei cruciverba italiani online. Sette nuovi giochi di parole ogni giorno, nel browser.",
+        "desc": "La casa dei cruciverba italiani online.\nSette nuovi giochi di parole ogni giorno, nel browser.",
         "alt": "Cruciverba Lab: una griglia si riempie con CRUCIVERBA e LAB, intorno i giochi del giorno come Chiave, Setaccio, Alveare e Nessi"
       }
     },
     "how_label": "Come lavoriamo",
     "how": {
       "fullstack": {
-        "title": "Full-stack, \nper davvero.",
+        "title": "Full-stack,\nper davvero.",
         "body": "Backend, frontend, infrastruttura, mobile, integrazioni."
       },
       "outsourcing": {
-        "title": "Niente outsourcing \nsu ciò che conta.",
+        "title": "Niente outsourcing\nsu ciò che conta.",
         "body": "Il codice che rilasciamo lo scriviamo, lo testiamo e lo teniamo in piedi noi."
       },
       "design": {
-        "title": "Il design vive \nnel codice.",
-        "body": "Pensato per andare in produzione, non per stare bene nelle slide. I prodotti crescono con l’uso reale."
+        "title": "Il design vive\nnel codice.",
+        "body": "Pensato per andare in produzione, non per stare bene nelle slide.\nI prodotti crescono con l’uso reale."
       }
     },
     "partners_label": "Partner e clienti",
@@ -66,7 +66,7 @@
       "app": "App"
     },
     "team_title": "The team is the feature.",
-    "team_intro": "Tre full-stack engineer, un designer, un project manager. E Didi.",
+    "team_intro": "Tre full-stack engineer, un designer, un project manager.\nE Didi.",
     "roles": {
       "ceo": "CEO & Founder",
       "fullstack": "Full-stack developer",
@@ -82,7 +82,7 @@
   "work": {
     "kicker": "Lo studio",
     "title": "PROd by Didap",
-    "intro": "Prodotti che progettiamo, costruiamo e portiamo sul mercato in autonomia. Per il design, per le città, per i mercati.",
+    "intro": "Prodotti che progettiamo, costruiamo e portiamo sul mercato in autonomia.\nPer il design, per le città, per i mercati.",
     "search_placeholder": "Cerca un prodotto…",
     "filter_by": "Filtra:",
     "clear_filters": "Cancella filtri",
@@ -98,18 +98,18 @@
   "about": {
     "kicker": "Chi siamo",
     "title": "Didap, in due righe.",
-    "intro": "Siamo cinque, indipendenti: tre full-stack, una designer, una project manager. Free the monkey.",
-    "body_1": "Lavoriamo full-stack davvero - backend, frontend, infrastruttura, mobile, integrazioni. Niente subappalti sui pezzi che contano: il codice che spediamo lo scriviamo, testiamo e portiamo in produzione noi.",
-    "body_2": "Il design vive dentro al codice: pensato per essere costruibile, non solo bello sulle slide. I prodotti crescono con l'uso reale, non con il brief perfetto."
+    "intro": "Siamo cinque, indipendenti: tre full-stack, una designer, una project manager.\nFree the monkey.",
+    "body_1": "Lavoriamo full-stack davvero - backend, frontend, infrastruttura, mobile, integrazioni.\nNiente subappalti sui pezzi che contano: il codice che spediamo lo scriviamo, testiamo e portiamo in produzione noi.",
+    "body_2": "Il design vive dentro al codice: pensato per essere costruibile, non solo bello sulle slide.\nI prodotti crescono con l'uso reale, non con il brief perfetto."
   },
   "contact": {
     "kicker": "Contatti",
     "title": "Parliamone.",
-    "intro": "Se hai un progetto in mente, scrivici. Rispondiamo a tutti - anche solo per dirti di no.",
+    "intro": "Se hai un progetto in mente, scrivici.\nRispondiamo a tutti - anche solo per dirti di no.",
     "info_title": "Prima di scrivere",
     "info_response": "Rispondiamo entro 2 giorni lavorativi.",
     "info_scope": "Lavoriamo su prodotti su misura, app native, gestionali, SaaS e siti.",
-    "info_ethics": "Sviluppiamo solo progetti in cui crediamo - eticamente, creativamente, umanamente. Se ti diciamo di no non offenderti: ognuno fa ciò che si sente.",
+    "info_ethics": "Sviluppiamo solo progetti in cui crediamo - eticamente, creativamente, umanamente.\nSe ti diciamo di no non offenderti: ognuno fa ciò che si sente.",
     "info_email": "Preferisci scrivere direttamente?",
     "form": {
       "name": "Nome",
@@ -130,7 +130,7 @@
       "funding_have": "Sì, ho il budget per il progetto",
       "funding_need": "Mi serve un consiglio sulla finanza agevolata",
       "qube_kicker": "Partner consigliato",
-      "qube_description": "The Qube è un incubatore certificato MIMIT. Aiuta startup e PMI ad accedere a bandi, contributi e finanza agevolata. Noi non ce ne occupiamo direttamente: pensiamo alla parte tecnica del tuo progetto, loro al modo per coprirne il costo.",
+      "qube_description": "The Qube è un incubatore certificato MIMIT.\nAiuta startup e PMI ad accedere a bandi, contributi e finanza agevolata.\nNoi non ce ne occupiamo direttamente: pensiamo alla parte tecnica del tuo progetto, loro al modo per coprirne il costo.",
       "qube_visit": "Vai a theqube.it",
       "qube_more": "Scheda partner",
       "message": "Raccontaci",
@@ -139,8 +139,8 @@
       "privacy_link": "privacy policy",
       "submit": "Invia",
       "submitting": "Invio in corso…",
-      "success": "Grazie. Ti rispondiamo a breve.",
-      "error": "Qualcosa è andato storto. Scrivici a amministrazione{'@'}didap.it"
+      "success": "Grazie.\nTi rispondiamo a breve.",
+      "error": "Qualcosa è andato storto.\nScrivici a amministrazione{'@'}didap.it"
     }
   },
   "footer": {
@@ -156,14 +156,14 @@
     "title": "Privacy policy",
     "intro": "Come trattiamo i dati personali raccolti tramite questo sito.",
     "updated": "Ultimo aggiornamento: 4 maggio 2026",
-    "placeholder": "Pagina in lavorazione. Sostituiremo questo testo con l'informativa completa una volta integrato PostHog per l'analytics e finalizzati i flussi di raccolta dati."
+    "placeholder": "Pagina in lavorazione.\nSostituiremo questo testo con l'informativa completa una volta integrato PostHog per l'analytics e finalizzati i flussi di raccolta dati."
   },
   "cookies": {
     "kicker": "Legal",
     "title": "Cookie policy",
     "intro": "Quali cookie usiamo, perché li usiamo e come puoi disattivarli.",
     "updated": "Ultimo aggiornamento: 4 maggio 2026",
-    "placeholder": "Pagina in lavorazione. Verrà completata insieme all'integrazione di PostHog per l'analytics."
+    "placeholder": "Pagina in lavorazione.\nVerrà completata insieme all'integrazione di PostHog per l'analytics."
   },
   "common": {
     "visit": "Visita il sito",

@@ -75,18 +75,18 @@ const isPa = (tag: string) => tag.trim().toUpperCase() === 'PA'
 
 useSeoMeta({
   title: `${t('nav.work')} - Didap`,
-  description: t('work.intro'),
+  description: t('work.intro').replace(/\s+/g, ' '),
 })
 </script>
 
 <template>
   <section class="mx-auto max-w-6xl px-6 py-20">
-    <header class="mb-12 max-w-2xl space-y-4">
+    <header class="mb-12 space-y-4">
       <p class="text-xs uppercase tracking-[0.3em] text-ink-soft">
         {{ t('work.kicker') }}
       </p>
       <h1 class="font-display text-5xl">{{ t('work.title') }}</h1>
-      <p class="text-lg text-ink-soft">{{ t('work.intro') }}</p>
+      <p class="text-lg whitespace-pre-line text-ink-soft">{{ t('work.intro') }}</p>
     </header>
 
     <div v-if="items?.length" class="mb-12 space-y-5">

@@ -18,7 +18,7 @@ useSeoMeta({
     </p>
 
     <div class="prose prose-stone mt-12 max-w-none">
-      <p>{{ t('cookies.placeholder') }}</p>
+      <p class="whitespace-pre-line">{{ t('cookies.placeholder') }}</p>
     </div>
   </section>
 </template>

@@ -2,7 +2,7 @@
 const { t } = useI18n()
 useSeoMeta({
   title: `${t('nav.about')} - Didap`,
-  description: t('about.intro'),
+  description: t('about.intro').replace(/\s+/g, ' '),
 })
 </script>
 
@@ -12,8 +12,8 @@ useSeoMeta({
       {{ t('about.kicker') }}
     </p>
     <h1 class="mt-4 font-display text-5xl">{{ t('about.title') }}</h1>
-    <p class="mt-6 text-lg text-ink-soft">{{ t('about.intro') }}</p>
-    <div class="mt-10 space-y-4 text-ink-soft">
+    <p class="mt-6 text-lg whitespace-pre-line text-ink-soft">{{ t('about.intro') }}</p>
+    <div class="mt-10 space-y-4 whitespace-pre-line text-ink-soft">
       <p>{{ t('about.body_1') }}</p>
       <p>{{ t('about.body_2') }}</p>
     </div>

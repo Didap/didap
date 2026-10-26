@@ -1,29 +1,21 @@
 <script setup lang="ts">
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
+import RadarGrantFiles from '~/components/admin/RadarGrantFiles.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
-import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
 import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type EvaluatedGrant, type FolderStart } from '#shared/radar'
 
-// Scheda di un bando: giudizio, dati, sintesi, requisiti e come si
-// presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
-// guardare; la frase del bando si apre col clic.
+// Scheda di un bando, in due schede: "Dettaglio" (giudizio, dati, sintesi,
+// requisiti e come si presenta) e "File" (la cartella del bando). Il motivo
+// di un requisito compare solo quando c'è qualcosa da guardare; la frase del
+// bando si apre col clic.
 const props = defineProps<{ grant: EvaluatedGrant, filesConfigured: boolean }>()
-// La cartella si riempie in background: il pannello segna il bando e lo
+// La scheda scelta la tiene la pagina: resta passando da un bando all'altro
+const tab = defineModel<'detail' | 'files'>('tab', { required: true })
+// La cartella si riempie in background: la pagina segna il bando e lo
 // ricarica finché non è pronta
-const emit = defineEmits<{ folder: [id: string, start: FolderStart] }>()
-
-const { notify } = useAdminToast()
-
-async function createFolder() {
-  const id = props.grant.id
-  try {
-    emit('folder', id, await $fetch<FolderStart>(`/api/admin/radar/grants/${id}/folder`, { method: 'POST' }))
-  }
-  catch (err) {
-    notify('error', adminErrorText(err))
-  }
-}
+defineEmits<{ folder: [id: string, start: FolderStart] }>()
 
 const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
 
@@ -62,6 +54,14 @@ const note = (i: number) => {
           <p class="text-sm opacity-60">
             {{ grant.issuer }}
           </p>
+          <!-- Chiuso o scaduto: resta qui solo perché ha la cartella -->
+          <p
+            v-if="grant.closed"
+            class="flex items-center gap-2 text-sm"
+          >
+            <span class="rounded-full bg-ink/8 px-2 py-0.5 text-xs font-medium">Chiuso</span>
+            <span class="opacity-60">Scadenza {{ grant.deadline ? formatDay(grant.deadline) : 'a sportello' }}</span>
+          </p>
         </div>
       </div>
       <div class="ml-9 flex flex-wrap gap-2">
@@ -92,23 +92,6 @@ const note = (i: number) => {
             />
           </svg>
         </a>
-        <!-- La cartella del bando: si crea una volta, si riprova se il
-             riempimento non è finito (la scheda File arriva dopo) -->
-        <button
-          v-if="!grant.folderFilled && !grant.folderFilling"
-          type="button"
-          class="
-            inline-flex w-fit items-center rounded-full border border-ink/20
-            px-4 py-2 text-sm
-            hover:border-ink
-            disabled:opacity-40
-          "
-          :disabled="!filesConfigured"
-          :title="filesConfigured ? 'Crea la cartella del bando, col bando e i suoi PDF' : 'Cloudinary non configurato'"
-          @click="createFolder"
-        >
-          {{ grant.hasFolder ? 'Riprova a prendere i file dal bando' : 'Crea cartella del bando' }}
-        </button>
         <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
         <a
           :href="`/api/admin/radar/grants/${grant.id}/export`"
@@ -123,15 +106,30 @@ const note = (i: number) => {
           Esporta per Claude
         </a>
       </div>
-      <p
-        v-if="grant.folderNote && !grant.folderFilling"
-        class="ml-9 text-xs"
-        :class="grant.folderNote.startsWith('Non riuscita') ? 'text-red' : 'opacity-60'"
+      <ToggleGroupRoot
+        :model-value="tab"
+        type="single"
+        class="ml-9 toggle-segmented w-fit"
+        aria-label="Scheda del bando"
+        @update:model-value="v => v && (tab = v as 'detail' | 'files')"
       >
-        Cartella: {{ grant.folderNote }}
-      </p>
+        <ToggleGroupItem value="detail">
+          Dettaglio
+        </ToggleGroupItem>
+        <ToggleGroupItem value="files">
+          File
+        </ToggleGroupItem>
+      </ToggleGroupRoot>
     </header>
 
+    <RadarGrantFiles
+      v-if="tab === 'files'"
+      :grant="grant"
+      :configured="filesConfigured"
+      @folder="(id, start) => $emit('folder', id, start)"
+    />
+
+    <template v-else>
     <div
       v-if="grant.verdict"
       class="flex items-start gap-3 rounded-xl bg-ink/4 p-3 text-sm"
@@ -284,5 +282,6 @@ const note = (i: number) => {
         </li>
       </ul>
     </section>
+    </template>
   </article>
 </template>

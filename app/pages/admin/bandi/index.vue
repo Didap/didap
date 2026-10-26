@@ -29,7 +29,7 @@ import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { adminErrorText } from '~/utils/adminErrors'
-import { formatDateTime } from '~/utils/format'
+import { formatDateTime, formatDay } from '~/utils/format'
 import { romeDate } from '#shared/dates'
 import { formatWholeEuro } from '#shared/money'
 import {
@@ -184,16 +184,18 @@ const sendNow = () => act(async () => {
   return sent ? `Mail inviata con ${sent} bandi` : 'Nessun bando nuovo da inviare'
 })
 
-// Valutazione coi parametri del pannello, anche prima di salvarli
+// Valutazione coi parametri del pannello, anche prima di salvarli. I bandi
+// con la cartella restano anche fuori dalla ricerca scelta.
 const now = new Date()
 const grants = computed<EvaluatedGrant[]>(() => {
   const f = form.value
   const list = data.value?.grants ?? []
   if (!f) return []
-  return list.filter(g => isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
+  return list.filter(g => g.hasFolder || isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
 })
 
-// Le schede per esito, più quella dei bandi segnati col cuore
+// Le schede per esito, più quella dei bandi segnati col cuore. I bandi
+// chiusi (restano solo se hanno la cartella) stanno solo negli interessanti.
 type Tab = Eligibility | 'liked'
 const TABS: Record<Tab, string> = { ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
 const tab = ref<Tab>('eligible')
@@ -202,7 +204,7 @@ const query = ref('')
 const counts = computed(() => {
   const out: Record<Tab, number> = { eligible: 0, to_verify: 0, excluded: 0, liked: 0 }
   for (const g of grants.value) {
-    out[g.eligibility]++
+    if (!g.closed) out[g.eligibility]++
     if (g.liked) out.liked++
   }
   return out
@@ -211,7 +213,7 @@ const counts = computed(() => {
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
   return grants.value.filter(g =>
-    (tab.value === 'liked' ? g.liked : g.eligibility === tab.value)
+    (tab.value === 'liked' ? g.liked : !g.closed && g.eligibility === tab.value)
     && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
 })
 
@@ -239,7 +241,12 @@ function setFolder(id: string, start: FolderStart) {
   g.liked = true
   g.folderFilled = start.status === 'ready'
   g.folderFilling = start.status === 'filling'
+  // Il server azzera la nota quando riparte: qui subito, senza aspettare
+  if (g.folderFilling) g.folderNote = ''
 }
+
+// Scheda del dettaglio ("Dettaglio" o "File"): resta passando da un bando all'altro
+const detailTab = ref<'detail' | 'files'>('detail')
 
 const selectedId = ref<string | null>(null)
 const selected = computed(() => visible.value.find(g => g.id === selectedId.value) ?? null)
@@ -446,7 +453,7 @@ function toggleGroup(group: string, on: boolean) {
                   class="flex flex-col gap-2 rounded-lg bg-red/8 p-3 text-xs"
                   role="alert"
                 >
-                  <p>Cancello tutti i bandi letti, cuori compresi. Impostazioni e registro restano.</p>
+                  <p>Cancello tutti i bandi letti, cuori compresi, tranne quelli con la cartella. Impostazioni e registro restano.</p>
                   <span class="flex gap-2">
                     <button
                       type="button"
@@ -963,7 +970,19 @@ function toggleGroup(group: string, on: boolean) {
                   flex flex-col items-end gap-1 text-right text-sm
                   whitespace-nowrap
                 ">
-                  <span :class="timeLeft(g).urgent ? 'font-medium text-red' : ''">{{ timeLeft(g).text }}</span>
+                  <span
+                    v-if="g.closed"
+                    class="flex items-center gap-2"
+                  >
+                    <span class="
+                      rounded-full bg-ink/8 px-2 py-0.5 text-xs font-medium
+                    ">Chiuso</span>
+                    <span class="opacity-60">{{ g.deadline ? formatDay(g.deadline) : 'A sportello' }}</span>
+                  </span>
+                  <span
+                    v-else
+                    :class="timeLeft(g).urgent ? 'font-medium text-red' : ''"
+                  >{{ timeLeft(g).text }}</span>
                   <span
                     v-if="g.maxAmount"
                     class="tabular-nums opacity-60"
@@ -1005,6 +1024,7 @@ function toggleGroup(group: string, on: boolean) {
               >
                 <RadarGrantDetail
                   :grant="g"
+                  v-model:tab="detailTab"
                   :files-configured="!!data?.status.filesConfigured"
                   @folder="setFolder"
                 />
@@ -1026,6 +1046,7 @@ function toggleGroup(group: string, on: boolean) {
         <RadarGrantDetail
           v-if="selected"
           :grant="selected"
+          v-model:tab="detailTab"
           :files-configured="!!data?.status.filesConfigured"
           @folder="setFolder"
         />

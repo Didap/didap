@@ -92,8 +92,11 @@ async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Dat
     ])
     if (md.status === 'rejected') throw md.reason
     if (pdfs.status === 'rejected') throw pdfs.reason
+    // PDF scaricati ma non caricati nello store: la cartella resta da finire,
+    // così il pannello offre di riprovare (la ripresa salta i file presenti)
+    const { note, complete } = pdfs.value
     await sql`
-      update radar_grants set folder_filled_at = now(), folder_note = ${pdfs.value}, folder_claimed_at = null
+      update radar_grants set folder_filled_at = ${complete ? new Date() : null}, folder_note = ${note}, folder_claimed_at = null
       where id = ${id}
     `
   }
@@ -120,22 +123,25 @@ async function savePdf(href: string, { has, save }: Saver): Promise<PdfOutcome> 
   return save(name, 'application/pdf', data).then(() => 'loaded' as const, () => 'notUploaded' as const)
 }
 
-// Salva i PDF del bando, quattro alla volta; la nota dice cosa manca
-async function savePdfs(url: string, saver: Saver): Promise<string> {
+// Salva i PDF del bando, quattro alla volta; la nota dice cosa manca.
+// `complete` è falso se qualche PDF scaricato non è entrato nello store: un
+// nuovo tentativo può prenderlo.
+async function savePdfs(url: string, saver: Saver): Promise<{ note: string, complete: boolean }> {
   let pdfs: string[]
   try {
     pdfs = await grantPdfLinks(url)
   }
   catch {
-    return 'Pagina del bando non raggiungibile: i PDF vanno aggiunti a mano'
+    return { note: 'Pagina del bando non raggiungibile: i PDF vanno aggiunti a mano', complete: true }
   }
-  if (!pdfs.length) return 'Nessun PDF trovato sulla pagina del bando'
+  if (!pdfs.length) return { note: 'Nessun PDF trovato sulla pagina del bando', complete: true }
   const outcomes = await inPool(pdfs, FILE_CONCURRENCY, href => savePdf(href, saver))
   const count = (o: PdfOutcome) => outcomes.filter(x => x === o).length
-  return [
+  const note = [
     `${count('loaded')} PDF del bando caricati`,
     count('notDownloaded') && `${count('notDownloaded')} non scaricati dal sito`,
     count('tooLarge') && `${count('tooLarge')} oltre 10 MB, da scaricare dal sito del bando`,
     count('notUploaded') && `${count('notUploaded')} non caricati`,
   ].filter(Boolean).join(', ')
+  return { note, complete: count('notUploaded') === 0 }
 }

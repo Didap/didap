@@ -174,6 +174,35 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     expect(await reread()).toMatchObject({ folderFilled: true, folderFilling: false, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
   })
 
+  it('un PDF scaricato ma non caricato: cartella da finire, il clic dopo lo prende', async () => {
+    const grant = await oneGrant()
+    vi.stubGlobal('fetch', fakeWeb(calls))
+    const store = memoryStore()
+    const noPdf = {
+      ...store,
+      put: async (key: string, data: Buffer, filename: string) => {
+        if (filename.endsWith('.pdf')) throw new Error('quota')
+        return store.put(key, data, filename)
+      },
+    }
+    await startGrantFolder(sql, noPdf, grant.id, run)
+    await finish()
+    // La nota resta, ma non è "riempita": il pannello offre di riprovare
+    expect(await reread()).toMatchObject({
+      hasFolder: true,
+      folderFilled: false,
+      folderFilling: false,
+      folderNote: '0 PDF del bando caricati, 1 non scaricati dal sito, 1 non caricati',
+    })
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['bando-voucher-bando-a.md'])
+
+    expect(await startGrantFolder(sql, store, grant.id, run)).toEqual({ status: 'filling' })
+    await finish()
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
+    expect(store.files.size).toBe(2)
+    expect(await reread()).toMatchObject({ folderFilled: true, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
+  })
+
   it('un bando che non c\'è', async () => {
     await expect(startGrantFolder(sql, memoryStore(), '00000000-0000-4000-8000-000000000000'))
       .rejects.toMatchObject({ statusCode: 404 })

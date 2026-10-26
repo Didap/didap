@@ -26,7 +26,7 @@ describe('cloudinarySignature', () => {
 describe('cloudinaryStore', () => {
   it('put: multipart firmato su raw/upload', async () => {
     const { calls, impl } = fakeFetch(() => json({ public_id: 'k' }))
-    await cloudinaryStore(cfg, impl).put('didap/bandi/1/abc', Buffer.from('%PDF-1.4'), 'bando.pdf')
+    await cloudinaryStore(cfg, impl).put('didap/bandi/1/abc', Buffer.from('%PDF-1.4'))
     expect(calls).toHaveLength(1)
     expect(calls[0]!.url).toBe('https://api.cloudinary.com/v1_1/demo/raw/upload')
     expect(calls[0]!.init.method).toBe('POST')
@@ -43,7 +43,7 @@ describe('cloudinaryStore', () => {
   it('ogni richiesta ha un timeout', async () => {
     const { calls, impl } = fakeFetch(() => json({ result: 'ok' }))
     const store = cloudinaryStore(cfg, impl)
-    await store.put('k', Buffer.from('a'), 'a.pdf')
+    await store.put('k', Buffer.from('a'))
     await store.get('k')
     await store.remove('k')
     expect(calls).toHaveLength(3)
@@ -75,6 +75,8 @@ describe('cloudinaryStore', () => {
     const form = calls[0]!.init.body as FormData
     expect(form.get('invalidate')).toBe('true')
     expect(form.get('type')).toBe('authenticated')
+    const timestamp = String(form.get('timestamp'))
+    expect(form.get('signature')).toBe(cloudinarySignature({ invalidate: 'true', public_id: 'didap/bandi/1/abc', timestamp, type: 'authenticated' }, 'abcd'))
   })
 
   it('remove: una risposta 500 lancia', async () => {
@@ -84,7 +86,7 @@ describe('cloudinaryStore', () => {
 
   it('put: una risposta 401 lancia col messaggio', async () => {
     const { impl } = fakeFetch(() => json({ error: { message: 'Invalid Signature' } }, 401))
-    await expect(cloudinaryStore(cfg, impl).put('x', Buffer.from('a'), 'a.pdf')).rejects.toThrow('Cloudinary ha risposto 401: Invalid Signature')
+    await expect(cloudinaryStore(cfg, impl).put('x', Buffer.from('a'))).rejects.toThrow('Cloudinary ha risposto 401: Invalid Signature')
   })
 })
 

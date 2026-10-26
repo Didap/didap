@@ -1,13 +1,12 @@
 import { adminErrorText } from '~/utils/adminErrors'
-import { MAX_FILE_BYTES, treeFolders, type EntryKind, type FileEntry, type FolderEntry, type FolderListing, type TreeFolder, type TreeRow } from '#shared/grant-files'
+import { INLINE_MIMES, MAX_FILE_BYTES, MAX_FILE_MB, treeFolders, type EntryKind, type FileEntry, type FolderEntry, type FolderListing, type TreeFolder, type TreeRow } from '#shared/grant-files'
 
 // Cartella di un bando vista dal pannello: la cartella aperta, le operazioni
 // sugli elementi e i caricamenti, uno per richiesta (ogni riga ha il suo
 // stato e un errore ferma solo quel file)
 
 // Tipi che il server manda nel browser (gli altri si scaricano)
-const PREVIEW = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'])
-export const canPreview = (f: FileEntry) => PREVIEW.has(f.mime)
+export const canPreview = (f: FileEntry) => INLINE_MIMES.has(f.mime)
 
 export type FileKind = 'folder' | 'pdf' | 'image' | 'doc' | 'sheet' | 'other'
 
@@ -138,7 +137,7 @@ export function useGrantFiles(grantId: () => string) {
     return treeFolders(rows, listing.value?.path[0]?.name ?? 'Cartella del bando')
   }
 
-  // Nella cartella aperta; oltre 10 MB non partono. Le righe finite spariscono,
+  // Nella cartella aperta; oltre MAX_FILE_BYTES non partono. Le righe finite spariscono,
   // quelle andate male restano finché non si chiudono.
   async function upload(files: File[]) {
     const grant = grantId()
@@ -146,8 +145,8 @@ export function useGrantFiles(grantId: () => string) {
     const big = files.filter(f => f.size > MAX_FILE_BYTES)
     if (big.length) {
       notify('error', big.length === 1
-        ? `${big[0]!.name} supera i 10 MB`
-        : `${big.map(f => f.name).join(', ')} superano i 10 MB`)
+        ? `${big[0]!.name} supera i ${MAX_FILE_MB} MB`
+        : `${big.map(f => f.name).join(', ')} superano i ${MAX_FILE_MB} MB`)
     }
     const jobs = files
       .filter(f => f.size <= MAX_FILE_BYTES)

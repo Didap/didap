@@ -1,10 +1,10 @@
+import { INLINE_MIMES } from '#shared/grant-files'
+
 // Intestazioni per i byte di un file della cartella del bando. Nel browser si
 // aprono solo PDF e immagini semplici; il resto (HTML, SVG, ...) è sempre un
 // allegato di byte generici, in sandbox se qualcuno lo apre lo stesso.
 
-const INLINE = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'])
-
-export const inlineAllowed = (mime: string) => INLINE.has(mime)
+export const inlineAllowed = (mime: string) => INLINE_MIMES.has(mime)
 
 // Ripiego ASCII per i browser vecchi: niente virgolette, barre inverse,
 // accenti o altri caratteri fuori da ASCII stampabile

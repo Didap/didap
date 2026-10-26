@@ -87,7 +87,7 @@ const rowKey = (r: Row) => `${r.kind}:${r.entry.id}`
 const rowIcon = (r: Row): FileKind => r.kind === 'folder' ? 'folder' : fileKind(r.entry)
 const rowMeta = (r: Row) => r.kind === 'folder'
   ? `${r.entry.fileCount} file · ${formatDateTime(r.entry.createdAt)}`
-  : [formatBytes(r.entry.bytes), formatDateTime(r.entry.createdAt), r.entry.fromRadar ? 'radar' : r.entry.uploadedBy]
+  : [formatBytes(r.entry.bytes), formatDateTime(r.entry.createdAt), r.entry.uploadedBy ?? 'radar']
       .filter(Boolean).join(' · ')
 
 const path = computed(() => listing.value?.path ?? [])

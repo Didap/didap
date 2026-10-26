@@ -6,7 +6,6 @@ import {
   addFileOnce,
   createFolder,
   deleteEntry,
-  folderNames,
   folderTree,
   listFolder,
   moveEntry,
@@ -164,7 +163,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     const g = await grant('Bando')
     await createFolder(sql, g, null, 'Bozze')
     expect((await createFolder(sql, g, null, 'bozze')).name).toBe('bozze (2)')
-    expect(await folderNames(sql, g, null)).toEqual(new Set(['Bozze', 'bozze (2)']))
+    expect((await listFolder(sql, g, null)).folders.map(f => f.name)).toEqual(['Bozze', 'bozze (2)'])
   })
 
   it('un file oltre 10 MB dà 413 senza toccare lo store', async () => {
@@ -212,9 +211,9 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     await addFile(sql, store, file(g, null, 'radar.pdf'))
     await sql`delete from admin_users where id = ${u.id}`
     const files = (await listFolder(sql, g, null)).files
-    expect(files.map(f => [f.name, f.uploadedBy, f.fromRadar])).toEqual([
-      ['radar.pdf', null, true],
-      ['suo.pdf', 'Giulia', false],
+    expect(files.map(f => [f.name, f.uploadedBy])).toEqual([
+      ['radar.pdf', null],
+      ['suo.pdf', 'Giulia'],
     ])
   })
 
@@ -338,7 +337,6 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     await expect(listFolder(sql, g, folder.id)).rejects.toMatchObject(noFolder)
     await expect(createFolder(sql, g, folder.id, 'x')).rejects.toMatchObject(noFolder)
     await expect(addFile(sql, store, file(g, folder.id, 'x.pdf'))).rejects.toMatchObject(noFolder)
-    await expect(folderNames(sql, g, folder.id)).rejects.toMatchObject(noFolder)
     await expect(renameEntry(sql, g, 'folder', folder.id, 'x')).rejects.toMatchObject(noFolder)
     await expect(moveEntry(sql, g, 'file', f.id, null)).rejects.toMatchObject(noFile)
     await expect(deleteEntry(sql, store, g, 'file', f.id)).rejects.toMatchObject(noFile)
@@ -415,8 +413,8 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     // Lo store toglie folder_at mentre carica: il controllo sotto il lucchetto lo vede
     const racing = {
       ...base,
-      put: async (key: string, data: Buffer, filename: string) => {
-        await base.put(key, data, filename)
+      put: async (key: string, data: Buffer) => {
+        await base.put(key, data)
         await sql`update radar_grants set folder_at = null where id = ${g}`
       },
     }

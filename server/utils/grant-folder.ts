@@ -1,9 +1,9 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
-import { cleanFileName, MAX_FILE_BYTES } from '#shared/grant-files'
+import { cleanFileName, MAX_FILE_BYTES, MAX_FILE_MB } from '#shared/grant-files'
 import { FOLDER_CLAIM_MINUTES, type FolderStart } from '#shared/radar'
 import type { FileStore } from './file-store'
-import { addFileOnce, folderNames, grantSourceFolder } from './grant-files'
+import { addFileOnce, grantSourceFolder } from './grant-files'
 import { inPool, readGrantDocument } from './radar'
 import { grantExport, grantFileName } from './radar-export'
 import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, mainHtml, pagePdfLinks, SOURCE_TIMEOUT_MS } from './radar-fetch'
@@ -71,21 +71,24 @@ export async function startGrantFolder(
 async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Date) {
   try {
     const { grant, content, profile } = await readGrantDocument(sql, id)
-    const folderId = await grantSourceFolder(sql, id, SOURCE_FOLDER)
-    // Ripresa dopo un errore, o un altro lavoro sulla stessa cartella: i nomi
-    // si rileggono prima di ogni file, e addFileOnce li ricontrolla sotto il
-    // lucchetto, così niente "(2)"
-    const has = async (name: string) => {
-      const lower = name.toLowerCase()
-      return [...await folderNames(sql, id, folderId)].some(n => n.toLowerCase() === lower)
+    const source = await grantSourceFolder(sql, id, SOURCE_FOLDER)
+    // Ripresa dopo un errore: i file già nella cartella si saltano. I nomi si
+    // leggono una volta e la lista segue i file salvati; un altro lavoro
+    // sulla stessa cartella lo ferma addFileOnce, che ricontrolla il nome
+    // sotto il lucchetto, così niente "(2)"
+    const names = new Set([...source.names].map(n => n.toLowerCase()))
+    const saver: Saver = {
+      has: name => names.has(name.toLowerCase()),
+      save: async (name, mime, data) => {
+        await addFileOnce(sql, store, { grantId: id, folderId: source.id, name, mime, data, userId: null })
+        names.add(name.toLowerCase())
+      },
     }
-    const save = async (name: string, mime: string, data: Buffer) => {
-      if (!(await has(name))) await addFileOnce(sql, store, { grantId: id, folderId, name, mime, data, userId: null })
-    }
+    const mdName = grantFileName(grant)
     // Si aspettano entrambi: un errore sul bando non lascia PDF in volo
     const [md, pdfs] = await Promise.allSettled([
-      save(grantFileName(grant), 'text/markdown', Buffer.from(grantExport(grant, content, profile))),
-      savePdfs(grant.url, { has, save }),
+      saver.has(mdName) ? Promise.resolve() : saver.save(mdName, 'text/markdown', Buffer.from(grantExport(grant, content, profile))),
+      savePdfs(grant.url, saver),
     ])
     if (md.status === 'rejected') throw md.reason
     if (pdfs.status === 'rejected') throw pdfs.reason
@@ -110,12 +113,12 @@ async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Dat
 }
 
 type PdfOutcome = 'loaded' | 'notDownloaded' | 'tooLarge' | 'notUploaded'
-type Saver = { has: (name: string) => Promise<boolean>, save: (name: string, mime: string, data: Buffer) => Promise<void> }
+type Saver = { has: (name: string) => boolean, save: (name: string, mime: string, data: Buffer) => Promise<void> }
 
 async function savePdf(href: string, { has, save }: Saver): Promise<PdfOutcome> {
   const name = pdfFileName(href)
   // Già nella cartella: non si riscarica
-  if (await has(name)) return 'loaded'
+  if (has(name)) return 'loaded'
   const data = await fetchFromSource(href, { origin: new URL(href).origin, maxBytes: MAX_DOWNLOAD_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
     .catch(() => null)
   if (!data) return 'notDownloaded'
@@ -140,7 +143,7 @@ async function savePdfs(url: string, saver: Saver): Promise<{ note: string, comp
   const note = [
     `${count('loaded')} PDF del bando caricati`,
     count('notDownloaded') && `${count('notDownloaded')} non scaricati dal sito`,
-    count('tooLarge') && `${count('tooLarge')} oltre 10 MB, da scaricare dal sito del bando`,
+    count('tooLarge') && `${count('tooLarge')} oltre ${MAX_FILE_MB} MB, da scaricare dal sito del bando`,
     count('notUploaded') && `${count('notUploaded')} non caricati`,
   ].filter(Boolean).join(', ')
   return { note, complete: count('notUploaded') === 0 }

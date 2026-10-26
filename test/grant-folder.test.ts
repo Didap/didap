@@ -22,6 +22,9 @@ describe('nomi dei PDF del bando', () => {
   })
 })
 
+// Lo store vede solo i byte: il PDF finto comincia con %PDF, l'export del bando no
+const isPdf = (data: Buffer) => data.subarray(0, 4).toString() === '%PDF'
+
 // Il sito del bando finto: ogni richiesta finisce in `calls`
 // `bigPdf`: avviso.pdf di 10 MB + 1 byte; `pageDown`: la pagina del bando dà 404
 function fakeWeb(calls: string[], { bigPdf = false, pageDown = false } = {}) {
@@ -117,7 +120,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
 
     const files = await fromSite(grant.id)
     expect(files.map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
-    expect(files.every(f => f.uploadedBy === null && f.fromRadar)).toBe(true)
+    expect(files.every(f => f.uploadedBy === null)).toBe(true)
     const stored = [...store.files.values()].map(b => b.toString())
     expect(stored).toContain('%PDF-1.4 finto')
     expect(stored.some(b => b.includes('titolo: "Voucher bando A"'))).toBe(true)
@@ -152,9 +155,9 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     const store = memoryStore()
     const failing = {
       ...store,
-      put: async (key: string, data: Buffer, filename: string) => {
-        if (filename.endsWith('.md')) throw new Error('quota')
-        return store.put(key, data, filename)
+      put: async (key: string, data: Buffer) => {
+        if (!isPdf(data)) throw new Error('quota')
+        return store.put(key, data)
       },
     }
     await startGrantFolder(sql, failing, grant.id, run)
@@ -180,9 +183,9 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     const store = memoryStore()
     const noPdf = {
       ...store,
-      put: async (key: string, data: Buffer, filename: string) => {
-        if (filename.endsWith('.pdf')) throw new Error('quota')
-        return store.put(key, data, filename)
+      put: async (key: string, data: Buffer) => {
+        if (isPdf(data)) throw new Error('quota')
+        return store.put(key, data)
       },
     }
     await startGrantFolder(sql, noPdf, grant.id, run)
@@ -266,11 +269,13 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     const waiting = new Map<string, () => void>()
     const paired = {
       ...store,
-      put: async (key: string, data: Buffer, filename: string) => {
-        const other = waiting.get(filename)
+      put: async (key: string, data: Buffer) => {
+        // Stesso file, stessi byte
+        const same = data.toString()
+        const other = waiting.get(same)
         if (other) other()
-        else await new Promise<void>(resolve => waiting.set(filename, resolve))
-        return store.put(key, data, filename)
+        else await new Promise<void>(resolve => waiting.set(same, resolve))
+        return store.put(key, data)
       },
     }
     await sql`update radar_grants set folder_filled_at = null, folder_claimed_at = null where id = ${grant.id}`

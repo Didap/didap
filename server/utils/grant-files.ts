@@ -1,8 +1,9 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import type { EntryKind, FileEntry, FolderEntry, FolderListing, TreeRow } from '#shared/grant-files'
-import { entryNameSchema, MAX_FILE_BYTES, uniqueName } from '#shared/grant-files'
+import { entryNameSchema, FILE_TOO_BIG, MAX_FILE_BYTES, uniqueName } from '#shared/grant-files'
 import { type FileStore, grantFileKey } from './file-store'
+import { inTx } from './pg'
 
 // Cartella del bando: sottocartelle e file su Postgres, i byte nel file store
 
@@ -36,24 +37,11 @@ function rowToFile(r: postgres.Row): FileEntry {
     bytes: r.bytes,
     createdAt: iso(r.created_at),
     uploadedBy: r.uploaded_by_name ?? null,
-    fromRadar: r.uploaded_by_name === null,
   }
 }
 
 async function lockGrant(tx: Sql, grantId: string) {
   await tx`select pg_advisory_xact_lock(${FILES_LOCK}, hashtext(${grantId}))`
-}
-
-// La cartella esiste ed è di quel bando (null: la principale, basta il bando).
-// Non guarda folder_at: per le scritture c'è requireGrantFolder.
-async function assertFolder(sql: Sql, grantId: string, folderId: string | null) {
-  if (folderId === null) {
-    const [g] = await sql`select 1 from radar_grants where id = ${grantId}`
-    if (!g) throw grantNotFound()
-    return
-  }
-  const [f] = await sql`select 1 from grant_folders where id = ${folderId} and grant_id = ${grantId}`
-  if (!f) throw folderNotFound()
 }
 
 // Nome dell'elemento e cartella che lo contiene; 404 se non è di quel bando
@@ -117,47 +105,54 @@ export async function requireGrantFolder(sql: Sql, grantId: string, folderId: st
   if (!g.folder_ok) throw folderNotFound()
 }
 
-// Nomi presenti in una cartella, per il riempimento
-export async function folderNames(sql: Sql, grantId: string, folderId: string | null): Promise<Set<string>> {
-  await assertFolder(sql, grantId, folderId)
-  return namesIn(sql, grantId, folderId)
+// Ogni scrittura: transazione, lucchetto del bando e requireGrantFolder
+// (`folderId`: la cartella in cui si scrive, che deve essere del bando)
+function withGrantFolder<T>(sql: Sql, grantId: string, folderId: string | null, fn: (t: Sql) => Promise<T>): Promise<T> {
+  return inTx(sql, async (t) => {
+    await lockGrant(t, grantId)
+    await requireGrantFolder(t, grantId, folderId)
+    return fn(t)
+  })
 }
 
+// Le quattro letture non dipendono l'una dall'altra: insieme, poi i 404
 export async function listFolder(sql: Sql, grantId: string, folderId: string | null): Promise<FolderListing> {
-  const [grant] = await sql`select title from radar_grants where id = ${grantId}`
+  const [[grant], up, folders, files] = await Promise.all([
+    sql`select title from radar_grants where id = ${grantId}`,
+    // Dalla cartella aperta fino alla principale
+    folderId === null
+      ? []
+      : sql`
+          with recursive up as (
+            select id, parent_id, name, 0 as depth from grant_folders
+            where id = ${folderId} and grant_id = ${grantId}
+            union all
+            select f.id, f.parent_id, f.name, up.depth + 1 from grant_folders f join up on f.id = up.parent_id
+          )
+          select id, name from up order by depth desc
+        `,
+    // fileCount: file della cartella e di tutte le sue discendenti
+    sql`
+      with recursive tree as (
+        select id as root, id from grant_folders
+        where grant_id = ${grantId} and parent_id is not distinct from ${folderId}
+        union all
+        select t.root, f.id from grant_folders f join tree t on f.parent_id = t.id
+      )
+      select g.id, g.name, g.created_at,
+        (select count(*)::int from grant_files fi join tree t on fi.folder_id = t.id where t.root = g.id) as file_count
+      from grant_folders g
+      where g.grant_id = ${grantId} and g.parent_id is not distinct from ${folderId}
+      order by lower(g.name), g.name
+    `,
+    sql`
+      select * from grant_files
+      where grant_id = ${grantId} and folder_id is not distinct from ${folderId}
+      order by lower(name), name
+    `,
+  ])
   if (!grant) throw grantNotFound()
-  // Dalla cartella aperta fino alla principale
-  const up = folderId === null
-    ? []
-    : await sql`
-        with recursive up as (
-          select id, parent_id, name, 0 as depth from grant_folders
-          where id = ${folderId} and grant_id = ${grantId}
-          union all
-          select f.id, f.parent_id, f.name, up.depth + 1 from grant_folders f join up on f.id = up.parent_id
-        )
-        select id, name from up order by depth desc
-      `
   if (folderId !== null && !up.length) throw folderNotFound()
-  // fileCount: file della cartella e di tutte le sue discendenti
-  const folders = await sql`
-    with recursive tree as (
-      select id as root, id from grant_folders
-      where grant_id = ${grantId} and parent_id is not distinct from ${folderId}
-      union all
-      select t.root, f.id from grant_folders f join tree t on f.parent_id = t.id
-    )
-    select g.id, g.name, g.created_at,
-      (select count(*)::int from grant_files fi join tree t on fi.folder_id = t.id where t.root = g.id) as file_count
-    from grant_folders g
-    where g.grant_id = ${grantId} and g.parent_id is not distinct from ${folderId}
-    order by lower(g.name), g.name
-  `
-  const files = await sql`
-    select * from grant_files
-    where grant_id = ${grantId} and folder_id is not distinct from ${folderId}
-    order by lower(name), name
-  `
   return {
     path: [{ id: null, name: grant.title }, ...up.map(r => ({ id: r.id as string, name: r.name as string }))],
     folders: folders.map(rowToFolder),
@@ -196,32 +191,25 @@ async function insertFolder(t: Sql, grantId: string, parentId: string | null, cl
 
 export async function createFolder(sql: Sql, grantId: string, parentId: string | null, name: string): Promise<FolderEntry> {
   const clean = cleanName(name)
-  return await sql.begin(async (tx) => {
-    const t = tx as unknown as Sql
-    await lockGrant(t, grantId)
-    await requireGrantFolder(t, grantId, parentId)
-    return insertFolder(t, grantId, parentId, clean)
-  }) as FolderEntry
+  return withGrantFolder(sql, grantId, parentId, t => insertFolder(t, grantId, parentId, clean))
 }
 
 // La cartella del riempimento ("Dal bando"): quella segnata sul bando, per id
 // (anche rinominata o spostata), o se non c'è più una nuova nella principale,
-// segnata. Sotto il lucchetto: due lavori non ne creano due.
-export async function grantSourceFolder(sql: Sql, grantId: string, name: string): Promise<string> {
+// segnata. Sotto il lucchetto: due lavori non ne creano due. Con i nomi che
+// contiene già, letti nella stessa transazione.
+export async function grantSourceFolder(sql: Sql, grantId: string, name: string): Promise<{ id: string, names: Set<string> }> {
   const clean = cleanName(name)
-  return await sql.begin(async (tx) => {
-    const t = tx as unknown as Sql
-    await lockGrant(t, grantId)
-    await requireGrantFolder(t, grantId)
+  return withGrantFolder(sql, grantId, null, async (t) => {
     const [found] = await t`
       select f.id from radar_grants g join grant_folders f on f.id = g.folder_source_id and f.grant_id = g.id
       where g.id = ${grantId}
     `
-    if (found) return found.id as string
+    if (found) return { id: found.id as string, names: await namesIn(t, grantId, found.id) }
     const made = await insertFolder(t, grantId, null, clean)
     await t`update radar_grants set folder_source_id = ${made.id} where id = ${grantId}`
-    return made.id
-  }) as string
+    return { id: made.id, names: new Set<string>() }
+  })
 }
 
 type NewFile = { grantId: string, folderId: string | null, name: string, mime: string, data: Buffer, userId: string | null }
@@ -232,20 +220,17 @@ const removeKey = (store: FileStore, key: string) =>
 // Prima i byte nello store, poi la riga; se la riga non entra, i byte escono.
 // Un nome occupato prende "(2)"; con `once` il file non si aggiunge (null).
 async function storeFile(sql: Sql, store: FileStore, f: NewFile, once: boolean): Promise<FileEntry | null> {
-  if (f.data.length > MAX_FILE_BYTES) throw createError({ statusCode: 413, statusMessage: 'File oltre 10 MB' })
+  if (f.data.length > MAX_FILE_BYTES) throw createError({ statusCode: 413, statusMessage: FILE_TOO_BIG })
   const clean = cleanName(f.name)
   // Controllo prima di caricare: niente byte su un bando senza cartella o su
   // una cartella sbagliata. Si ripete sotto il lucchetto: il caricamento è
   // lungo e nel frattempo la cartella può sparire.
   await requireGrantFolder(sql, f.grantId, f.folderId)
   const key = grantFileKey(f.grantId)
-  await store.put(key, f.data, clean)
+  await store.put(key, f.data)
   let added: FileEntry | null
   try {
-    added = await sql.begin(async (tx) => {
-      const t = tx as unknown as Sql
-      await lockGrant(t, f.grantId)
-      await requireGrantFolder(t, f.grantId, f.folderId)
+    added = await withGrantFolder(sql, f.grantId, f.folderId, async (t) => {
       const names = await namesIn(t, f.grantId, f.folderId)
       if (once && [...names].some(n => n.toLowerCase() === clean.toLowerCase())) return null
       // Il nome di chi carica si fissa qui: resta anche se la persona viene eliminata
@@ -258,7 +243,7 @@ async function storeFile(sql: Sql, store: FileStore, f: NewFile, once: boolean):
         returning *
       `
       return rowToFile(row!)
-    }) as FileEntry | null
+    })
   }
   catch (err) {
     await removeKey(store, key)
@@ -281,10 +266,7 @@ export function addFileOnce(sql: Sql, store: FileStore, f: NewFile): Promise<Fil
 
 export async function renameEntry(sql: Sql, grantId: string, kind: EntryKind, id: string, name: string): Promise<void> {
   const clean = cleanName(name)
-  await sql.begin(async (tx) => {
-    const t = tx as unknown as Sql
-    await lockGrant(t, grantId)
-    await requireGrantFolder(t, grantId)
+  await withGrantFolder(sql, grantId, null, async (t) => {
     const { parent } = await findEntry(t, grantId, kind, id)
     if (await isTaken(t, grantId, parent, clean, kind, id)) throw nameTaken()
     if (kind === 'folder') await t`update grant_folders set name = ${clean} where id = ${id}`
@@ -299,10 +281,7 @@ export async function moveEntry(
   id: string,
   targetFolderId: string | null,
 ): Promise<void> {
-  await sql.begin(async (tx) => {
-    const t = tx as unknown as Sql
-    await lockGrant(t, grantId)
-    await requireGrantFolder(t, grantId, targetFolderId)
+  await withGrantFolder(sql, grantId, targetFolderId, async (t) => {
     const { name } = await findEntry(t, grantId, kind, id)
     if (kind === 'folder' && targetFolderId !== null) {
       // La destinazione non può essere la cartella stessa o una sua discendente
@@ -331,10 +310,7 @@ export async function deleteEntry(
   kind: EntryKind,
   id: string,
 ): Promise<{ files: number }> {
-  const keys = await sql.begin(async (tx) => {
-    const t = tx as unknown as Sql
-    await lockGrant(t, grantId)
-    await requireGrantFolder(t, grantId)
+  const keys = await withGrantFolder(sql, grantId, null, async (t) => {
     await findEntry(t, grantId, kind, id)
     if (kind === 'file') {
       const [row] = await t`delete from grant_files where id = ${id} returning store_key`
@@ -350,15 +326,8 @@ export async function deleteEntry(
     `
     await t`delete from grant_folders where id = ${id}`
     return rows.map(r => r.store_key as string)
-  }) as string[]
-  for (const key of keys) {
-    try {
-      await store.remove(key)
-    }
-    catch (err) {
-      console.error(`File store: ${key} non rimosso`, err)
-    }
-  }
+  })
+  for (const key of keys) await removeKey(store, key)
   return { files: keys.length }
 }
 

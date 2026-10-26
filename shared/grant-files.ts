@@ -3,6 +3,15 @@ import { z } from 'zod'
 // Cartella dei file di un bando: limiti, nomi e righe dell'elenco
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
+export const MAX_FILE_MB = MAX_FILE_BYTES / 1024 / 1024
+// File per caricamento
+export const MAX_UPLOAD_FILES = 10
+
+export const FILE_TOO_BIG = `File oltre ${MAX_FILE_MB} MB`
+export const TOO_MANY_FILES = `Al massimo ${MAX_UPLOAD_FILES} file per volta`
+
+// Tipi che si aprono nel browser (anteprima); il resto si scarica
+export const INLINE_MIMES: ReadonlySet<string> = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'])
 
 // Niente barre, caratteri di controllo, "." e ".."
 export const entryNameSchema = z
@@ -31,7 +40,7 @@ export type EntryKind = 'folder' | 'file'
 export type FolderEntry = { id: string, name: string, createdAt: string, fileCount: number }
 
 // uploadedBy: nome della persona al caricamento (resta se poi viene
-// eliminata); fromRadar: messo dal radar, senza persona
+// eliminata); null: messo dal radar, senza persona
 export type FileEntry = {
   id: string
   name: string
@@ -39,7 +48,6 @@ export type FileEntry = {
   bytes: number
   createdAt: string
   uploadedBy: string | null
-  fromRadar: boolean
 }
 
 // path parte dalla cartella principale (id null, nome = titolo del bando)

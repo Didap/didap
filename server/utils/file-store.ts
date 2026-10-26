@@ -5,7 +5,7 @@ import { cloudinaryConfig, cloudinaryStore } from './cloudinary'
 // Dove stanno i file della cartella di un bando. Oggi Cloudinary, ma il resto
 // del codice parla solo con questa interfaccia (e nei test con una in memoria).
 export type FileStore = {
-  put(key: string, data: Buffer, filename: string): Promise<void>
+  put(key: string, data: Buffer): Promise<void>
   get(key: string): Promise<Buffer>
   remove(key: string): Promise<void>
 }

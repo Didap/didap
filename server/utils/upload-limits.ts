@@ -1,11 +1,10 @@
 import { createError } from 'h3'
-import { MAX_FILE_BYTES } from '#shared/grant-files'
+import { FILE_TOO_BIG, MAX_FILE_BYTES, MAX_UPLOAD_FILES, TOO_MANY_FILES } from '#shared/grant-files'
 
 // Limiti dei caricamenti nella cartella del bando. Il corpo multipart finisce
 // tutto in memoria, quindi la dimensione si guarda prima di leggerlo.
 
-export const MAX_UPLOAD_FILES = 10
-// 10 file pieni più il margine per le intestazioni multipart
+// MAX_UPLOAD_FILES file pieni più il margine per le intestazioni multipart
 export const MAX_UPLOAD_BYTES = MAX_UPLOAD_FILES * MAX_FILE_BYTES + 64 * 1024
 
 // Prima di leggere il corpo: Content-Length obbligatoria e sotto il tetto
@@ -22,11 +21,11 @@ export function checkUploadLength(header: string | undefined): void {
 export function checkUploadParts(sizes: number[]): void {
   if (!sizes.length) throw createError({ statusCode: 400, statusMessage: 'Nessun file' })
   if (sizes.length > MAX_UPLOAD_FILES) {
-    throw createError({ statusCode: 413, statusMessage: 'Al massimo 10 file per volta' })
+    throw createError({ statusCode: 413, statusMessage: TOO_MANY_FILES })
   }
   for (const size of sizes) {
     if (!size) throw createError({ statusCode: 413, statusMessage: 'File vuoto' })
-    if (size > MAX_FILE_BYTES) throw createError({ statusCode: 413, statusMessage: 'File oltre 10 MB' })
+    if (size > MAX_FILE_BYTES) throw createError({ statusCode: 413, statusMessage: FILE_TOO_BIG })
   }
 }
 

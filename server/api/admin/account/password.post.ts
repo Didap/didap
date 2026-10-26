@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { passwordSchema } from '#shared/users'
 
-// Cambio della propria password: le altre sessioni si chiudono
+// Cambio della propria password: le altre sessioni si chiudono. Limite di
+// tentativi per persona sulla password attuale; riuscito, si azzera.
 const changeSchema = z.object({
   current: z.string().max(200),
   next: passwordSchema,
@@ -12,6 +13,8 @@ export default defineEventHandler(async (event) => {
   const sid = await currentSessionId(event)
   if (!sid) throw createError({ statusCode: 401, statusMessage: 'Accesso non autorizzato' })
   const { current, next } = await readSchemaBody(event, changeSchema)
+  limitAttempt('password-change', user.id, { max: 8, windowMs: 10 * 60 * 1000 })
   await changeOwnPassword(await useDb(), user, sid, current, next)
+  clearAttempts('password-change', user.id)
   return { ok: true }
 })

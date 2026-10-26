@@ -1,9 +1,12 @@
 import { z } from 'zod'
 import { emailSchema } from '#shared/users'
 
-// Login per persona con limite di tentativi per IP ed email: un successo
-// azzera solo il contatore di quell'email, non quello delle altre. Un solo
-// errore per email sconosciuta, disattivata o password sbagliata.
+// Login per persona con due limiti: per IP ed email (un successo azzera solo
+// il contatore di quell'email) e per IP in tutto, che un successo non azzera,
+// così un IP non prova password su tante email. Un solo errore per email
+// sconosciuta, disattivata o password sbagliata.
+const WINDOW_MS = 10 * 60 * 1000
+
 const loginSchema = z.object({
   email: emailSchema,
   password: z.string().max(200),
@@ -18,7 +21,8 @@ export default defineEventHandler(async (event) => {
   }
   const { email, password } = await readSchemaBody(event, loginSchema)
   // emailSchema la dà già in minuscolo e senza spazi
-  rateLimit('login', event, { max: 8, windowMs: 10 * 60 * 1000 }, email)
+  rateLimit('login-ip', event, { max: 50, windowMs: WINDOW_MS })
+  rateLimit('login', event, { max: 8, windowMs: WINDOW_MS }, email)
 
   let user
   try {

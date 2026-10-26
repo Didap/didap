@@ -21,7 +21,9 @@ const confirm = ref('')
 const error = ref('')
 const busy = ref(false)
 const expired = ref(false)
-// Prima dell'idratazione il form non funziona: il bottone resta spento
+// Prima dell'idratazione il form non funziona: il bottone resta spento e i
+// campi in sola lettura (Vue svuota i campi password al montaggio, il testo
+// scritto prima andrebbe perso)
 const mounted = ref(false)
 onMounted(() => {
   mounted.value = true
@@ -115,6 +117,7 @@ async function submit() {
             type="password"
             autocomplete="new-password"
             required
+            :readonly="!mounted"
             autofocus
             :minlength="MIN"
             :maxlength="MAX"
@@ -127,6 +130,7 @@ async function submit() {
             type="password"
             autocomplete="new-password"
             required
+            :readonly="!mounted"
             :maxlength="MAX"
             class="admin-input"
             :aria-invalid="mismatch || undefined"

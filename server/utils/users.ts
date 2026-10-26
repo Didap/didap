@@ -225,8 +225,8 @@ export async function changeOwnPassword(sql: Sql, user: AdminUser, sid: string, 
   await sql.begin(async (tx) => {
     await tx`update admin_users set password_hash = ${hash} where id = ${user.id}`
     await tx`delete from admin_user_tokens where user_id = ${user.id}`
+    await deleteOtherSessions(tx as unknown as Sql, user.id, sid)
   })
-  await deleteOtherSessions(sql, user.id, sid)
 }
 
 // Prima persona da variabili d'ambiente: avvio su tabella vuota, o recupero con ADMIN_RESET

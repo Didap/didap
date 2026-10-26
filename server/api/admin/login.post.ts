@@ -1,8 +1,9 @@
 import { z } from 'zod'
 import { emailSchema } from '#shared/users'
 
-// Login per persona con limite di tentativi per IP. Un solo errore per
-// email sconosciuta, disattivata o password sbagliata.
+// Login per persona con limite di tentativi per IP ed email: un successo
+// azzera solo il contatore di quell'email, non quello delle altre. Un solo
+// errore per email sconosciuta, disattivata o password sbagliata.
 const loginSchema = z.object({
   email: emailSchema,
   password: z.string().max(200),
@@ -15,8 +16,9 @@ export default defineEventHandler(async (event) => {
   if (!hasDatabase()) {
     throw createError({ statusCode: 503, statusMessage: 'Database non configurato' })
   }
-  rateLimit('login', event, { max: 8, windowMs: 10 * 60 * 1000 })
   const { email, password } = await readSchemaBody(event, loginSchema)
+  // emailSchema la dà già in minuscolo e senza spazi
+  rateLimit('login', event, { max: 8, windowMs: 10 * 60 * 1000 }, email)
 
   let user
   try {
@@ -28,7 +30,7 @@ export default defineEventHandler(async (event) => {
   }
   if (!user) throw createError({ statusCode: 401, statusMessage: 'Email o password errati' })
 
-  clearRateLimit('login', event)
+  clearRateLimit('login', event, email)
   try {
     await startAdminSession(event, user.id)
   }

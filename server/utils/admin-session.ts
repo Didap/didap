@@ -39,8 +39,11 @@ export async function startAdminSession(event: H3Event, userId: string) {
   if (!sessionSecret()) {
     throw createError({ statusCode: 503, statusMessage: 'Admin non configurato' })
   }
-  const sid = await createSession(await useDb(), userId)
+  const sql = await useDb()
   const session = await cookieSession(event)
+  // Il browser aveva già una sessione: la vecchia riga non deve restare valida
+  if (session.data.sid) await deleteSession(sql, session.data.sid)
+  const sid = await createSession(sql, userId)
   await session.update({ sid })
   event.context.adminUser = undefined
 }

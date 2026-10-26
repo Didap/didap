@@ -1,7 +1,8 @@
 import type { H3Event } from 'h3'
 
 // Limite di tentativi per IP, in memoria e per istanza. Un contatore per
-// bucket (login, reset, ...): ogni chiamata conta un tentativo.
+// bucket (login, reset, ...): ogni chiamata conta un tentativo. Con `extra`
+// il contatore è per IP e quel valore (per esempio l'email del login).
 
 const buckets = new Map<string, Map<string, { count: number, since: number }>>()
 
@@ -14,23 +15,28 @@ function clientIp(event: H3Event) {
     || 'unknown'
 }
 
-export function rateLimit(bucket: string, event: H3Event, opts: { max: number, windowMs: number }) {
+function limitKey(event: H3Event, extra?: string) {
+  const ip = clientIp(event)
+  return extra === undefined ? ip : `${ip}|${extra}`
+}
+
+export function rateLimit(bucket: string, event: H3Event, opts: { max: number, windowMs: number }, extra?: string) {
   let entries = buckets.get(bucket)
   if (!entries) buckets.set(bucket, entries = new Map())
-  const ip = clientIp(event)
+  const key = limitKey(event, extra)
   const now = Date.now()
   // Pulizia delle finestre scadute
-  for (const [key, e] of entries) {
-    if (now - e.since >= opts.windowMs) entries.delete(key)
+  for (const [k, e] of entries) {
+    if (now - e.since >= opts.windowMs) entries.delete(k)
   }
-  const entry = entries.get(ip)
+  const entry = entries.get(key)
   if (entry && entry.count >= opts.max) {
     throw createError({ statusCode: 429, statusMessage: 'Troppi tentativi, riprova più tardi' })
   }
   if (entry) entry.count++
-  else entries.set(ip, { count: 1, since: now })
+  else entries.set(key, { count: 1, since: now })
 }
 
-export function clearRateLimit(bucket: string, event: H3Event) {
-  buckets.get(bucket)?.delete(clientIp(event))
+export function clearRateLimit(bucket: string, event: H3Event, extra?: string) {
+  buckets.get(bucket)?.delete(limitKey(event, extra))
 }

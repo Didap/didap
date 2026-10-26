@@ -1,15 +1,23 @@
 <script setup lang="ts">
-// Barra di /admin: logo, sezioni, link al sito, uscita
+import { firstAllowedPath } from '#shared/admin-access'
+import { ADMIN_PAGES, ADMIN_PAGE_INFO } from '#shared/users'
+
+// Barra di /admin: logo, sezioni della persona, link al sito, account, uscita
 defineProps<{ authenticated: boolean }>()
 const emit = defineEmits<{ logout: [] }>()
 
-const LINKS = [
-  { to: '/admin', label: 'Prodotti' },
-  { to: '/admin/preventivi', label: 'Preventivi' },
-  { to: '/admin/clienti', label: 'Clienti' },
-  { to: '/admin/bandi', label: 'Bandi' },
-  { to: '/admin/impostazioni', label: 'Impostazioni' },
-]
+const session = useAdminSessionState()
+const user = computed(() => (session.value?.authenticated ? session.value.user : null))
+
+// Solo le sezioni che la persona può aprire, nell'ordine del menu
+const links = computed(() =>
+  ADMIN_PAGES.filter((p) => user.value?.pages.includes(p)).map((p) => ({
+    to: ADMIN_PAGE_INFO[p].path,
+    label: ADMIN_PAGE_INFO[p].label,
+  })),
+)
+const home = computed(() => firstAllowedPath(user.value?.pages ?? []) ?? '/admin')
+
 const route = useRoute()
 const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : route.path.startsWith(to))
 </script>
@@ -20,7 +28,7 @@ const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : ro
     bg-paper-light px-5
   ">
     <NuxtLink
-      to="/admin"
+      :to="home"
       class="flex shrink-0 items-center gap-3"
     >
       <img
@@ -41,7 +49,7 @@ const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : ro
       aria-label="Sezioni admin"
     >
       <NuxtLink
-        v-for="l in LINKS"
+        v-for="l in links"
         :key="l.to"
         :to="l.to"
         class="shrink-0 rounded-full px-3 py-1.5 text-sm transition"
@@ -61,9 +69,21 @@ const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : ro
         class="
           hidden opacity-60
           hover:opacity-100
-          sm:inline
+          lg:inline
         "
       >Vai al sito ↗</a>
+      <NuxtLink
+        v-if="user"
+        to="/admin/account"
+        class="max-w-40 truncate rounded-full px-3 py-1.5 transition"
+        :class="isActive('/admin/account') ? 'bg-ink text-paper-light' : `
+          hover:bg-ink/5
+        `"
+        :aria-current="isActive('/admin/account') ? 'page' : undefined"
+        :title="`Il tuo account (${user.email})`"
+      >
+        {{ user.name }}
+      </NuxtLink>
       <button
         type="button"
         class="

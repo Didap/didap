@@ -51,7 +51,9 @@ defineI18nRoute(false)
 
 const route = useRoute()
 const id = computed(() => String(route.params.id))
-const { data: session } = await useAdminSession()
+await useAdminSession()
+// Solo chi ha Preventivi carica la bozza: gli altri vanno alla loro prima pagina
+const allowed = useAdminPageAllowed()
 const { notify } = useAdminToast()
 
 const detail = ref<QuoteDetail | null>(null)
@@ -115,7 +117,7 @@ async function load() {
 
 onMounted(() => {
   origin.value = location.origin
-  watch(() => session.value?.authenticated, (ok) => {
+  watch(allowed, (ok) => {
     if (!ok) return
     // Rientro dopo una sessione scaduta: load() rimpiazzerebbe la bozza modificata
     if (dirty.value) {

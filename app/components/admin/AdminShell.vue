@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
+import AdminNoAccess from '~/components/admin/AdminNoAccess.vue'
 
 // Guscio delle pagine admin (i prodotti hanno il loro): barra e accesso.
-// Il contenuto compare solo da autenticati. Gli avvisi stanno nel layout.
+// Il contenuto compare solo da autenticati e se la pagina è della persona;
+// altrimenti si va alla sua prima pagina. Gli avvisi stanno nel layout.
 // `fill`: da desktop la pagina è alta quanto lo schermo e non scorre; a
 // scorrere sono le sue colonne.
 defineProps<{ fill?: boolean }>()
 const session = useAdminSessionState()
+const { state } = useAdminPageAccess()
 const { notify } = useAdminToast()
 
 async function logout() {
@@ -29,7 +32,8 @@ async function logout() {
       :authenticated="!!session?.authenticated"
       @logout="logout"
     />
-    <AdminLogin v-if="!session?.authenticated" />
-    <slot v-else />
+    <AdminLogin v-if="state === 'login'" />
+    <AdminNoAccess v-else-if="state === 'none'" />
+    <slot v-else-if="state === 'allowed'" />
   </div>
 </template>

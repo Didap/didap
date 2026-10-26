@@ -58,7 +58,9 @@ async function changePassword() {
         Il tuo account
       </h1>
       <p class="mt-2 opacity-60">
-        Nome ed email li cambia chi gestisce i collaboratori. La password la scegli tu.
+        Il nome lo cambia chi gestisce i collaboratori. L'email non si può cambiare:
+        per usarne un'altra, chi gestisce i collaboratori ti rimuove e ti invita di nuovo.
+        La password la scegli tu.
       </p>
 
       <div

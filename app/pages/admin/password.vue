@@ -21,6 +21,11 @@ const confirm = ref('')
 const error = ref('')
 const busy = ref(false)
 const expired = ref(false)
+// Prima dell'idratazione il form non funziona: il bottone resta spento
+const mounted = ref(false)
+onMounted(() => {
+  mounted.value = true
+})
 
 const mismatch = computed(() => !!confirm.value && confirm.value !== password.value)
 const valid = computed(() =>
@@ -28,7 +33,7 @@ const valid = computed(() =>
 )
 
 async function submit() {
-  if (!valid.value) return
+  if (!mounted.value || !valid.value) return
   busy.value = true
   error.value = ''
   try {
@@ -147,7 +152,7 @@ async function submit() {
             hover:bg-ink
             disabled:opacity-50
           "
-          :disabled="busy || !valid"
+          :disabled="!mounted || busy || !valid"
         >
           {{ busy ? 'Salvataggio…' : 'Salva ed entra' }}
         </button>

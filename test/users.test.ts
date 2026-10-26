@@ -71,6 +71,12 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     expect(await checkLogin(sql, 'b@didap.it', PW)).toBeNull()
   })
 
+  it('checkLogin con email sconosciuta dà null (verifica su hash fittizio)', async () => {
+    await manager('A')
+    expect(await checkLogin(sql, 'sconosciuto@didap.it', PW)).toBeNull()
+    expect(await checkLogin(sql, 'sconosciuto@didap.it', '')).toBeNull()
+  })
+
   it('gestore unico: non può togliersi accesso, disattivarsi o eliminarsi', async () => {
     const a = await manager('A')
     await createUser(sql, { name: 'B', email: 'b@didap.it', pages: ['collaboratori'] })
@@ -192,12 +198,12 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     expect(await sessionUser(sql, sid2)).toBeNull()
   })
 
-  it('changeOwnPassword: password attuale errata 401, giusta tiene solo la sessione corrente', async () => {
+  it('changeOwnPassword: password attuale errata 400, giusta tiene solo la sessione corrente', async () => {
     const a = await manager('A')
     const keepSid = await createSession(sql, a.id)
     const other = await createSession(sql, a.id)
     const user = (await sessionUser(sql, keepSid))!
-    await expect(changeOwnPassword(sql, user, keepSid, 'sbagliata-sbagliata', 'nuova-password-lunga')).rejects.toMatchObject({ statusCode: 401 })
+    await expect(changeOwnPassword(sql, user, keepSid, 'sbagliata-sbagliata', 'nuova-password-lunga')).rejects.toMatchObject({ statusCode: 400 })
     expect(await sessionUser(sql, other)).not.toBeNull()
     await changeOwnPassword(sql, user, keepSid, PW, 'nuova-password-lunga')
     expect(await sessionUser(sql, keepSid)).not.toBeNull()

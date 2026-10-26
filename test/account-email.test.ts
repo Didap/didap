@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { accountEmail } from '../server/emails/account'
+import { accountEmail, accountLink } from '../server/emails/account'
+import { SITE_URL } from '../server/emails/contact-templates'
 
 // Email d'invito e di reset della password
 
@@ -31,5 +32,13 @@ describe('accountEmail', () => {
     const mail = accountEmail('invite', { name: 'Giulia', url: URL_LINK })
     expect(mail.text).toContain('7 giorni')
     expect(mail.html).toContain('7 giorni')
+  })
+})
+
+describe('accountLink', () => {
+  it('usa il dominio del sito, senza doppia barra', () => {
+    const link = accountLink('abc123')
+    expect(link).toBe(`${SITE_URL.replace(/\/$/, '')}/admin/password?token=abc123`)
+    expect(link).not.toContain('//admin')
   })
 })

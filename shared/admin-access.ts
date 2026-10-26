@@ -41,6 +41,12 @@ export function apiAccess(path: string, method: string): ApiAccess {
   return rule.reads && (m === 'GET' || m === 'HEAD') ? rule.reads : rule.access
 }
 
+// Percorso grezzo con segmenti "." o "..", punti codificati o backslash:
+// il router non li risolve, quindi si rifiutano prima dei permessi
+export function unsafeApiPath(path: string): boolean {
+  return /%2e|%5c|\\/i.test(path) || path.split('/').some(s => s === '.' || s === '..')
+}
+
 export function pageForPath(routePath: string): AdminPage | 'session' | 'open' | null {
   const p = stripSlash(routePath)
   if (matches(p, '/admin/account')) return 'session'

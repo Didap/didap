@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { apiAccess, firstAllowedPath, pageForPath } from '#shared/admin-access'
+import { apiAccess, firstAllowedPath, pageForPath, unsafeApiPath } from '#shared/admin-access'
 import { passwordSchema, userCreateSchema } from '#shared/users'
 
 describe('accesso al pannello', () => {
@@ -43,5 +43,28 @@ describe('accesso al pannello', () => {
       .toEqual({ name: 'Mario', email: 'mario@didap.it', pages: ['prodotti', 'bandi'] })
     expect(passwordSchema.safeParse('123456789').success).toBe(false)
     expect(userCreateSchema.safeParse({ name: 'x', email: 'x@y.it', pages: ['root'] }).success).toBe(false)
+  })
+})
+
+describe('unsafeApiPath', () => {
+  it('rifiuta segmenti punto, punti codificati e backslash', () => {
+    for (const p of [
+      '/api/admin/login/../users',
+      '/api/admin/./users',
+      '/api/admin/password/%2e%2e/users',
+      '/api/admin/password/%2E%2E/users',
+      '/api/admin/users/x/%2e./password',
+      '/api/admin/login\\..\\users',
+      '/api/admin/login%5c..%5cusers',
+    ]) expect(unsafeApiPath(p), p).toBe(true)
+  })
+
+  it('accetta i percorsi normali', () => {
+    for (const p of [
+      '/api/admin/users',
+      '/api/admin/users/3f1c0e9a-1b2c-4d5e-8f90-123456789abc',
+      '/api/admin/radar/grants/12/like',
+      '/api/admin/products/file.v2',
+    ]) expect(unsafeApiPath(p), p).toBe(false)
   })
 })

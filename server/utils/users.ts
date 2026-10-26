@@ -3,7 +3,7 @@ import { createError } from 'h3'
 import type postgres from 'postgres'
 import type { AdminPage, AdminUser, AdminUserRow, UserCreate, UserStatus, UserUpdate } from '#shared/users'
 import { ADMIN_PAGES } from '#shared/users'
-import { hashPassword, hashToken, newToken, verifyPassword } from './passwords'
+import { DUMMY_HASH, hashPassword, hashToken, newToken, verifyPassword } from './passwords'
 import { pgCode } from './pg'
 
 // Persone del pannello: anagrafica, login e regole anti blocco
@@ -102,8 +102,12 @@ export async function deleteUser(sql: Sql, actorId: string, id: string): Promise
 
 export async function checkLogin(sql: Sql, email: string, password: string): Promise<AdminUser | null> {
   const [row] = await sql`select * from admin_users where email = ${normEmail(email)} and active`
-  // verifyPassword gestisce anche la password assente
-  if (!row || !(await verifyPassword(password, row.password_hash))) return null
+  // Senza persona o senza password scrypt gira lo stesso, su un hash fittizio
+  if (!row?.password_hash) {
+    await verifyPassword(password, DUMMY_HASH)
+    return null
+  }
+  if (!(await verifyPassword(password, row.password_hash))) return null
   await sql`update admin_users set last_login_at = now() where id = ${row.id}`
   return rowToUser(row)
 }
@@ -204,7 +208,8 @@ export async function deleteOtherSessions(sql: Sql, userId: string, keepSid: str
 export async function changeOwnPassword(sql: Sql, user: AdminUser, sid: string, current: string, next: string): Promise<void> {
   const [row] = await sql`select password_hash from admin_users where id = ${user.id}`
   if (!row || !(await verifyPassword(current, row.password_hash))) {
-    throw createError({ statusCode: 401, statusMessage: 'Password attuale errata' })
+    // 400 e non 401: il 401 per l'interfaccia vuol dire sessione scaduta
+    throw createError({ statusCode: 400, statusMessage: 'Password attuale errata' })
   }
   const hash = await hashPassword(next)
   await sql.begin(async (tx) => {

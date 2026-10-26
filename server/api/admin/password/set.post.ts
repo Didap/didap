@@ -8,6 +8,13 @@ const setSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  // Prima di consumare il token: senza chiave la sessione non partirebbe
+  if (!sessionSecret()) {
+    throw createError({ statusCode: 503, statusMessage: 'Admin non configurato' })
+  }
+  if (!hasDatabase()) {
+    throw createError({ statusCode: 503, statusMessage: 'Database non configurato' })
+  }
   rateLimit('password-set', event, { max: 10, windowMs: 10 * 60 * 1000 })
   const { token, password } = await readSchemaBody(event, setSchema)
   const user = await redeemToken(await useDb(), token, password)

@@ -27,6 +27,10 @@ export async function verifyPassword(password: string, stored: string | null): P
   return timingSafeEqual(key, expected)
 }
 
+// Hash fisso di una password casuale: il login lo verifica quando la
+// persona non c'è, così il tempo di risposta non rivela le email esistenti
+export const DUMMY_HASH = 'scrypt$zHa6xusISw1igwDiPEBbBQ$KheKR8FrZVU_WBRv3Dw4F-GTaGN7F2X9ZUe_pFGJYjjJceo3HCQIA98qW_qzfWnntFhY-44rLDuqeu1iPgHAGA'
+
 export function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }

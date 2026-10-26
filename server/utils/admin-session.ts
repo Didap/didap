@@ -35,6 +35,10 @@ const cookieSession = (event: H3Event) =>
   })
 
 export async function startAdminSession(event: H3Event, userId: string) {
+  // Prima della riga in admin_sessions: senza chiave resterebbe orfana
+  if (!sessionSecret()) {
+    throw createError({ statusCode: 503, statusMessage: 'Admin non configurato' })
+  }
   const sid = await createSession(await useDb(), userId)
   const session = await cookieSession(event)
   await session.update({ sid })

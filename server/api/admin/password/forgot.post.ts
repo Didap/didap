@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   try {
     const found = await requestReset(await useDb(), email)
     if (found && hasMailer()) {
-      const mail = accountEmail('reset', { name: found.user.name, url: accountLink(event, found.token) })
+      const mail = accountEmail('reset', { name: found.user.name, url: accountLink(found.token) })
       // Senza attendere l'invio: il tempo di risposta non dice se l'email esiste
       resendMailer()({ to: [found.user.email], ...mail })
         .catch(err => console.error('[admin/password/forgot]', err))

@@ -1,5 +1,4 @@
-import { getRequestURL, type H3Event } from 'h3'
-import { BRAND_HEADER, brandFooter, C, escapeHtml, FONT_BODY, FONT_DISPLAY, HEAD } from './contact-templates'
+import { BRAND_HEADER, brandFooter, C, escapeHtml, FONT_BODY, FONT_DISPLAY, HEAD, SITE_URL } from './contact-templates'
 
 // Mail d'invito e di reset della password del pannello. Stesso guscio
 // delle mail del radar.
@@ -23,9 +22,9 @@ const COPY: Record<Kind, { label: string, subject: (name: string) => string, int
   },
 }
 
-export function accountLink(event: H3Event, token: string) {
-  const origin = process.env.NUXT_PUBLIC_SITE_URL || getRequestURL(event).origin
-  return `${origin}/admin/password?token=${token}`
+// Sempre sul dominio del sito, mai sull'Host della richiesta (forgot è pubblico)
+export function accountLink(token: string) {
+  return `${SITE_URL.replace(/\/$/, '')}/admin/password?token=${token}`
 }
 
 export function accountEmail(kind: Kind, opts: { name: string, url: string }) {

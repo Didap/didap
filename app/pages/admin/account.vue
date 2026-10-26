@@ -2,7 +2,9 @@
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
+import NewPasswordFields from '~/components/admin/NewPasswordFields.vue'
 import { adminErrorText } from '~/utils/adminErrors'
+import { PASSWORD_MAX } from '#shared/users'
 
 // Il proprio account: nome, email e cambio password. Aperto a chiunque
 // abbia una sessione, qualunque pagina abbia.
@@ -14,17 +16,13 @@ const { data: session } = await useAdminSession()
 const { notify } = useAdminToast()
 const user = computed(() => session.value?.user ?? null)
 
-const MIN = 10
-const MAX = 200
 const current = ref('')
 const next = ref('')
 const confirm = ref('')
+const nextValid = ref(false)
 const saving = ref(false)
 
-const mismatch = computed(() => !!confirm.value && confirm.value !== next.value)
-const valid = computed(() =>
-  !!current.value && next.value.length >= MIN && next.value.length <= MAX && next.value === confirm.value,
-)
+const valid = computed(() => !!current.value && nextValid.value)
 
 async function changePassword() {
   if (!valid.value) return
@@ -116,46 +114,17 @@ async function changePassword() {
                 type="password"
                 autocomplete="current-password"
                 required
-                :maxlength="MAX"
+                :maxlength="PASSWORD_MAX"
                 class="admin-input"
               >
             </AdminField>
-            <div class="
-              grid gap-5
-              sm:grid-cols-2
-            ">
-              <AdminField
-                label="Nuova password"
-                :hint="`Almeno ${MIN} caratteri`"
-              >
-                <input
-                  v-model="next"
-                  type="password"
-                  autocomplete="new-password"
-                  required
-                  :minlength="MIN"
-                  :maxlength="MAX"
-                  class="admin-input"
-                >
-              </AdminField>
-              <AdminField label="Conferma nuova password">
-                <input
-                  v-model="confirm"
-                  type="password"
-                  autocomplete="new-password"
-                  required
-                  :maxlength="MAX"
-                  class="admin-input"
-                  :aria-invalid="mismatch || undefined"
-                >
-              </AdminField>
-            </div>
-            <p
-              v-if="mismatch"
-              class="text-sm text-red"
-            >
-              Le due password non coincidono
-            </p>
+            <NewPasswordFields
+              v-model="next"
+              v-model:confirm="confirm"
+              v-model:valid="nextValid"
+              confirm-label="Conferma nuova password"
+              columns
+            />
             <div>
               <button
                 type="submit"

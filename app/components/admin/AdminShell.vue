@@ -9,7 +9,6 @@ import AdminNoAccess from '~/components/admin/AdminNoAccess.vue'
 // `fill`: da desktop la pagina è alta quanto lo schermo e non scorre; a
 // scorrere sono le sue colonne.
 defineProps<{ fill?: boolean }>()
-const session = useAdminSessionState()
 const { state } = useAdminPageAccess()
 const { notify } = useAdminToast()
 
@@ -28,10 +27,7 @@ async function logout() {
     class="flex min-h-screen flex-col bg-paper"
     :class="fill ? `lg:h-dvh lg:min-h-0 lg:overflow-hidden` : ''"
   >
-    <AdminHeader
-      :authenticated="!!session?.authenticated"
-      @logout="logout"
-    />
+    <AdminHeader @logout="logout" />
     <AdminLogin v-if="state === 'login'" />
     <AdminNoAccess v-else-if="state === 'none'" />
     <slot v-else-if="state === 'allowed'" />

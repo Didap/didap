@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogOverlay,
-  AlertDialogPortal,
-  AlertDialogRoot,
-  AlertDialogTitle,
-} from 'reka-ui'
+import AdminConfirm from '~/components/admin/AdminConfirm.vue'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
@@ -22,7 +14,7 @@ useSeoMeta({ title: 'Collaboratori - Admin Didap' })
 
 await useAdminSession()
 const session = useAdminSessionState()
-const { notify } = useAdminToast()
+const { notify, copyText } = useAdminToast()
 
 type Form = { name: string, email: string, pages: AdminPage[], active: boolean }
 
@@ -149,17 +141,6 @@ async function resendInvite() {
   }
   finally {
     busy.value = false
-  }
-}
-
-async function copyInvite() {
-  if (!inviteUrl.value) return
-  try {
-    await navigator.clipboard.writeText(inviteUrl.value)
-    notify('ok', 'Link copiato')
-  }
-  catch {
-    notify('error', 'Copia non riuscita: seleziona il link e copialo a mano')
   }
 }
 
@@ -305,7 +286,7 @@ async function remove() {
                   text-paper-light
                   hover:bg-green
                 "
-                @click="copyInvite"
+                @click="copyText(inviteUrl, 'Link copiato')"
               >
                 Copia
               </button>
@@ -436,44 +417,12 @@ async function remove() {
       </main>
     </div>
 
-    <AlertDialogRoot v-model:open="confirmDelete">
-      <AlertDialogPortal>
-        <AlertDialogOverlay class="fixed inset-0 z-50 bg-ink/40" />
-        <AlertDialogContent
-          class="
-            fixed top-1/2 left-1/2 z-50 w-[calc(100%-3rem)] max-w-md
-            -translate-1/2 rounded-2xl bg-white p-6
-          "
-        >
-          <AlertDialogTitle class="text-xl font-bold">
-            Eliminare {{ current?.name || 'il collaboratore' }}?
-          </AlertDialogTitle>
-          <AlertDialogDescription class="mt-2 opacity-70">
-            Non potrà più entrare nel pannello. Per farlo tornare servirà un nuovo invito.
-          </AlertDialogDescription>
-          <div class="mt-6 flex flex-wrap justify-end gap-2">
-            <AlertDialogCancel
-              class="
-                rounded-full px-4 py-2 text-sm
-                hover:bg-ink/5
-              "
-            >
-              Annulla
-            </AlertDialogCancel>
-            <button
-              type="button"
-              class="
-                rounded-full bg-red px-4 py-2 text-sm font-medium text-white
-                disabled:opacity-50
-              "
-              :disabled="busy"
-              @click="remove"
-            >
-              Sì, elimina
-            </button>
-          </div>
-        </AlertDialogContent>
-      </AlertDialogPortal>
-    </AlertDialogRoot>
+    <AdminConfirm
+      v-model:open="confirmDelete"
+      :title="`Eliminare ${current?.name || 'il collaboratore'}?`"
+      description="Non potrà più entrare nel pannello. Per farlo tornare servirà un nuovo invito."
+      :busy="busy"
+      @confirm="remove"
+    />
   </AdminShell>
 </template>

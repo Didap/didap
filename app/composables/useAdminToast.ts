@@ -11,5 +11,15 @@ export function useAdminToast() {
   function notify(kind: Toast['kind'], text: string) {
     toast.value = { id: ++nextId, kind, text, open: true }
   }
-  return { toast, notify }
+  // Copia un link negli appunti; se il browser non lo permette, l'avviso lo dice
+  async function copyText(text: string, okMsg: string) {
+    try {
+      await navigator.clipboard.writeText(text)
+      notify('ok', okMsg)
+    }
+    catch {
+      notify('error', 'Copia non riuscita: seleziona il link e copialo a mano')
+    }
+  }
+  return { toast, notify, copyText }
 }

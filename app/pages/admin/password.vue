@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AdminField from '~/components/admin/AdminField.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
+import NewPasswordFields from '~/components/admin/NewPasswordFields.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 
 // Scelta della password dal link d'invito o di reset (?token=...). Si apre
@@ -14,10 +14,8 @@ await useAdminSession()
 const route = useRoute()
 const token = computed(() => (typeof route.query.token === 'string' ? route.query.token : ''))
 
-const MIN = 10
-const MAX = 200
 const password = ref('')
-const confirm = ref('')
+const valid = ref(false)
 const error = ref('')
 const busy = ref(false)
 const expired = ref(false)
@@ -28,11 +26,6 @@ const mounted = ref(false)
 onMounted(() => {
   mounted.value = true
 })
-
-const mismatch = computed(() => !!confirm.value && confirm.value !== password.value)
-const valid = computed(() =>
-  password.value.length >= MIN && password.value.length <= MAX && password.value === confirm.value,
-)
 
 async function submit() {
   if (!mounted.value || !valid.value) return
@@ -59,7 +52,7 @@ async function submit() {
 
 <template>
   <div class="flex min-h-screen flex-col bg-paper">
-    <AdminHeader :authenticated="false" />
+    <AdminHeader />
     <main class="flex flex-1 items-center justify-center p-6">
       <!-- Link senza token, scaduto o già usato -->
       <div
@@ -108,40 +101,12 @@ async function submit() {
             La userai con la tua email per entrare nel pannello.
           </p>
         </div>
-        <AdminField
-          label="Nuova password"
-          :hint="`Almeno ${MIN} caratteri`"
-        >
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="new-password"
-            required
-            :readonly="!mounted"
-            autofocus
-            :minlength="MIN"
-            :maxlength="MAX"
-            class="admin-input"
-          >
-        </AdminField>
-        <AdminField label="Conferma password">
-          <input
-            v-model="confirm"
-            type="password"
-            autocomplete="new-password"
-            required
-            :readonly="!mounted"
-            :maxlength="MAX"
-            class="admin-input"
-            :aria-invalid="mismatch || undefined"
-          >
-        </AdminField>
-        <p
-          v-if="mismatch"
-          class="text-sm text-red"
-        >
-          Le due password non coincidono
-        </p>
+        <NewPasswordFields
+          v-model="password"
+          v-model:valid="valid"
+          :readonly="!mounted"
+          autofocus
+        />
         <p
           v-if="error"
           class="text-sm text-red"

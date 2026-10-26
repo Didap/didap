@@ -446,10 +446,7 @@ const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' }
     lg:h-screen
   ">
     <!-- Barra -->
-    <AdminHeader
-      :authenticated="!!session?.authenticated"
-      @logout="logout"
-    />
+    <AdminHeader @logout="logout" />
 
     <!-- Accesso -->
     <AdminLogin v-if="access === 'login'" />

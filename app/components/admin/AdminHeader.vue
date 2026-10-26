@@ -2,8 +2,8 @@
 import { firstAllowedPath } from '#shared/admin-access'
 import { ADMIN_PAGES, ADMIN_PAGE_INFO } from '#shared/users'
 
-// Barra di /admin: logo, sezioni della persona, link al sito, account, uscita
-defineProps<{ authenticated: boolean }>()
+// Barra di /admin: logo e, con una sessione, sezioni della persona, link al
+// sito, account e uscita
 const emit = defineEmits<{ logout: [] }>()
 
 const session = useAdminSessionState()
@@ -44,7 +44,7 @@ const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : ro
       "> · Admin</span></span>
     </NuxtLink>
     <nav
-      v-if="authenticated"
+      v-if="user"
       class="flex min-w-0 flex-1 gap-1 overflow-x-auto"
       aria-label="Sezioni admin"
     >
@@ -60,7 +60,7 @@ const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : ro
       </NuxtLink>
     </nav>
     <div
-      v-if="authenticated"
+      v-if="user"
       class="ml-auto flex shrink-0 items-center gap-4 text-sm"
     >
       <a
@@ -73,7 +73,6 @@ const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : ro
         "
       >Vai al sito ↗</a>
       <NuxtLink
-        v-if="user"
         to="/admin/account"
         class="max-w-40 truncate rounded-full px-3 py-1.5 transition"
         :class="isActive('/admin/account') ? 'bg-ink text-paper-light' : `

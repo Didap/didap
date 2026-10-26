@@ -230,8 +230,9 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
       const a = await manager('A')
       const b = await createUser(sql, { name: 'Capo', email: 'capo@didap.it', pages: [] })
       await setPassword(sql, b.id, 'vecchia-password-lunga')
-      const sid = await createSession(sql, b.id)
       await updateUser(sql, a.id, b.id, { name: 'Capo', pages: [], active: false })
+      // Sessione creata dopo la disattivazione: solo il reset può cancellarla
+      const sid = await createSession(sql, b.id)
       await ensureFirstAdmin(sql, { ...env, ADMIN_RESET: 'true' })
       const back = await getUser(sql, b.id)
       expect(back.status).toBe('attivo')

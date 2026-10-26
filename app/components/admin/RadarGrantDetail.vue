@@ -92,9 +92,10 @@ const note = (i: number) => {
             />
           </svg>
         </a>
-        <!-- La cartella del bando: si crea una volta (la scheda File arriva dopo) -->
+        <!-- La cartella del bando: si crea una volta, si riprova se il
+             riempimento non è finito (la scheda File arriva dopo) -->
         <button
-          v-if="!grant.hasFolder || grant.folderFilling"
+          v-if="!grant.folderFilled && !grant.folderFilling"
           type="button"
           class="
             inline-flex w-fit items-center rounded-full border border-ink/20
@@ -102,11 +103,11 @@ const note = (i: number) => {
             hover:border-ink
             disabled:opacity-40
           "
-          :disabled="!filesConfigured || grant.folderFilling"
+          :disabled="!filesConfigured"
           :title="filesConfigured ? 'Crea la cartella del bando, col bando e i suoi PDF' : 'Cloudinary non configurato'"
           @click="createFolder"
         >
-          {{ grant.folderFilling ? 'Creo la cartella…' : 'Crea cartella del bando' }}
+          {{ grant.hasFolder ? 'Riprova a prendere i file dal bando' : 'Crea cartella del bando' }}
         </button>
         <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
         <a

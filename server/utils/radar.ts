@@ -344,12 +344,13 @@ export async function readPending(
             verdict = null, verdict_reason = '', judged_profile = null, updated_at = now()
         `
       }
-      // Un bando con cartella non si cancella: resta coi dati di prima
-      const kept = !reading.admitsCompanies && (await tx`
-        select 1 from radar_grants where document_id = ${doc.id} and folder_at is not null
-      `).length > 0
-      if (!reading.admitsCompanies && !kept) {
-        await tx`delete from radar_grants where document_id = ${doc.id}`
+      // Un bando con cartella non si cancella: resta coi dati di prima.
+      // La condizione sta nella delete: una cartella creata nel frattempo
+      // blocca la riga e Postgres la ricontrolla dopo.
+      let kept = false
+      if (!reading.admitsCompanies) {
+        await tx`delete from radar_grants where document_id = ${doc.id} and folder_at is null`
+        kept = (await tx`select 1 from radar_grants where document_id = ${doc.id}`).length > 0
       }
       const status = reading.admitsCompanies || kept ? 'read' : 'skipped'
       await tx`update radar_documents set status = ${status}, error = null, read_at = now() where id = ${doc.id}`
@@ -478,7 +479,7 @@ export async function listGrants(
   const rows = await sql`
     select g.id, d.source, d.url, g.digital, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
-      g.liked_at, g.folder_at, g.folder_note,
+      g.liked_at, g.folder_at, g.folder_filled_at, g.folder_note,
       coalesce(g.folder_filled_at is null and g.folder_claimed_at > now() - ${`${FOLDER_CLAIM_MINUTES} minutes`}::interval, false)
         as folder_filling,
       ${closedGrant(sql, now)} as closed,
@@ -509,6 +510,7 @@ export async function listGrants(
     notifiedAt: iso(r.notified_at),
     liked: r.liked_at !== null,
     hasFolder: r.folder_at !== null,
+    folderFilled: r.folder_filled_at !== null,
     folderFilling: r.folder_filling,
     folderNote: r.folder_note,
     closed: r.closed,
@@ -757,17 +759,20 @@ export async function radarWipe(sql: Sql): Promise<{ deleted: number, kept: numb
   const lease = await acquireLease(sql)
   if (!lease) throw createError({ statusCode: 409, statusMessage: 'Il radar sta girando: riprova a import finito' })
   try {
-    const [row] = await sql<{ deleted: number, kept: number }[]>`
-      with gone as (
-        delete from radar_documents d
-        where not exists (select 1 from radar_grants g where g.document_id = d.id and g.folder_at is not null)
-        returning 1
-      )
-      select (select count(*)::int from gone) as deleted,
-        (select count(*)::int from radar_grants where folder_at is not null) as kept
-    `
+    // Prima i bandi senza cartella, con la condizione nella delete: una
+    // cartella creata nel frattempo blocca la riga e Postgres la ricontrolla
+    // (la cascata da radar_documents invece non guarda folder_at). Poi i
+    // documenti rimasti senza bando.
+    const result = await sql.begin(async (tx) => {
+      await tx`delete from radar_grants where folder_at is null`
+      const gone = await tx`
+        delete from radar_documents d where not exists (select 1 from radar_grants g where g.document_id = d.id)
+      `
+      const [row] = await tx<{ kept: number }[]>`select count(*)::int as kept from radar_grants`
+      return { deleted: gone.count, kept: row!.kept }
+    })
     await sql`update radar_state set last_ingest_at = null, last_ingest_error = null where id = 1`
-    return { deleted: row!.deleted, kept: row!.kept }
+    return result
   }
   finally {
     await releaseLease(sql, lease)

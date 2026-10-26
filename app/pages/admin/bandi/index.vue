@@ -237,6 +237,7 @@ function setFolder(id: string, start: FolderStart) {
   if (!g) return
   g.hasFolder = true
   g.liked = true
+  g.folderFilled = start.status === 'ready'
   g.folderFilling = start.status === 'filling'
 }
 

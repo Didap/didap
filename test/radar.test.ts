@@ -230,6 +230,7 @@ describe('ricerca e giudizio', () => {
     notifiedAt: null,
     liked: false,
     hasFolder: false,
+    folderFilled: false,
     folderFilling: false,
     folderNote: '',
     closed: false,

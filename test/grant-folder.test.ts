@@ -104,7 +104,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
 
   it('crea la cartella col bando e i suoi PDF, una volta sola', async () => {
     const grant = await oneGrant()
-    expect(grant).toMatchObject({ hasFolder: false, folderFilling: false, folderNote: '', closed: false })
+    expect(grant).toMatchObject({ hasFolder: false, folderFilled: false, folderFilling: false, folderNote: '', closed: false })
     vi.stubGlobal('fetch', fakeWeb(calls))
     const store = memoryStore()
 
@@ -112,7 +112,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     // Un secondo clic mentre lavora non apre un altro lavoro
     expect(await startGrantFolder(sql, store, grant.id, run)).toEqual({ status: 'filling' })
     expect(jobs).toHaveLength(1)
-    expect(await reread()).toMatchObject({ hasFolder: true, folderFilling: true })
+    expect(await reread()).toMatchObject({ hasFolder: true, folderFilled: false, folderFilling: true })
     await finish()
 
     const files = await fromSite(grant.id)
@@ -124,6 +124,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
 
     expect(await reread()).toMatchObject({
       hasFolder: true,
+      folderFilled: true,
       folderFilling: false,
       folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito',
       liked: true,
@@ -158,7 +159,8 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     }
     await startGrantFolder(sql, failing, grant.id, run)
     await finish()
-    expect(await reread()).toMatchObject({ hasFolder: true, folderFilling: false, folderNote: 'Non riuscita: quota' })
+    // Creata ma non riempita: il pannello offre di riprovare
+    expect(await reread()).toMatchObject({ hasFolder: true, folderFilled: false, folderFilling: false, folderNote: 'Non riuscita: quota' })
     expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf'])
 
     // Lo store torna a funzionare
@@ -169,7 +171,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
     expect(calls).not.toContain('https://example.com/docs/avviso.pdf')
     expect(store.files.size).toBe(2)
-    expect(await reread()).toMatchObject({ folderFilling: false, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
+    expect(await reread()).toMatchObject({ folderFilled: true, folderFilling: false, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
   })
 
   it('un bando che non c\'è', async () => {

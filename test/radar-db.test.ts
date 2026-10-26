@@ -370,6 +370,44 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     expect(docs.map(d => [d.external_id, d.status])).toEqual([['a', 'read'], ['b', 'skipped']])
   })
 
+  // "Crea cartella" in una transazione aperta mentre parte `work`: `work`
+  // deve aspettarla e vedere la cartella, non cancellare il bando
+  async function folderDuring(title: string, work: () => Promise<unknown>) {
+    const other = await sql.reserve()
+    try {
+      await other`begin`
+      await other`update radar_grants set folder_at = now() where title = ${title}`
+      const done = work()
+      // `work` è fermo sul lucchetto della riga
+      for (let i = 0; i < 200; i++) {
+        const [{ waiting }] = await sql`select count(*)::int as waiting from pg_locks where not granted`
+        if (waiting) break
+        await new Promise(r => setTimeout(r, 10))
+      }
+      await other`commit`
+      return await done
+    }
+    finally {
+      other.release()
+    }
+  }
+
+  it('una cartella creata mentre si rilegge il bando lo salva', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A' })], NOW)
+    await readPending(sql, fakeReader)
+    await ingestSources(sql, [fakeSource({ a: 'enti locali A' })], NOW)
+    await folderDuring('bando A', () => readPending(sql, fakeReader))
+    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => g.title)).toEqual(['bando A'])
+    expect((await sql`select status from radar_documents`).map(d => d.status)).toEqual(['read'])
+  })
+
+  it('una cartella creata mentre si svuota salva il bando', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B' })], NOW)
+    await readPending(sql, fakeReader)
+    expect(await folderDuring('bando A', () => radarWipe(sql))).toEqual({ deleted: 1, kept: 1 })
+    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => g.title)).toEqual(['bando A'])
+  })
+
   it('un giro alla volta', async () => {
     const lease = await acquireLease(sql)
     expect(lease).toBeInstanceOf(Date)

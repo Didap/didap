@@ -1,5 +1,6 @@
 import postgres from 'postgres'
 import { DB_SCHEMA } from './schema'
+import { ensureFirstAdmin } from './users'
 
 // Postgres condiviso (Coolify, progetto shared-infra), database "didap".
 // DATABASE_URL letta a runtime: senza, il sito funziona coi soli contenuti
@@ -51,6 +52,7 @@ async function connect(): Promise<Sql> {
     client = postgres(url, OPTIONS)
   }
   await client.unsafe(DB_SCHEMA)
+  await ensureFirstAdmin(client, process.env)
   return client
 }
 

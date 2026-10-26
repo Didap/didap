@@ -19,6 +19,25 @@ export const DB_SCHEMA = `
     id text primary key,
     expires_at timestamptz not null
   );
+  -- Persone del pannello, inviti e reset, sessioni legate alla persona
+  create table if not exists admin_users (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    email text not null unique,
+    password_hash text,
+    pages text[] not null default '{}',
+    active boolean not null default true,
+    created_at timestamptz not null default now(),
+    last_login_at timestamptz
+  );
+  create table if not exists admin_user_tokens (
+    hash text primary key,
+    user_id uuid not null references admin_users(id) on delete cascade,
+    kind text not null check (kind in ('invite', 'reset')),
+    expires_at timestamptz not null
+  );
+  alter table admin_sessions add column if not exists user_id uuid references admin_users(id) on delete cascade;
+  delete from admin_sessions where user_id is null;
 
   create table if not exists settings (
     id int primary key check (id = 1),

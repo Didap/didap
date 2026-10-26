@@ -215,7 +215,9 @@ async function openMove(r: Row) {
   tree.value = null
   try {
     const list = await folderTree()
-    if (seq === treeSeq && moving.value === r) tree.value = list
+    // Per id: moving.value è il proxy reattivo, r l'oggetto della riga
+    const same = moving.value?.kind === r.kind && moving.value.entry.id === r.entry.id
+    if (seq === treeSeq && same) tree.value = list
   }
   catch (err) {
     if (seq !== treeSeq) return

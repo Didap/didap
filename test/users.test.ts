@@ -1,5 +1,5 @@
 import type postgres from 'postgres'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DB_SCHEMA } from '../server/utils/schema'
 import { ADMIN_PAGES } from '../shared/users'
 import { changeOwnPassword, checkLogin, createSession, createUser, deleteUser, ensureFirstAdmin, getUser, issueToken, listUsers, redeemToken, requestReset, sessionUser, setPassword, updateUser } from '../server/utils/users'
@@ -121,6 +121,16 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     expect(left.map(r => r.id)).toEqual(['sa'])
   })
 
+  it('disattivare cancella i link: alla riattivazione non tornano validi', async () => {
+    const a = await manager('A')
+    const b = await createUser(sql, { name: 'B', email: 'b@didap.it', pages: [] })
+    const token = await issueToken(sql, b.id, 'invite')
+    await updateUser(sql, a.id, b.id, { name: 'B', pages: [], active: false })
+    expect(await sql`select 1 from admin_user_tokens where user_id = ${b.id}`).toHaveLength(0)
+    await updateUser(sql, a.id, b.id, { name: 'B', pages: [], active: true })
+    await expect(redeemToken(sql, token, PW)).rejects.toMatchObject({ statusCode: 410 })
+  })
+
   it('setPassword cancella token e sessioni della persona', async () => {
     const a = await manager('A')
     await sql`insert into admin_sessions (id, expires_at, user_id) values ('sa', now() + interval '1 day', ${a.id})`
@@ -138,6 +148,13 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     expect(user.id).toBe(u.id)
     expect(await checkLogin(sql, u.email, PW)).not.toBeNull()
     await expect(redeemToken(sql, token, 'altra-password-lunga')).rejects.toMatchObject({ statusCode: 410 })
+  })
+
+  it('redeemToken aggiorna lastLoginAt: chi entra dal link risulta entrato', async () => {
+    const u = await createUser(sql, { name: 'Nuovo', email: 'nuovo@didap.it', pages: [] })
+    expect((await getUser(sql, u.id)).lastLoginAt).toBeNull()
+    await redeemToken(sql, await issueToken(sql, u.id, 'invite'), PW)
+    expect((await getUser(sql, u.id)).lastLoginAt).not.toBeNull()
   })
 
   it('token scaduto: 410 e la password non cambia', async () => {
@@ -174,6 +191,38 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     expect(await requestReset(sql, 'nessuno@didap.it')).toBeNull()
     await updateUser(sql, a.id, b.id, { ...keep(b), active: false })
     expect(await requestReset(sql, b.email)).toBeNull()
+  })
+
+  // Secondi di validità dei token della persona
+  async function tokenSecs(userId: string) {
+    return await sql`
+      select kind, extract(epoch from expires_at - now())::int as secs
+      from admin_user_tokens where user_id = ${userId}
+    `
+  }
+
+  it('requestReset con password: reset da 1 ora', async () => {
+    const a = await manager('A')
+    const found = await requestReset(sql, a.email)
+    expect(found?.kind).toBe('reset')
+    const [tok] = await tokenSecs(a.id)
+    expect(tok!.kind).toBe('reset')
+    expect(tok!.secs).toBeLessThanOrEqual(60 * 60)
+    expect(tok!.secs).toBeGreaterThan(60 * 59)
+  })
+
+  it('requestReset su invito in attesa: nuovo invito da 7 giorni, non un reset', async () => {
+    const u = await createUser(sql, { name: 'Nuovo', email: 'nuovo@didap.it', pages: [] })
+    await issueToken(sql, u.id, 'invite')
+    const found = await requestReset(sql, u.email)
+    expect(found?.kind).toBe('invite')
+    const toks = await tokenSecs(u.id)
+    expect(toks).toHaveLength(1)
+    expect(toks[0]!.kind).toBe('invite')
+    expect(toks[0]!.secs).toBeGreaterThan(60 * 60 * 24 * 7 - 60)
+    // Il link appena emesso funziona
+    await redeemToken(sql, found!.token, PW)
+    expect(await checkLogin(sql, u.email, PW)).not.toBeNull()
   })
 
   it('sessionUser segue le modifiche della persona', async () => {
@@ -213,6 +262,46 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
 
   describe('ensureFirstAdmin', () => {
     const env = { ADMIN_EMAIL: 'Capo@Didap.it', ADMIN_PASSWORD: PW }
+    let warn: ReturnType<typeof vi.spyOn>
+    beforeEach(() => {
+      warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    })
+    afterEach(() => {
+      warn.mockRestore()
+    })
+
+    it('tabella vuota senza variabili: avvisa quali impostare', async () => {
+      await ensureFirstAdmin(sql, {})
+      await ensureFirstAdmin(sql, { ADMIN_EMAIL: 'capo@didap.it' })
+      await ensureFirstAdmin(sql, { ADMIN_PASSWORD: PW })
+      expect(warn).toHaveBeenCalledTimes(3)
+      for (const [msg] of warn.mock.calls) {
+        expect(msg).toContain('ADMIN_EMAIL')
+        expect(msg).toContain('ADMIN_PASSWORD')
+      }
+      expect(await listUsers(sql)).toHaveLength(0)
+    })
+
+    it('senza variabili ma con persone già presenti non avvisa', async () => {
+      await createUser(sql, { name: 'X', email: 'x@didap.it', pages: [] })
+      await ensureFirstAdmin(sql, {})
+      expect(warn).not.toHaveBeenCalled()
+    })
+
+    it('ADMIN_RESET senza variabili: avvisa che il recupero è saltato', async () => {
+      const a = await manager('A')
+      await ensureFirstAdmin(sql, { ADMIN_EMAIL: 'capo@didap.it', ADMIN_RESET: 'true' })
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]![0]).toContain('ADMIN_RESET ignorato')
+      expect(await listUsers(sql)).toEqual([await getUser(sql, a.id)])
+    })
+
+    it('ADMIN_PASSWORD corta: avvisa ma crea la persona', async () => {
+      await ensureFirstAdmin(sql, { ADMIN_EMAIL: 'capo@didap.it', ADMIN_PASSWORD: 'corta' })
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]![0]).toContain('10 caratteri')
+      expect(await checkLogin(sql, 'capo@didap.it', 'corta')).not.toBeNull()
+    })
 
     it('tabella vuota: crea la persona con tutte le pagine, senza duplicare', async () => {
       await ensureFirstAdmin(sql, env)
@@ -246,6 +335,7 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
       expect(await checkLogin(sql, 'capo@didap.it', PW)).not.toBeNull()
       expect(await sessionUser(sql, sid)).toBeNull()
       expect(await listUsers(sql)).toHaveLength(2)
+      expect(warn).toHaveBeenCalledWith('ADMIN_RESET attivo: togli la variabile dopo il recupero')
     })
 
     it('ADMIN_RESET crea la persona se manca', async () => {

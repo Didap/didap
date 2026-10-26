@@ -82,7 +82,11 @@ export async function updateUser(sql: Sql, actorId: string, id: string, input: U
       returning *
     `
     if (!row) throw notFound()
-    if (!input.active) await tx`delete from admin_sessions where user_id = ${id}`
+    // Disattivata: fuori subito, e i link vecchi non tornano validi alla riattivazione
+    if (!input.active) {
+      await tx`delete from admin_sessions where user_id = ${id}`
+      await tx`delete from admin_user_tokens where user_id = ${id}`
+    }
     await assertManagerLeft(tx as unknown as Sql)
     return rowToUserRow(row)
   }) as AdminUserRow
@@ -144,10 +148,16 @@ export async function issueToken(sql: Sql, userId: string, kind: 'invite' | 'res
   return token
 }
 
-export async function requestReset(sql: Sql, email: string): Promise<{ user: AdminUser, token: string } | null> {
+// Chi non ha ancora una password riceve un nuovo invito (7 giorni) e non un
+// reset da 1 ora: il link che ha già in mano resta comunque sostituito
+export async function requestReset(
+  sql: Sql,
+  email: string,
+): Promise<{ user: AdminUser, token: string, kind: 'invite' | 'reset' } | null> {
   const [row] = await sql`select * from admin_users where email = ${normEmail(email)} and active`
   if (!row) return null
-  return { user: rowToUser(row), token: await issueToken(sql, row.id, 'reset') }
+  const kind = row.password_hash ? 'reset' : 'invite'
+  return { user: rowToUser(row), token: await issueToken(sql, row.id, kind), kind }
 }
 
 export async function redeemToken(sql: Sql, token: string, password: string): Promise<AdminUser> {
@@ -162,7 +172,7 @@ export async function redeemToken(sql: Sql, token: string, password: string): Pr
     `
     if (!tok) throw gone()
     const [row] = await tx`
-      update admin_users set password_hash = ${passwordHash}
+      update admin_users set password_hash = ${passwordHash}, last_login_at = now()
       where id = ${tok.user_id} and active
       returning *
     `
@@ -226,11 +236,25 @@ export async function ensureFirstAdmin(
 ): Promise<void> {
   const email = env.ADMIN_EMAIL ? normEmail(env.ADMIN_EMAIL) : ''
   const password = env.ADMIN_PASSWORD ?? ''
-  if (!email || !password) return
   const reset = env.ADMIN_RESET === 'true'
+  if (!email || !password) {
+    if (reset) {
+      console.warn('ADMIN_RESET ignorato: servono anche ADMIN_EMAIL e ADMIN_PASSWORD')
+      return
+    }
+    const [{ n }] = await sql`select count(*)::int as n from admin_users` as unknown as [{ n: number }]
+    if (n === 0) {
+      console.warn('Nessuna persona nel pannello admin: imposta ADMIN_EMAIL e ADMIN_PASSWORD per creare la prima')
+    }
+    return
+  }
   if (!reset) {
     const [{ n }] = await sql`select count(*)::int as n from admin_users` as unknown as [{ n: number }]
     if (n > 0) return
+  }
+  // Solo quando la password viene davvero usata
+  if (password.length < 10) {
+    console.warn('ADMIN_PASSWORD è più corta di 10 caratteri: cambiala dal pannello dopo il primo accesso')
   }
   const hash = await hashPassword(password)
   await sql.begin(async (tx) => {

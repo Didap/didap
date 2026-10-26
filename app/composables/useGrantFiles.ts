@@ -23,15 +23,6 @@ export function fileKind(f: FileEntry): FileKind {
   return 'other'
 }
 
-const decimal = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 })
-
-// 1536 -> "1,5 KB"
-export function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`
-  if (n < 1024 * 1024) return `${decimal.format(n / 1024)} KB`
-  return `${decimal.format(n / 1024 / 1024)} MB`
-}
-
 export type { TreeFolder }
 
 export type Upload = {
@@ -46,22 +37,24 @@ const UPLOAD_WORKERS = 2
 
 let nextUpload = 0
 
-export function useGrantFiles(grantId: () => string) {
+// Una istanza per bando: la scheda del bando la ricrea quando si passa a un
+// altro (:key), così niente risposte del bando di prima
+export function useGrantFiles(grantId: string) {
   const { notify } = useAdminToast()
-  const base = (id = grantId()) => `/api/admin/radar/grants/${id}/files`
+  const base = `/api/admin/radar/grants/${grantId}/files`
 
   const folderId = ref<string | null>(null)
   const listing = ref<FolderListing | null>(null)
   const loading = ref(false)
   const uploads = ref<Upload[]>([])
 
-  // Solo l'ultima richiesta conta: si cambia cartella o bando mentre carica
+  // Solo l'ultima richiesta conta: si cambia cartella mentre carica
   let loadSeq = 0
   async function load() {
     const seq = ++loadSeq
     loading.value = true
     try {
-      const res = await $fetch<FolderListing>(base(), { query: folderId.value ? { folder: folderId.value } : {} })
+      const res = await $fetch<FolderListing>(base, { query: folderId.value ? { folder: folderId.value } : {} })
       if (seq === loadSeq) listing.value = res
     }
     catch (err) {
@@ -83,64 +76,50 @@ export function useGrantFiles(grantId: () => string) {
     return load()
   }
 
-  // Un altro bando: si riparte dalla principale e una lettura ancora in
-  // corso (del bando di prima) non conta più
-  function reset() {
-    loadSeq++
-    loading.value = false
-    folderId.value = null
-    listing.value = null
-    uploads.value = []
-  }
-
   // Le scritture: true se è andata, altrimenti l'errore nell'avviso. Poi
-  // l'elenco si ricarica (qualcun altro può averlo cambiato), ma solo se
-  // nel frattempo non si è passati a un altro bando.
-  async function write(run: (url: string) => Promise<unknown>): Promise<boolean> {
-    const grant = grantId()
+  // l'elenco si ricarica (qualcun altro può averlo cambiato).
+  async function write(run: () => Promise<unknown>): Promise<boolean> {
     let ok = true
     try {
-      await run(base(grant))
+      await run()
     }
     catch (err) {
       notify('error', adminErrorText(err))
       ok = false
     }
-    if (grantId() === grant) await load()
+    await load()
     return ok
   }
 
-  // La cartella nuova; null se non è andata o se il bando è cambiato
+  // La cartella nuova; null se non è andata
   async function createFolder(name: string): Promise<FolderEntry | null> {
-    const grant = grantId()
     let made: FolderEntry | null = null
-    await write(async (url) => {
-      made = await $fetch<FolderEntry>(`${url}/folders`, { method: 'POST', body: { parentId: folderId.value, name } })
+    await write(async () => {
+      made = await $fetch<FolderEntry>(`${base}/folders`, { method: 'POST', body: { parentId: folderId.value, name } })
     })
-    return grantId() === grant ? made : null
+    return made
   }
 
   const patch = (kind: EntryKind, id: string, body: { name: string } | { folderId: string | null }) =>
-    write(url => $fetch(`${url}/entries/${kind}/${id}`, { method: 'PATCH', body }))
+    write(() => $fetch(`${base}/entries/${kind}/${id}`, { method: 'PATCH', body }))
 
   const rename = (kind: EntryKind, id: string, name: string) => patch(kind, id, { name })
   const move = (kind: EntryKind, id: string, target: string | null) => patch(kind, id, { folderId: target })
 
   const remove = (kind: EntryKind, id: string) =>
-    write(url => $fetch(`${url}/entries/${kind}/${id}`, { method: 'DELETE' }))
+    write(() => $fetch(`${base}/entries/${kind}/${id}`, { method: 'DELETE' }))
 
   // Tutte le cartelle del bando, in ordine come in un albero: una richiesta,
   // fatta solo quando serve ("Sposta in..."). La principale ha il nome del
   // bando, dal percorso dell'elenco aperto.
   async function folderTree(): Promise<TreeFolder[]> {
-    const rows = await $fetch<TreeRow[]>(`${base()}/tree`)
+    const rows = await $fetch<TreeRow[]>(`${base}/tree`)
     return treeFolders(rows, listing.value?.path[0]?.name ?? 'Cartella del bando')
   }
 
   // Nella cartella aperta; oltre MAX_FILE_BYTES non partono. Le righe finite spariscono,
   // quelle andate male restano finché non si chiudono.
   async function upload(files: File[]) {
-    const grant = grantId()
     const target = folderId.value
     const big = files.filter(f => f.size > MAX_FILE_BYTES)
     if (big.length) {
@@ -162,7 +141,7 @@ export function useGrantFiles(grantId: () => string) {
         try {
           const body = new FormData()
           body.append('file', file, file.name)
-          await $fetch(`${base(grant)}/upload`, { method: 'POST', body, query: target ? { folder: target } : {} })
+          await $fetch(`${base}/upload`, { method: 'POST', body, query: target ? { folder: target } : {} })
           row.state = 'done'
         }
         catch (err) {
@@ -180,8 +159,7 @@ export function useGrantFiles(grantId: () => string) {
     // Senza coprire l'avviso dei file troppo grandi
     else if (!big.length) notify('ok', done === 1 ? 'File caricato' : `${done} file caricati`)
     uploads.value = uploads.value.filter(u => u.state !== 'done')
-    // Nel frattempo si può essere passati a un altro bando
-    if (grantId() === grant) await load()
+    await load()
   }
 
   function dismissUploads() {
@@ -189,7 +167,7 @@ export function useGrantFiles(grantId: () => string) {
   }
 
   const contentUrl = (f: FileEntry, download = false) =>
-    `${base()}/content/${f.id}${download ? '?download=1' : ''}`
+    `${base}/content/${f.id}${download ? '?download=1' : ''}`
 
   return {
     folderId,
@@ -198,7 +176,6 @@ export function useGrantFiles(grantId: () => string) {
     uploads,
     load,
     openFolder,
-    reset,
     createFolder,
     rename,
     move,

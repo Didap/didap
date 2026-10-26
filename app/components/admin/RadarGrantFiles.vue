@@ -1,12 +1,6 @@
 <script setup lang="ts">
+import type { Ref } from 'vue'
 import {
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogOverlay,
-  AlertDialogPortal,
-  AlertDialogRoot,
-  AlertDialogTitle,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -21,17 +15,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'reka-ui'
+import AdminConfirm from '~/components/admin/AdminConfirm.vue'
 import AdminIcon from '~/components/admin/AdminIcon.vue'
 import FileIcon from '~/components/admin/FileIcon.vue'
-import { canPreview, fileKind, formatBytes, useGrantFiles, type FileKind, type TreeFolder } from '~/composables/useGrantFiles'
+import { canPreview, fileKind, useGrantFiles, type FileKind, type TreeFolder } from '~/composables/useGrantFiles'
 import { adminErrorText } from '~/utils/adminErrors'
-import { formatDateTime } from '~/utils/format'
+import { formatBytes, formatDateTime } from '~/utils/format'
 import { entryNameSchema, type EntryKind, type FileEntry, type FolderEntry } from '#shared/grant-files'
 import type { EvaluatedGrant, FolderStart } from '#shared/radar'
 
 // Scheda "File" di un bando, come una cartella del Finder: la cartella si
 // crea una volta (col bando e i suoi PDF) e si riprova se il riempimento non
 // è finito; poi si naviga, si carica, si rinomina, si sposta e si elimina.
+// Una istanza per bando (:key nella scheda): passando a un altro si riparte
+// dalla principale, senza finestre aperte.
 const props = defineProps<{ grant: EvaluatedGrant, configured: boolean }>()
 // La cartella si riempie in background: la pagina segna il bando e lo
 // ricarica finché non è pronta
@@ -61,7 +58,6 @@ const {
   uploads,
   load,
   openFolder: enterFolder,
-  reset,
   createFolder,
   rename,
   move,
@@ -70,7 +66,7 @@ const {
   upload,
   dismissUploads,
   contentUrl,
-} = useGrantFiles(() => props.grant.id)
+} = useGrantFiles(props.grant.id)
 
 // L'elenco c'è quando la cartella esiste (anche mentre si riempie)
 const showList = computed(() => props.configured && props.grant.hasFolder)
@@ -93,14 +89,17 @@ const rowMeta = (r: Row) => r.kind === 'folder'
 const path = computed(() => listing.value?.path ?? [])
 const here = computed(() => path.value.at(-1)?.name ?? '')
 
-// Apri: la cartella ci entra, PDF e immagini in anteprima, il resto si scarica
-const preview = ref<FileEntry | null>(null)
-const previewOpen = computed({
-  get: () => !!preview.value,
+// Una finestra aperta finché c'è il suo elemento; chiuderla lo toglie
+const openWhile = <T>(item: Ref<T | null>) => computed({
+  get: () => !!item.value,
   set: (v) => {
-    if (!v) preview.value = null
+    if (!v) item.value = null
   },
 })
+
+// Apri: la cartella ci entra, PDF e immagini in anteprima, il resto si scarica
+const preview = ref<FileEntry | null>(null)
+const previewOpen = openWhile(preview)
 
 // Cambiando cartella una rinomina lasciata a metà si chiude
 function openFolder(id: string | null) {
@@ -124,9 +123,8 @@ function download(f: FileEntry) {
 
 // Nuova cartella: nasce con un nome provvisorio, già in modifica
 async function newFolder() {
-  const grant = props.grant.id
   const made = await createFolder('Nuova cartella')
-  if (made && props.grant.id === grant) startRename({ kind: 'folder', entry: made })
+  if (made) startRename({ kind: 'folder', entry: made })
 }
 
 // Carica: dal selettore o trascinando file dal computer
@@ -198,12 +196,7 @@ function onMenuCloseFocus(e: Event) {
 // Sposta in...: una finestra con le cartelle del bando, chieste quando si
 // apre (più comoda di un sottomenu nella colonna stretta)
 const moving = ref<Row | null>(null)
-const movingOpen = computed({
-  get: () => !!moving.value,
-  set: (v) => {
-    if (!v) moving.value = null
-  },
-})
+const movingOpen = openWhile(moving)
 const tree = ref<TreeFolder[] | null>(null)
 let treeSeq = 0
 
@@ -331,12 +324,7 @@ function onZoneDrop(e: DragEvent) {
 
 // Elimina, dopo la conferma
 const confirmRow = ref<Row | null>(null)
-const confirmOpen = computed({
-  get: () => !!confirmRow.value,
-  set: (v) => {
-    if (!v) confirmRow.value = null
-  },
-})
+const confirmOpen = openWhile(confirmRow)
 const deleting = ref(false)
 const confirmTitle = computed(() => {
   const r = confirmRow.value
@@ -344,6 +332,7 @@ const confirmTitle = computed(() => {
   if (r.kind === 'file') return 'Elimina il file?'
   return r.entry.fileCount ? `Elimina la cartella e i suoi ${r.entry.fileCount} file?` : 'Elimina la cartella?'
 })
+const confirmText = computed(() => `"${confirmRow.value?.entry.name ?? ''}" non si potrà recuperare.`)
 
 async function confirmDelete() {
   const r = confirmRow.value
@@ -358,23 +347,12 @@ async function confirmDelete() {
   }
 }
 
-onMounted(() => {
+// All'apertura, a cartella appena creata o a riempimento finito: elenco da
+// rifare (il bando ricaricato dalla pagina ogni pochi secondi, se non cambia
+// niente di questo, non rifà l'elenco)
+watch([showList, () => props.grant.folderFilling], () => {
   if (showList.value) load()
-})
-// Un altro bando: si riparte dalla principale, senza finestre aperte
-watch(() => props.grant.id, () => {
-  reset()
-  renaming.value = null
-  preview.value = null
-  confirmRow.value = null
-  moving.value = null
-})
-// Altro bando, cartella appena creata o riempimento finito: elenco da rifare
-// (più sorgenti: il bando ricaricato dalla pagina ogni pochi secondi, se
-// non cambia niente di questo, non rifà l'elenco)
-watch([() => props.grant.id, showList, () => props.grant.folderFilling], () => {
-  if (showList.value) load()
-})
+}, { immediate: true })
 // La riga in rinomina non c'è più nell'elenco (eliminata, spostata, altra
 // cartella): il campo si chiude
 watch(rows, (list) => {
@@ -442,7 +420,7 @@ const itemClass = `
       </button>
       <!-- La nota dell'ultimo riempimento: in rosso se è finito con un errore -->
       <p
-        v-if="grant.folderNote && !showList"
+        v-if="grant.folderNote"
         class="text-xs"
         :class="grant.folderFailed ? 'text-red' : 'opacity-60'"
       >
@@ -520,13 +498,6 @@ const itemClass = `
             @change="onPick"
           >
         </div>
-        <p
-          v-if="grant.folderNote"
-          class="text-xs"
-          :class="grant.folderFailed ? 'text-red' : 'opacity-60'"
-        >
-          {{ grant.folderNote }}
-        </p>
       </div>
 
       <!-- Caricamenti in corso: una riga per file -->
@@ -729,45 +700,13 @@ const itemClass = `
       </div>
     </template>
 
-    <AlertDialogRoot v-model:open="confirmOpen">
-      <AlertDialogPortal>
-        <AlertDialogOverlay class="fixed inset-0 z-50 bg-ink/40" />
-        <AlertDialogContent
-          class="
-            fixed top-1/2 left-1/2 z-50 w-[calc(100%-3rem)] max-w-md
-            -translate-1/2 rounded-2xl bg-white p-6
-          "
-        >
-          <AlertDialogTitle class="text-xl font-bold">
-            {{ confirmTitle }}
-          </AlertDialogTitle>
-          <AlertDialogDescription class="mt-2 wrap-break-word opacity-70">
-            "{{ confirmRow?.entry.name }}" non si potrà recuperare.
-          </AlertDialogDescription>
-          <div class="mt-6 flex flex-wrap justify-end gap-2">
-            <AlertDialogCancel
-              class="
-                rounded-full px-4 py-2 text-sm
-                hover:bg-ink/5
-              "
-            >
-              Annulla
-            </AlertDialogCancel>
-            <button
-              type="button"
-              class="
-                rounded-full bg-red px-4 py-2 text-sm font-medium text-white
-                disabled:opacity-50
-              "
-              :disabled="deleting"
-              @click="confirmDelete"
-            >
-              Sì, elimina
-            </button>
-          </div>
-        </AlertDialogContent>
-      </AlertDialogPortal>
-    </AlertDialogRoot>
+    <AdminConfirm
+      v-model:open="confirmOpen"
+      :title="confirmTitle"
+      :description="confirmText"
+      :busy="deleting"
+      @confirm="confirmDelete"
+    />
 
     <!-- Sposta in...: la principale e tutte le cartelle, rientrate per livello -->
     <DialogRoot v-model:open="movingOpen">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
+import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
 import RadarGrantFiles from '~/components/admin/RadarGrantFiles.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { formatDay } from '~/utils/format'
@@ -54,14 +55,12 @@ const note = (i: number) => {
           <p class="text-sm opacity-60">
             {{ grant.issuer }}
           </p>
-          <!-- Chiuso o scaduto: resta qui solo perché ha la cartella -->
-          <p
+          <RadarClosedTag
             v-if="grant.closed"
-            class="flex items-center gap-2 text-sm"
-          >
-            <span class="rounded-full bg-ink/8 px-2 py-0.5 text-xs font-medium">Chiuso</span>
-            <span class="opacity-60">Scadenza {{ grant.deadline ? formatDay(grant.deadline) : 'a sportello' }}</span>
-          </p>
+            :deadline="grant.deadline"
+            label="Scadenza"
+            class="text-sm"
+          />
         </div>
       </div>
       <div class="ml-9 flex flex-wrap gap-2">
@@ -122,8 +121,10 @@ const note = (i: number) => {
       </ToggleGroupRoot>
     </header>
 
+    <!-- Per id: un altro bando ha una cartella nuova, dalla principale -->
     <RadarGrantFiles
       v-if="tab === 'files'"
+      :key="grant.id"
       :grant="grant"
       :configured="filesConfigured"
       @folder="(id, start) => $emit('folder', id, start)"

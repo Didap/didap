@@ -24,12 +24,13 @@ import {
 import AdminIcon from '~/components/admin/AdminIcon.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import OptionalNumber from '~/components/admin/OptionalNumber.vue'
+import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
 import RadarGrantDetail from '~/components/admin/RadarGrantDetail.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { adminErrorText } from '~/utils/adminErrors'
-import { formatDateTime, formatDay } from '~/utils/format'
+import { formatDateTime } from '~/utils/format'
 import { romeDate } from '#shared/dates'
 import { formatWholeEuro } from '#shared/money'
 import {
@@ -195,9 +196,10 @@ const grants = computed<EvaluatedGrant[]>(() => {
 })
 
 // Le schede per esito, più quella dei bandi segnati col cuore. I bandi
-// chiusi (restano solo se hanno la cartella) stanno solo negli interessanti,
-// anche senza cuore: lì si apre la loro cartella.
-const isInteresting = (g: EvaluatedGrant) => g.liked || (g.closed && g.hasFolder)
+// chiusi stanno solo negli interessanti, anche senza cuore: lì si apre la
+// loro cartella. Arrivano solo quelli con la cartella (withFolders), quindi
+// basta closed.
+const isInteresting = (g: EvaluatedGrant) => g.liked || g.closed
 type Tab = Eligibility | 'liked'
 const TABS: Record<Tab, string> = { ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
 const tab = ref<Tab>('eligible')
@@ -975,15 +977,10 @@ function toggleGroup(group: string, on: boolean) {
                   flex flex-col items-end gap-1 text-right text-sm
                   whitespace-nowrap
                 ">
-                  <span
+                  <RadarClosedTag
                     v-if="g.closed"
-                    class="flex items-center gap-2"
-                  >
-                    <span class="
-                      rounded-full bg-ink/8 px-2 py-0.5 text-xs font-medium
-                    ">Chiuso</span>
-                    <span class="opacity-60">{{ g.deadline ? formatDay(g.deadline) : 'A sportello' }}</span>
-                  </span>
+                    :deadline="g.deadline"
+                  />
                   <span
                     v-else
                     :class="timeLeft(g).urgent ? 'font-medium text-red' : ''"

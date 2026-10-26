@@ -195,7 +195,9 @@ const grants = computed<EvaluatedGrant[]>(() => {
 })
 
 // Le schede per esito, più quella dei bandi segnati col cuore. I bandi
-// chiusi (restano solo se hanno la cartella) stanno solo negli interessanti.
+// chiusi (restano solo se hanno la cartella) stanno solo negli interessanti,
+// anche senza cuore: lì si apre la loro cartella.
+const isInteresting = (g: EvaluatedGrant) => g.liked || (g.closed && g.hasFolder)
 type Tab = Eligibility | 'liked'
 const TABS: Record<Tab, string> = { ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
 const tab = ref<Tab>('eligible')
@@ -205,7 +207,7 @@ const counts = computed(() => {
   const out: Record<Tab, number> = { eligible: 0, to_verify: 0, excluded: 0, liked: 0 }
   for (const g of grants.value) {
     if (!g.closed) out[g.eligibility]++
-    if (g.liked) out.liked++
+    if (isInteresting(g)) out.liked++
   }
   return out
 })
@@ -213,7 +215,7 @@ const counts = computed(() => {
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
   return grants.value.filter(g =>
-    (tab.value === 'liked' ? g.liked : !g.closed && g.eligibility === tab.value)
+    (tab.value === 'liked' ? isInteresting(g) : !g.closed && g.eligibility === tab.value)
     && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
 })
 

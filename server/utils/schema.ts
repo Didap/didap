@@ -168,6 +168,29 @@ export const DB_SCHEMA = `
   alter table radar_grants add column if not exists drive_ready_at timestamptz;
   alter table radar_grants add column if not exists drive_claimed_at timestamptz;
   alter table radar_grants add column if not exists drive_note text not null default '';
+  -- Cartella del bando: sottocartelle e file (parent_id e folder_id null: la
+  -- cartella principale; uploaded_by null: messo dal radar). I byte stanno
+  -- nel file store, qui solo la chiave.
+  create table if not exists grant_folders (
+    id uuid primary key default gen_random_uuid(),
+    grant_id uuid not null references radar_grants(id) on delete cascade,
+    parent_id uuid references grant_folders(id) on delete cascade,
+    name text not null,
+    created_at timestamptz not null default now()
+  );
+  create table if not exists grant_files (
+    id uuid primary key default gen_random_uuid(),
+    grant_id uuid not null references radar_grants(id) on delete cascade,
+    folder_id uuid references grant_folders(id) on delete cascade,
+    name text not null,
+    mime text not null,
+    bytes int not null,
+    store_key text not null unique,
+    uploaded_by uuid references admin_users(id) on delete set null,
+    created_at timestamptz not null default now()
+  );
+  create index if not exists grant_folders_parent on grant_folders (parent_id);
+  create index if not exists grant_files_folder on grant_files (folder_id);
   -- Registro degli import: moduli, tempi, conteggi e token
   create table if not exists radar_runs (
     id uuid primary key default gen_random_uuid(),

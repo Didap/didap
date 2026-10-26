@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { emailSchema } from '#shared/users'
-import { accountEmail, accountLink } from '../../../emails/account'
+import { sendAccountMail } from '../../../emails/account'
 
 // Richiesta di reset: risponde sempre ok, così non rivela chi ha un account.
 // Gli errori d'invio finiscono solo nel log.
@@ -14,10 +14,9 @@ export default defineEventHandler(async (event) => {
   try {
     const found = await requestReset(await useDb(), email)
     if (found) {
-      // Chi non ha ancora una password riceve di nuovo l'invito
-      const mail = accountEmail(found.kind, { name: found.user.name, url: accountLink(found.token) })
-      // Senza attendere l'invio: il tempo di risposta non dice se l'email esiste
-      resendMailer()({ to: [found.user.email], ...mail })
+      // Chi non ha ancora una password riceve di nuovo l'invito. Senza
+      // attendere l'invio: il tempo di risposta non dice se l'email esiste
+      sendAccountMail(found.user, found.kind, found.token)
         .catch(err => console.error('[admin/password/forgot]', err))
     }
   }

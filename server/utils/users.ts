@@ -2,9 +2,9 @@ import { randomBytes } from 'node:crypto'
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import type { AdminPage, AdminUser, AdminUserRow, UserCreate, UserStatus, UserUpdate } from '#shared/users'
-import { ADMIN_PAGES } from '#shared/users'
+import { ADMIN_PAGES, PASSWORD_MIN } from '#shared/users'
 import { DUMMY_HASH, hashPassword, hashToken, newToken, verifyPassword } from './passwords'
-import { pgCode } from './pg'
+import { inTx, pgCode } from './pg'
 
 // Persone del pannello: anagrafica, login e regole anti blocco
 
@@ -17,6 +17,15 @@ const notFound = () => createError({ statusCode: 404, statusMessage: 'Collaborat
 const conflict = (statusMessage: string) => createError({ statusCode: 409, statusMessage })
 
 const normEmail = (email: string) => email.trim().toLowerCase()
+
+const userCount = async (sql: Sql) => (await sql`select count(*)::int as n from admin_users`)[0]!.n as number
+
+// Fuori dal pannello: via i link d'invito o di reset e le sessioni (tranne
+// `keepSid`, quella di chi cambia la propria password)
+async function revokeAccess(t: Sql, userId: string, keepSid?: string) {
+  await t`delete from admin_user_tokens where user_id = ${userId}`
+  await t`delete from admin_sessions where user_id = ${userId} and id is distinct from ${keepSid ?? null}`
+}
 
 function rowToUser(r: postgres.Row): AdminUser {
   return { id: r.id, name: r.name, email: r.email, pages: r.pages as AdminPage[] }
@@ -71,34 +80,31 @@ async function assertManagerLeft(tx: Sql) {
 }
 
 export async function updateUser(sql: Sql, actorId: string, id: string, input: UserUpdate): Promise<AdminUserRow> {
-  return await sql.begin(async (tx) => {
-    await tx`select pg_advisory_xact_lock(${USERS_LOCK})`
+  return await inTx(sql, async (t) => {
+    await t`select pg_advisory_xact_lock(${USERS_LOCK})`
     if (id === actorId && (!input.pages.includes('collaboratori') || !input.active)) {
       throw conflict('Non puoi toglierti l\'accesso a Collaboratori')
     }
-    const [row] = await tx`
+    const [row] = await t`
       update admin_users set name = ${input.name}, pages = ${input.pages}, active = ${input.active}
       where id = ${id}
       returning *
     `
     if (!row) throw notFound()
     // Disattivata: fuori subito, e i link vecchi non tornano validi alla riattivazione
-    if (!input.active) {
-      await tx`delete from admin_sessions where user_id = ${id}`
-      await tx`delete from admin_user_tokens where user_id = ${id}`
-    }
-    await assertManagerLeft(tx as unknown as Sql)
+    if (!input.active) await revokeAccess(t, id)
+    await assertManagerLeft(t)
     return rowToUserRow(row)
-  }) as AdminUserRow
+  })
 }
 
 export async function deleteUser(sql: Sql, actorId: string, id: string): Promise<void> {
-  await sql.begin(async (tx) => {
-    await tx`select pg_advisory_xact_lock(${USERS_LOCK})`
+  await inTx(sql, async (t) => {
+    await t`select pg_advisory_xact_lock(${USERS_LOCK})`
     if (id === actorId) throw conflict('Non puoi eliminare il tuo account')
-    const [row] = await tx`delete from admin_users where id = ${id} returning id`
+    const [row] = await t`delete from admin_users where id = ${id} returning id`
     if (!row) throw notFound()
-    await assertManagerLeft(tx as unknown as Sql)
+    await assertManagerLeft(t)
   })
 }
 
@@ -114,17 +120,6 @@ export async function checkLogin(sql: Sql, email: string, password: string): Pro
   if (!(await verifyPassword(password, row.password_hash))) return null
   await sql`update admin_users set last_login_at = now() where id = ${row.id}`
   return rowToUser(row)
-}
-
-// Nuova password: invalida token e sessioni della persona
-export async function setPassword(sql: Sql, id: string, password: string): Promise<void> {
-  const hash = await hashPassword(password)
-  await sql.begin(async (tx) => {
-    const [row] = await tx`update admin_users set password_hash = ${hash} where id = ${id} returning id`
-    if (!row) throw notFound()
-    await tx`delete from admin_user_tokens where user_id = ${id}`
-    await tx`delete from admin_sessions where user_id = ${id}`
-  })
 }
 
 // Link d'invito e di reset: nel database solo l'hash, validi una volta
@@ -163,24 +158,23 @@ export async function requestReset(
 export async function redeemToken(sql: Sql, token: string, password: string): Promise<AdminUser> {
   // Hash fuori dalla transazione: scrypt non tiene aperta la connessione
   const passwordHash = await hashPassword(password)
-  return await sql.begin(async (tx) => {
+  return await inTx(sql, async (t) => {
     // Il delete consuma il token: due richieste insieme non lo usano due volte
-    const [tok] = await tx`
+    const [tok] = await t`
       delete from admin_user_tokens
       where hash = ${hashToken(token)} and expires_at > now()
       returning user_id
     `
     if (!tok) throw gone()
-    const [row] = await tx`
+    const [row] = await t`
       update admin_users set password_hash = ${passwordHash}, last_login_at = now()
       where id = ${tok.user_id} and active
       returning *
     `
     if (!row) throw gone()
-    await tx`delete from admin_user_tokens where user_id = ${row.id}`
-    await tx`delete from admin_sessions where user_id = ${row.id}`
+    await revokeAccess(t, row.id)
     return rowToUser(row)
-  }) as AdminUser
+  })
 }
 
 // Sessioni per persona
@@ -199,7 +193,7 @@ export async function createSession(sql: Sql, userId: string): Promise<string> {
 
 export async function sessionUser(sql: Sql, sid: string): Promise<AdminUser | null> {
   const [row] = await sql`
-    select u.* from admin_sessions s
+    select u.id, u.name, u.email, u.pages from admin_sessions s
     join admin_users u on u.id = s.user_id
     where s.id = ${sid} and s.expires_at > now() and u.active
   `
@@ -210,10 +204,6 @@ export async function deleteSession(sql: Sql, sid: string): Promise<void> {
   await sql`delete from admin_sessions where id = ${sid}`
 }
 
-export async function deleteOtherSessions(sql: Sql, userId: string, keepSid: string): Promise<void> {
-  await sql`delete from admin_sessions where user_id = ${userId} and id <> ${keepSid}`
-}
-
 // Cambio password dalla propria sessione: resta aperta solo questa
 export async function changeOwnPassword(sql: Sql, user: AdminUser, sid: string, current: string, next: string): Promise<void> {
   const [row] = await sql`select password_hash from admin_users where id = ${user.id}`
@@ -222,10 +212,9 @@ export async function changeOwnPassword(sql: Sql, user: AdminUser, sid: string, 
     throw createError({ statusCode: 400, statusMessage: 'Password attuale errata' })
   }
   const hash = await hashPassword(next)
-  await sql.begin(async (tx) => {
-    await tx`update admin_users set password_hash = ${hash} where id = ${user.id}`
-    await tx`delete from admin_user_tokens where user_id = ${user.id}`
-    await deleteOtherSessions(tx as unknown as Sql, user.id, sid)
+  await inTx(sql, async (t) => {
+    await t`update admin_users set password_hash = ${hash} where id = ${user.id}`
+    await revokeAccess(t, user.id, sid)
   })
 }
 
@@ -237,45 +226,41 @@ export async function ensureFirstAdmin(
   const email = env.ADMIN_EMAIL ? normEmail(env.ADMIN_EMAIL) : ''
   const password = env.ADMIN_PASSWORD ?? ''
   const reset = env.ADMIN_RESET === 'true'
-  if (!email || !password) {
-    if (reset) {
-      console.warn('ADMIN_RESET ignorato: servono anche ADMIN_EMAIL e ADMIN_PASSWORD')
-      return
-    }
-    const [{ n }] = await sql`select count(*)::int as n from admin_users` as unknown as [{ n: number }]
-    if (n === 0) {
-      console.warn('Nessuna persona nel pannello admin: imposta ADMIN_EMAIL e ADMIN_PASSWORD per creare la prima')
-    }
+  const missing = !email || !password
+  if (reset && missing) {
+    console.warn('ADMIN_RESET ignorato: servono anche ADMIN_EMAIL e ADMIN_PASSWORD')
     return
   }
+  // Senza reset si fa qualcosa solo su tabella vuota
   if (!reset) {
-    const [{ n }] = await sql`select count(*)::int as n from admin_users` as unknown as [{ n: number }]
-    if (n > 0) return
+    if (await userCount(sql) > 0) return
+    if (missing) {
+      console.warn('Nessuna persona nel pannello admin: imposta ADMIN_EMAIL e ADMIN_PASSWORD per creare la prima')
+      return
+    }
   }
   // Solo quando la password viene davvero usata
-  if (password.length < 10) {
-    console.warn('ADMIN_PASSWORD è più corta di 10 caratteri: cambiala dal pannello dopo il primo accesso')
+  if (password.length < PASSWORD_MIN) {
+    console.warn(`ADMIN_PASSWORD è più corta di ${PASSWORD_MIN} caratteri: cambiala dal pannello dopo il primo accesso`)
   }
   const hash = await hashPassword(password)
-  await sql.begin(async (tx) => {
-    await tx`select pg_advisory_xact_lock(${USERS_LOCK})`
+  await inTx(sql, async (t) => {
+    await t`select pg_advisory_xact_lock(${USERS_LOCK})`
     if (reset) {
-      const [row] = await tx`
+      const [row] = await t`
         insert into admin_users (name, email, password_hash, pages, active)
         values (${email}, ${email}, ${hash}, ${[...ADMIN_PAGES]}, true)
         on conflict (email) do update
           set password_hash = ${hash}, pages = ${[...ADMIN_PAGES]}, active = true
         returning id
       `
-      await tx`delete from admin_sessions where user_id = ${row!.id}`
-      await tx`delete from admin_user_tokens where user_id = ${row!.id}`
+      await revokeAccess(t, row!.id)
       console.warn('ADMIN_RESET attivo: togli la variabile dopo il recupero')
     }
     else {
       // Ricontrolla sotto lock: un altro avvio potrebbe aver già creato la persona
-      const [{ n }] = await tx`select count(*)::int as n from admin_users` as unknown as [{ n: number }]
-      if (n > 0) return
-      await tx`
+      if (await userCount(t) > 0) return
+      await t`
         insert into admin_users (name, email, password_hash, pages)
         values (${email}, ${email}, ${hash}, ${[...ADMIN_PAGES]})
       `

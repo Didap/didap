@@ -16,7 +16,9 @@ export const ADMIN_PAGE_INFO: Record<AdminPage, { label: string, path: string }>
 }
 
 export const emailSchema = z.string().trim().toLowerCase().email().max(200)
-export const passwordSchema = z.string().min(10, 'Almeno 10 caratteri').max(200)
+export const PASSWORD_MIN = 10
+export const PASSWORD_MAX = 200
+export const passwordSchema = z.string().min(PASSWORD_MIN, `Almeno ${PASSWORD_MIN} caratteri`).max(PASSWORD_MAX)
 
 // Senza duplicati, nell'ordine del menu
 export const pagesSchema = z

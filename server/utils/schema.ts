@@ -38,6 +38,7 @@ export const DB_SCHEMA = `
   );
   alter table admin_sessions add column if not exists user_id uuid references admin_users(id) on delete cascade;
   delete from admin_sessions where user_id is null;
+  create index if not exists admin_sessions_expires on admin_sessions (expires_at);
 
   create table if not exists settings (
     id int primary key check (id = 1),

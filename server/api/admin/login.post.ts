@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { emailSchema } from '#shared/users'
+import { emailSchema, PASSWORD_MAX } from '#shared/users'
 
 // Login per persona con due limiti: per IP ed email (un successo azzera solo
 // il contatore di quell'email) e per IP in tutto, che un successo non azzera,
@@ -9,16 +9,11 @@ const WINDOW_MS = 10 * 60 * 1000
 
 const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().max(200),
+  password: z.string().max(PASSWORD_MAX),
 })
 
 export default defineEventHandler(async (event) => {
-  if (!sessionSecret()) {
-    throw createError({ statusCode: 503, statusMessage: 'Admin non configurato' })
-  }
-  if (!hasDatabase()) {
-    throw createError({ statusCode: 503, statusMessage: 'Database non configurato' })
-  }
+  requireAdminReady()
   const { email, password } = await readSchemaBody(event, loginSchema)
   // emailSchema la dà già in minuscolo e senza spazi
   rateLimit('login-ip', event, { max: 50, windowMs: WINDOW_MS })

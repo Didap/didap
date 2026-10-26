@@ -2,7 +2,8 @@ import type postgres from 'postgres'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DB_SCHEMA } from '../server/utils/schema'
 import { ADMIN_PAGES } from '../shared/users'
-import { changeOwnPassword, checkLogin, createSession, createUser, deleteUser, ensureFirstAdmin, getUser, issueToken, listUsers, redeemToken, requestReset, sessionUser, setPassword, updateUser } from '../server/utils/users'
+import { hashPassword } from '../server/utils/passwords'
+import { changeOwnPassword, checkLogin, createSession, createUser, deleteUser, ensureFirstAdmin, getUser, issueToken, listUsers, redeemToken, requestReset, sessionUser, updateUser } from '../server/utils/users'
 import { openTestDb, resetTestDb, TEST_DATABASE_URL } from './helpers/db'
 
 const PW = 'una-password-lunga'
@@ -19,10 +20,15 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     await resetTestDb(sql)
   })
 
+  // Password scritta direttamente, senza toccare token, sessioni o ultimo accesso
+  async function setPassword(id: string, password: string) {
+    await sql`update admin_users set password_hash = ${await hashPassword(password)} where id = ${id}`
+  }
+
   // Persona con accesso a Collaboratori e password
   async function manager(name: string) {
     const u = await createUser(sql, { name, email: `${name.toLowerCase()}@didap.it`, pages: ['collaboratori'] })
-    await setPassword(sql, u.id, PW)
+    await setPassword(u.id, PW)
     return u
   }
 
@@ -38,7 +44,7 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     await createUser(sql, { name: 'Alfa', email: 'a@didap.it', pages: [] })
     expect((await listUsers(sql)).map(u => u.name)).toEqual(['Alfa', 'beta'])
     expect(b.status).toBe('invito')
-    await setPassword(sql, b.id, PW)
+    await setPassword(b.id, PW)
     expect((await getUser(sql, b.id)).status).toBe('attivo')
   })
 
@@ -53,7 +59,7 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
 
   it('checkLogin normalizza l\'email e aggiorna lastLoginAt', async () => {
     const u = await createUser(sql, { name: 'Mario', email: 'mario@didap.it', pages: ['clienti'] })
-    await setPassword(sql, u.id, PW)
+    await setPassword(u.id, PW)
     expect((await getUser(sql, u.id)).lastLoginAt).toBeNull()
     const found = await checkLogin(sql, '  Mario@Didap.IT ', PW)
     expect(found).toEqual({ id: u.id, name: 'Mario', email: 'mario@didap.it', pages: ['clienti'] })
@@ -131,12 +137,14 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     await expect(redeemToken(sql, token, PW)).rejects.toMatchObject({ statusCode: 410 })
   })
 
-  it('setPassword cancella token e sessioni della persona', async () => {
+  it('redeemToken cancella token e sessioni della persona, non quelle degli altri', async () => {
     const a = await manager('A')
+    const b = await manager('B')
     await sql`insert into admin_sessions (id, expires_at, user_id) values ('sa', now() + interval '1 day', ${a.id})`
-    await sql`insert into admin_user_tokens (hash, user_id, kind, expires_at) values ('h', ${a.id}, 'reset', now() + interval '1 hour')`
-    await setPassword(sql, a.id, 'nuova-password-lunga')
-    expect(await sql`select 1 from admin_sessions`).toHaveLength(0)
+    await sql`insert into admin_sessions (id, expires_at, user_id) values ('sb', now() + interval '1 day', ${b.id})`
+    const token = await issueToken(sql, a.id, 'reset')
+    await redeemToken(sql, token, 'nuova-password-lunga')
+    expect((await sql`select id from admin_sessions`).map(r => r.id)).toEqual(['sb'])
     expect(await sql`select 1 from admin_user_tokens`).toHaveLength(0)
     expect(await checkLogin(sql, a.email, 'nuova-password-lunga')).not.toBeNull()
   })
@@ -237,13 +245,13 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     expect(await sessionUser(sql, sid)).toBeNull()
   })
 
-  it('sessionUser dà null per sessione scaduta o dopo setPassword', async () => {
+  it('sessionUser dà null per sessione scaduta o dopo un reset della password', async () => {
     const a = await manager('A')
     const sid = await createSession(sql, a.id)
     await sql`update admin_sessions set expires_at = now() - interval '1 minute'`
     expect(await sessionUser(sql, sid)).toBeNull()
     const sid2 = await createSession(sql, a.id)
-    await setPassword(sql, a.id, 'nuova-password-lunga')
+    await redeemToken(sql, await issueToken(sql, a.id, 'reset'), 'nuova-password-lunga')
     expect(await sessionUser(sql, sid2)).toBeNull()
   })
 
@@ -324,7 +332,7 @@ describe.skipIf(!TEST_DATABASE_URL)('collaboratori su Postgres', () => {
     it('ADMIN_RESET riattiva, ridà pagine e password e cancella le sessioni', async () => {
       const a = await manager('A')
       const b = await createUser(sql, { name: 'Capo', email: 'capo@didap.it', pages: [] })
-      await setPassword(sql, b.id, 'vecchia-password-lunga')
+      await setPassword(b.id, 'vecchia-password-lunga')
       await updateUser(sql, a.id, b.id, { name: 'Capo', pages: [], active: false })
       // Sessione creata dopo la disattivazione: solo il reset può cancellarla
       const sid = await createSession(sql, b.id)

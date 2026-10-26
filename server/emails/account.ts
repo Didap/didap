@@ -1,3 +1,4 @@
+import { resendMailer } from '../utils/mail'
 import { BRAND_HEADER, brandFooter, C, escapeHtml, FONT_BODY, FONT_DISPLAY, HEAD, SITE_URL } from './contact-templates'
 
 // Mail d'invito e di reset della password del pannello. Stesso guscio
@@ -71,4 +72,9 @@ ${copy.cta}: ${opts.url}
 ${copy.validity}
 `
   return { subject: copy.subject(opts.name), html, text }
+}
+
+// Manda alla persona la mail col link del token (invito o reset)
+export function sendAccountMail(user: { name: string, email: string }, kind: Kind, token: string): Promise<void> {
+  return resendMailer()({ to: [user.email], ...accountEmail(kind, { name: user.name, url: accountLink(token) }) })
 }

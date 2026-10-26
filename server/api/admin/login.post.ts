@@ -1,41 +1,36 @@
-// Login admin con limite di tentativi per IP (in memoria, per istanza)
-const WINDOW_MS = 10 * 60 * 1000
-const MAX_ATTEMPTS = 8
-const attempts = new Map<string, { count: number; since: number }>()
+import { z } from 'zod'
+import { emailSchema } from '#shared/users'
+
+// Login per persona con limite di tentativi per IP. Un solo errore per
+// email sconosciuta, disattivata o password sbagliata.
+const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().max(200),
+})
 
 export default defineEventHandler(async (event) => {
-  if (!adminPassword()) {
+  if (!sessionSecret()) {
     throw createError({ statusCode: 503, statusMessage: 'Admin non configurato' })
   }
   if (!hasDatabase()) {
     throw createError({ statusCode: 503, statusMessage: 'Database non configurato' })
   }
+  rateLimit('login', event, { max: 8, windowMs: 10 * 60 * 1000 })
+  const { email, password } = await readSchemaBody(event, loginSchema)
 
-  // Dietro il proxy di Coolify l'IP vero è l'ultimo di X-Forwarded-For:
-  // i valori precedenti li può scrivere il client
-  const forwarded = getRequestHeader(event, 'x-forwarded-for')
-  const ip
-    = forwarded?.split(',').pop()?.trim()
-      || getRequestIP(event)
-      || 'unknown'
-  const now = Date.now()
-  const entry = attempts.get(ip)
-  if (entry && now - entry.since < WINDOW_MS && entry.count >= MAX_ATTEMPTS) {
-    throw createError({ statusCode: 429, statusMessage: 'Troppi tentativi, riprova più tardi' })
-  }
-
-  const body = await readBody<{ password?: unknown }>(event)
-  const password = typeof body?.password === 'string' ? body.password : ''
-
-  if (!passwordMatches(password)) {
-    const fresh = !entry || now - entry.since >= WINDOW_MS
-    attempts.set(ip, { count: fresh ? 1 : entry.count + 1, since: fresh ? now : entry.since })
-    throw createError({ statusCode: 401, statusMessage: 'Password errata' })
-  }
-
-  attempts.delete(ip)
+  let user
   try {
-    await startAdminSession(event)
+    user = await checkLogin(await useDb(), email, password)
+  }
+  catch (err) {
+    console.error('[admin/login]', err)
+    throw createError({ statusCode: 503, statusMessage: 'Database non raggiungibile' })
+  }
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Email o password errati' })
+
+  clearRateLimit('login', event)
+  try {
+    await startAdminSession(event, user.id)
   }
   catch (err) {
     console.error('[admin/login]', err)

@@ -52,7 +52,8 @@ async function connect(): Promise<Sql> {
     client = postgres(url, OPTIONS)
   }
   await client.unsafe(DB_SCHEMA)
-  await ensureFirstAdmin(client, process.env)
+  const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_RESET } = process.env
+  await ensureFirstAdmin(client, { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_RESET })
   return client
 }
 

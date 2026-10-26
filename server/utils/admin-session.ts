@@ -1,23 +1,30 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import type { H3Event } from 'h3'
+import type { AdminUser } from '#shared/users'
+import { createSession, deleteSession, sessionUser } from './users'
 
-// Sessione admin: password unica in ADMIN_PASSWORD. Il cookie (sigillato
-// da h3, chiave derivata dalla password) contiene solo l'id di una riga
-// di admin_sessions: il logout la cancella, quindi un cookie copiato
-// smette di funzionare. Cambiare la password chiude tutte le sessioni.
+// Sessione admin per persona. Il cookie (sigillato da h3 con SESSION_SECRET)
+// contiene solo l'id di una riga di admin_sessions: il logout la cancella,
+// quindi un cookie copiato smette di funzionare.
+
+declare module 'h3' {
+  interface H3EventContext {
+    adminUser?: AdminUser | null
+  }
+}
 
 const SESSION_NAME = 'didap_admin'
 const MAX_AGE = 60 * 60 * 24 * 7
 
-export const adminPassword = () => process.env.ADMIN_PASSWORD ?? ''
-
-const sessionKey = () =>
-  createHash('sha256').update(`didap-admin:${adminPassword()}`).digest('hex')
+// Vuota se manca o è troppo corta per sigillare il cookie
+export function sessionSecret() {
+  const secret = process.env.SESSION_SECRET ?? ''
+  return secret.length >= 32 ? secret : ''
+}
 
 const cookieSession = (event: H3Event) =>
   useSession<{ sid?: string }>(event, {
     name: SESSION_NAME,
-    password: sessionKey(),
+    password: sessionSecret(),
     maxAge: MAX_AGE,
     cookie: {
       httpOnly: true,
@@ -27,50 +34,42 @@ const cookieSession = (event: H3Event) =>
     },
   })
 
-export function passwordMatches(candidate: string) {
-  const expected = adminPassword()
-  if (!expected) return false
-  const a = createHash('sha256').update(candidate).digest()
-  const b = createHash('sha256').update(expected).digest()
-  return timingSafeEqual(a, b)
-}
-
-export async function startAdminSession(event: H3Event) {
-  const sql = await useDb()
-  const sid = randomBytes(32).toString('hex')
-  await sql`delete from admin_sessions where expires_at < now()`
-  await sql`
-    insert into admin_sessions (id, expires_at)
-    values (${sid}, now() + make_interval(secs => ${MAX_AGE}))
-  `
+export async function startAdminSession(event: H3Event, userId: string) {
+  const sid = await createSession(await useDb(), userId)
   const session = await cookieSession(event)
   await session.update({ sid })
+  event.context.adminUser = undefined
+}
+
+export async function currentSessionId(event: H3Event): Promise<string | null> {
+  if (!sessionSecret()) return null
+  const session = await cookieSession(event)
+  return session.data.sid ?? null
 }
 
 export async function endAdminSession(event: H3Event) {
+  if (!sessionSecret()) return
   const session = await cookieSession(event)
   const sid = session.data.sid
-  if (sid && hasDatabase()) {
-    const sql = await useDb()
-    await sql`delete from admin_sessions where id = ${sid}`
-  }
+  if (sid && hasDatabase()) await deleteSession(await useDb(), sid)
   await session.clear()
+  event.context.adminUser = null
 }
 
-export async function isAdmin(event: H3Event) {
-  if (!adminPassword() || !hasDatabase()) return false
-  const session = await cookieSession(event)
-  const sid = session.data.sid
-  if (!sid) return false
-  const sql = await useDb()
-  const rows = await sql`
-    select 1 from admin_sessions where id = ${sid} and expires_at > now()
-  `
-  return rows.length > 0
-}
-
-export async function requireAdmin(event: H3Event) {
-  if (!(await isAdmin(event))) {
-    throw createError({ statusCode: 401, statusMessage: 'Accesso non autorizzato' })
+// Una lettura per richiesta, poi da event.context
+export async function currentUser(event: H3Event): Promise<AdminUser | null> {
+  if (event.context.adminUser !== undefined) return event.context.adminUser
+  let user: AdminUser | null = null
+  if (hasDatabase()) {
+    const sid = await currentSessionId(event)
+    if (sid) user = await sessionUser(await useDb(), sid)
   }
+  event.context.adminUser = user
+  return user
+}
+
+export async function requireUser(event: H3Event): Promise<AdminUser> {
+  const user = await currentUser(event)
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Accesso non autorizzato' })
+  return user
 }

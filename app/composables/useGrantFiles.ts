@@ -1,5 +1,5 @@
 import { adminErrorText } from '~/utils/adminErrors'
-import { MAX_FILE_BYTES, type EntryKind, type FileEntry, type FolderEntry, type FolderListing } from '#shared/grant-files'
+import { MAX_FILE_BYTES, treeFolders, type EntryKind, type FileEntry, type FolderEntry, type FolderListing, type TreeFolder, type TreeRow } from '#shared/grant-files'
 
 // Cartella di un bando vista dal pannello: la cartella aperta, le operazioni
 // sugli elementi e i caricamenti, uno per richiesta (ogni riga ha il suo
@@ -33,8 +33,7 @@ export function formatBytes(n: number): string {
   return `${decimal.format(n / 1024 / 1024)} MB`
 }
 
-// Una cartella nell'elenco di "Sposta in...": depth 0 è la principale
-export type TreeFolder = { id: string | null, name: string, depth: number }
+export type { TreeFolder }
 
 export type Upload = {
   key: number
@@ -131,18 +130,12 @@ export function useGrantFiles(grantId: () => string) {
   const remove = (kind: EntryKind, id: string) =>
     write(url => $fetch(`${url}/entries/${kind}/${id}`, { method: 'DELETE' }))
 
-  // Tutte le cartelle del bando, in ordine come in un albero: un elenco per
-  // cartella, chiesto solo quando serve (menu "Sposta in...")
+  // Tutte le cartelle del bando, in ordine come in un albero: una richiesta,
+  // fatta solo quando serve ("Sposta in..."). La principale ha il nome del
+  // bando, dal percorso dell'elenco aperto.
   async function folderTree(): Promise<TreeFolder[]> {
-    const url = base()
-    const branch = async (f: FolderEntry, depth: number): Promise<TreeFolder[]> => {
-      const l = await $fetch<FolderListing>(url, { query: { folder: f.id } })
-      const kids = await Promise.all(l.folders.map(c => branch(c, depth + 1)))
-      return [{ id: f.id, name: f.name, depth }, ...kids.flat()]
-    }
-    const root = await $fetch<FolderListing>(url)
-    const kids = await Promise.all(root.folders.map(f => branch(f, 1)))
-    return [{ id: null, name: root.path[0]?.name ?? 'Cartella del bando', depth: 0 }, ...kids.flat()]
+    const rows = await $fetch<TreeRow[]>(`${base()}/tree`)
+    return treeFolders(rows, listing.value?.path[0]?.name ?? 'Cartella del bando')
   }
 
   // Nella cartella aperta; oltre 10 MB non partono. Le righe finite spariscono,

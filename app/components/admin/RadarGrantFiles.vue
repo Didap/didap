@@ -54,9 +54,6 @@ async function createGrantFolder() {
   }
 }
 
-// La nota dell'ultimo riempimento: in rosso se è andato storto
-const failed = computed(() => props.grant.folderNote.startsWith('Non riuscita'))
-
 const {
   folderId,
   listing,
@@ -90,7 +87,8 @@ const rowKey = (r: Row) => `${r.kind}:${r.entry.id}`
 const rowIcon = (r: Row): FileKind => r.kind === 'folder' ? 'folder' : fileKind(r.entry)
 const rowMeta = (r: Row) => r.kind === 'folder'
   ? `${r.entry.fileCount} file · ${formatDateTime(r.entry.createdAt)}`
-  : `${formatBytes(r.entry.bytes)} · ${formatDateTime(r.entry.createdAt)} · ${r.entry.uploadedBy ?? 'radar'}`
+  : [formatBytes(r.entry.bytes), formatDateTime(r.entry.createdAt), r.entry.fromRadar ? 'radar' : r.entry.uploadedBy]
+      .filter(Boolean).join(' · ')
 
 const path = computed(() => listing.value?.path ?? [])
 const here = computed(() => path.value.at(-1)?.name ?? '')
@@ -442,10 +440,11 @@ const itemClass = `
       >
         Preparo la cartella...
       </button>
+      <!-- La nota dell'ultimo riempimento: in rosso se è finito con un errore -->
       <p
         v-if="grant.folderNote && !showList"
         class="text-xs"
-        :class="failed ? 'text-red' : 'opacity-60'"
+        :class="grant.folderFailed ? 'text-red' : 'opacity-60'"
       >
         {{ grant.folderNote }}
       </p>
@@ -524,7 +523,7 @@ const itemClass = `
         <p
           v-if="grant.folderNote"
           class="text-xs"
-          :class="failed ? 'text-red' : 'opacity-60'"
+          :class="grant.folderFailed ? 'text-red' : 'opacity-60'"
         >
           {{ grant.folderNote }}
         </p>

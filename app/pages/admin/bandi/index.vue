@@ -243,8 +243,11 @@ function setFolder(id: string, start: FolderStart) {
   g.liked = true
   g.folderFilled = start.status === 'ready'
   g.folderFilling = start.status === 'filling'
-  // Il server azzera la nota quando riparte: qui subito, senza aspettare
-  if (g.folderFilling) g.folderNote = ''
+  // Il server azzera nota ed errore quando riparte: qui subito, senza aspettare
+  if (g.folderFilling) {
+    g.folderNote = ''
+    g.folderFailed = false
+  }
 }
 
 // Scheda del dettaglio ("Dettaglio" o "File"): resta passando da un bando all'altro
@@ -1036,7 +1039,8 @@ function toggleGroup(group: string, on: boolean) {
         </div>
       </section>
 
-      <!-- Scheda del bando -->
+      <!-- Scheda del bando, da xl in su (sotto si apre nella riga): una sola
+           scheda montata, non due elenchi della cartella in parallelo -->
       <aside
         class="
           hidden min-h-0 scrollbar-none overflow-y-auto border-l border-ink/10
@@ -1046,7 +1050,7 @@ function toggleGroup(group: string, on: boolean) {
         aria-label="Scheda del bando"
       >
         <RadarGrantDetail
-          v-if="selected"
+          v-if="isXl && selected"
           :grant="selected"
           v-model:tab="detailTab"
           :files-configured="!!data?.status.filesConfigured"

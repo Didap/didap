@@ -30,3 +30,6 @@ logs
 
 # Bandi esportati dal radar e cartelle di lavoro (skill gestisci-bando)
 /bandi/
+
+# Superpowers (bozze e lavoro dei piani)
+.superpowers/

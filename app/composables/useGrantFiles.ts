@@ -85,54 +85,51 @@ export function useGrantFiles(grantId: () => string) {
     return load()
   }
 
-  // Un altro bando: si riparte dalla principale
+  // Un altro bando: si riparte dalla principale e una lettura ancora in
+  // corso (del bando di prima) non conta più
   function reset() {
+    loadSeq++
+    loading.value = false
     folderId.value = null
     listing.value = null
     uploads.value = []
   }
 
-  // Le scritture: true se è andata, altrimenti l'errore nell'avviso e
-  // l'elenco ricaricato (qualcun altro può averlo cambiato)
-  async function write(run: () => Promise<unknown>): Promise<boolean> {
+  // Le scritture: true se è andata, altrimenti l'errore nell'avviso. Poi
+  // l'elenco si ricarica (qualcun altro può averlo cambiato), ma solo se
+  // nel frattempo non si è passati a un altro bando.
+  async function write(run: (url: string) => Promise<unknown>): Promise<boolean> {
+    const grant = grantId()
+    let ok = true
     try {
-      await run()
-      return true
+      await run(base(grant))
     }
     catch (err) {
       notify('error', adminErrorText(err))
-      await load()
-      return false
+      ok = false
     }
-  }
-
-  async function createFolder(name: string): Promise<FolderEntry | null> {
-    try {
-      const made = await $fetch<FolderEntry>(`${base()}/folders`, { method: 'POST', body: { parentId: folderId.value, name } })
-      await load()
-      return made
-    }
-    catch (err) {
-      notify('error', adminErrorText(err))
-      await load()
-      return null
-    }
-  }
-
-  async function patch(kind: EntryKind, id: string, body: { name: string } | { folderId: string | null }) {
-    const ok = await write(() => $fetch(`${base()}/entries/${kind}/${id}`, { method: 'PATCH', body }))
-    if (ok) await load()
+    if (grantId() === grant) await load()
     return ok
   }
+
+  // La cartella nuova; null se non è andata o se il bando è cambiato
+  async function createFolder(name: string): Promise<FolderEntry | null> {
+    const grant = grantId()
+    let made: FolderEntry | null = null
+    await write(async (url) => {
+      made = await $fetch<FolderEntry>(`${url}/folders`, { method: 'POST', body: { parentId: folderId.value, name } })
+    })
+    return grantId() === grant ? made : null
+  }
+
+  const patch = (kind: EntryKind, id: string, body: { name: string } | { folderId: string | null }) =>
+    write(url => $fetch(`${url}/entries/${kind}/${id}`, { method: 'PATCH', body }))
 
   const rename = (kind: EntryKind, id: string, name: string) => patch(kind, id, { name })
   const move = (kind: EntryKind, id: string, target: string | null) => patch(kind, id, { folderId: target })
 
-  async function remove(kind: EntryKind, id: string) {
-    const ok = await write(() => $fetch(`${base()}/entries/${kind}/${id}`, { method: 'DELETE' }))
-    if (ok) await load()
-    return ok
-  }
+  const remove = (kind: EntryKind, id: string) =>
+    write(url => $fetch(`${url}/entries/${kind}/${id}`, { method: 'DELETE' }))
 
   // Tutte le cartelle del bando, in ordine come in un albero: un elenco per
   // cartella, chiesto solo quando serve (menu "Sposta in...")

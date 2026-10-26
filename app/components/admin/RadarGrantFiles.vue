@@ -66,7 +66,7 @@ const {
   loading,
   uploads,
   load,
-  openFolder,
+  openFolder: enterFolder,
   reset,
   createFolder,
   rename,
@@ -107,6 +107,12 @@ const previewOpen = computed({
   },
 })
 
+// Cambiando cartella una rinomina lasciata a metà si chiude
+function openFolder(id: string | null) {
+  renaming.value = null
+  return enterFolder(id)
+}
+
 function openRow(r: Row) {
   if (renaming.value?.id === r.entry.id) return
   if (r.kind === 'folder') openFolder(r.entry.id)
@@ -123,8 +129,9 @@ function download(f: FileEntry) {
 
 // Nuova cartella: nasce con un nome provvisorio, già in modifica
 async function newFolder() {
+  const grant = props.grant.id
   const made = await createFolder('Nuova cartella')
-  if (made) startRename({ kind: 'folder', entry: made })
+  if (made && props.grant.id === grant) startRename({ kind: 'folder', entry: made })
 }
 
 // Carica: dal selettore o trascinando file dal computer
@@ -231,7 +238,7 @@ const dragged = ref<{ kind: EntryKind, id: string } | null>(null)
 const dropTarget = ref<string | null>(null)
 
 function onRowDragStart(e: DragEvent, r: Row) {
-  if (!e.dataTransfer || renaming.value) return
+  if (!e.dataTransfer || renaming.value?.id === r.entry.id) return
   e.dataTransfer.effectAllowed = 'move'
   e.dataTransfer.setData(ENTRY_DRAG, r.entry.id)
   dragged.value = { kind: r.kind, id: r.entry.id }
@@ -345,8 +352,16 @@ watch(() => props.grant.id, () => {
   confirmRow.value = null
 })
 // Altro bando, cartella appena creata o riempimento finito: elenco da rifare
-watch(() => [props.grant.id, showList.value, props.grant.folderFilling] as const, () => {
+// (più sorgenti: il bando ricaricato dalla pagina ogni pochi secondi, se
+// non cambia niente di questo, non rifà l'elenco)
+watch([() => props.grant.id, showList, () => props.grant.folderFilling], () => {
   if (showList.value) load()
+})
+// La riga in rinomina non c'è più nell'elenco (eliminata, spostata, altra
+// cartella): il campo si chiude
+watch(rows, (list) => {
+  const r = renaming.value
+  if (r && !list.some(x => x.kind === r.kind && x.entry.id === r.id)) renaming.value = null
 })
 
 const UPLOAD_STATE = { waiting: 'In attesa', uploading: 'Carico...', done: 'Caricato' } as const

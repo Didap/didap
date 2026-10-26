@@ -19,9 +19,6 @@ import {
   DropdownMenuPortal,
   DropdownMenuRoot,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from 'reka-ui'
 import AdminIcon from '~/components/admin/AdminIcon.vue'
@@ -195,23 +192,43 @@ function onMenuCloseFocus(e: Event) {
     e.preventDefault()
     focusRename()
   }
-  else if (confirmRow.value || preview.value) {
+  else if (confirmRow.value || preview.value || moving.value) {
     e.preventDefault()
   }
 }
 
-// Sposta in...: le cartelle del bando, chieste quando si apre il sottomenu
+// Sposta in...: una finestra con le cartelle del bando, chieste quando si
+// apre (più comoda di un sottomenu nella colonna stretta)
+const moving = ref<Row | null>(null)
+const movingOpen = computed({
+  get: () => !!moving.value,
+  set: (v) => {
+    if (!v) moving.value = null
+  },
+})
 const tree = ref<TreeFolder[] | null>(null)
+let treeSeq = 0
 
-async function loadTree(open: boolean) {
-  if (!open) return
+async function openMove(r: Row) {
+  const seq = ++treeSeq
+  moving.value = r
   tree.value = null
   try {
-    tree.value = await folderTree()
+    const list = await folderTree()
+    if (seq === treeSeq && moving.value === r) tree.value = list
   }
   catch (err) {
+    if (seq !== treeSeq) return
     notify('error', adminErrorText(err))
+    moving.value = null
   }
+}
+
+function pickTarget(t: TreeFolder) {
+  const r = moving.value
+  if (!r || !canMoveTo(r, t)) return
+  moving.value = null
+  moveRow(r.kind, r.entry.id, t.id, t.name)
 }
 
 // Non dove sta già, e una cartella non dentro sé stessa o le sue sottocartelle
@@ -350,6 +367,7 @@ watch(() => props.grant.id, () => {
   renaming.value = null
   preview.value = null
   confirmRow.value = null
+  moving.value = null
 })
 // Altro bando, cartella appena creata o riempimento finito: elenco da rifare
 // (più sorgenti: il bando ricaricato dalla pagina ogni pochi secondi, se
@@ -677,42 +695,12 @@ const itemClass = `
                   >
                     Rinomina
                   </DropdownMenuItem>
-                  <DropdownMenuSub @update:open="loadTree">
-                    <DropdownMenuSubTrigger
-                      :class="[itemClass, 'data-[state=open]:bg-ink/6']"
-                    >
-                      Sposta in...
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent
-                        :side-offset="4"
-                        class="
-                          z-50 max-h-80 max-w-72 min-w-48 overflow-y-auto
-                          rounded-xl border border-ink/10 bg-white p-1 text-sm
-                          shadow-lg
-                        "
-                      >
-                        <DropdownMenuItem
-                          v-if="!tree"
-                          :class="itemClass"
-                          disabled
-                        >
-                          Carico le cartelle...
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          v-for="t in tree ?? []"
-                          :key="t.id ?? 'root'"
-                          :class="itemClass"
-                          :style="{ paddingLeft: `${0.75 + t.depth * 0.875}rem` }"
-                          :disabled="!canMoveTo(r, t)"
-                          @select="moveRow(r.kind, r.entry.id, t.id, t.name)"
-                        >
-                          <FileIcon kind="folder" />
-                          <span class="truncate">{{ t.name }}</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+                  <DropdownMenuItem
+                    :class="itemClass"
+                    @select="openMove(r)"
+                  >
+                    Sposta in...
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator class="my-1 h-px bg-ink/10" />
                   <DropdownMenuItem
                     :class="[itemClass, 'text-red']"
@@ -779,6 +767,68 @@ const itemClass = `
         </AlertDialogContent>
       </AlertDialogPortal>
     </AlertDialogRoot>
+
+    <!-- Sposta in...: la principale e tutte le cartelle, rientrate per livello -->
+    <DialogRoot v-model:open="movingOpen">
+      <DialogPortal>
+        <DialogOverlay class="fixed inset-0 z-50 bg-ink/40" />
+        <DialogContent
+          class="
+            fixed top-1/2 left-1/2 z-50 flex max-h-[80vh] w-[calc(100%-3rem)]
+            max-w-sm -translate-1/2 flex-col rounded-2xl bg-white p-4
+          "
+        >
+          <DialogTitle class="truncate px-2 text-lg font-bold">
+            Sposta "{{ moving?.entry.name }}"
+          </DialogTitle>
+          <DialogDescription class="px-2 text-sm opacity-60">
+            Scegli la cartella
+          </DialogDescription>
+          <p
+            v-if="!tree"
+            class="p-2 text-sm opacity-60"
+          >
+            Carico le cartelle...
+          </p>
+          <ul
+            v-else
+            class="mt-3 flex min-h-0 flex-col overflow-y-auto text-sm"
+          >
+            <li
+              v-for="t in tree"
+              :key="t.id ?? 'root'"
+            >
+              <button
+                type="button"
+                class="
+                  flex w-full items-center gap-2 rounded-lg py-1.5 pr-2
+                  text-left
+                  hover:bg-ink/6
+                  disabled:opacity-40
+                  disabled:hover:bg-transparent
+                "
+                :style="{ paddingLeft: `${0.5 + t.depth * 1}rem` }"
+                :disabled="!moving || !canMoveTo(moving, t)"
+                @click="pickTarget(t)"
+              >
+                <FileIcon kind="folder" />
+                <span class="truncate">{{ t.name }}</span>
+              </button>
+            </li>
+          </ul>
+          <div class="mt-3 flex justify-end">
+            <DialogClose
+              class="
+                rounded-full px-4 py-2 text-sm
+                hover:bg-ink/5
+              "
+            >
+              Annulla
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
 
     <!-- Anteprima: PDF e immagini, dall'API content -->
     <DialogRoot v-model:open="previewOpen">

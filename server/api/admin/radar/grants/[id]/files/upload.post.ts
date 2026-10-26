@@ -9,7 +9,10 @@ export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
   const store = requireFileStore()
   const sql = await useDb()
-  await requireGrantFolder(sql, id)
+  // Anche addFile lo controlla, ma qui si fa prima di leggere il corpo (fino
+  // a 100 MB in memoria): niente lettura per un bando senza cartella o una
+  // cartella che non c'è
+  await requireGrantFolder(sql, id, folderId)
   checkUploadLength(getRequestHeader(event, 'content-length'))
   const parts = (await readMultipartFormData(event))?.filter(p => p.name === 'file') ?? []
   checkUploadParts(parts.map(p => p.data.length))

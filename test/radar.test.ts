@@ -232,6 +232,7 @@ describe('ricerca e giudizio', () => {
     hasFolder: false,
     folderFilled: false,
     folderFilling: false,
+    folderFailed: false,
     folderNote: '',
     closed: false,
     createdAt: NOW.toISOString(),

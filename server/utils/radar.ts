@@ -479,7 +479,7 @@ export async function listGrants(
   const rows = await sql`
     select g.id, d.source, d.url, g.digital, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
-      g.liked_at, g.folder_at, g.folder_filled_at, g.folder_note,
+      g.liked_at, g.folder_at, g.folder_filled_at, g.folder_failed_at, g.folder_note,
       coalesce(g.folder_filled_at is null and g.folder_claimed_at > now() - ${`${FOLDER_CLAIM_MINUTES} minutes`}::interval, false)
         as folder_filling,
       ${closedGrant(sql, now)} as closed,
@@ -512,6 +512,7 @@ export async function listGrants(
     hasFolder: r.folder_at !== null,
     folderFilled: r.folder_filled_at !== null,
     folderFilling: r.folder_filling,
+    folderFailed: r.folder_failed_at !== null,
     folderNote: r.folder_note,
     closed: r.closed,
     createdAt: r.created_at.toISOString(),

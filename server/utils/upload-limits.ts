@@ -33,11 +33,12 @@ export function checkUploadParts(sizes: number[]): void {
 // I browser scrivono " e gli a capo del nome come %22, %0D, %0A
 export const browserName = (filename = '') => filename.replace(/%22/g, '"').replace(/%0[AD]/gi, ' ')
 
-// Tipo del file caricato: quello del browser, ma un .pdf senza tipo o con un
-// tipo generico diventa application/pdf (così si apre nel visore)
+// Tipo del file caricato: quello del browser senza spazi e in minuscolo (così
+// "Image/PNG" si apre in anteprima), ma un .pdf senza tipo o con un tipo
+// generico diventa application/pdf (così si apre nel visore)
 const VAGUE_PDF_TYPES = new Set(['', 'application/octet-stream', 'application/x-pdf'])
 export function uploadMime(type: string | undefined, name: string): string {
   const t = (type ?? '').trim().toLowerCase()
   if (VAGUE_PDF_TYPES.has(t) && name.toLowerCase().endsWith('.pdf')) return 'application/pdf'
-  return type || 'application/octet-stream'
+  return t || 'application/octet-stream'
 }

@@ -4,7 +4,6 @@ export default defineEventHandler(async (event) => {
   const kind = entryKind(getRouterParam(event, 'kind'))
   const entryId = uuidParam(event, 'entryId')
   const store = requireFileStore()
-  const sql = await useDb()
-  await requireGrantFolder(sql, id)
-  return deleteEntry(sql, store, id, kind, entryId)
+  // Il bando con la cartella lo controlla deleteEntry
+  return deleteEntry(await useDb(), store, id, kind, entryId)
 })

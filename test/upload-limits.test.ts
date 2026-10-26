@@ -58,8 +58,15 @@ describe('uploadMime', () => {
   it('gli altri tipi restano; senza tipo e senza .pdf: octet-stream', () => {
     expect(uploadMime('text/plain', 'note.pdf')).toBe('text/plain')
     expect(uploadMime('application/x-pdf', 'bando.pdf.zip')).toBe('application/x-pdf')
+    expect(uploadMime('Application/X-PDF', 'bando.zip')).toBe('application/x-pdf')
     expect(uploadMime('', 'foto')).toBe('application/octet-stream')
     expect(uploadMime(undefined, 'domanda.docx')).toBe('application/octet-stream')
     expect(uploadMime('image/png', 'foto.png')).toBe('image/png')
+  })
+
+  it('il tipo esce senza spazi e in minuscolo', () => {
+    expect(uploadMime('Image/PNG', 'foto.png')).toBe('image/png')
+    expect(uploadMime('image/jpeg ', 'foto.jpg')).toBe('image/jpeg')
+    expect(uploadMime('  ', 'foto')).toBe('application/octet-stream')
   })
 })

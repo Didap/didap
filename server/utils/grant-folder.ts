@@ -3,7 +3,7 @@ import type postgres from 'postgres'
 import { cleanFileName, MAX_FILE_BYTES } from '#shared/grant-files'
 import { FOLDER_CLAIM_MINUTES, type FolderStart } from '#shared/radar'
 import type { FileStore } from './file-store'
-import { addFile, createFolder, folderNames } from './grant-files'
+import { addFileOnce, folderNames, grantSourceFolder } from './grant-files'
 import { inPool, readGrantDocument } from './radar'
 import { grantExport, grantFileName } from './radar-export'
 import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, mainHtml, pagePdfLinks, SOURCE_TIMEOUT_MS } from './radar-fetch'
@@ -14,7 +14,8 @@ import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, mainHtml, 
 //
 // Gira in background (siti lenti, PDF grossi) con lo stato nel database:
 // folder_at = cartella creata (protegge il bando), folder_claimed_at = in
-// corso, folder_filled_at = finita, folder_note = com'è andata. Il turno nel
+// corso, folder_filled_at = finita, folder_failed_at = finita con un errore,
+// folder_note = com'è andata, folder_source_id = la "Dal bando". Il turno nel
 // database vale anche con più istanze del sito; un riempimento rimasto a
 // metà si riprende al clic successivo.
 
@@ -54,7 +55,7 @@ export async function startGrantFolder(
   // Ora del turno decisa qui, al millisecondo: fa da gettone per liberarlo
   const claimedAt = new Date()
   const [claim] = await sql`
-    update radar_grants set folder_claimed_at = ${claimedAt}, folder_note = ''
+    update radar_grants set folder_claimed_at = ${claimedAt}, folder_note = '', folder_failed_at = null
     where id = ${id} and folder_filled_at is null
       and (folder_claimed_at is null or folder_claimed_at < now() - ${`${FOLDER_CLAIM_MINUTES} minutes`}::interval)
     returning id
@@ -64,26 +65,22 @@ export async function startGrantFolder(
   return { status: 'filling' }
 }
 
-// "Dal bando" nella cartella principale: quella di un riempimento a metà, o nuova
-async function sourceFolder(sql: Sql, grantId: string): Promise<string> {
-  const [row] = await sql<{ id: string }[]>`
-    select id from grant_folders
-    where grant_id = ${grantId} and parent_id is null and name = ${SOURCE_FOLDER}
-    order by created_at limit 1
-  `
-  return row?.id ?? (await createFolder(sql, grantId, null, SOURCE_FOLDER)).id
-}
-
-// `claimedAt`: il turno di questo lavoro; un errore libera solo quello
+// `claimedAt`: il turno di questo lavoro. Lo stato si scrive solo se il turno
+// è ancora suo: un lavoro rimasto indietro (turno scaduto e ripreso da un
+// altro) non copre quello nuovo.
 async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Date) {
   try {
     const { grant, content, profile } = await readGrantDocument(sql, id)
-    const folderId = await sourceFolder(sql, id)
-    // Ripresa dopo un errore: i file già presenti non si ricaricano
-    const present = new Set([...await folderNames(sql, id, folderId)].map(n => n.toLowerCase()))
-    const has = (name: string) => present.has(name.toLowerCase())
+    const folderId = await grantSourceFolder(sql, id, SOURCE_FOLDER)
+    // Ripresa dopo un errore, o un altro lavoro sulla stessa cartella: i nomi
+    // si rileggono prima di ogni file, e addFileOnce li ricontrolla sotto il
+    // lucchetto, così niente "(2)"
+    const has = async (name: string) => {
+      const lower = name.toLowerCase()
+      return [...await folderNames(sql, id, folderId)].some(n => n.toLowerCase() === lower)
+    }
     const save = async (name: string, mime: string, data: Buffer) => {
-      if (!has(name)) await addFile(sql, store, { grantId: id, folderId, name, mime, data, userId: null })
+      if (!(await has(name))) await addFileOnce(sql, store, { grantId: id, folderId, name, mime, data, userId: null })
     }
     // Si aspettano entrambi: un errore sul bando non lascia PDF in volo
     const [md, pdfs] = await Promise.allSettled([
@@ -92,30 +89,33 @@ async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Dat
     ])
     if (md.status === 'rejected') throw md.reason
     if (pdfs.status === 'rejected') throw pdfs.reason
-    // PDF scaricati ma non caricati nello store: la cartella resta da finire,
-    // così il pannello offre di riprovare (la ripresa salta i file presenti)
+    // PDF scaricati ma non caricati nello store, o pagina del bando non
+    // raggiunta: la cartella resta da finire, così il pannello offre di
+    // riprovare (la ripresa salta i file presenti)
     const { note, complete } = pdfs.value
     await sql`
-      update radar_grants set folder_filled_at = ${complete ? new Date() : null}, folder_note = ${note}, folder_claimed_at = null
-      where id = ${id}
+      update radar_grants set folder_filled_at = ${complete ? new Date() : null}, folder_note = ${note},
+        folder_claimed_at = null, folder_failed_at = null
+      where id = ${id} and folder_claimed_at = ${claimedAt}
     `
   }
   catch (err) {
     console.error('[radar] cartella del bando non riempita', err)
     await sql`
-      update radar_grants set folder_claimed_at = null, folder_note = ${`Non riuscita: ${(err as Error).message}`.slice(0, 500)}
+      update radar_grants set folder_claimed_at = null, folder_failed_at = now(),
+        folder_note = ${`Non riuscita: ${(err as Error).message}`.slice(0, 500)}
       where id = ${id} and folder_claimed_at = ${claimedAt}
     `
   }
 }
 
 type PdfOutcome = 'loaded' | 'notDownloaded' | 'tooLarge' | 'notUploaded'
-type Saver = { has: (name: string) => boolean, save: (name: string, mime: string, data: Buffer) => Promise<void> }
+type Saver = { has: (name: string) => Promise<boolean>, save: (name: string, mime: string, data: Buffer) => Promise<void> }
 
 async function savePdf(href: string, { has, save }: Saver): Promise<PdfOutcome> {
   const name = pdfFileName(href)
   // Già nella cartella: non si riscarica
-  if (has(name)) return 'loaded'
+  if (await has(name)) return 'loaded'
   const data = await fetchFromSource(href, { origin: new URL(href).origin, maxBytes: MAX_DOWNLOAD_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
     .catch(() => null)
   if (!data) return 'notDownloaded'
@@ -124,15 +124,15 @@ async function savePdf(href: string, { has, save }: Saver): Promise<PdfOutcome> 
 }
 
 // Salva i PDF del bando, quattro alla volta; la nota dice cosa manca.
-// `complete` è falso se qualche PDF scaricato non è entrato nello store: un
-// nuovo tentativo può prenderlo.
+// `complete` è falso se la pagina del bando non si raggiunge o se qualche PDF
+// scaricato non è entrato nello store: un nuovo tentativo può prenderli.
 async function savePdfs(url: string, saver: Saver): Promise<{ note: string, complete: boolean }> {
   let pdfs: string[]
   try {
     pdfs = await grantPdfLinks(url)
   }
   catch {
-    return { note: 'Pagina del bando non raggiungibile: i PDF vanno aggiunti a mano', complete: true }
+    return { note: 'Pagina del bando non raggiungibile: riprova più tardi o aggiungi i PDF a mano', complete: false }
   }
   if (!pdfs.length) return { note: 'Nessun PDF trovato sulla pagina del bando', complete: true }
   const outcomes = await inPool(pdfs, FILE_CONCURRENCY, href => savePdf(href, saver))

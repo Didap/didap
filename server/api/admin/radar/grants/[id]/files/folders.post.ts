@@ -6,7 +6,6 @@ const folderSchema = z.object({ parentId: z.string().uuid().nullable(), name: z.
 export default defineEventHandler(async (event) => {
   const id = uuidParam(event)
   const { parentId, name } = await readSchemaBody(event, folderSchema)
-  const sql = await useDb()
-  await requireGrantFolder(sql, id)
-  return createFolder(sql, id, parentId, name)
+  // Bando con la cartella e cartella madre li controlla createFolder
+  return createFolder(await useDb(), id, parentId, name)
 })

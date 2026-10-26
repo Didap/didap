@@ -345,10 +345,12 @@ export type RadarGrant = {
   liked: boolean
   // Cartella del bando: creata, riempita coi file del bando (false con
   // hasFolder: riempimento fallito o interrotto, si può riprovare), in
-  // riempimento, e com'è andato l'ultimo (PDF mancanti, errore)
+  // riempimento, l'ultimo finito con un errore, e com'è andato (PDF
+  // mancanti, errore)
   hasFolder: boolean
   folderFilled: boolean
   folderFilling: boolean
+  folderFailed: boolean
   folderNote: string
   // Chiuso o scaduto: si vede solo se ha la cartella
   closed: boolean

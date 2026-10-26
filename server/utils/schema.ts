@@ -174,8 +174,10 @@ export const DB_SCHEMA = `
   alter table radar_grants add column if not exists folder_claimed_at timestamptz;
   alter table radar_grants add column if not exists folder_filled_at timestamptz;
   alter table radar_grants add column if not exists folder_note text not null default '';
+  -- Ultimo riempimento finito con un errore (si azzera al nuovo tentativo)
+  alter table radar_grants add column if not exists folder_failed_at timestamptz;
   -- Cartella del bando: sottocartelle e file (parent_id e folder_id null: la
-  -- cartella principale; uploaded_by null: messo dal radar). I byte stanno
+  -- cartella principale; uploaded_by_name null: messo dal radar). I byte stanno
   -- nel file store, qui solo la chiave.
   create table if not exists grant_folders (
     id uuid primary key default gen_random_uuid(),
@@ -195,6 +197,11 @@ export const DB_SCHEMA = `
     uploaded_by uuid references admin_users(id) on delete set null,
     created_at timestamptz not null default now()
   );
+  -- Nome di chi l'ha caricato, fissato al caricamento: resta anche se la
+  -- persona viene eliminata (null: messo dal radar)
+  alter table grant_files add column if not exists uploaded_by_name text;
+  -- "Dal bando" del riempimento: si ritrova per id anche se rinominata
+  alter table radar_grants add column if not exists folder_source_id uuid references grant_folders(id) on delete set null;
   create index if not exists grant_folders_parent on grant_folders (parent_id);
   create index if not exists grant_files_folder on grant_files (folder_id);
   -- Elenco e controllo dei nomi di una cartella: bando più cartella

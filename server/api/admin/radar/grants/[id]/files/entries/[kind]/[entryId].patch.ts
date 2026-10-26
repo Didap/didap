@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const entryId = uuidParam(event, 'entryId')
   const body = await readSchemaBody(event, patchSchema)
   const sql = await useDb()
-  await requireGrantFolder(sql, id)
+  // Il bando con la cartella lo controllano renameEntry e moveEntry
   if ('name' in body) await renameEntry(sql, id, kind, entryId, body.name)
   else await moveEntry(sql, id, kind, entryId, body.folderId)
   return { ok: true }

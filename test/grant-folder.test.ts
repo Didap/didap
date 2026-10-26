@@ -1,7 +1,7 @@
 import type postgres from 'postgres'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MAX_FILE_BYTES } from '#shared/grant-files'
-import { listFolder } from '../server/utils/grant-files'
+import { listFolder, renameEntry } from '../server/utils/grant-files'
 import { pdfFileName, startGrantFolder } from '../server/utils/grant-folder'
 import { ingestSources, listGrants, readPending } from '../server/utils/radar'
 import type { GrantReader } from '../server/utils/radar-reader'
@@ -23,12 +23,12 @@ describe('nomi dei PDF del bando', () => {
 })
 
 // Il sito del bando finto: ogni richiesta finisce in `calls`
-// `bigPdf`: avviso.pdf di 10 MB + 1 byte
-function fakeWeb(calls: string[], { bigPdf = false } = {}) {
+// `bigPdf`: avviso.pdf di 10 MB + 1 byte; `pageDown`: la pagina del bando dà 404
+function fakeWeb(calls: string[], { bigPdf = false, pageDown = false } = {}) {
   return vi.fn(async (input: string | URL) => {
     const url = String(input)
     calls.push(url)
-    if (url === 'https://example.com/a') {
+    if (url === 'https://example.com/a' && !pageDown) {
       return new Response('<main><p>Bando</p><a href="/docs/avviso.pdf">Avviso</a><a href="/docs/rotto.pdf">Rotto</a></main>', { headers: { 'content-type': 'text/html' } })
     }
     if (url === 'https://example.com/docs/avviso.pdf') {
@@ -117,7 +117,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
 
     const files = await fromSite(grant.id)
     expect(files.map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
-    expect(files.every(f => f.uploadedBy === null)).toBe(true)
+    expect(files.every(f => f.uploadedBy === null && f.fromRadar)).toBe(true)
     const stored = [...store.files.values()].map(b => b.toString())
     expect(stored).toContain('%PDF-1.4 finto')
     expect(stored.some(b => b.includes('titolo: "Voucher bando A"'))).toBe(true)
@@ -160,7 +160,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     await startGrantFolder(sql, failing, grant.id, run)
     await finish()
     // Creata ma non riempita: il pannello offre di riprovare
-    expect(await reread()).toMatchObject({ hasFolder: true, folderFilled: false, folderFilling: false, folderNote: 'Non riuscita: quota' })
+    expect(await reread()).toMatchObject({ hasFolder: true, folderFilled: false, folderFilling: false, folderFailed: true, folderNote: 'Non riuscita: quota' })
     expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf'])
 
     // Lo store torna a funzionare
@@ -171,7 +171,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
     expect(calls).not.toContain('https://example.com/docs/avviso.pdf')
     expect(store.files.size).toBe(2)
-    expect(await reread()).toMatchObject({ folderFilled: true, folderFilling: false, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
+    expect(await reread()).toMatchObject({ folderFilled: true, folderFilling: false, folderFailed: false, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
   })
 
   it('un PDF scaricato ma non caricato: cartella da finire, il clic dopo lo prende', async () => {
@@ -201,6 +201,108 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
     expect(store.files.size).toBe(2)
     expect(await reread()).toMatchObject({ folderFilled: true, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
+  })
+
+  // L'id della "Dal bando" segnato sul bando
+  const sourceId = async (grantId: string) =>
+    (await sql`select folder_source_id from radar_grants where id = ${grantId}`)[0]!.folder_source_id as string | null
+
+  it('i tentativi riprendono nella stessa "Dal bando", anche rinominata; se è stata eliminata se ne fa una nuova', async () => {
+    const grant = await oneGrant()
+    vi.stubGlobal('fetch', fakeWeb(calls))
+    const store = memoryStore()
+    const failing = {
+      ...store,
+      put: async () => {
+        throw new Error('quota')
+      },
+    }
+    await startGrantFolder(sql, failing, grant.id, run)
+    await finish()
+    const first = await sourceId(grant.id)
+    expect(first).not.toBeNull()
+    // Rinominata con le maiuscole cambiate: per nome non si ritroverebbe
+    await renameEntry(sql, grant.id, 'folder', first!, 'DAL BANDO')
+    await startGrantFolder(sql, failing, grant.id, run)
+    await finish()
+    await startGrantFolder(sql, failing, grant.id, run)
+    await finish()
+    expect(await sourceId(grant.id)).toBe(first)
+    expect((await listFolder(sql, grant.id, null)).folders.map(f => f.name)).toEqual(['DAL BANDO'])
+
+    // Eliminata a mano: il tentativo dopo ne crea una e la segna
+    await sql`delete from grant_folders where id = ${first}`
+    expect(await sourceId(grant.id)).toBeNull()
+    await startGrantFolder(sql, store, grant.id, run)
+    await finish()
+    const second = await sourceId(grant.id)
+    expect(second).not.toBeNull()
+    expect(second).not.toBe(first)
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
+  })
+
+  it('un lavoro rimasto indietro non copre quello nuovo, e due lavori insieme non fanno "(2)"', async () => {
+    const grant = await oneGrant()
+    vi.stubGlobal('fetch', fakeWeb(calls))
+    const store = memoryStore()
+    await startGrantFolder(sql, store, grant.id, run)
+    // Il turno del primo scade e un altro clic lo riprende
+    await sql`update radar_grants set folder_claimed_at = now() - interval '1 hour' where id = ${grant.id}`
+    await startGrantFolder(sql, store, grant.id, run)
+    const [stale, fresh] = jobs.splice(0)
+    // Il vecchio finisce per primo: lo stato resta quello del nuovo, in corso
+    await stale!()
+    expect(await reread()).toMatchObject({ folderFilled: false, folderFilling: true })
+    await fresh!()
+    expect(await reread()).toMatchObject({ folderFilled: true, folderFilling: false })
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
+
+    // Due lavori in parallelo sulla stessa cartella vuota: un file per nome,
+    // e i byte del doppione escono dallo store. Lo store trattiene ogni file
+    // finché l'altro lavoro non ha caricato lo stesso nome: entrambi hanno
+    // già controllato che mancasse.
+    await sql`delete from grant_files`
+    store.files.clear()
+    const waiting = new Map<string, () => void>()
+    const paired = {
+      ...store,
+      put: async (key: string, data: Buffer, filename: string) => {
+        const other = waiting.get(filename)
+        if (other) other()
+        else await new Promise<void>(resolve => waiting.set(filename, resolve))
+        return store.put(key, data, filename)
+      },
+    }
+    await sql`update radar_grants set folder_filled_at = null, folder_claimed_at = null where id = ${grant.id}`
+    await startGrantFolder(sql, paired, grant.id, run)
+    await sql`update radar_grants set folder_claimed_at = now() - interval '1 hour' where id = ${grant.id}`
+    await startGrantFolder(sql, paired, grant.id, run)
+    expect(jobs).toHaveLength(2)
+    await Promise.all(jobs.splice(0).map(job => job()))
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
+    expect(store.files.size).toBe(2)
+  })
+
+  it('pagina del bando non raggiungibile: la nota resta e la cartella si può riprovare', async () => {
+    const grant = await oneGrant()
+    vi.stubGlobal('fetch', fakeWeb(calls, { pageDown: true }))
+    const store = memoryStore()
+    await startGrantFolder(sql, store, grant.id, run)
+    await finish()
+    expect(await reread()).toMatchObject({
+      hasFolder: true,
+      folderFilled: false,
+      folderFilling: false,
+      folderFailed: false,
+      folderNote: 'Pagina del bando non raggiungibile: riprova più tardi o aggiungi i PDF a mano',
+    })
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['bando-voucher-bando-a.md'])
+
+    vi.stubGlobal('fetch', fakeWeb(calls))
+    expect(await startGrantFolder(sql, store, grant.id, run)).toEqual({ status: 'filling' })
+    await finish()
+    expect(await reread()).toMatchObject({ folderFilled: true, folderNote: '1 PDF del bando caricati, 1 non scaricati dal sito' })
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['avviso.pdf', 'bando-voucher-bando-a.md'])
   })
 
   it('un bando che non c\'è', async () => {

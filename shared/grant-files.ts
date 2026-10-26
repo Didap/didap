@@ -30,7 +30,8 @@ export type EntryKind = 'folder' | 'file'
 // fileCount: anche i file delle sottocartelle
 export type FolderEntry = { id: string, name: string, createdAt: string, fileCount: number }
 
-// uploadedBy: nome della persona, null se messo dal radar
+// uploadedBy: nome della persona al caricamento (resta se poi viene
+// eliminata); fromRadar: messo dal radar, senza persona
 export type FileEntry = {
   id: string
   name: string
@@ -38,6 +39,7 @@ export type FileEntry = {
   bytes: number
   createdAt: string
   uploadedBy: string | null
+  fromRadar: boolean
 }
 
 // path parte dalla cartella principale (id null, nome = titolo del bando)
@@ -45,6 +47,33 @@ export type FolderListing = {
   path: { id: string | null, name: string }[]
   folders: FolderEntry[]
   files: FileEntry[]
+}
+
+// Una cartella nell'albero del bando (GET .../files/tree), parentId null: nella principale
+export type TreeRow = { id: string, parentId: string | null, name: string }
+
+// Una cartella nell'elenco di "Sposta in...": depth 0 è la principale
+export type TreeFolder = { id: string | null, name: string, depth: number }
+
+// L'albero per "Sposta in...": la principale (`rootName`), poi ogni cartella
+// seguita dalle sue figlie, le sorelle nell'ordine delle righe. Una riga con
+// un genitore che non c'è non si vede.
+export function treeFolders(rows: TreeRow[], rootName: string): TreeFolder[] {
+  const kids = new Map<string | null, TreeRow[]>()
+  for (const r of rows) {
+    const list = kids.get(r.parentId)
+    if (list) list.push(r)
+    else kids.set(r.parentId, [r])
+  }
+  const out: TreeFolder[] = [{ id: null, name: rootName, depth: 0 }]
+  const walk = (parent: string | null, depth: number) => {
+    for (const r of kids.get(parent) ?? []) {
+      out.push({ id: r.id, name: r.name, depth })
+      walk(r.id, depth + 1)
+    }
+  }
+  walk(null, 1)
+  return out
 }
 
 // Nome libero nella cartella: "visura.pdf" occupato dà "visura (2).pdf", poi (3).

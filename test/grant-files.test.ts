@@ -1,11 +1,13 @@
 import type postgres from 'postgres'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { entryNameSchema, MAX_FILE_BYTES, uniqueName } from '../shared/grant-files'
+import { entryNameSchema, MAX_FILE_BYTES, treeFolders, uniqueName } from '../shared/grant-files'
 import {
   addFile,
+  addFileOnce,
   createFolder,
   deleteEntry,
   folderNames,
+  folderTree,
   listFolder,
   moveEntry,
   readFileEntry,
@@ -29,6 +31,26 @@ describe('uniqueName', () => {
   it('un nome libero resta com\'è; ".env" non ha estensione', () => {
     expect(uniqueName(new Set(['altro.pdf']), 'Visura.pdf')).toBe('Visura.pdf')
     expect(uniqueName(new Set(['.env']), '.env')).toBe('.env (2)')
+  })
+})
+
+describe('treeFolders', () => {
+  it('la principale, poi ogni cartella con le sue figlie sotto', () => {
+    const rows = [
+      { id: 'a', parentId: null, name: 'Alfa' },
+      { id: 'a1', parentId: 'a', name: 'Uno' },
+      { id: 'a11', parentId: 'a1', name: 'Dentro' },
+      { id: 'b', parentId: null, name: 'Beta' },
+      // Genitore che non c'è: non si vede
+      { id: 'x', parentId: 'manca', name: 'Orfana' },
+    ]
+    expect(treeFolders(rows, 'Bando')).toEqual([
+      { id: null, name: 'Bando', depth: 0 },
+      { id: 'a', name: 'Alfa', depth: 1 },
+      { id: 'a1', name: 'Uno', depth: 2 },
+      { id: 'a11', name: 'Dentro', depth: 3 },
+      { id: 'b', name: 'Beta', depth: 1 },
+    ])
   })
 })
 
@@ -182,6 +204,50 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     expect(files.map(f => [f.name, f.uploadedBy])).toEqual([['X (2).pdf', null], ['x.pdf', 'William']])
   })
 
+  it('il nome di chi ha caricato resta anche se la persona viene eliminata', async () => {
+    const g = await grant('Bando')
+    const u = await createUser(sql, { name: 'Giulia', email: 'giulia@didap.it', pages: ['bandi'] })
+    const store = memoryStore()
+    await addFile(sql, store, file(g, null, 'suo.pdf', u.id))
+    await addFile(sql, store, file(g, null, 'radar.pdf'))
+    await sql`delete from admin_users where id = ${u.id}`
+    const files = (await listFolder(sql, g, null)).files
+    expect(files.map(f => [f.name, f.uploadedBy, f.fromRadar])).toEqual([
+      ['radar.pdf', null, true],
+      ['suo.pdf', 'Giulia', false],
+    ])
+  })
+
+  it('addFileOnce: un nome già presente non si aggiunge e i byte escono dallo store', async () => {
+    const g = await grant('Bando')
+    const store = memoryStore()
+    await addFile(sql, store, file(g, null, 'avviso.pdf'))
+    expect(await addFileOnce(sql, store, file(g, null, 'AVVISO.pdf'))).toBeNull()
+    expect(store.files.size).toBe(1)
+    expect((await listFolder(sql, g, null)).files.map(f => f.name)).toEqual(['avviso.pdf'])
+    expect(await addFileOnce(sql, store, file(g, null, 'altro.pdf'))).toMatchObject({ name: 'altro.pdf' })
+    expect(store.files.size).toBe(2)
+  })
+
+  it('albero delle cartelle in una lettura: prima le madri, solo quel bando', async () => {
+    const g = await grant('Bando')
+    const h = await grant('Altro bando')
+    const beta = await createFolder(sql, g, null, 'beta')
+    const alfa = await createFolder(sql, g, null, 'Alfa')
+    const zeta = await createFolder(sql, g, alfa.id, 'Zeta')
+    const uno = await createFolder(sql, g, alfa.id, 'uno')
+    const sotto = await createFolder(sql, g, zeta.id, 'Sotto')
+    await createFolder(sql, h, null, 'Sua')
+    expect(await folderTree(sql, g)).toEqual([
+      { id: alfa.id, parentId: null, name: 'Alfa' },
+      { id: uno.id, parentId: alfa.id, name: 'uno' },
+      { id: zeta.id, parentId: alfa.id, name: 'Zeta' },
+      { id: sotto.id, parentId: zeta.id, name: 'Sotto' },
+      { id: beta.id, parentId: null, name: 'beta' },
+    ])
+    expect(await folderTree(sql, '00000000-0000-4000-8000-000000000000')).toEqual([])
+  })
+
   it('rinomina: 409 su un nome occupato, altrimenti cambia il nome ma non la chiave', async () => {
     const g = await grant('Bando')
     const store = memoryStore()
@@ -298,6 +364,12 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     await sql`update radar_grants set folder_at = now() where id = ${g}`
     await expect(requireGrantFolder(sql, g)).resolves.toBeUndefined()
     await expect(requireGrantFolder(sql, '00000000-0000-4000-8000-000000000000')).rejects.toMatchObject({ statusCode: 404, statusMessage: 'Bando non trovato' })
+    // Con la cartella: deve essere di quel bando
+    const h = await grant('Altro bando')
+    const mine = await createFolder(sql, g, null, 'Mia')
+    const theirs = await createFolder(sql, h, null, 'Sua')
+    await expect(requireGrantFolder(sql, g, mine.id)).resolves.toBeUndefined()
+    await expect(requireGrantFolder(sql, g, theirs.id)).rejects.toMatchObject({ statusCode: 404, statusMessage: 'Cartella non trovata' })
   })
 
   it('indici su bando più cartella', async () => {

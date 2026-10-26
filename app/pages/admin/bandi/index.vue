@@ -43,9 +43,9 @@ import {
   radarSettingsSchema,
   SOURCE_GROUPS,
   WEEKDAYS,
-  type DriveStart,
   type Eligibility,
   type EvaluatedGrant,
+  type FolderStart,
   type LegalForm,
   type RadarGrant,
   type RadarSettings,
@@ -107,10 +107,10 @@ onAdminReady(async () => {
   }
 })
 
-// Mentre il radar gira, o una cartella su Drive si sta creando, l'elenco
-// si ricarica da solo
+// Mentre il radar gira, o una cartella del bando si sta riempiendo,
+// l'elenco si ricarica da solo
 const { pause, resume } = useIntervalFn(loadGrants, 10_000, { immediate: false })
-const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.driveCreating))
+const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.folderFilling))
 watch(busyRadar, r => (r ? resume() : pause()))
 
 async function save() {
@@ -175,8 +175,8 @@ const runNow = () => act(async () => {
 const confirmWipe = ref(false)
 const wipe = () => act(async () => {
   confirmWipe.value = false
-  const { deleted } = await $fetch<{ deleted: number }>('/api/admin/radar/wipe', { method: 'POST' })
-  return `Dati svuotati: ${deleted} testi cancellati`
+  const { deleted, kept } = await $fetch<{ deleted: number, kept: number }>('/api/admin/radar/wipe', { method: 'POST' })
+  return `Dati svuotati: ${deleted} testi cancellati${kept ? `, ${kept} bandi con cartella tenuti` : ''}`
 })
 
 const sendNow = () => act(async () => {
@@ -230,13 +230,14 @@ async function toggleLike(id: string) {
   }
 }
 
-// Cartella su Drive: già pronta, o partita (l'elenco si ricarica finché
-// c'è una cartella in creazione)
-function setDrive(id: string, start: DriveStart) {
+// Cartella del bando: già riempita, o partita (l'elenco si ricarica
+// finché c'è una cartella in riempimento)
+function setFolder(id: string, start: FolderStart) {
   const g = data.value?.grants.find(x => x.id === id)
   if (!g) return
-  if (start.status === 'ready') g.driveUrl = start.url
-  else g.driveCreating = true
+  g.hasFolder = true
+  g.liked = true
+  g.folderFilling = start.status === 'filling'
 }
 
 const selectedId = ref<string | null>(null)
@@ -1003,8 +1004,8 @@ function toggleGroup(group: string, on: boolean) {
               >
                 <RadarGrantDetail
                   :grant="g"
-                  :drive-configured="!!data?.status.driveConfigured"
-                  @drive="setDrive"
+                  :files-configured="!!data?.status.filesConfigured"
+                  @folder="setFolder"
                 />
               </div>
             </li>
@@ -1024,8 +1025,8 @@ function toggleGroup(group: string, on: boolean) {
         <RadarGrantDetail
           v-if="selected"
           :grant="selected"
-          :drive-configured="!!data?.status.driveConfigured"
-          @drive="setDrive"
+          :files-configured="!!data?.status.filesConfigured"
+          @folder="setFolder"
         />
       </aside>
     </div>

@@ -6,6 +6,7 @@ import {
   ingestSources,
   judgeGrants,
   listEvaluatedGrants,
+  listGrants,
   listRuns,
   radarTick,
   radarWipe,
@@ -319,10 +320,54 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
   it('svuota i dati ma tiene impostazioni e registro', async () => {
     await writeRadarSettings(sql, settings(100))
     await radarTick(sql, deps([fakeSource({ a: 'bando A' })]), NOW)
-    expect(await radarWipe(sql)).toBe(1)
+    expect(await radarWipe(sql)).toEqual({ deleted: 1, kept: 0 })
     expect(await listEvaluatedGrants(sql, NOW)).toEqual([])
     expect((await readRadarSettings(sql)).profile.revenue).toBe(100)
     expect(await listRuns(sql)).toHaveLength(1)
+  })
+
+  // Come il bottone "Crea cartella del bando", senza riempirla
+  const giveFolder = (title: string) => sql`update radar_grants set folder_at = now() where title = ${title}`
+
+  it('svuota i dati ma tiene i bandi con cartella', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B' })], NOW)
+    await readPending(sql, fakeReader)
+    await giveFolder('bando B')
+    expect(await radarWipe(sql)).toEqual({ deleted: 1, kept: 1 })
+    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => [g.title, g.hasFolder])).toEqual([['bando B', true]])
+    const docs = await sql`select status from radar_documents`
+    expect(docs.map(d => d.status)).toEqual(['read'])
+  })
+
+  it('un bando con cartella chiuso o scaduto resta nel pannello, non nella mail', async () => {
+    await writeRadarSettings(sql, settings(null))
+    await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B', c: 'bando scaduto' })], NOW)
+    await readPending(sql, fakeReader)
+    await giveFolder('bando B')
+    await giveFolder('bando scaduto')
+    // b sparisce dalla fonte: chiuso
+    await ingestSources(sql, [fakeSource({ a: 'bando A', c: 'bando scaduto' })], NOW)
+    expect((await listGrants(sql, NOW)).map(g => g.title)).toEqual(['bando A'])
+    const all = await listGrants(sql, NOW, { withFolders: true })
+    expect(all.map(g => [g.title, g.closed]).sort()).toEqual([
+      ['bando A', false],
+      ['bando B', true],
+      ['bando scaduto', true],
+    ])
+    expect(await sendDigest(sql, mailer, NOW)).toBe(1)
+    expect(sent[0]!.text).not.toContain('bando B')
+  })
+
+  it('una rilettura "non per le imprese" non cancella un bando con cartella', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B' })], NOW)
+    await readPending(sql, fakeReader)
+    await giveFolder('bando A')
+    await ingestSources(sql, [fakeSource({ a: 'enti locali A', b: 'enti locali B' })], NOW)
+    expect((await readPending(sql, fakeReader)).read).toBe(2)
+    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => [g.title, g.hasFolder, g.closed]))
+      .toEqual([['bando A', true, false]])
+    const docs = await sql`select external_id, status from radar_documents order by external_id`
+    expect(docs.map(d => [d.external_id, d.status])).toEqual([['a', 'read'], ['b', 'skipped']])
   })
 
   it('un giro alla volta', async () => {

@@ -163,11 +163,17 @@ export const DB_SCHEMA = `
   alter table radar_grants add column if not exists judged_profile text;
   -- Piattaforma e documenti da presentare
   alter table radar_grants add column if not exists application jsonb;
-  -- Cartella di Google Drive coi file del bando
-  alter table radar_grants add column if not exists drive_folder_id text;
-  alter table radar_grants add column if not exists drive_ready_at timestamptz;
-  alter table radar_grants add column if not exists drive_claimed_at timestamptz;
-  alter table radar_grants add column if not exists drive_note text not null default '';
+  -- Cartella di Google Drive, sostituita da quella del bando
+  alter table radar_grants drop column if exists drive_folder_id;
+  alter table radar_grants drop column if exists drive_ready_at;
+  alter table radar_grants drop column if exists drive_claimed_at;
+  alter table radar_grants drop column if exists drive_note;
+  -- Cartella del bando: creata (mai azzerata, protegge il bando da
+  -- "Svuota" e dalla rilettura), riempimento in corso, finito, com'è andata
+  alter table radar_grants add column if not exists folder_at timestamptz;
+  alter table radar_grants add column if not exists folder_claimed_at timestamptz;
+  alter table radar_grants add column if not exists folder_filled_at timestamptz;
+  alter table radar_grants add column if not exists folder_note text not null default '';
   -- Cartella del bando: sottocartelle e file (parent_id e folder_id null: la
   -- cartella principale; uploaded_by null: messo dal radar). I byte stanno
   -- nel file store, qui solo la chiave.

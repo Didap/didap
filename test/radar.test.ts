@@ -229,7 +229,10 @@ describe('ricerca e giudizio', () => {
     application: null,
     notifiedAt: null,
     liked: false,
-    driveUrl: null,
+    hasFolder: false,
+    folderFilling: false,
+    folderNote: '',
+    closed: false,
     createdAt: NOW.toISOString(),
     ...over,
   })

@@ -3,22 +3,22 @@ import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
-import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type DriveStart, type EvaluatedGrant } from '#shared/radar'
+import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type EvaluatedGrant, type FolderStart } from '#shared/radar'
 
 // Scheda di un bando: giudizio, dati, sintesi, requisiti e come si
 // presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
 // guardare; la frase del bando si apre col clic.
-const props = defineProps<{ grant: EvaluatedGrant, driveConfigured: boolean }>()
-// La cartella si crea in background: il pannello segna il bando e lo
+const props = defineProps<{ grant: EvaluatedGrant, filesConfigured: boolean }>()
+// La cartella si riempie in background: il pannello segna il bando e lo
 // ricarica finché non è pronta
-const emit = defineEmits<{ drive: [id: string, start: DriveStart] }>()
+const emit = defineEmits<{ folder: [id: string, start: FolderStart] }>()
 
 const { notify } = useAdminToast()
 
 async function createFolder() {
   const id = props.grant.id
   try {
-    emit('drive', id, await $fetch<DriveStart>(`/api/admin/radar/grants/${id}/drive`, { method: 'POST' }))
+    emit('folder', id, await $fetch<FolderStart>(`/api/admin/radar/grants/${id}/folder`, { method: 'POST' }))
   }
   catch (err) {
     notify('error', adminErrorText(err))
@@ -92,22 +92,9 @@ const note = (i: number) => {
             />
           </svg>
         </a>
-        <!-- La cartella condivisa del bando: si crea una volta, poi si apre -->
-        <a
-          v-if="grant.driveUrl"
-          :href="grant.driveUrl"
-          target="_blank"
-          rel="noopener"
-          class="
-            inline-flex w-fit items-center rounded-full border border-ink/20
-            px-4 py-2 text-sm
-            hover:border-ink
-          "
-        >
-          Apri cartella Drive
-        </a>
+        <!-- La cartella del bando: si crea una volta (la scheda File arriva dopo) -->
         <button
-          v-else
+          v-if="!grant.hasFolder || grant.folderFilling"
           type="button"
           class="
             inline-flex w-fit items-center rounded-full border border-ink/20
@@ -115,11 +102,11 @@ const note = (i: number) => {
             hover:border-ink
             disabled:opacity-40
           "
-          :disabled="!driveConfigured || grant.driveCreating"
-          :title="driveConfigured ? 'Crea la cartella del bando nel Drive condiviso, col bando e i suoi PDF' : 'Google Drive non configurato'"
+          :disabled="!filesConfigured || grant.folderFilling"
+          :title="filesConfigured ? 'Crea la cartella del bando, col bando e i suoi PDF' : 'Cloudinary non configurato'"
           @click="createFolder"
         >
-          {{ grant.driveCreating ? 'Creo la cartella…' : 'Crea cartella su Drive' }}
+          {{ grant.folderFilling ? 'Creo la cartella…' : 'Crea cartella del bando' }}
         </button>
         <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
         <a
@@ -136,11 +123,11 @@ const note = (i: number) => {
         </a>
       </div>
       <p
-        v-if="grant.driveNote && !grant.driveCreating"
+        v-if="grant.folderNote && !grant.folderFilling"
         class="ml-9 text-xs"
-        :class="grant.driveUrl ? 'opacity-60' : 'text-red'"
+        :class="grant.folderNote.startsWith('Non riuscita') ? 'text-red' : 'opacity-60'"
       >
-        Drive: {{ grant.driveNote }}
+        Cartella: {{ grant.folderNote }}
       </p>
     </header>
 

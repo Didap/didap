@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MAX_FILE_BYTES } from '../shared/grant-files'
-import { browserName, checkUploadLength, checkUploadParts, MAX_UPLOAD_BYTES } from '../server/utils/upload-limits'
+import { browserName, checkUploadLength, checkUploadParts, MAX_UPLOAD_BYTES, uploadMime } from '../server/utils/upload-limits'
 
 describe('checkUploadLength', () => {
   it('senza Content-Length o con un valore non numerico: 411', () => {
@@ -44,5 +44,22 @@ describe('browserName', () => {
     expect(browserName('Bando %22ok%22.pdf')).toBe('Bando "ok".pdf')
     expect(browserName('a%0D%0ab.pdf')).toBe('a  b.pdf')
     expect(browserName(undefined)).toBe('')
+  })
+})
+
+describe('uploadMime', () => {
+  it('un .pdf senza tipo o con un tipo generico diventa application/pdf', () => {
+    for (const type of [undefined, '', 'application/octet-stream', 'application/x-pdf', 'Application/X-PDF']) {
+      expect(uploadMime(type, 'Bando.PDF'), String(type)).toBe('application/pdf')
+    }
+    expect(uploadMime('application/pdf', 'bando.pdf')).toBe('application/pdf')
+  })
+
+  it('gli altri tipi restano; senza tipo e senza .pdf: octet-stream', () => {
+    expect(uploadMime('text/plain', 'note.pdf')).toBe('text/plain')
+    expect(uploadMime('application/x-pdf', 'bando.pdf.zip')).toBe('application/x-pdf')
+    expect(uploadMime('', 'foto')).toBe('application/octet-stream')
+    expect(uploadMime(undefined, 'domanda.docx')).toBe('application/octet-stream')
+    expect(uploadMime('image/png', 'foto.png')).toBe('image/png')
   })
 })

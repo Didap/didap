@@ -15,11 +15,12 @@ export default defineEventHandler(async (event) => {
   checkUploadParts(parts.map(p => p.data.length))
   const added = []
   for (const p of parts) {
+    const name = cleanFileName(browserName(p.filename), 'file')
     added.push(await addFile(sql, store, {
       grantId: id,
       folderId,
-      name: cleanFileName(browserName(p.filename), 'file'),
-      mime: p.type || 'application/octet-stream',
+      name,
+      mime: uploadMime(p.type, name),
       data: p.data,
       userId: user.id,
     }))

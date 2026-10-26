@@ -9,6 +9,10 @@ import type { FileStore } from './file-store'
 
 export type CloudinaryConfig = { cloudName: string, apiKey: string, apiSecret: string }
 
+// Oltre un minuto Cloudinary non risponde più: meglio un errore che una
+// richiesta appesa
+const CLOUDINARY_TIMEOUT_MS = 60_000
+
 export function cloudinaryConfig(): CloudinaryConfig | null {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim()
   const apiKey = process.env.CLOUDINARY_API_KEY?.trim()
@@ -51,7 +55,7 @@ export function cloudinaryStore(cfg: CloudinaryConfig, fetchImpl: typeof fetch =
       form.set('timestamp', String(timestamp))
       form.set('api_key', cfg.apiKey)
       form.set('signature', cloudinarySignature({ public_id: key, timestamp, type: 'authenticated' }, cfg.apiSecret))
-      const res = await fetchImpl(`${base}/upload`, { method: 'POST', body: form })
+      const res = await fetchImpl(`${base}/upload`, { method: 'POST', body: form, signal: AbortSignal.timeout(CLOUDINARY_TIMEOUT_MS) })
       if (!res.ok) throw await failure(res)
     },
 
@@ -66,7 +70,7 @@ export function cloudinaryStore(cfg: CloudinaryConfig, fetchImpl: typeof fetch =
         api_key: cfg.apiKey,
         signature: cloudinarySignature({ expires_at: expiresAt, public_id: key, timestamp, type: 'authenticated' }, cfg.apiSecret),
       })
-      const res = await fetchImpl(`${base}/download?${query}`)
+      const res = await fetchImpl(`${base}/download?${query}`, { signal: AbortSignal.timeout(CLOUDINARY_TIMEOUT_MS) })
       if (!res.ok) throw await failure(res)
       return Buffer.from(await res.arrayBuffer())
     },
@@ -80,7 +84,7 @@ export function cloudinaryStore(cfg: CloudinaryConfig, fetchImpl: typeof fetch =
       form.set('timestamp', String(timestamp))
       form.set('api_key', cfg.apiKey)
       form.set('signature', cloudinarySignature({ invalidate: 'true', public_id: key, timestamp, type: 'authenticated' }, cfg.apiSecret))
-      const res = await fetchImpl(`${base}/destroy`, { method: 'POST', body: form })
+      const res = await fetchImpl(`${base}/destroy`, { method: 'POST', body: form, signal: AbortSignal.timeout(CLOUDINARY_TIMEOUT_MS) })
       // "not found" arriva con 200 e result: "not found": già cancellato va bene
       if (!res.ok) throw await failure(res)
     },

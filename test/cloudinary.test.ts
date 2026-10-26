@@ -40,6 +40,19 @@ describe('cloudinaryStore', () => {
     expect(form.get('file')).toBeInstanceOf(Blob)
   })
 
+  it('ogni richiesta ha un timeout', async () => {
+    const { calls, impl } = fakeFetch(() => json({ result: 'ok' }))
+    const store = cloudinaryStore(cfg, impl)
+    await store.put('k', Buffer.from('a'), 'a.pdf')
+    await store.get('k')
+    await store.remove('k')
+    expect(calls).toHaveLength(3)
+    for (const c of calls) {
+      expect(c.init.signal).toBeInstanceOf(AbortSignal)
+      expect(c.init.signal!.aborted).toBe(false)
+    }
+  })
+
   it('get: scarica da raw/download e restituisce i byte', async () => {
     const { calls, impl } = fakeFetch(() => new Response(new Uint8Array([1, 2, 3, 255])))
     const data = await cloudinaryStore(cfg, impl).get('didap/bandi/1/abc')

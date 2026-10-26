@@ -10,6 +10,7 @@ import {
   moveEntry,
   readFileEntry,
   renameEntry,
+  requireGrantFolder,
 } from '../server/utils/grant-files'
 import { ingestSources, readPending } from '../server/utils/radar'
 import type { GrantReader } from '../server/utils/radar-reader'
@@ -286,5 +287,13 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     await sql`delete from radar_grants where id = ${g}`
     const [{ n }] = await sql`select count(*)::int as n from grant_files` as unknown as [{ n: number }]
     expect(n).toBe(0)
+  })
+
+  it('si scrive solo in un bando con la cartella creata', async () => {
+    const g = await grant('Bando')
+    await expect(requireGrantFolder(sql, g)).rejects.toMatchObject({ statusCode: 409, statusMessage: 'Crea prima la cartella del bando' })
+    await sql`update radar_grants set folder_at = now() where id = ${g}`
+    await expect(requireGrantFolder(sql, g)).resolves.toBeUndefined()
+    await expect(requireGrantFolder(sql, '00000000-0000-4000-8000-000000000000')).rejects.toMatchObject({ statusCode: 404, statusMessage: 'Bando non trovato' })
   })
 })

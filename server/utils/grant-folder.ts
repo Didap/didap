@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
-import { entryNameSchema, MAX_FILE_BYTES } from '#shared/grant-files'
+import { cleanFileName, MAX_FILE_BYTES } from '#shared/grant-files'
 import { FOLDER_CLAIM_MINUTES, type FolderStart } from '#shared/radar'
 import type { FileStore } from './file-store'
 import { addFile, createFolder, folderNames } from './grant-files'
@@ -25,7 +25,6 @@ const MAX_FILES = 10
 // Si scarica fino a qui per dire "oltre 10 MB" invece di "non scaricato"
 const MAX_DOWNLOAD_BYTES = 40 * 1024 * 1024
 const FILE_CONCURRENCY = 4
-const MAX_NAME = 150
 
 // I PDF della pagina del bando (stessa origine); un bando che è un PDF è sé stesso
 export async function grantPdfLinks(url: string): Promise<string[]> {
@@ -34,15 +33,8 @@ export async function grantPdfLinks(url: string): Promise<string[]> {
   return pagePdfLinks(mainHtml(await fetchSourcePage(url, origin)), url, origin, MAX_FILES)
 }
 
-// Nome del PDF nella cartella: dal link, senza barre né caratteri di
-// controllo, lunghezza ragionevole
-export function pdfFileName(href: string): string {
-  const name = attachmentName(href).replace(/[/\\\p{Cc}]/gu, ' ').replace(/\s+/g, ' ').trim()
-  const ext = /\.pdf$/i.test(name) ? name.slice(-4) : ''
-  const base = name.slice(0, name.length - ext.length).slice(0, MAX_NAME).trim()
-  const clean = `${base}${ext}`
-  return base && entryNameSchema.safeParse(clean).success ? clean : 'documento.pdf'
-}
+// Nome del PDF nella cartella: dal link, ripulito come i caricamenti
+export const pdfFileName = (href: string) => cleanFileName(attachmentName(href), 'documento.pdf')
 
 export async function startGrantFolder(
   sql: Sql,

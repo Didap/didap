@@ -12,6 +12,19 @@ export const entryNameSchema = z
   .max(200, 'Nome non valido')
   .refine(n => n !== '.' && n !== '..' && !/[/\\\p{Cc}]/u.test(n), 'Nome non valido')
 
+const MAX_FILE_NAME = 150
+
+// Nome di un file che arriva da fuori (link, browser): barre e caratteri di
+// controllo diventano spazi, la base si accorcia tenendo l'estensione; se non
+// resta un nome valido, `fallback`
+export function cleanFileName(name: string, fallback: string): string {
+  const flat = name.replace(/[/\\\p{Cc}]/gu, ' ').replace(/\s+/g, ' ').trim()
+  const ext = /\.[^.\s]{1,10}$/.exec(flat)?.[0] ?? ''
+  const base = flat.slice(0, flat.length - ext.length).slice(0, MAX_FILE_NAME).trim()
+  const clean = `${base}${ext}`
+  return base && entryNameSchema.safeParse(clean).success ? clean : fallback
+}
+
 export type EntryKind = 'folder' | 'file'
 
 // fileCount: anche i file delle sottocartelle

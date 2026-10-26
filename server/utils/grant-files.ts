@@ -92,6 +92,20 @@ async function isTaken(sql: Sql, grantId: string, folderId: string | null, name:
   return !!r
 }
 
+// Il tipo nell'indirizzo delle API (.../entries/:kind/:id); altro è 404
+export function entryKind(value: string | undefined): EntryKind {
+  if (value === 'folder' || value === 'file') return value
+  throw createError({ statusCode: 404, statusMessage: 'Non trovato' })
+}
+
+// Le API scrivono solo nella cartella di un bando che ce l'ha (folder_at lo
+// protegge dalla pulizia del radar)
+export async function requireGrantFolder(sql: Sql, grantId: string): Promise<void> {
+  const [g] = await sql`select folder_at from radar_grants where id = ${grantId}`
+  if (!g) throw grantNotFound()
+  if (!g.folder_at) throw createError({ statusCode: 409, statusMessage: 'Crea prima la cartella del bando' })
+}
+
 // Nomi presenti in una cartella, per il riempimento
 export async function folderNames(sql: Sql, grantId: string, folderId: string | null): Promise<Set<string>> {
   await assertFolder(sql, grantId, folderId)

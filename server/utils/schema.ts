@@ -197,6 +197,9 @@ export const DB_SCHEMA = `
   );
   create index if not exists grant_folders_parent on grant_folders (parent_id);
   create index if not exists grant_files_folder on grant_files (folder_id);
+  -- Elenco e controllo dei nomi di una cartella: bando più cartella
+  create index if not exists grant_folders_grant_parent on grant_folders (grant_id, parent_id);
+  create index if not exists grant_files_grant_folder on grant_files (grant_id, folder_id);
   -- Registro degli import: moduli, tempi, conteggi e token
   create table if not exists radar_runs (
     id uuid primary key default gen_random_uuid(),

@@ -88,10 +88,13 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     await resetTestDb(sql)
   })
 
-  async function grant(title: string): Promise<string> {
+  // Con la cartella creata (folder_at), come dopo "Crea cartella del bando";
+  // `folder: false` lascia il bando com'è uscito dal radar
+  async function grant(title: string, { folder = true } = {}): Promise<string> {
     await ingestSources(sql, [oneGrantSource(title)], NOW)
     await readPending(sql, reader)
     const [row] = await sql`select id from radar_grants where title = ${title}`
+    if (folder) await sql`update radar_grants set folder_at = now() where id = ${row!.id}`
     return row!.id
   }
 
@@ -290,10 +293,62 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
   })
 
   it('si scrive solo in un bando con la cartella creata', async () => {
-    const g = await grant('Bando')
+    const g = await grant('Bando', { folder: false })
     await expect(requireGrantFolder(sql, g)).rejects.toMatchObject({ statusCode: 409, statusMessage: 'Crea prima la cartella del bando' })
     await sql`update radar_grants set folder_at = now() where id = ${g}`
     await expect(requireGrantFolder(sql, g)).resolves.toBeUndefined()
     await expect(requireGrantFolder(sql, '00000000-0000-4000-8000-000000000000')).rejects.toMatchObject({ statusCode: 404, statusMessage: 'Bando non trovato' })
+  })
+
+  it('indici su bando più cartella', async () => {
+    const rows = await sql`
+      select indexname, indexdef from pg_indexes
+      where indexname in ('grant_folders_grant_parent', 'grant_files_grant_folder')
+      order by indexname
+    `
+    expect(rows.map(r => r.indexdef.replace(/^.* USING btree /, ''))).toEqual(['(grant_id, folder_id)', '(grant_id, parent_id)'])
+  })
+
+  it('senza cartella del bando: 409 su ogni scrittura, niente nello store', async () => {
+    const g = await grant('Bando', { folder: false })
+    const store = memoryStore()
+    const noFolder = { statusCode: 409, statusMessage: 'Crea prima la cartella del bando' }
+    await expect(createFolder(sql, g, null, 'Bozze')).rejects.toMatchObject(noFolder)
+    await expect(addFile(sql, store, file(g, null, 'x.pdf'))).rejects.toMatchObject(noFolder)
+    expect(store.files.size).toBe(0)
+    const [{ n }] = await sql`
+      select (select count(*) from grant_files) + (select count(*) from grant_folders) as n
+    ` as unknown as [{ n: string }]
+    expect(Number(n)).toBe(0)
+
+    // Righe messe a mano (come prima del controllo): niente rinomina, spostamento o cancellazione
+    const [folder] = await sql`insert into grant_folders (grant_id, name) values (${g}, 'Vecchia') returning id`
+    await expect(renameEntry(sql, g, 'folder', folder!.id, 'Nuova')).rejects.toMatchObject(noFolder)
+    await expect(moveEntry(sql, g, 'folder', folder!.id, null)).rejects.toMatchObject(noFolder)
+    await expect(deleteEntry(sql, store, g, 'folder', folder!.id)).rejects.toMatchObject(noFolder)
+  })
+
+  it('un bando che non c\'è: 404 senza caricare niente', async () => {
+    const ghost = '00000000-0000-4000-8000-000000000000'
+    const store = memoryStore()
+    const noGrant = { statusCode: 404, statusMessage: 'Bando non trovato' }
+    await expect(createFolder(sql, ghost, null, 'Bozze')).rejects.toMatchObject(noGrant)
+    await expect(addFile(sql, store, file(ghost, null, 'x.pdf'))).rejects.toMatchObject(noGrant)
+    expect(store.files.size).toBe(0)
+  })
+
+  it('la cartella tolta tra il controllo e la riga: 409 e i byte escono dallo store', async () => {
+    const g = await grant('Bando')
+    const base = memoryStore()
+    // Lo store toglie folder_at mentre carica: il controllo sotto il lucchetto lo vede
+    const racing = {
+      ...base,
+      put: async (key: string, data: Buffer, filename: string) => {
+        await base.put(key, data, filename)
+        await sql`update radar_grants set folder_at = null where id = ${g}`
+      },
+    }
+    await expect(addFile(sql, racing, file(g, null, 'x.pdf'))).rejects.toMatchObject({ statusCode: 409 })
+    expect(base.files.size).toBe(0)
   })
 })

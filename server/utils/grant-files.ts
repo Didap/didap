@@ -98,8 +98,10 @@ export function entryKind(value: string | undefined): EntryKind {
   throw createError({ statusCode: 404, statusMessage: 'Non trovato' })
 }
 
-// Le API scrivono solo nella cartella di un bando che ce l'ha (folder_at lo
-// protegge dalla pulizia del radar)
+// Si scrive solo nella cartella di un bando che ce l'ha: folder_at lo protegge
+// dalla pulizia del radar, che altrimenti cancella il bando e in cascata le
+// righe, lasciando i file nello store. Il controllo sta anche dentro le
+// scritture qui sotto, non solo nelle API.
 export async function requireGrantFolder(sql: Sql, grantId: string): Promise<void> {
   const [g] = await sql`select folder_at from radar_grants where id = ${grantId}`
   if (!g) throw grantNotFound()
@@ -160,6 +162,7 @@ export async function createFolder(sql: Sql, grantId: string, parentId: string |
   return await sql.begin(async (tx) => {
     const t = tx as unknown as Sql
     await lockGrant(t, grantId)
+    await requireGrantFolder(t, grantId)
     await assertFolder(t, grantId, parentId)
     const free = uniqueName(await namesIn(t, grantId, parentId), clean)
     const [row] = await t`
@@ -179,7 +182,9 @@ export async function addFile(
 ): Promise<FileEntry> {
   if (f.data.length > MAX_FILE_BYTES) throw createError({ statusCode: 413, statusMessage: 'File oltre 10 MB' })
   const clean = cleanName(f.name)
-  // Controllo prima di caricare: niente byte inutili su una cartella sbagliata
+  // Controllo prima di caricare: niente byte su un bando senza cartella o su
+  // una cartella sbagliata
+  await requireGrantFolder(sql, f.grantId)
   await assertFolder(sql, f.grantId, f.folderId)
   const key = grantFileKey(f.grantId)
   await store.put(key, f.data, clean)
@@ -187,6 +192,7 @@ export async function addFile(
     return await sql.begin(async (tx) => {
       const t = tx as unknown as Sql
       await lockGrant(t, f.grantId)
+      await requireGrantFolder(t, f.grantId)
       await assertFolder(t, f.grantId, f.folderId)
       const free = uniqueName(await namesIn(t, f.grantId, f.folderId), clean)
       const [row] = await t`
@@ -211,6 +217,7 @@ export async function renameEntry(sql: Sql, grantId: string, kind: EntryKind, id
   await sql.begin(async (tx) => {
     const t = tx as unknown as Sql
     await lockGrant(t, grantId)
+    await requireGrantFolder(t, grantId)
     const { parent } = await findEntry(t, grantId, kind, id)
     if (await isTaken(t, grantId, parent, clean, kind, id)) throw nameTaken()
     if (kind === 'folder') await t`update grant_folders set name = ${clean} where id = ${id}`
@@ -228,6 +235,7 @@ export async function moveEntry(
   await sql.begin(async (tx) => {
     const t = tx as unknown as Sql
     await lockGrant(t, grantId)
+    await requireGrantFolder(t, grantId)
     const { name } = await findEntry(t, grantId, kind, id)
     await assertFolder(t, grantId, targetFolderId)
     if (kind === 'folder' && targetFolderId !== null) {
@@ -260,6 +268,7 @@ export async function deleteEntry(
   const keys = await sql.begin(async (tx) => {
     const t = tx as unknown as Sql
     await lockGrant(t, grantId)
+    await requireGrantFolder(t, grantId)
     await findEntry(t, grantId, kind, id)
     if (kind === 'file') {
       const [row] = await t`delete from grant_files where id = ${id} returning store_key`

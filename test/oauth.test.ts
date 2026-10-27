@@ -71,11 +71,16 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
     await connect(c.id, u.id)
     const unused = await registerClient(sql, { name: 'Vecchio', redirectUris: [CLAUDE] })
     const fresh = await registerClient(sql, { name: 'Nuovo', redirectUris: [CLAUDE] })
-    await sql`update oauth_clients set created_at = now() - interval '8 days' where id in ${sql([c.id, unused.id])}`
+    // Collegamento vivo ma linked_at vuoto (client di prima della colonna)
+    const legacy = await registerClient(sql, { name: 'Senza data', redirectUris: [CLAUDE] })
+    await connect(legacy.id, u.id)
+    await sql`update oauth_clients set linked_at = null where id = ${legacy.id}`
+    await sql`update oauth_clients set created_at = now() - interval '8 days' where id in ${sql([c.id, unused.id, legacy.id])}`
     await registerClient(sql, { name: 'Altro', redirectUris: [CLAUDE] })
     expect(await getOAuthClient(sql, c.id)).not.toBeNull()
     expect(await getOAuthClient(sql, unused.id)).toBeNull()
     expect(await getOAuthClient(sql, fresh.id)).not.toBeNull()
+    expect(await getOAuthClient(sql, legacy.id)).not.toBeNull()
   })
 
   it('la pulizia tiene i client che hanno avuto un collegamento', async () => {

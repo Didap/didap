@@ -45,7 +45,10 @@ export function createGrantDraftEditor(deps: DraftEditorDeps) {
   // Solo l'ultima lettura conta. Una lettura che torna mentre si sta
   // scrivendo o salvando non tocca né il testo né la versione di partenza
   // (force: "Ricarica", che sostituisce tutto): salvando, il 409 dirà se è
-  // cambiata; il salvataggio in corso porta lui la versione nuova.
+  // cambiata; il salvataggio in corso porta lui la versione nuova. Nemmeno
+  // una lettura partita prima di un salvataggio e tornata dopo: porta una
+  // versione più vecchia di quella salvata (o nessuna bozza) e la riporterebbe
+  // indietro.
   let loadSeq = 0
   async function load(force = false) {
     const id = grantId.value
@@ -56,7 +59,8 @@ export function createGrantDraftEditor(deps: DraftEditorDeps) {
       const res = await deps.read(id)
       if (seq !== loadSeq || grantId.value !== id) return
       hasFolder.value = hasFolder.value || res.hasFolder
-      if (force || (!dirty.value && !saving.value)) {
+      const older = !!saved.value && (res.draft?.version ?? 0) < saved.value.version
+      if (force || (!dirty.value && !saving.value && !older)) {
         saved.value = res.draft
         text.value = normalizeDraft(res.draft?.content ?? '')
         conflict.value = null
@@ -129,6 +133,15 @@ export function createGrantDraftEditor(deps: DraftEditorDeps) {
 // salvataggio in corso
 export const holdsDraft = (editor: Pick<GrantDraftEditor, 'dirty' | 'saving' | 'grantId'>, grantId: string | null) =>
   !!grantId && editor.grantId === grantId && (editor.dirty || editor.saving)
+
+// Tornando sulla pagina (focus, scheda del browser di nuovo visibile) la bozza
+// aperta si rilegge, così chi la riprende vede quello che hanno salvato
+// Claude o un collega. Solo se è quella mostrata nella scheda Bozza (shownId:
+// null se la scheda Bozza non è aperta), già letta e senza niente da perdere
+export const refreshesDraft = (
+  editor: Pick<GrantDraftEditor, 'grantId' | 'loaded' | 'dirty' | 'saving'>,
+  shownId: string | null,
+) => !!shownId && editor.grantId === shownId && editor.loaded && !editor.dirty && !editor.saving
 
 // Il bando aperto nella scheda a destra: quello scelto se è nell'elenco; se
 // filtri, ricerca o moduli e province della ricerca lo tolgono ma la sua

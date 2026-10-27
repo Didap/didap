@@ -157,6 +157,22 @@ describe.skipIf(!TEST_DATABASE_URL)('bozza della candidatura', () => {
     expect((await grantRow(g))!.folder_at).toBeNull()
   })
 
+  it('maxCurrentChars: rifiuta (422) se la bozza salvata è più lunga, prima del 409', async () => {
+    const opts = { savedBy: 'Bea', byClaude: true, maxCurrentChars: 5 }
+    // Senza bozza o con bozza corta si salva
+    await saveGrantDraft(sql, { grantId: g, content: 'uno', baseVersion: null, ...opts })
+    await saveGrantDraft(sql, { grantId: g, content: 'cinque', baseVersion: 1, ...opts })
+    // La bozza salvata ora ha 6 caratteri: rifiutata con qualunque versione
+    for (const baseVersion of [2, 1, null]) {
+      await expect(saveGrantDraft(sql, { grantId: g, content: 'x', baseVersion, ...opts }))
+        .rejects.toMatchObject({ statusCode: 422 })
+    }
+    expect(await readDraft(sql, g)).toMatchObject({ content: 'cinque', version: 2 })
+    // Senza l'opzione (il pannello) si salva
+    await saveGrantDraft(sql, { grantId: g, content: 'x', baseVersion: 2, savedBy: 'Ale', byClaude: false })
+    expect(await readDraft(sql, g)).toMatchObject({ content: 'x', version: 3 })
+  })
+
   it('due salvataggi insieme dalla stessa versione: uno solo passa', async () => {
     await saveGrantDraft(sql, { grantId: g, content: 'uno', baseVersion: null, savedBy: 'Ale', byClaude: false })
     const results = await Promise.allSettled([

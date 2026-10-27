@@ -1,10 +1,16 @@
-import { MAX_DRAFT_CHARS } from '#shared/grant-draft'
+import { MAX_TOOL_TEXT } from './mcp-bandi'
 
 // Testi del connettore MCP che Claude legge: istruzioni del server,
 // descrizioni degli strumenti e prompt "Prepara la candidatura". Scritti a
 // partire dalla skill gestisci-bando.
 
-const DRAFT_LIMIT = MAX_DRAFT_CHARS.toLocaleString('it-IT')
+// Claude lavora solo su bozze che stanno in una risposta: rilegge e riscrive
+// sempre il testo intero, e un testo arrivato a metà gli farebbe cancellare la
+// coda. Il pannello arriva a MAX_DRAFT_CHARS.
+const DRAFT_LIMIT = MAX_TOOL_TEXT.toLocaleString('it-IT')
+
+export const MCP_DRAFT_TOO_LONG = `La bozza supera ${DRAFT_LIMIT} caratteri: lavorala nel pannello.`
+export const MCP_TEXT_TOO_LONG = `Il testo supera ${DRAFT_LIMIT} caratteri: Claude lavora su bozze più corte. Accorcialo o lavoralo nel pannello.`
 
 export const MCP_INSTRUCTIONS = [
   'Sei collegato al radar bandi di Didap: bandi pubblici e agevolazioni per l\'azienda, con la valutazione fatta sul profilo dell\'azienda.',
@@ -14,6 +20,7 @@ export const MCP_INSTRUCTIONS = [
   'I dati estratti dal radar (scadenze, importi, requisiti) sono automatici: quando non tornano con il testo del bando, vale il testo del bando.',
   'Prima di cambiare una bozza che c\'è già, leggila con leggi_bozza e parti da quel testo: tieni le correzioni fatte a mano dalle persone, non riscriverla da capo.',
   'Se salva_bozza risponde che la bozza è cambiata, rileggila con leggi_bozza e riapplica le tue modifiche sul testo nuovo.',
+  `Lavori solo su bozze fino a ${DRAFT_LIMIT} caratteri: una bozza più lunga si lavora nel pannello, e non la puoi né leggere né salvare.`,
   'Prima di usare uno strumento che scrive (segna_interessante, crea_cartella_bando, salva_bozza) chiedi conferma alla persona e aspetta la risposta.',
 ].join('\n')
 
@@ -60,12 +67,12 @@ export const MCP_TOOLS = {
   },
   leggi_bozza: {
     title: 'Leggi la bozza della candidatura',
-    description: 'La bozza della domanda per il bando, quella della scheda Bozza nel pannello: testo in Markdown, versione, data dell\'ultimo salvataggio, chi l\'ha salvata e se l\'ha fatto tramite Claude. Le persone la correggono anche a mano: leggila prima di cambiarla e passa la sua versione a salva_bozza.',
+    description: `La bozza della domanda per il bando, quella della scheda Bozza nel pannello: testo in Markdown, versione, data dell'ultimo salvataggio, chi l'ha salvata e se l'ha fatto tramite Claude. Le persone la correggono anche a mano: leggila prima di cambiarla e passa la sua versione a salva_bozza. Lavori solo su bozze fino a ${DRAFT_LIMIT} caratteri: di una bozza più lunga dice solo chi l'ha salvata e quando, senza testo né versione, e va lavorata nel pannello.`,
     args: { id: 'Id del bando.' },
   },
   salva_bozza: {
     title: 'Salva la bozza della candidatura',
-    description: `Salva il testo intero della bozza della domanda (Markdown, al massimo ${DRAFT_LIMIT} caratteri) nella scheda Bozza del bando, al posto di quello di prima. Indica la versione da cui parti, letta con leggi_bozza; senza versione vale solo per la prima bozza. Se nel frattempo qualcuno ha salvato, non scrive niente: rileggi con leggi_bozza e riapplica le modifiche. Se il bando non ha la cartella, la crea come crea_cartella_bando e segna il bando come interessante. Chiedi conferma prima di usarlo.`,
+    description: `Salva il testo intero della bozza della domanda (Markdown, al massimo ${DRAFT_LIMIT} caratteri) nella scheda Bozza del bando, al posto di quello di prima. Lavori solo su bozze fino a ${DRAFT_LIMIT} caratteri: non tocca una bozza salvata più lunga, che si lavora nel pannello. Indica la versione da cui parti, letta con leggi_bozza; senza versione vale solo per la prima bozza. Se nel frattempo qualcuno ha salvato, non scrive niente: rileggi con leggi_bozza e riapplica le modifiche. Se il bando non ha la cartella, la crea come crea_cartella_bando e segna il bando come interessante. Chiedi conferma prima di usarlo.`,
     args: {
       id: 'Id del bando.',
       testo: 'Il testo intero della bozza in Markdown, non solo le parti cambiate.',

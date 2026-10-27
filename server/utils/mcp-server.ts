@@ -9,14 +9,14 @@ import {
 import { createError, isError } from 'h3'
 import type postgres from 'postgres'
 import { z } from 'zod'
-import { type DraftConflict, MAX_DRAFT_CHARS } from '#shared/grant-draft'
+import type { DraftConflict } from '#shared/grant-draft'
 import type { AdminUser } from '#shared/users'
 import type { FileStore } from './file-store'
 import { readDraft, saveDraftAndFill } from './grant-draft'
 import { grantFolderContents } from './grant-files'
 import { startGrantFolder } from './grant-folder'
-import { grantSearchSchema, readGrantFile, readGrantText, searchGrants } from './mcp-bandi'
-import { MCP_INSTRUCTIONS, MCP_PROMPT, MCP_TOOLS, mcpApplicationPrompt } from './mcp-text'
+import { grantSearchSchema, MAX_TOOL_TEXT, readGrantFile, readGrantText, searchGrants } from './mcp-bandi'
+import { MCP_DRAFT_TOO_LONG, MCP_INSTRUCTIONS, MCP_PROMPT, MCP_TEXT_TOO_LONG, MCP_TOOLS, mcpApplicationPrompt } from './mcp-text'
 import { readRadarSettings, setGrantLiked } from './radar'
 
 // Il server MCP del connettore: nove strumenti sui bandi e sulla bozza della
@@ -176,11 +176,22 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore | null, 
       return text(status === 'filling' ? 'Cartella creata: i file del bando arrivano tra poco.' : 'La cartella c\'era già.')
     })
 
+  // Il testo una volta sola, nel content; structuredContent porta solo i
+  // dati. Oltre MAX_TOOL_TEXT né testo né versione: senza versione Claude non
+  // può salvarci sopra, e salva_bozza lo rifiuta comunque
   tool('leggi_bozza', { properties: { id: idJson(t.leggi_bozza.args.id) }, required: ['id'] },
     z.object({ id: uuid }), READ_ONLY, async (a) => {
       const d = await readDraft(sql, a.id)
       if (!d) return text('Questo bando non ha ancora una bozza: scrivila con salva_bozza senza versione.')
-      return json({ testo: d.content, versione: d.version, salvata_il: d.savedAt, salvata_da: d.savedBy, da_claude: d.byClaude })
+      const meta = { salvata_il: d.savedAt, salvata_da: d.savedBy, da_claude: d.byClaude, caratteri: d.content.length }
+      if (d.content.length > MAX_TOOL_TEXT) {
+        return {
+          content: [{ type: 'text', text: `${MCP_DRAFT_TOO_LONG} L'ha salvata ${author(d.savedBy, d.byClaude)} ${when(d.savedAt)}.` }],
+          structuredContent: meta,
+        }
+      }
+      const data = { versione: d.version, ...meta }
+      return { content: [{ type: 'text', text: JSON.stringify({ testo: d.content, ...data }) }], structuredContent: data }
     })
 
   // Mondo aperto come crea_cartella_bando: al primo salvataggio la cartella
@@ -188,12 +199,15 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore | null, 
   tool('salva_bozza', {
     properties: {
       id: idJson(t.salva_bozza.args.id),
-      testo: { type: 'string', maxLength: MAX_DRAFT_CHARS, description: t.salva_bozza.args.testo },
+      testo: { type: 'string', maxLength: MAX_TOOL_TEXT, description: t.salva_bozza.args.testo },
       versione: { type: 'integer', minimum: 1, description: t.salva_bozza.args.versione },
     },
     required: ['id', 'testo'],
-  }, z.object({ id: uuid, testo: z.string().max(MAX_DRAFT_CHARS), versione: z.number().int().min(1).optional() }),
+  }, z.object({ id: uuid, testo: z.string(), versione: z.number().int().min(1).optional() }),
   { ...WRITE, openWorldHint: true }, async (a) => {
+    // Il limite di Claude, più stretto di quello del pannello: con il suo
+    // messaggio e non "argomenti non validi"
+    if (a.testo.length > MAX_TOOL_TEXT) return failure(MCP_TEXT_TOO_LONG)
     try {
       const { draft, folderCreated } = await saveDraftAndFill(sql, deps.store(), {
         grantId: a.id,
@@ -201,12 +215,14 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore | null, 
         baseVersion: a.versione ?? null,
         savedBy: user.name,
         byClaude: true,
+        maxCurrentChars: MAX_TOOL_TEXT,
       }, deps.run)
       const saved = `Bozza salvata (versione ${draft.version}). La trovi nel pannello, scheda Bozza del bando.`
       return text(folderCreated ? `${saved} Ho creato la cartella del bando e l'ho messo tra gli interessanti.` : saved)
     }
     catch (err) {
       if (isError(err) && err.statusCode === 409) return failure(draftConflict(err.data as DraftConflict | undefined))
+      if (isError(err) && err.statusCode === 422) return failure(MCP_DRAFT_TOO_LONG)
       throw err
     }
   })

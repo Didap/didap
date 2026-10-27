@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { until, useEventListener, useIntervalFn, useMediaQuery } from '@vueuse/core'
+import { until, useDocumentVisibility, useEventListener, useIntervalFn, useMediaQuery } from '@vueuse/core'
 import {
   CollapsibleContent,
   PopoverContent,
@@ -31,7 +31,7 @@ import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { GRANT_DRAFT, useGrantDraft } from '~/composables/useGrantDraft'
-import { holdsDraft, shownGrant } from '~/utils/grantDraftEditor'
+import { holdsDraft, refreshesDraft, shownGrant } from '~/utils/grantDraftEditor'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime } from '~/utils/format'
 import { romeDate } from '#shared/dates'
@@ -326,6 +326,18 @@ const selected = computed(() => shownGrant(selectedId.value, visible.value, keep
   const g = data.value?.grants.find(x => x.id === id)
   return g && form.value ? { ...g, ...evaluateRadarGrant(g, form.value.profile, now) } : null
 }))
+
+// Tornando sulla pagina la bozza aperta e intatta si rilegge: chi la riprende
+// non scrive su un testo vecchio fino al 409
+function refreshDraft() {
+  const shownId = detailTab.value === 'draft' ? selected.value?.id ?? null : null
+  if (refreshesDraft(draft, shownId)) void draft.load()
+}
+useEventListener('focus', refreshDraft)
+const pageVisibility = useDocumentVisibility()
+watch(pageVisibility, (v) => {
+  if (v === 'visible') refreshDraft()
+})
 
 // Sullo schermo largo la scheda a destra non resta mai vuota se c'è un bando;
 // mai al posto di un bando con la bozza da tenere (anche sparito dai dati)

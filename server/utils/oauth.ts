@@ -66,9 +66,12 @@ export async function registerClient(sql: Sql, input: { name: string, redirectUr
   const name = [...input.name.trim()].slice(0, NAME_MAX).join('') || 'Claude'
   return await inTx(sql, async (t) => {
     await t`select pg_advisory_xact_lock(${CLIENTS_LOCK})`
+    // linked_at basta; il controllo sui collegamenti vivi è una cintura in
+    // più (client collegati prima della colonna, o linked_at perso)
     await t`
-      delete from oauth_clients
-      where linked_at is null and created_at < now() - make_interval(days => ${CLIENT_UNUSED_DAYS})
+      delete from oauth_clients c
+      where c.linked_at is null and c.created_at < now() - make_interval(days => ${CLIENT_UNUSED_DAYS})
+        and not exists (select 1 from oauth_links l where l.client_id = c.id)
     `
     const [row] = await t`
       insert into oauth_clients (name, redirect_uris) values (${name}, ${uris})

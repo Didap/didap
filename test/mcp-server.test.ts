@@ -6,6 +6,7 @@ import { MAX_DRAFT_CHARS } from '#shared/grant-draft'
 import { DEFAULT_RADAR_SETTINGS } from '#shared/radar'
 import { readDraft, saveGrantDraft } from '../server/utils/grant-draft'
 import { addFile } from '../server/utils/grant-files'
+import { MAX_TOOL_TEXT } from '../server/utils/mcp-bandi'
 import { buildMcpServer } from '../server/utils/mcp-server'
 import { ingestSources, listGrants, readPending, writeRadarSettings } from '../server/utils/radar'
 import type { GrantReader } from '../server/utils/radar-reader'
@@ -106,12 +107,56 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda' } })
     const r = await client.callTool({ name: 'leggi_bozza', arguments: { id: g } })
     const draft = (await readDraft(sql, g))!
-    const expected = { testo: '# Domanda', versione: 1, salvata_il: draft.savedAt, salvata_da: USER.name, da_claude: true }
-    expect(JSON.parse(firstText(r))).toEqual(expected)
-    expect(r.structuredContent).toEqual(expected)
+    const meta = { versione: 1, salvata_il: draft.savedAt, salvata_da: USER.name, da_claude: true, caratteri: 9 }
+    expect(JSON.parse(firstText(r))).toEqual({ testo: '# Domanda', ...meta })
+    // Il testo una volta sola: structuredContent porta solo i dati
+    expect(r.content).toHaveLength(1)
+    expect(r.structuredContent).toEqual(meta)
+    expect(JSON.stringify(r).split('# Domanda')).toHaveLength(2)
 
     const missing = await client.callTool({ name: 'leggi_bozza', arguments: { id: crypto.randomUUID() } })
     expect(missing).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Bando non trovato' }] })
+  })
+
+  it('leggi_bozza: la bozza fino a 60.000 caratteri arriva intera', async () => {
+    const full = `${'a'.repeat(MAX_TOOL_TEXT - 1)}z`
+    await saveGrantDraft(sql, { grantId: g, content: full, baseVersion: null, savedBy: 'Bea', byClaude: false })
+    const r = await client.callTool({ name: 'leggi_bozza', arguments: { id: g } })
+    expect(JSON.parse(firstText(r))).toMatchObject({ testo: full, versione: 1, caratteri: MAX_TOOL_TEXT })
+  })
+
+  it('leggi_bozza: oltre 60.000 caratteri solo chi e quando, senza testo né versione', async () => {
+    // Bozza allungata a mano nel pannello
+    await saveGrantDraft(sql, { grantId: g, content: `inizio ${'a'.repeat(MAX_TOOL_TEXT)} coda`, baseVersion: null, savedBy: 'Bea', byClaude: false })
+    const draft = (await readDraft(sql, g))!
+    const r = await client.callTool({ name: 'leggi_bozza', arguments: { id: g } })
+    expect(r.isError).toBeFalsy()
+    expect(r.content).toHaveLength(1)
+    expect(firstText(r)).toMatch(/^La bozza supera 60\.000 caratteri: lavorala nel pannello\. L'ha salvata Bea il \d{2}\/\d{2}\/\d{4} alle \d{2}:\d{2}\.$/)
+    expect(r.structuredContent).toEqual({ salvata_il: draft.savedAt, salvata_da: 'Bea', da_claude: false, caratteri: draft.content.length })
+    const all = JSON.stringify(r)
+    expect(all).not.toContain('inizio')
+    expect(all).not.toContain('coda')
+    expect(all).not.toContain('versione')
+  })
+
+  it('salva_bozza rifiuta un testo oltre 60.000 caratteri', async () => {
+    const r = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'x'.repeat(MAX_TOOL_TEXT + 1) } })
+    expect(r).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Il testo supera 60.000 caratteri: Claude lavora su bozze più corte. Accorcialo o lavoralo nel pannello.' }] })
+    expect(await readDraft(sql, g)).toBeNull()
+    // Fino al limite si salva
+    const ok = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'x'.repeat(MAX_TOOL_TEXT) } })
+    expect(ok.isError).toBeFalsy()
+  })
+
+  it('salva_bozza non tocca una bozza salvata oltre 60.000 caratteri', async () => {
+    const long = `inizio ${'a'.repeat(MAX_TOOL_TEXT)} coda`
+    await saveGrantDraft(sql, { grantId: g, content: long, baseVersion: null, savedBy: 'Bea', byClaude: false })
+    for (const versione of [1, undefined]) {
+      const r = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'riscritta corta', versione } })
+      expect(r).toMatchObject({ isError: true, content: [{ type: 'text', text: 'La bozza supera 60.000 caratteri: lavorala nel pannello.' }] })
+    }
+    expect(await readDraft(sql, g)).toMatchObject({ content: long, version: 1, savedBy: 'Bea', byClaude: false })
   })
 
   it('salva_bozza: prima volta crea la cartella, poi solo versione', async () => {
@@ -170,7 +215,7 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     expect(byName.salva_bozza!.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false, openWorldHint: true })
     expect(byName.leggi_bozza!.annotations).toMatchObject({ readOnlyHint: true })
     expect(byName.salva_bozza!.inputSchema.required).toEqual(['id', 'testo'])
-    expect(byName.salva_bozza!.inputSchema.properties).toHaveProperty('testo', expect.objectContaining({ type: 'string', maxLength: MAX_DRAFT_CHARS }))
+    expect(byName.salva_bozza!.inputSchema.properties).toHaveProperty('testo', expect.objectContaining({ type: 'string', maxLength: MAX_TOOL_TEXT }))
     expect(byName.salva_bozza!.inputSchema.properties).toHaveProperty('versione', expect.objectContaining({ type: 'integer', minimum: 1 }))
     expect(byName.leggi_bando!.inputSchema.properties).toHaveProperty('parte', expect.objectContaining({ type: 'integer', minimum: 1 }))
     expect(byName.leggi_file!.inputSchema.properties).toHaveProperty('parte', expect.objectContaining({ type: 'integer', minimum: 1 }))
@@ -241,6 +286,7 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     expect(text).toContain('[DA COMPLETARE: ...]')
     expect(text).toContain('leggi_bozza')
     expect(text).toContain('salva_bozza')
+    expect(text).toContain('bozze fino a 60.000 caratteri')
     expect(text).not.toMatch(DASHES)
   })
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { GrantDraft } from '#shared/grant-draft'
-import { createGrantDraftEditor, holdsDraft, shownGrant, type DraftEditorDeps, type DraftState } from '../app/utils/grantDraftEditor'
+import { createGrantDraftEditor, holdsDraft, refreshesDraft, shownGrant, type DraftEditorDeps, type DraftState } from '../app/utils/grantDraftEditor'
 
 // L'editor della bozza nel pannello con finte API: niente testo perso con un
 // salvataggio in corso, una lettura in ritardo o un salvataggio rifiutato
@@ -118,6 +118,37 @@ describe('editor della bozza', () => {
     expect(editor.dirty).toBe(false)
   })
 
+  it('una lettura partita prima di un salvataggio e tornata dopo non riporta indietro', async () => {
+    const { editor, writes, reads } = setup({ draft: draft('v1', 1), hasFolder: true })
+    await editor.open('A')
+    // La lettura parte con la bozza alla versione 1
+    const reading = editor.load()
+    editor.text = 'v2'
+    const saving = editor.save()
+    writes[0]!.d.resolve({ draft: draft('v2', 2) })
+    await saving
+    // Torna dopo il salvataggio, con la versione 1: ignorata
+    reads[0]!.resolve({ draft: draft('v1', 1), hasFolder: true })
+    await reading
+    expect(editor.text).toBe('v2')
+    expect(editor.saved?.version).toBe(2)
+    expect(editor.dirty).toBe(false)
+
+    // Nessuna bozza quando una è salvata: ignorata anche quella
+    const empty = editor.load()
+    reads[1]!.resolve({ draft: null, hasFolder: true })
+    await empty
+    expect(editor.text).toBe('v2')
+    expect(editor.saved?.version).toBe(2)
+
+    // Una versione nuova (salvata da Claude) si prende
+    const newer = editor.load()
+    reads[2]!.resolve({ draft: draft('di Claude', 3), hasFolder: true })
+    await newer
+    expect(editor.text).toBe('di Claude')
+    expect(editor.saved?.version).toBe(3)
+  })
+
   it('stesso bando: le modifiche restano; un altro bando riparte da zero', async () => {
     const { editor, reads } = setup()
     await editor.open('A')
@@ -145,6 +176,19 @@ describe('bando aperto con la bozza da tenere', () => {
     expect(holdsDraft({ grantId: 'A', dirty: false, saving: false }, 'A')).toBe(false)
     expect(holdsDraft({ grantId: 'A', dirty: true, saving: false }, 'B')).toBe(false)
     expect(holdsDraft({ grantId: 'A', dirty: true, saving: false }, null)).toBe(false)
+  })
+
+  it('refreshesDraft: si rilegge solo la bozza mostrata, già letta e intatta', () => {
+    const idle = { grantId: 'A', loaded: true, dirty: false, saving: false }
+    expect(refreshesDraft(idle, 'A')).toBe(true)
+    // Scheda Bozza chiusa o un altro bando
+    expect(refreshesDraft(idle, null)).toBe(false)
+    expect(refreshesDraft(idle, 'B')).toBe(false)
+    // Modifiche, salvataggio in corso, mai letta
+    expect(refreshesDraft({ ...idle, dirty: true }, 'A')).toBe(false)
+    expect(refreshesDraft({ ...idle, saving: true }, 'A')).toBe(false)
+    expect(refreshesDraft({ ...idle, loaded: false }, 'A')).toBe(false)
+    expect(refreshesDraft({ ...idle, grantId: null }, 'A')).toBe(false)
   })
 
   it('shownGrant: fuori dall\'elenco (ricerca, moduli) resta aperto solo se la bozza va tenuta', () => {

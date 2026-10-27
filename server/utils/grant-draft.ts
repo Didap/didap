@@ -18,7 +18,16 @@ type Sql = postgres.Sql
 
 type DraftRow = { content: string, version: number, saved_at: Date, saved_by: string, by_claude: boolean }
 
-export type GrantDraftInput = { grantId: string, content: string, baseVersion: number | null, savedBy: string, byClaude: boolean }
+// maxCurrentChars: rifiuta (422) se la bozza salvata è più lunga, controllato
+// sotto il lucchetto. Claude lavora solo su bozze che stanno in una risposta
+export type GrantDraftInput = {
+  grantId: string
+  content: string
+  baseVersion: number | null
+  savedBy: string
+  byClaude: boolean
+  maxCurrentChars?: number
+}
 
 const notFound = () => createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
 
@@ -51,13 +60,18 @@ export async function readDraft(sql: Sql, grantId: string): Promise<GrantDraft |
 // Nella stessa transazione cartella e cuore, che proteggono il bando dalla
 // pulizia del radar senza dipendere da Cloudinary.
 export async function saveGrantDraft(sql: Sql, input: GrantDraftInput): Promise<{ draft: GrantDraft, folderCreated: boolean }> {
-  const { grantId, content, baseVersion, savedBy, byClaude } = input
+  const { grantId, content, baseVersion, savedBy, byClaude, maxCurrentChars } = input
   return inTx(sql, async (t) => {
     const [grant] = await t<{ folder_at: Date | null }[]>`select folder_at from radar_grants where id = ${grantId} for update`
     if (!grant) throw notFound()
     const [current] = await t<DraftRow[]>`
       select content, version, saved_at, saved_by, by_claude from grant_drafts where grant_id = ${grantId}
     `
+    // Prima della versione: chi non può leggere la bozza non saprebbe che
+    // farsene di un 409
+    if (current && maxCurrentChars !== undefined && current.content.length > maxCurrentChars) {
+      throw createError({ statusCode: 422, statusMessage: 'La bozza è troppo lunga' })
+    }
     if ((current?.version ?? null) !== baseVersion) {
       // Versione dichiarata ma bozza assente: niente da mostrare, niente data
       const data: DraftConflict | undefined = current

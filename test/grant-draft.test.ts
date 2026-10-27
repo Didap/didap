@@ -175,6 +175,22 @@ describe.skipIf(!TEST_DATABASE_URL)('bozza della candidatura', () => {
     expect(await readDraft(sql, h)).toMatchObject({ content: 'ancora', version: 2 })
   })
 
+  it('se il riempimento non parte, la bozza risulta salvata lo stesso', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const broken = () => {
+        throw new Error('coda piena')
+      }
+      const saved = await saveDraftAndFill(sql, memoryStore(), { grantId: g, content: 'uno', baseVersion: null, savedBy: 'Ale', byClaude: true }, broken)
+      expect(saved).toMatchObject({ draft: { content: 'uno', version: 1 }, folderCreated: true })
+      expect(await readDraft(sql, g)).toMatchObject({ version: 1 })
+      expect(logged).toHaveBeenCalledWith(expect.stringContaining('[bozza]'), expect.objectContaining({ message: 'coda piena' }))
+    }
+    finally {
+      logged.mockRestore()
+    }
+  })
+
   it('bando inesistente: 404; testo oltre il limite: rifiutato dallo schema', async () => {
     await expect(readDraft(sql, NO_GRANT)).rejects.toMatchObject({ statusCode: 404, statusMessage: 'Bando non trovato' })
     await expect(saveGrantDraft(sql, { grantId: NO_GRANT, content: 'x', baseVersion: null, savedBy: 'Ale', byClaude: false }))

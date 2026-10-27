@@ -9,18 +9,21 @@ import {
 import { createError, isError } from 'h3'
 import type postgres from 'postgres'
 import { z } from 'zod'
+import { type DraftConflict, MAX_DRAFT_CHARS } from '#shared/grant-draft'
 import type { AdminUser } from '#shared/users'
 import type { FileStore } from './file-store'
+import { readDraft, saveDraftAndFill } from './grant-draft'
 import { grantFolderContents } from './grant-files'
 import { startGrantFolder } from './grant-folder'
 import { grantSearchSchema, readGrantFile, readGrantText, searchGrants } from './mcp-bandi'
 import { MCP_INSTRUCTIONS, MCP_PROMPT, MCP_TOOLS, mcpApplicationPrompt } from './mcp-text'
 import { readRadarSettings, setGrantLiked } from './radar'
 
-// Il server MCP del connettore: sette strumenti sui bandi e il prompt per
-// candidarsi. Uno nuovo a ogni richiesta HTTP (createMcpHandler), per la
-// persona del token. Gli schemi JSON descrivono gli argomenti a Claude; li
-// controlla zod, così i messaggi d'errore sono nostri e in italiano.
+// Il server MCP del connettore: nove strumenti sui bandi e sulla bozza della
+// candidatura, e il prompt per prepararla. Uno nuovo a ogni richiesta HTTP
+// (createMcpHandler), per la persona del token. Gli schemi JSON descrivono
+// gli argomenti a Claude; li controlla zod, così i messaggi d'errore sono
+// nostri e in italiano.
 
 type Sql = postgres.Sql
 type Run = (job: () => Promise<void>) => void
@@ -52,20 +55,32 @@ const invalidArgs = (err: z.ZodError) =>
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, openWorldHint: false }
 const WRITE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: false }
 
-// Senza Cloudinary il 503 di requireFileStore elenca le variabili d'ambiente:
-// a Claude basta sapere che la cartella non c'è sul server
+// Senza Cloudinary a Claude basta sapere che la cartella non c'è sul server,
+// non quali variabili d'ambiente mancano
 const NO_STORE = 'La cartella dei file non è configurata sul server.'
 
-export function buildMcpServer(deps: { sql: Sql, store: () => FileStore, user: AdminUser, run?: Run }): McpServer {
+// "il 27/10/2026 alle 11:05", ora di Roma
+const romeDay = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric' })
+const romeHour = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+const when = (iso: string) => `il ${romeDay.format(new Date(iso))} alle ${romeHour.format(new Date(iso))}`
+
+const author = (savedBy: string, byClaude: boolean) => byClaude ? `Claude per ${savedBy}` : savedBy
+
+// Il 409 della bozza: chi ha salvato e quando. Senza `data` la bozza non c'è
+// (Claude ha dato una versione a un bando senza bozza)
+function draftConflict(data: DraftConflict | undefined): string {
+  if (!data) return 'La bozza è cambiata o non esiste: rileggila con leggi_bozza e riparti da lì.'
+  return `La bozza è cambiata (versione ${data.version}, salvata da ${author(data.savedBy, data.byClaude)} ${when(data.savedAt)}): rileggila con leggi_bozza e riapplica le modifiche.`
+}
+
+// store: useFileStore, null senza Cloudinary. La bozza si salva anche senza;
+// gli strumenti dei file no
+export function buildMcpServer(deps: { sql: Sql, store: () => FileStore | null, user: AdminUser, run?: Run }): McpServer {
   const { sql, user } = deps
   const store = () => {
-    try {
-      return deps.store()
-    }
-    catch (err) {
-      if (isError(err) && err.statusCode === 503) throw createError({ statusCode: 503, statusMessage: NO_STORE })
-      throw err
-    }
+    const s = deps.store()
+    if (!s) throw createError({ statusCode: 503, statusMessage: NO_STORE })
+    return s
   }
   const server = new McpServer({ name: 'didap-bandi', version: '1.0.0' }, { instructions: MCP_INSTRUCTIONS })
 
@@ -161,8 +176,43 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore, user: A
       return text(status === 'filling' ? 'Cartella creata: i file del bando arrivano tra poco.' : 'La cartella c\'era già.')
     })
 
+  tool('leggi_bozza', { properties: { id: idJson(t.leggi_bozza.args.id) }, required: ['id'] },
+    z.object({ id: uuid }), READ_ONLY, async (a) => {
+      const d = await readDraft(sql, a.id)
+      if (!d) return text('Questo bando non ha ancora una bozza: scrivila con salva_bozza senza versione.')
+      return json({ testo: d.content, versione: d.version, salvata_il: d.savedAt, salvata_da: d.savedBy, da_claude: d.byClaude })
+    })
+
+  // Mondo aperto come crea_cartella_bando: al primo salvataggio la cartella
+  // nasce e si riempie dal sito del bando
+  tool('salva_bozza', {
+    properties: {
+      id: idJson(t.salva_bozza.args.id),
+      testo: { type: 'string', maxLength: MAX_DRAFT_CHARS, description: t.salva_bozza.args.testo },
+      versione: { type: 'integer', minimum: 1, description: t.salva_bozza.args.versione },
+    },
+    required: ['id', 'testo'],
+  }, z.object({ id: uuid, testo: z.string().max(MAX_DRAFT_CHARS), versione: z.number().int().min(1).optional() }),
+  { ...WRITE, openWorldHint: true }, async (a) => {
+    try {
+      const { draft, folderCreated } = await saveDraftAndFill(sql, deps.store(), {
+        grantId: a.id,
+        content: a.testo,
+        baseVersion: a.versione ?? null,
+        savedBy: user.name,
+        byClaude: true,
+      }, deps.run)
+      const saved = `Bozza salvata (versione ${draft.version}). La trovi nel pannello, scheda Bozza del bando.`
+      return text(folderCreated ? `${saved} Ho creato la cartella del bando e l'ho messo tra gli interessanti.` : saved)
+    }
+    catch (err) {
+      if (isError(err) && err.statusCode === 409) return failure(draftConflict(err.data as DraftConflict | undefined))
+      throw err
+    }
+  })
+
   const promptArgs = z.object({ bando: z.string().trim().min(1).max(300) })
-  server.registerPrompt('come_candidarsi', {
+  server.registerPrompt('prepara_candidatura', {
     title: MCP_PROMPT.title,
     description: MCP_PROMPT.description,
     argsSchema: objectSchema({ bando: { type: 'string', description: MCP_PROMPT.arg } }, ['bando']),

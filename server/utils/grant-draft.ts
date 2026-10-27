@@ -83,6 +83,8 @@ export async function saveGrantDraft(sql: Sql, input: GrantDraftInput): Promise<
 // Salva e, se la cartella è nata ora e lo store c'è, la riempie come il
 // bottone "Crea cartella del bando". Senza store (Cloudinary non
 // configurato) la bozza si salva lo stesso: chi chiama passa useFileStore().
+// Se il riempimento non parte la bozza è salvata comunque e lo si dice: l'errore
+// va nel log, i file si riprendono con "Riprova" nella scheda File.
 export async function saveDraftAndFill(
   sql: Sql,
   store: FileStore | null,
@@ -90,6 +92,13 @@ export async function saveDraftAndFill(
   run?: (job: () => Promise<void>) => void,
 ): Promise<{ draft: GrantDraft, folderCreated: boolean }> {
   const saved = await saveGrantDraft(sql, input)
-  if (saved.folderCreated && store) await startGrantFolder(sql, store, input.grantId, run)
+  if (saved.folderCreated && store) {
+    try {
+      await startGrantFolder(sql, store, input.grantId, run)
+    }
+    catch (err) {
+      console.error(`[bozza] riempimento della cartella non partito (bando ${input.grantId})`, err)
+    }
+  }
   return saved
 }

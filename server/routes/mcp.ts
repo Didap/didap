@@ -35,8 +35,10 @@ export default defineEventHandler(async (event) => {
   const access = await verifyAccessToken(sql, token)
   if (!access) return unauthorized(event, true)
 
+  // useFileStore e non requireFileStore: senza Cloudinary la bozza si salva
+  // lo stesso, gli strumenti dei file rispondono che la cartella non c'è.
   // onerror: errori fuori dalle risposte e richieste rifiutate dall'SDK, nel log
-  const handler = createMcpHandler(() => buildMcpServer({ sql, store: requireFileStore, user: access.user }), {
+  const handler = createMcpHandler(() => buildMcpServer({ sql, store: useFileStore, user: access.user }), {
     onerror: e => console.warn('[mcp]', e),
   })
   return await serveMcp(event, handler, {

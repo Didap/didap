@@ -1,9 +1,10 @@
 import { Client } from '@modelcontextprotocol/client'
 import { InMemoryTransport } from '@modelcontextprotocol/server'
-import { createError } from 'h3'
 import type postgres from 'postgres'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { MAX_DRAFT_CHARS } from '#shared/grant-draft'
 import { DEFAULT_RADAR_SETTINGS } from '#shared/radar'
+import { readDraft, saveGrantDraft } from '../server/utils/grant-draft'
 import { addFile } from '../server/utils/grant-files'
 import { buildMcpServer } from '../server/utils/mcp-server'
 import { ingestSources, listGrants, readPending, writeRadarSettings } from '../server/utils/radar'
@@ -78,12 +79,83 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     vi.unstubAllGlobals()
   })
 
-  it('elenca strumenti e prompt, nient\'altro', async () => {
-    const tools = (await client.listTools()).tools.map(t => t.name).sort()
-    expect(tools).toEqual(['cerca_bandi', 'crea_cartella_bando', 'elenca_cartella', 'leggi_bando', 'leggi_file', 'profilo_azienda', 'segna_interessante'])
-    expect((await client.listPrompts()).prompts.map(p => p.name)).toEqual(['come_candidarsi'])
+  it('nove strumenti, prompt prepara_candidatura', async () => {
+    expect((await client.listTools()).tools.map(t => t.name).sort()).toEqual(['cerca_bandi', 'crea_cartella_bando', 'elenca_cartella', 'leggi_bando', 'leggi_bozza', 'leggi_file', 'profilo_azienda', 'salva_bozza', 'segna_interessante'])
+    const [p] = (await client.listPrompts()).prompts
+    expect(p).toMatchObject({ name: 'prepara_candidatura', arguments: [{ name: 'bando', required: true }] })
+    expect((await client.listPrompts()).prompts).toHaveLength(1)
     const readOnly = (await client.listTools()).tools.filter(t => t.annotations?.readOnlyHint).map(t => t.name).sort()
-    expect(readOnly).toEqual(['cerca_bandi', 'elenca_cartella', 'leggi_bando', 'leggi_file', 'profilo_azienda'])
+    expect(readOnly).toEqual(['cerca_bandi', 'elenca_cartella', 'leggi_bando', 'leggi_bozza', 'leggi_file', 'profilo_azienda'])
+  })
+
+  it('salva e rilegge la bozza come Claude per la persona', async () => {
+    const r = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda' } })
+    expect(r.isError).toBeFalsy()
+    expect(await readDraft(sql, g)).toMatchObject({ version: 1, savedBy: USER.name, byClaude: true })
+    const stale = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'x' } })
+    expect(stale).toMatchObject({ isError: true, content: [{ type: 'text', text: expect.stringContaining('leggi_bozza') }] })
+    const ok = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda v2', versione: 1 } })
+    expect(ok.isError).toBeFalsy()
+  })
+
+  it('leggi_bozza: senza bozza lo dice, poi testo, versione e autore', async () => {
+    const none = await client.callTool({ name: 'leggi_bozza', arguments: { id: g } })
+    expect(none.isError).toBeFalsy()
+    expect(firstText(none)).toBe('Questo bando non ha ancora una bozza: scrivila con salva_bozza senza versione.')
+
+    await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda' } })
+    const r = await client.callTool({ name: 'leggi_bozza', arguments: { id: g } })
+    const draft = (await readDraft(sql, g))!
+    const expected = { testo: '# Domanda', versione: 1, salvata_il: draft.savedAt, salvata_da: USER.name, da_claude: true }
+    expect(JSON.parse(firstText(r))).toEqual(expected)
+    expect(r.structuredContent).toEqual(expected)
+
+    const missing = await client.callTool({ name: 'leggi_bozza', arguments: { id: crypto.randomUUID() } })
+    expect(missing).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Bando non trovato' }] })
+  })
+
+  it('salva_bozza: prima volta crea la cartella, poi solo versione', async () => {
+    const first = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda' } })
+    expect(firstText(first)).toBe('Bozza salvata (versione 1). La trovi nel pannello, scheda Bozza del bando. Ho creato la cartella del bando e l\'ho messo tra gli interessanti.')
+    await Promise.allSettled(jobs)
+    const row = (await listGrants(sql, NOW, { id: g }))[0]!
+    expect(row).toMatchObject({ hasFolder: true, liked: true })
+    expect(store.files.size).toBeGreaterThan(0)
+
+    const second = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda v2', versione: 1 } })
+    expect(firstText(second)).toBe('Bozza salvata (versione 2). La trovi nel pannello, scheda Bozza del bando.')
+    expect(await readDraft(sql, g)).toMatchObject({ content: '# Domanda v2', version: 2 })
+  })
+
+  it('salva_bozza su bozza cambiata: dice chi ha salvato e non scrive', async () => {
+    await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'uno' } })
+    // Correzione a mano dal pannello
+    await saveGrantDraft(sql, { grantId: g, content: 'uno, corretto', baseVersion: 1, savedBy: 'Bea', byClaude: false })
+    const stale = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'riscritto', versione: 1 } })
+    expect(stale.isError).toBe(true)
+    expect(firstText(stale)).toMatch(/^La bozza è cambiata \(versione 2, salvata da Bea il \d{2}\/\d{2}\/\d{4} alle \d{2}:\d{2}\): rileggila con leggi_bozza e riapplica le modifiche\.$/)
+    expect(await readDraft(sql, g)).toMatchObject({ content: 'uno, corretto', version: 2 })
+
+    // Salvata da Claude: si dice per chi
+    await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'tre', versione: 2 } })
+    const again = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'quattro', versione: 2 } })
+    expect(firstText(again)).toContain('salvata da Claude per Prova il ')
+  })
+
+  it('salva_bozza con versione ma senza bozza: invito a rileggere', async () => {
+    const r = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'uno', versione: 1 } })
+    expect(r).toMatchObject({ isError: true, content: [{ type: 'text', text: 'La bozza è cambiata o non esiste: rileggila con leggi_bozza e riparti da lì.' }] })
+    expect(await readDraft(sql, g)).toBeNull()
+  })
+
+  it('salva_bozza valida gli argomenti', async () => {
+    const tooLong = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'x'.repeat(MAX_DRAFT_CHARS + 1) } })
+    expect(tooLong.isError).toBe(true)
+    expect(firstText(tooLong)).toContain('testo')
+    const zero = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'x', versione: 0 } })
+    expect(zero.isError).toBe(true)
+    expect(firstText(zero)).toContain('versione')
+    expect(await readDraft(sql, g)).toBeNull()
   })
 
   it('schemi in snake_case e annotazioni delle scritture', async () => {
@@ -94,6 +166,12 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     expect(byName.leggi_file!.inputSchema.required).toEqual(['id', 'file_id'])
     expect(byName.segna_interessante!.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false, idempotentHint: true })
     expect(byName.crea_cartella_bando!.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false })
+    // Al primo salvataggio riempie la cartella dal sito del bando, come crea_cartella_bando
+    expect(byName.salva_bozza!.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false, openWorldHint: true })
+    expect(byName.leggi_bozza!.annotations).toMatchObject({ readOnlyHint: true })
+    expect(byName.salva_bozza!.inputSchema.required).toEqual(['id', 'testo'])
+    expect(byName.salva_bozza!.inputSchema.properties).toHaveProperty('testo', expect.objectContaining({ type: 'string', maxLength: MAX_DRAFT_CHARS }))
+    expect(byName.salva_bozza!.inputSchema.properties).toHaveProperty('versione', expect.objectContaining({ type: 'integer', minimum: 1 }))
     expect(byName.leggi_bando!.inputSchema.properties).toHaveProperty('parte', expect.objectContaining({ type: 'integer', minimum: 1 }))
     expect(byName.leggi_file!.inputSchema.properties).toHaveProperty('parte', expect.objectContaining({ type: 'integer', minimum: 1 }))
     expect(byName.leggi_bando!.inputSchema.required).toEqual(['id'])
@@ -133,11 +211,9 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     expect(beyond).toMatchObject({ isError: true, content: [{ type: 'text', text: expect.stringContaining('inesistente') }] })
   })
 
-  it('senza Cloudinary: messaggio chiaro per Claude', async () => {
-    const noStore = () => {
-      throw createError({ statusCode: 503, statusMessage: 'Cloudinary non configurato (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)' })
-    }
-    const server = buildMcpServer({ sql, store: noStore, user: USER, run: job => void jobs.push(job()) })
+  it('senza Cloudinary: messaggio chiaro per Claude, la bozza si salva lo stesso', async () => {
+    // useFileStore senza le variabili di Cloudinary
+    const server = buildMcpServer({ sql, store: () => null, user: USER, run: job => void jobs.push(job()) })
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair()
     const other = new Client({ name: 'test', version: '1.0.0' })
     await Promise.all([server.connect(serverSide), other.connect(clientSide)])
@@ -145,6 +221,12 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
       const r = await other.callTool({ name: 'crea_cartella_bando', arguments: { id: g } })
       expect(r).toMatchObject({ isError: true, content: [{ type: 'text', text: 'La cartella dei file non è configurata sul server.' }] })
       expect(JSON.stringify(r)).not.toContain('CLOUDINARY')
+
+      const saved = await other.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda' } })
+      expect(saved.isError).toBeFalsy()
+      expect(jobs).toHaveLength(0)
+      expect(await readDraft(sql, g)).toMatchObject({ content: '# Domanda', version: 1 })
+      expect((await listGrants(sql, NOW, { id: g }))[0]!.hasFolder).toBe(true)
     }
     finally {
       await other.close()
@@ -156,7 +238,15 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     expect(text).toContain('fatturato')
     expect(text).toContain('segna_interessante')
     expect(text).toContain('crea_cartella_bando')
+    expect(text).toContain('[DA COMPLETARE: ...]')
+    expect(text).toContain('leggi_bozza')
+    expect(text).toContain('salva_bozza')
     expect(text).not.toMatch(DASHES)
+  })
+
+  it('testi degli strumenti senza trattini', async () => {
+    const { tools } = await client.listTools()
+    expect(JSON.stringify(tools)).not.toMatch(DASHES)
   })
 
   it('cerca e segna', async () => {
@@ -223,15 +313,23 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     expect(read).toMatchObject({ content: [{ type: 'text', text: '# Nota' }] })
   })
 
-  it('il prompt chiede i passi della candidatura', async () => {
-    const p = await client.getPrompt({ name: 'come_candidarsi', arguments: { bando: 'Voucher digitale' } })
+  it('il prompt guida la bozza della candidatura', async () => {
+    const p = await client.getPrompt({ name: 'prepara_candidatura', arguments: { bando: 'Voucher digitale' } })
     expect(p.messages).toHaveLength(1)
     const msg = p.messages[0]!
     expect(msg.role).toBe('user')
     const text = (msg.content as Text).text
     expect(text).toContain('Voucher digitale')
-    expect(text).toContain('leggi_bando')
+    for (const tool of ['cerca_bandi', 'leggi_bando', 'profilo_azienda', 'elenca_cartella', 'leggi_file', 'leggi_bozza', 'salva_bozza']) {
+      expect(text).toContain(tool)
+    }
+    expect(text).toContain('uploadedBy')
+    expect(text).toContain('[DA COMPLETARE: ...]')
+    expect(text).toContain('Da completare')
     expect(text).toContain('firma')
+    expect(text).toContain('spese ammesse')
     expect(text).not.toMatch(DASHES)
+
+    await expect(client.getPrompt({ name: 'prepara_candidatura', arguments: { bando: ' ' } })).rejects.toThrow()
   })
 })

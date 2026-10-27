@@ -1,6 +1,6 @@
 import type postgres from 'postgres'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { draftSaveSchema, MAX_DRAFT_CHARS } from '#shared/grant-draft'
+import { draftAuthor, draftConflictText, draftFileName, draftSaveSchema, MAX_DRAFT_CHARS, normalizeDraft } from '#shared/grant-draft'
 import { readDraft, saveDraftAndFill, saveGrantDraft } from '../server/utils/grant-draft'
 import { ingestSources, listGrants, radarWipe, readPending } from '../server/utils/radar'
 import type { GrantReader } from '../server/utils/radar-reader'
@@ -19,6 +19,32 @@ describe('schema del salvataggio', () => {
     expect(draftSaveSchema.safeParse({ content: 'a', baseVersion: 1.5 }).success).toBe(false)
     expect(draftSaveSchema.safeParse({ content: 'a' }).success).toBe(false)
     expect(draftSaveSchema.safeParse({ content: 'a', baseVersion: null, savedBy: 'Claude' }).success).toBe(false)
+  })
+})
+
+describe('bozza nel pannello', () => {
+  const ROME = 'Europe/Rome'
+  const now = new Date('2026-10-27T15:00:00Z')
+
+  it("nome del file come quello del bando, l'id se il titolo non dà niente", () => {
+    expect(draftFileName('Voucher "digitale": PMI à Bari', 'g1')).toBe('bozza-voucher-digitale-pmi-a-bari.md')
+    expect(draftFileName('«»', 'g1')).toBe('bozza-g1.md')
+  })
+
+  it('autore con "via Claude" e a capo semplici', () => {
+    expect(draftAuthor({ savedBy: 'Ale', byClaude: false })).toBe('Ale')
+    expect(draftAuthor({ savedBy: 'Ale', byClaude: true })).toBe('Ale via Claude')
+    expect(normalizeDraft('a\r\nb\rc\n')).toBe('a\nb\nc\n')
+  })
+
+  it("409: chi e quando, l'ora sola se è oggi, una frase generica senza dati", () => {
+    const conflict = { version: 3, savedAt: '2026-10-27T13:05:00Z', savedBy: 'Ale', byClaude: true }
+    expect(draftConflictText(conflict, now, ROME))
+      .toBe('La bozza è stata cambiata da Ale via Claude alle 14:05. Copia le tue modifiche, ricarica e riapplicale.')
+    expect(draftConflictText({ ...conflict, savedAt: '2026-10-26T08:30:00Z', byClaude: false }, now, ROME))
+      .toBe('La bozza è stata cambiata da Ale il 26/10/26 alle 09:30. Copia le tue modifiche, ricarica e riapplicale.')
+    expect(draftConflictText(undefined, now, ROME))
+      .toBe('La bozza è stata cambiata da qualcun altro. Copia le tue modifiche, ricarica e riapplicale.')
   })
 })
 

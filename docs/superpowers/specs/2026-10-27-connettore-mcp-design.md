@@ -111,7 +111,7 @@ Scrivono:
 
 ### Bozza della candidatura
 
-Una bozza per bando, in Markdown, nel database (non su Cloudinary: è testo che si modifica spesso), in una tabella sua con il bando come chiave e cancellazione a cascata con il bando. Si salvano: testo, versione (un numero che sale a ogni salvataggio), data, nome di chi ha salvato come testo (resta anche se la persona viene eliminata) e se l'ha fatto Claude. Limite di 200.000 caratteri.
+Una bozza per bando, in Markdown, nel database (non su Cloudinary: è testo che si modifica spesso), in una tabella sua con il bando come chiave e cancellazione a cascata con il bando. Si salvano: testo, versione (un numero che sale a ogni salvataggio), data, nome di chi ha salvato come testo (resta anche se la persona viene eliminata) e se l'ha fatto Claude. Limite di 200.000 caratteri nel pannello. Claude invece lavora solo su bozze fino a 60.000 caratteri, il limite di una risposta: rilegge e riscrive sempre il testo intero, e un testo arrivato a metà gli farebbe cancellare la coda senza accorgersene. Oltre quel limite `leggi_bozza` dà solo chi e quando l'ha salvata e "La bozza supera 60.000 caratteri: lavorala nel pannello", e `salva_bozza` rifiuta. (Correzione dopo la seconda revisione finale.)
 
 Il salvataggio è sempre "a partire dalla versione N", oppure "prima bozza" senza versione: se la versione attuale non è N (o se una bozza c'è già e si dichiara "prima bozza"), il salvataggio è rifiutato (`409`) e niente viene scritto. La risposta `409` porta versione, autore e ora della bozza attuale. Vale per Claude e per il pannello. Così una correzione fatta a mano non sparisce sotto una riscrittura di Claude basata su un testo vecchio, e viceversa.
 

@@ -173,6 +173,8 @@ export const DB_SCHEMA = `
   -- "Svuota" e dalla rilettura), riempimento in corso, finito, com'è andata
   alter table radar_grants add column if not exists folder_at timestamptz;
   alter table radar_grants add column if not exists folder_claimed_at timestamptz;
+  -- Gettone del turno di riempimento: solo chi lo ha scrive lo stato
+  alter table radar_grants add column if not exists folder_claim uuid;
   alter table radar_grants add column if not exists folder_filled_at timestamptz;
   alter table radar_grants add column if not exists folder_note text not null default '';
   -- Ultimo riempimento finito con un errore (si azzera al nuovo tentativo)

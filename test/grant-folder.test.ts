@@ -275,10 +275,9 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     vi.stubGlobal('fetch', fakeWeb(calls))
     const store = memoryStore()
     await startGrantFolder(sql, store, grant.id, run)
-    // Il turno del primo scade e un altro clic lo riprende, in un altro
-    // millisecondo: l'ora del turno fa da gettone
+    // Il turno del primo scade e un altro clic lo riprende, anche nello
+    // stesso millisecondo: il gettone del turno è casuale
     await sql`update radar_grants set folder_claimed_at = now() - interval '1 hour' where id = ${grant.id}`
-    await new Promise(resolve => setTimeout(resolve, 2))
     await startGrantFolder(sql, store, grant.id, run)
     const [stale, fresh] = jobs.splice(0)
     // Il vecchio finisce per primo: lo stato resta quello del nuovo, in corso

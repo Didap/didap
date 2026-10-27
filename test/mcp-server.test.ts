@@ -109,9 +109,9 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     const draft = (await readDraft(sql, g))!
     const meta = { versione: 1, salvata_il: draft.savedAt, salvata_da: USER.name, da_claude: true, caratteri: 9 }
     expect(JSON.parse(firstText(r))).toEqual({ testo: '# Domanda', ...meta })
-    // Il testo una volta sola: structuredContent porta solo i dati
+    // Il testo una volta sola, senza structuredContent (versione senza testo)
     expect(r.content).toHaveLength(1)
-    expect(r.structuredContent).toEqual(meta)
+    expect(r.structuredContent).toBeUndefined()
     expect(JSON.stringify(r).split('# Domanda')).toHaveLength(2)
 
     const missing = await client.callTool({ name: 'leggi_bozza', arguments: { id: crypto.randomUUID() } })
@@ -123,17 +123,17 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     await saveGrantDraft(sql, { grantId: g, content: full, baseVersion: null, savedBy: 'Bea', byClaude: false })
     const r = await client.callTool({ name: 'leggi_bozza', arguments: { id: g } })
     expect(JSON.parse(firstText(r))).toMatchObject({ testo: full, versione: 1, caratteri: MAX_TOOL_TEXT })
+    expect(r.structuredContent).toBeUndefined()
   })
 
   it('leggi_bozza: oltre 60.000 caratteri solo chi e quando, senza testo né versione', async () => {
     // Bozza allungata a mano nel pannello
     await saveGrantDraft(sql, { grantId: g, content: `inizio ${'a'.repeat(MAX_TOOL_TEXT)} coda`, baseVersion: null, savedBy: 'Bea', byClaude: false })
-    const draft = (await readDraft(sql, g))!
     const r = await client.callTool({ name: 'leggi_bozza', arguments: { id: g } })
     expect(r.isError).toBeFalsy()
     expect(r.content).toHaveLength(1)
     expect(firstText(r)).toMatch(/^La bozza supera 60\.000 caratteri: lavorala nel pannello\. L'ha salvata Bea il \d{2}\/\d{2}\/\d{4} alle \d{2}:\d{2}\.$/)
-    expect(r.structuredContent).toEqual({ salvata_il: draft.savedAt, salvata_da: 'Bea', da_claude: false, caratteri: draft.content.length })
+    expect(r.structuredContent).toBeUndefined()
     const all = JSON.stringify(r)
     expect(all).not.toContain('inizio')
     expect(all).not.toContain('coda')

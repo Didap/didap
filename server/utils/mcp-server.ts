@@ -176,22 +176,26 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore | null, 
       return text(status === 'filling' ? 'Cartella creata: i file del bando arrivano tra poco.' : 'La cartella c\'era già.')
     })
 
-  // Il testo una volta sola, nel content; structuredContent porta solo i
-  // dati. Oltre MAX_TOOL_TEXT né testo né versione: senza versione Claude non
-  // può salvarci sopra, e salva_bozza lo rifiuta comunque
+  // Solo testo, niente structuredContent: un client che lo passasse al
+  // modello al posto del content gli darebbe la versione senza il testo, e
+  // un testo ricostruito salvato con una versione valida. Oltre MAX_TOOL_TEXT
+  // né testo né versione: senza versione Claude non può salvarci sopra, e
+  // salva_bozza lo rifiuta comunque
   tool('leggi_bozza', { properties: { id: idJson(t.leggi_bozza.args.id) }, required: ['id'] },
     z.object({ id: uuid }), READ_ONLY, async (a) => {
       const d = await readDraft(sql, a.id)
       if (!d) return text('Questo bando non ha ancora una bozza: scrivila con salva_bozza senza versione.')
-      const meta = { salvata_il: d.savedAt, salvata_da: d.savedBy, da_claude: d.byClaude, caratteri: d.content.length }
       if (d.content.length > MAX_TOOL_TEXT) {
-        return {
-          content: [{ type: 'text', text: `${MCP_DRAFT_TOO_LONG} L'ha salvata ${author(d.savedBy, d.byClaude)} ${when(d.savedAt)}.` }],
-          structuredContent: meta,
-        }
+        return text(`${MCP_DRAFT_TOO_LONG} L'ha salvata ${author(d.savedBy, d.byClaude)} ${when(d.savedAt)}.`)
       }
-      const data = { versione: d.version, ...meta }
-      return { content: [{ type: 'text', text: JSON.stringify({ testo: d.content, ...data }) }], structuredContent: data }
+      return text(JSON.stringify({
+        testo: d.content,
+        versione: d.version,
+        salvata_il: d.savedAt,
+        salvata_da: d.savedBy,
+        da_claude: d.byClaude,
+        caratteri: d.content.length,
+      }))
     })
 
   // Mondo aperto come crea_cartella_bando: al primo salvataggio la cartella

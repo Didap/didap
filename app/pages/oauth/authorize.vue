@@ -124,7 +124,7 @@ async function logout() {
             Claude vuole accedere ai bandi di Didap
           </h1>
           <p class="mt-2 opacity-70">
-            Con il tuo account Claude potrà cercare e leggere i bandi del radar, segnarli tra gli interessanti e creare la loro cartella.
+            Con il tuo account Claude potrà cercare e leggere i bandi del radar, segnarli tra gli interessanti, creare la loro cartella e scrivere la bozza della candidatura.
           </p>
         </div>
 

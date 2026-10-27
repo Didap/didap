@@ -4,7 +4,8 @@ import type { H3Event } from 'h3'
 // Endpoint MCP del connettore (Streamable HTTP), tutti i metodi. Prima i
 // controlli nostri: origine (i browser la mandano, Claude dal suo server no)
 // e token d'accesso del nostro OAuth. Poi l'SDK, con un server nuovo per la
-// persona del token; la sua Response torna così com'è.
+// persona del token; la sua Response torna con il nostro Cache-Control e
+// legata alla connessione (serveMcp).
 
 // RFC 6750 3 e RFC 9728 5.1: da qui Claude trova il server di autorizzazione.
 // Senza token nessun codice d'errore, con un token rifiutato invalid_token
@@ -35,13 +36,7 @@ export default defineEventHandler(async (event) => {
   if (!access) return unauthorized(event, true)
 
   const handler = createMcpHandler(() => buildMcpServer({ sql, store: requireFileStore, user: access.user }))
-  const response = await handler.fetch(toWebRequest(event), {
+  return await serveMcp(event, handler, {
     authInfo: { token, clientId: access.clientId, scopes: [OAUTH_SCOPE], extra: { userId: access.user.id } },
   })
-  // L'SDK mette il suo Cache-Control (no-cache sugli stream SSE), che h3
-  // scriverebbe sopra al nostro: si rifà la Response, il corpo resta in stream.
-  // no-transform: i proxy non comprimono né trattengono lo stream
-  const headers = new Headers(response.headers)
-  headers.set('Cache-Control', 'no-store, no-transform')
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 })

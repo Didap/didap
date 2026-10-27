@@ -35,7 +35,10 @@ export default defineEventHandler(async (event) => {
   const access = await verifyAccessToken(sql, token)
   if (!access) return unauthorized(event, true)
 
-  const handler = createMcpHandler(() => buildMcpServer({ sql, store: requireFileStore, user: access.user }))
+  // onerror: errori fuori dalle risposte e richieste rifiutate dall'SDK, nel log
+  const handler = createMcpHandler(() => buildMcpServer({ sql, store: requireFileStore, user: access.user }), {
+    onerror: e => console.warn('[mcp]', e),
+  })
   return await serveMcp(event, handler, {
     authInfo: { token, clientId: access.clientId, scopes: [OAUTH_SCOPE], extra: { userId: access.user.id } },
   })

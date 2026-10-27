@@ -99,38 +99,87 @@ export async function searchGrants(
   return { bandi, altri: found.length - bandi.length }
 }
 
-// Il file del bando per Claude Code: dati in YAML e testo del bando
-export async function readGrantText(sql: postgres.Sql, id: string): Promise<string> {
+// Testo verso Claude a parti di al massimo MAX_TOOL_TEXT caratteri (alcuni
+// bandi superano il milione); immagini solo fino a MAX_TOOL_IMAGE_BYTES,
+// oltre Claude le rifiuta
+export const MAX_TOOL_TEXT = 60_000
+export const MAX_TOOL_IMAGE_BYTES = 3_500_000
+
+// I confini delle parti, per unità UTF-16: un'emoji sul confine passa intera
+// alla parte dopo, così nessuna parte ha mezza coppia surrogata
+function partBounds(text: string): number[] {
+  const bounds = [0]
+  let start = 0
+  while (text.length - start > MAX_TOOL_TEXT) {
+    let end = start + MAX_TOOL_TEXT
+    const c = text.charCodeAt(end - 1)
+    if (c >= 0xD800 && c <= 0xDBFF) end--
+    bounds.push(end)
+    start = end
+  }
+  bounds.push(text.length)
+  return bounds
+}
+
+// La parte `part` (da 1) del testo; un testo vuoto è una parte vuota
+export function textPart(text: string, part: number): { text: string, part: number, parts: number } {
+  const bounds = partBounds(text)
+  const parts = bounds.length - 1
+  if (!Number.isInteger(part) || part < 1 || part > parts) {
+    throw createError({ statusCode: 400, statusMessage: `Parte ${part} inesistente: il testo ha ${parts} ${parts === 1 ? 'parte' : 'parti'}` })
+  }
+  return { text: text.slice(bounds[part - 1], bounds[part]), part, parts }
+}
+
+// La parte con in testa dove si è e come chiedere la successiva; un testo
+// che sta in una parte arriva com'è
+function paged(text: string, part: number): string {
+  const p = textPart(text, part)
+  if (p.parts === 1) return p.text
+  const head = p.part === p.parts
+    ? `[Parte ${p.part} di ${p.parts}, l'ultima.]`
+    : `[Parte ${p.part} di ${p.parts}. Chiedi la parte ${p.part + 1} con parte: ${p.part + 1}.]`
+  return `${head}\n\n${p.text}`
+}
+
+// Il file del bando per Claude Code: dati in YAML e testo del bando. Dati e
+// "Cosa fare" stanno in testa, quindi nella parte 1
+export async function readGrantText(sql: postgres.Sql, id: string, part = 1): Promise<string> {
   const { grant, content, profile } = await readGrantDocument(sql, id)
-  return grantExport(grant, content, profile)
+  return paged(grantExport(grant, content, profile), part)
 }
 
 export type ToolContent = { type: 'text', text: string } | { type: 'image', data: string, mimeType: string }
 
-export const MAX_TOOL_TEXT = 100_000
-const CUT_NOTE = '\n\n[Testo tagliato: il file è più lungo]'
 const NO_PDF_TEXT = 'PDF senza testo leggibile (forse una scansione): aprilo dal pannello.'
 
 const IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp'])
 const TEXT_EXTENSIONS = /\.(md|csv|json)$/i
 
-const cut = (text: string) => (text.length > MAX_TOOL_TEXT ? `${text.slice(0, MAX_TOOL_TEXT)}${CUT_NOTE}` : text)
 const asText = (text: string): ToolContent[] => [{ type: 'text', text }]
 
-// Un file della cartella in una forma che Claude legge: testo, PDF a pagine,
-// immagine; il resto solo descritto. 404 se il file non è di quel bando.
+// Un file della cartella in una forma che Claude legge: testo e PDF a pagine
+// (a parti come il bando), immagine; il resto solo descritto. 404 se il file
+// non è di quel bando. `part` vale solo per testo e PDF
 export async function readGrantFile(
   sql: postgres.Sql,
   store: FileStore,
   grantId: string,
   fileId: string,
   extract: (data: Buffer) => Promise<string[]> = pdfPages,
+  part = 1,
 ): Promise<ToolContent[]> {
   const { name, mime, storeKey } = await readFileEntry(sql, grantId, fileId)
   const type = mime.toLowerCase().split(';')[0]!.trim()
   const data = await store.get(storeKey)
+  const kb = Math.max(1, Math.round(data.length / 1024))
 
-  if (IMAGE_MIMES.has(type)) return [{ type: 'image', data: data.toString('base64'), mimeType: type }]
+  if (IMAGE_MIMES.has(type)) {
+    if (data.length > MAX_TOOL_IMAGE_BYTES) {
+      return asText(`File "${name}" (${type}, ${kb} KB): immagine troppo grande per Claude, aprila dal pannello.`)
+    }
+    return [{ type: 'image', data: data.toString('base64'), mimeType: type }]
+  }
 
   if (type === 'application/pdf' || /\.pdf$/i.test(name)) {
     let pages: string[]
@@ -145,13 +194,12 @@ export async function readGrantFile(
       .map((page, i) => (page.trim() ? `${pageMarker(name, i + 1)}\n${page.trim()}` : ''))
       .filter(Boolean)
       .join('\n\n')
-    return asText(text ? cut(text) : NO_PDF_TEXT)
+    return asText(paged(text || NO_PDF_TEXT, part))
   }
 
   if (type.startsWith('text/') || type === 'application/json' || TEXT_EXTENSIONS.test(name)) {
-    return asText(cut(data.toString('utf8')))
+    return asText(paged(data.toString('utf8'), part))
   }
 
-  const kb = Math.max(1, Math.round(data.length / 1024))
   return asText(`File "${name}" (${type || 'tipo sconosciuto'}, ${kb} KB): Claude non lo legge da qui, aprilo dal pannello.`)
 }

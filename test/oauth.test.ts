@@ -78,6 +78,31 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
     expect(await getOAuthClient(sql, fresh.id)).not.toBeNull()
   })
 
+  it('la pulizia tiene i client che hanno avuto un collegamento', async () => {
+    const { u, c } = await setup()
+    await connect(c.id, u.id)
+    const [link] = await listLinks(sql, u.id)
+    await revokeLink(sql, u.id, link!.id)
+    const mai = await registerClient(sql, { name: 'Mai collegato', redirectUris: [CLAUDE] })
+    await sql`update oauth_clients set created_at = now() - interval '8 days' where id in ${sql([c.id, mai.id])}`
+    await registerClient(sql, { name: 'altro', redirectUris: [CLAUDE] })
+    expect(await getOAuthClient(sql, c.id)).not.toBeNull()
+    expect(await getOAuthClient(sql, mai.id)).toBeNull()
+  })
+
+  it('il primo collegamento resta la data di linked_at', async () => {
+    const { u, other, c } = await setup()
+    const linkedAt = async () => (await sql`select linked_at from oauth_clients where id = ${c.id}`)[0]!.linked_at as Date | null
+    expect(await linkedAt()).toBeNull()
+    await connect(c.id, u.id)
+    const first = await linkedAt()
+    expect(first).toBeInstanceOf(Date)
+    await sql`update oauth_clients set linked_at = linked_at - interval '1 day' where id = ${c.id}`
+    const moved = await linkedAt()
+    await connect(c.id, other.id)
+    expect(await linkedAt()).toEqual(moved)
+  })
+
   it('codice → token, monouso e con PKCE', async () => {
     const { u, c } = await setup()
     const code = await issueCode(sql, { clientId: c.id, userId: u.id, redirectUri: CLAUDE, codeChallenge: CHALLENGE })

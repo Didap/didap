@@ -6,7 +6,7 @@ import {
   McpServer,
   type ToolAnnotations,
 } from '@modelcontextprotocol/server'
-import { isError } from 'h3'
+import { createError, isError } from 'h3'
 import type postgres from 'postgres'
 import { z } from 'zod'
 import type { AdminUser } from '#shared/users'
@@ -35,6 +35,9 @@ const objectSchema = (properties: Record<string, JsonSchemaType>, required: stri
 
 const uuid = z.string().uuid()
 const idJson = (description: string): JsonSchemaType => ({ type: 'string', format: 'uuid', description })
+// Parte del testo lungo, da 1 (textPart dice se va oltre l'ultima)
+const part = z.number().int().min(1).optional()
+const partJson = (description: string): JsonSchemaType => ({ type: 'integer', minimum: 1, description })
 
 const text = (t: string): CallToolResult => ({ content: [{ type: 'text', text: t }] })
 const failure = (t: string): CallToolResult => ({ content: [{ type: 'text', text: t }], isError: true })
@@ -49,8 +52,21 @@ const invalidArgs = (err: z.ZodError) =>
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, openWorldHint: false }
 const WRITE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: false }
 
+// Senza Cloudinary il 503 di requireFileStore elenca le variabili d'ambiente:
+// a Claude basta sapere che la cartella non c'è sul server
+const NO_STORE = 'La cartella dei file non è configurata sul server.'
+
 export function buildMcpServer(deps: { sql: Sql, store: () => FileStore, user: AdminUser, run?: Run }): McpServer {
-  const { sql, store, user } = deps
+  const { sql, user } = deps
+  const store = () => {
+    try {
+      return deps.store()
+    }
+    catch (err) {
+      if (isError(err) && err.statusCode === 503) throw createError({ statusCode: 503, statusMessage: NO_STORE })
+      throw err
+    }
+  }
   const server = new McpServer({ name: 'didap-bandi', version: '1.0.0' }, { instructions: MCP_INSTRUCTIONS })
 
   // Un errore h3 (404, 409, 503) torna a Claude come risultato con il suo
@@ -105,8 +121,10 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore, user: A
     fuoriDallaRicerca: a.fuori_dalla_ricerca,
   })))
 
-  tool('leggi_bando', { properties: { id: idJson(t.leggi_bando.args.id) }, required: ['id'] },
-    z.object({ id: uuid }), READ_ONLY, async a => text(await readGrantText(sql, a.id)))
+  tool('leggi_bando', {
+    properties: { id: idJson(t.leggi_bando.args.id), parte: partJson(t.leggi_bando.args.parte) },
+    required: ['id'],
+  }, z.object({ id: uuid, parte: part }), READ_ONLY, async a => text(await readGrantText(sql, a.id, a.parte)))
 
   tool('profilo_azienda', { properties: {} }, z.object({}), READ_ONLY,
     async () => json((await readRadarSettings(sql)).profile))
@@ -116,10 +134,14 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore, user: A
     z.object({ id: uuid }), READ_ONLY, async a => json(await grantFolderContents(sql, a.id)))
 
   tool('leggi_file', {
-    properties: { id: idJson(t.leggi_file.args.id), file_id: idJson(t.leggi_file.args.file_id) },
+    properties: {
+      id: idJson(t.leggi_file.args.id),
+      file_id: idJson(t.leggi_file.args.file_id),
+      parte: partJson(t.leggi_file.args.parte),
+    },
     required: ['id', 'file_id'],
-  }, z.object({ id: uuid, file_id: uuid }), READ_ONLY,
-  async a => ({ content: await readGrantFile(sql, store(), a.id, a.file_id) }))
+  }, z.object({ id: uuid, file_id: uuid, parte: part }), READ_ONLY,
+  async a => ({ content: await readGrantFile(sql, store(), a.id, a.file_id, undefined, a.parte) }))
 
   tool('segna_interessante', {
     properties: {
@@ -132,8 +154,9 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore, user: A
     return text(a.interessante ? 'Bando segnato come interessante.' : 'Bando tolto dagli interessanti.')
   })
 
+  // Mondo aperto: il riempimento scarica pagina e PDF dal sito del bando
   tool('crea_cartella_bando', { properties: { id: idJson(t.crea_cartella_bando.args.id) }, required: ['id'] },
-    z.object({ id: uuid }), WRITE, async (a) => {
+    z.object({ id: uuid }), { ...WRITE, openWorldHint: true }, async (a) => {
       const { status } = await startGrantFolder(sql, store(), a.id, deps.run)
       return text(status === 'filling' ? 'Cartella creata: i file del bando arrivano tra poco.' : 'La cartella c\'era già.')
     })

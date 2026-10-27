@@ -234,6 +234,8 @@ export const DB_SCHEMA = `
     redirect_uris text[] not null,
     created_at timestamptz not null default now()
   );
+  -- Primo collegamento del client: la pulizia toglie solo i mai collegati
+  alter table oauth_clients add column if not exists linked_at timestamptz;
   create table if not exists oauth_codes (
     hash text primary key,
     client_id uuid not null references oauth_clients(id) on delete cascade,

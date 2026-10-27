@@ -4,7 +4,7 @@ import { COMUNI_PUGLIA } from '#shared/comuni-puglia'
 import { comuneSlug, DEFAULT_RADAR_SETTINGS, ELIGIBILITY_LABELS } from '#shared/radar'
 import { addFile, createFolder, grantFolderContents } from '../server/utils/grant-files'
 import { startGrantFolder } from '../server/utils/grant-folder'
-import { grantSearchSchema, MAX_TOOL_TEXT, readGrantFile, readGrantText, searchGrants } from '../server/utils/mcp-bandi'
+import { grantSearchSchema, MAX_TOOL_IMAGE_BYTES, MAX_TOOL_TEXT, readGrantFile, readGrantText, searchGrants, textPart } from '../server/utils/mcp-bandi'
 import { ingestSources, listGrants, readPending, setGrantLiked, writeRadarSettings } from '../server/utils/radar'
 import type { GrantReader } from '../server/utils/radar-reader'
 import type { RadarSource } from '../server/utils/radar-sources'
@@ -52,6 +52,26 @@ describe('schema della ricerca', () => {
   })
 })
 
+describe('testo per Claude', () => {
+  it('testo a parti', () => {
+    const long = 'a'.repeat(MAX_TOOL_TEXT * 2 + 5)
+    expect(textPart(long, 1)).toMatchObject({ part: 1, parts: 3 })
+    expect(textPart(long, 1).text).toHaveLength(MAX_TOOL_TEXT)
+    expect(textPart(long, 3).text).toHaveLength(5)
+    expect(() => textPart(long, 4)).toThrow(/Parte 4 inesistente/)
+    expect(() => textPart(long, 0)).toThrow(/Parte 0 inesistente/)
+    expect(textPart('', 1)).toMatchObject({ part: 1, parts: 1, text: '' })
+    expect(textPart('a'.repeat(MAX_TOOL_TEXT), 1)).toMatchObject({ parts: 1 })
+  })
+
+  it('un\'emoji sul confine non resta a metà', () => {
+    const text = `${'a'.repeat(MAX_TOOL_TEXT - 1)}😀b`
+    const [one, two] = [textPart(text, 1), textPart(text, 2)]
+    expect(one.text).toHaveLength(MAX_TOOL_TEXT - 1)
+    expect(one.text + two.text).toBe(text)
+  })
+})
+
 describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
   let sql: postgres.Sql
 
@@ -64,7 +84,11 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
   beforeEach(async () => {
     await resetTestDb(sql)
   })
-  afterEach(() => {
+  // I riempimenti delle cartelle finiscono prima che si tolga il fetch finto
+  let jobs: Promise<void>[] = []
+  afterEach(async () => {
+    await Promise.allSettled(jobs)
+    jobs = []
     vi.unstubAllGlobals()
   })
 
@@ -82,9 +106,7 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
   // La cartella si crea subito, senza scaricare nulla dal sito
   async function withFolder(grantId: string) {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 404 })))
-    await startGrantFolder(sql, memoryStore(), grantId, (job) => {
-      void job()
-    })
+    await startGrantFolder(sql, memoryStore(), grantId, job => void jobs.push(job()))
   }
 
   it('segue la ricerca salvata e salta gli esclusi', async () => {
@@ -175,6 +197,25 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
     const [g] = await listGrants(sql, NOW)
     expect(await readGrantText(sql, g!.id)).toContain('titolo: "Voucher digitale"')
     await expect(readGrantText(sql, NO_GRANT)).rejects.toMatchObject({ statusCode: 404 })
+    // Corto: una parte sola, senza intestazione
+    expect(await readGrantText(sql, g!.id)).toMatch(/^---\n/)
+  })
+
+  it('leggi_bando a parti con la guida in testa', async () => {
+    await seed([source('regione-puglia', [{ title: 'Bando lungo' }])])
+    // Il testo si allunga dopo la lettura: il lettore ne vede solo l'inizio
+    await sql`update radar_documents set content = content || ${'x'.repeat(MAX_TOOL_TEXT * 2)}`
+    const [g] = await listGrants(sql, NOW)
+    const first = await readGrantText(sql, g!.id)
+    expect(first).toMatch(/^\[Parte 1 di 3\. Chiedi la parte 2 con parte: 2\.\]\n\n---\n/)
+    expect(first).toContain('## Cosa fare')
+    expect(first).toContain('titolo: "Bando lungo"')
+    expect(await readGrantText(sql, g!.id, 1)).toBe(first)
+    expect(await readGrantText(sql, g!.id, 2)).toMatch(/^\[Parte 2 di 3\. Chiedi la parte 3 con parte: 3\.\]\n\nx/)
+    const last = await readGrantText(sql, g!.id, 3)
+    expect(last).toMatch(/^\[Parte 3 di 3, l'ultima\.\]\n\n/)
+    expect(last.endsWith('x\n')).toBe(true)
+    await expect(readGrantText(sql, g!.id, 4)).rejects.toMatchObject({ statusCode: 400, statusMessage: expect.stringContaining('Parte 4 inesistente') })
   })
 
   describe('file della cartella', () => {
@@ -209,9 +250,27 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
       expect(zip.text).toContain('tutto.zip')
       expect(zip.text).toContain('application/zip')
       expect(zip.text).toContain('pannello')
+      // Testo e PDF lunghi: a parti, come leggi_bando
       const big = (await readGrantFile(sql, store, g, bigTxtId))[0] as { text: string }
-      expect(big.text.length).toBeLessThanOrEqual(MAX_TOOL_TEXT + 100)
-      expect(big.text).toContain('[Testo tagliato')
+      expect(big.text).toBe(`[Parte 1 di 2. Chiedi la parte 2 con parte: 2.]\n\n${'a'.repeat(MAX_TOOL_TEXT)}`)
+      const bigEnd = (await readGrantFile(sql, store, g, bigTxtId, undefined, 2))[0] as { text: string }
+      expect(bigEnd.text).toBe(`[Parte 2 di 2, l'ultima.]\n\n${'a'.repeat(5000)}`)
+      await expect(readGrantFile(sql, store, g, bigTxtId, undefined, 3)).rejects.toMatchObject({ statusCode: 400 })
+      const longPdf = await readGrantFile(sql, store, g, pdfId, async () => ['p'.repeat(MAX_TOOL_TEXT), 'q'], 2)
+      expect(longPdf[0]).toMatchObject({ type: 'text', text: expect.stringMatching(/^\[Parte 2 di 2, l'ultima\.\]\n\n/) })
+      expect((longPdf[0] as { text: string }).text).toContain('[[avviso.pdf | pagina 2]]\nq')
+    })
+
+    it('immagine troppo grande: solo descritta', async () => {
+      const g = await folderGrant('Bando con foto')
+      const store = memoryStore()
+      const bigId = await put(store, g, 'foto.png', 'image/png', 'a'.repeat(MAX_TOOL_IMAGE_BYTES + 1))
+      const okId = await put(store, g, 'giusta.png', 'image/png', 'a'.repeat(MAX_TOOL_IMAGE_BYTES))
+      const kb = Math.round((MAX_TOOL_IMAGE_BYTES + 1) / 1024)
+      expect(await readGrantFile(sql, store, g, bigId)).toEqual([
+        { type: 'text', text: `File "foto.png" (image/png, ${kb} KB): immagine troppo grande per Claude, aprila dal pannello.` },
+      ])
+      expect((await readGrantFile(sql, store, g, okId))[0]).toMatchObject({ type: 'image', mimeType: 'image/png' })
     })
 
     it('file di un altro bando: 404', async () => {

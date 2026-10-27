@@ -25,8 +25,8 @@ export const MCP_TOOLS = {
   },
   leggi_bando: {
     title: 'Leggi un bando',
-    description: 'Il bando completo: dati estratti in YAML (requisiti con pagina, documenti, profilo) e sotto il testo della pagina e dei PDF, con i marcatori [[file | pagina N]].',
-    args: { id: 'Id del bando, da cerca_bandi.' },
+    description: 'Il bando completo: dati estratti in YAML (requisiti con pagina, documenti, profilo) e sotto il testo della pagina e dei PDF, con i marcatori [[file | pagina N]]. Un testo lungo arriva a parti di 60.000 caratteri, con in testa "Parte X di Y": la parte 1 ha già i dati estratti, spesso basta quella.',
+    args: { id: 'Id del bando, da cerca_bandi.', parte: 'Quale parte del testo leggere, da 1. Senza, la parte 1.' },
   },
   profilo_azienda: {
     title: 'Profilo dell\'azienda',
@@ -39,8 +39,8 @@ export const MCP_TOOLS = {
   },
   leggi_file: {
     title: 'Leggi un file della cartella',
-    description: 'Un file della cartella del bando: testo, PDF pagina per pagina con i marcatori [[file | pagina N]], immagini. Gli altri tipi sono solo descritti: si aprono dal pannello.',
-    args: { id: 'Id del bando.', file_id: 'Id del file, da elenca_cartella.' },
+    description: 'Un file della cartella del bando: testo, PDF pagina per pagina con i marcatori [[file | pagina N]], immagini fino a 3,5 MB. Un testo lungo arriva a parti di 60.000 caratteri, con in testa "Parte X di Y". Gli altri tipi sono solo descritti: si aprono dal pannello.',
+    args: { id: 'Id del bando.', file_id: 'Id del file, da elenca_cartella.', parte: 'Quale parte del testo leggere, da 1. Senza, la parte 1.' },
   },
   segna_interessante: {
     title: 'Segna come interessante',

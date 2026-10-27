@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/client'
 import { InMemoryTransport } from '@modelcontextprotocol/server'
+import { createError } from 'h3'
 import type postgres from 'postgres'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_RADAR_SETTINGS } from '#shared/radar'
@@ -93,7 +94,61 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     expect(byName.leggi_file!.inputSchema.required).toEqual(['id', 'file_id'])
     expect(byName.segna_interessante!.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false, idempotentHint: true })
     expect(byName.crea_cartella_bando!.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false })
+    expect(byName.leggi_bando!.inputSchema.properties).toHaveProperty('parte', expect.objectContaining({ type: 'integer', minimum: 1 }))
+    expect(byName.leggi_file!.inputSchema.properties).toHaveProperty('parte', expect.objectContaining({ type: 'integer', minimum: 1 }))
+    expect(byName.leggi_bando!.inputSchema.required).toEqual(['id'])
     for (const t of tools) expect(t.description).toBeTruthy()
+  })
+
+  it('crea_cartella_bando dichiara il mondo aperto', async () => {
+    const { tools } = await client.listTools()
+    const byName = Object.fromEntries(tools.map(t => [t.name, t]))
+    // Scarica dal sito del bando: fuori dal pannello
+    expect(byName.crea_cartella_bando!.annotations?.openWorldHint).toBe(true)
+    for (const name of ['cerca_bandi', 'leggi_bando', 'leggi_file', 'segna_interessante']) {
+      expect(byName[name]!.annotations?.openWorldHint).toBe(false)
+    }
+  })
+
+  it('leggi_bando accetta parte e la valida', async () => {
+    const one = await client.callTool({ name: 'leggi_bando', arguments: { id: g, parte: 1 } })
+    expect(one.isError).toBeFalsy()
+    expect(firstText(one)).toContain('titolo: "Voucher digitale"')
+    const zero = await client.callTool({ name: 'leggi_bando', arguments: { id: g, parte: 0 } })
+    expect(zero.isError).toBe(true)
+    expect(firstText(zero)).toContain('parte')
+    const half = await client.callTool({ name: 'leggi_bando', arguments: { id: g, parte: 1.5 } })
+    expect(half.isError).toBe(true)
+    const beyond = await client.callTool({ name: 'leggi_bando', arguments: { id: g, parte: 2 } })
+    expect(beyond).toMatchObject({ isError: true, content: [{ type: 'text', text: expect.stringContaining('inesistente') }] })
+  })
+
+  it('leggi_file a parti', async () => {
+    await client.callTool({ name: 'crea_cartella_bando', arguments: { id: g } })
+    await Promise.allSettled(jobs)
+    const file = await addFile(sql, store, { grantId: g, folderId: null, name: 'lungo.txt', mime: 'text/plain', data: Buffer.from('a'.repeat(70_000)), userId: null })
+    const second = await client.callTool({ name: 'leggi_file', arguments: { id: g, file_id: file.id, parte: 2 } })
+    expect(firstText(second)).toBe(`[Parte 2 di 2, l'ultima.]\n\n${'a'.repeat(10_000)}`)
+    const beyond = await client.callTool({ name: 'leggi_file', arguments: { id: g, file_id: file.id, parte: 3 } })
+    expect(beyond).toMatchObject({ isError: true, content: [{ type: 'text', text: expect.stringContaining('inesistente') }] })
+  })
+
+  it('senza Cloudinary: messaggio chiaro per Claude', async () => {
+    const noStore = () => {
+      throw createError({ statusCode: 503, statusMessage: 'Cloudinary non configurato (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)' })
+    }
+    const server = buildMcpServer({ sql, store: noStore, user: USER, run: job => void jobs.push(job()) })
+    const [clientSide, serverSide] = InMemoryTransport.createLinkedPair()
+    const other = new Client({ name: 'test', version: '1.0.0' })
+    await Promise.all([server.connect(serverSide), other.connect(clientSide)])
+    try {
+      const r = await other.callTool({ name: 'crea_cartella_bando', arguments: { id: g } })
+      expect(r).toMatchObject({ isError: true, content: [{ type: 'text', text: 'La cartella dei file non è configurata sul server.' }] })
+      expect(JSON.stringify(r)).not.toContain('CLOUDINARY')
+    }
+    finally {
+      await other.close()
+    }
   })
 
   it('istruzioni in italiano', () => {

@@ -36,7 +36,8 @@ const ACCESS_SECS = 60 * 60
 const REFRESH_SECS = 60 * 60 * 24 * 30
 const MAX_REDIRECTS = 5
 const NAME_MAX = 100
-// Client registrati e mai collegati: via dopo una settimana
+// Client registrati e mai collegati: via dopo una settimana. Uno che ha avuto
+// un collegamento resta anche scollegato: Claude lo riusa per ricollegarsi
 const CLIENT_UNUSED_DAYS = 7
 
 // Pulizia dei client (esclusivo) contro scambio del codice (condiviso): un
@@ -66,9 +67,8 @@ export async function registerClient(sql: Sql, input: { name: string, redirectUr
   return await inTx(sql, async (t) => {
     await t`select pg_advisory_xact_lock(${CLIENTS_LOCK})`
     await t`
-      delete from oauth_clients c
-      where c.created_at < now() - make_interval(days => ${CLIENT_UNUSED_DAYS})
-        and not exists (select 1 from oauth_links l where l.client_id = c.id)
+      delete from oauth_clients
+      where linked_at is null and created_at < now() - make_interval(days => ${CLIENT_UNUSED_DAYS})
     `
     const [row] = await t`
       insert into oauth_clients (name, redirect_uris) values (${name}, ${uris})
@@ -151,6 +151,7 @@ export async function exchangeCode(
       insert into oauth_links (user_id, client_id) values (${code.user_id}, ${code.client_id})
       returning id
     `
+    await t`update oauth_clients set linked_at = coalesce(linked_at, now()) where id = ${code.client_id}`
     return await issuePair(t, link!.id)
   })
   if (!tokens) throw invalidGrant()

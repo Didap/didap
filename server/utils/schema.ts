@@ -269,6 +269,8 @@ export const DB_SCHEMA = `
     kind text not null check (kind in ('access', 'refresh')),
     expires_at timestamptz not null
   );
+  -- Refresh token già scambiato: resta fino alla scadenza per riconoscerne il riuso
+  alter table oauth_tokens add column if not exists used_at timestamptz;
   create index if not exists oauth_codes_user on oauth_codes (user_id);
   create index if not exists oauth_codes_client on oauth_codes (client_id);
   create index if not exists oauth_links_user on oauth_links (user_id);

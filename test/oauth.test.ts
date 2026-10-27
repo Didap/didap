@@ -184,14 +184,13 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
     expect(await listLinks(sql, u.id)).toHaveLength(5)
   })
 
-  it('rinnovo con rotazione: il vecchio refresh non vale più', async () => {
+  it('rinnovo con rotazione: coppia nuova sullo stesso collegamento', async () => {
     const { u, c } = await setup()
     const t = await connect(c.id, u.id)
     const t2 = await refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })
     expect(t2).toMatchObject({ expiresIn: 3600, scope: 'bandi' })
     expect(t2.accessToken).not.toBe(t.accessToken)
     expect(t2.refreshToken).not.toBe(t.refreshToken)
-    await expect(refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
     expect(await verifyAccessToken(sql, t2.accessToken)).not.toBeNull()
     // Lo stesso collegamento: il token d'accesso vecchio vale fino alla scadenza
     expect(await listLinks(sql, u.id)).toHaveLength(1)
@@ -200,6 +199,22 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
     // Un token d'accesso non vale come refresh
     await expect(refreshTokens(sql, { refreshToken: t2.accessToken, clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
     await expect(refreshTokens(sql, { refreshToken: 'inventato', clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
+  })
+
+  it('refresh già usato che torna: si chiude il collegamento, coppia nuova compresa', async () => {
+    const { u, c } = await setup()
+    const other = await connect(c.id, u.id)
+    const t = await connect(c.id, u.id)
+    const t2 = await refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })
+    await expect(refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
+    expect(await verifyAccessToken(sql, t.accessToken)).toBeNull()
+    expect(await verifyAccessToken(sql, t2.accessToken)).toBeNull()
+    await expect(refreshTokens(sql, { refreshToken: t2.refreshToken, clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
+    // Gli altri collegamenti della persona restano
+    expect(await listLinks(sql, u.id)).toHaveLength(1)
+    expect(await verifyAccessToken(sql, other.accessToken)).not.toBeNull()
+    // Via anche il refresh usato, con il collegamento
+    expect(await sql`select 1 from oauth_tokens where hash = ${hashToken(t.refreshToken)}`).toHaveLength(0)
   })
 
   it('refresh token: 30 giorni, scaduto non vale', async () => {
@@ -215,19 +230,20 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
     await expect(refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
   })
 
-  it('due rinnovi insieme dello stesso refresh: ne passa uno solo', async () => {
+  it('due rinnovi insieme dello stesso refresh: uno passa, il secondo è un riuso e chiude il collegamento', async () => {
     const { u, c } = await setup()
-    let t = await connect(c.id, u.id)
     for (let i = 0; i < 5; i++) {
+      const t = await connect(c.id, u.id)
       const input = { refreshToken: t.refreshToken, clientId: c.id }
       const results = await Promise.allSettled([refreshTokens(sql, input), refreshTokens(sql, input)])
       const ok = results.filter(r => r.status === 'fulfilled') as PromiseFulfilledResult<typeof t>[]
       expect(ok).toHaveLength(1)
       const failed = results.find(r => r.status === 'rejected') as PromiseRejectedResult
       expect(failed.reason).toMatchObject({ code: 'invalid_grant' })
-      t = ok[0]!.value
+      expect(await verifyAccessToken(sql, ok[0]!.value.accessToken)).toBeNull()
+      expect(await listLinks(sql, u.id)).toHaveLength(0)
     }
-    expect(await sql`select 1 from oauth_tokens where kind = 'refresh'`).toHaveLength(1)
+    expect(await sql`select 1 from oauth_tokens`).toHaveLength(0)
   })
 
   it('rinnovo mentre Bandi viene tolto: nessun errore strano, collegamenti chiusi', async () => {

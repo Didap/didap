@@ -161,8 +161,10 @@ export async function exchangeCode(
   return tokens
 }
 
-// Rinnovo con rotazione: il refresh token vecchio smette di valere, la
-// coppia nuova resta sullo stesso collegamento
+// Rinnovo con rotazione: il refresh token usato resta segnato (used_at) fino
+// alla scadenza, la coppia nuova va sullo stesso collegamento. Se un refresh
+// già usato torna indietro, qualcuno ne ha una copia: si chiude tutto il
+// collegamento, token nuovi compresi (RFC 9700, 4.14.2)
 export async function refreshTokens(sql: Sql, input: { refreshToken: string, clientId: string }): Promise<TokenSet> {
   const hash = hashToken(input.refreshToken)
   await sweep(sql)
@@ -176,11 +178,18 @@ export async function refreshTokens(sql: Sql, input: { refreshToken: string, cli
     const [user] = await t`select active, pages from admin_users where id = ${peek.user_id} for share`
     // Key share: Scollega aspetta il rinnovo in corso, l'ultimo uso no
     const [link] = await t`select client_id from oauth_links where id = ${peek.link_id} for key share`
+    // used_at is null: due rinnovi insieme non lo usano due volte, e il
+    // secondo lo trova già usato
     const [tok] = await t`
-      delete from oauth_tokens where hash = ${hash} and kind = 'refresh'
+      update oauth_tokens set used_at = now()
+      where hash = ${hash} and kind = 'refresh' and used_at is null
       returning expires_at > now() as live
     `
-    if (!tok || !user || !link) return null
+    if (!tok) {
+      await t`delete from oauth_links where id = ${peek.link_id}`
+      return null
+    }
+    if (!user || !link) return null
     if (!tok.live || link.client_id !== input.clientId || !canUseBandi(user)) return null
     return await issuePair(t, peek.link_id)
   })
@@ -223,7 +232,7 @@ export async function listLinks(sql: Sql, userId: string): Promise<ClaudeLink[]>
     from oauth_links l
     join oauth_clients c on c.id = l.client_id
     where l.user_id = ${userId}
-      and exists (select 1 from oauth_tokens k where k.link_id = l.id and k.expires_at > now())
+      and exists (select 1 from oauth_tokens k where k.link_id = l.id and k.expires_at > now() and k.used_at is null)
     order by l.created_at desc, l.id
   `
   return rows.map(r => ({

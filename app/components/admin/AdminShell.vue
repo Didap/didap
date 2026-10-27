@@ -10,16 +10,6 @@ import AdminNoAccess from '~/components/admin/AdminNoAccess.vue'
 // scorrere sono le sue colonne.
 defineProps<{ fill?: boolean }>()
 const { state } = useAdminPageAccess()
-const { notify } = useAdminToast()
-
-async function logout() {
-  try {
-    await adminLogout()
-  }
-  catch {
-    notify('error', 'Uscita non riuscita')
-  }
-}
 </script>
 
 <template>
@@ -27,7 +17,7 @@ async function logout() {
     class="flex min-h-screen flex-col bg-paper"
     :class="fill ? `lg:h-dvh lg:min-h-0 lg:overflow-hidden` : ''"
   >
-    <AdminHeader @logout="logout" />
+    <AdminHeader />
     <AdminLogin v-if="state === 'login'" />
     <AdminNoAccess v-else-if="state === 'none'" />
     <slot v-else-if="state === 'allowed'" />

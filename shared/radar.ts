@@ -427,8 +427,10 @@ export type RadarStatus = {
 }
 
 // Un riempimento della cartella in corso da più di così è morto col
-// processo: si può rifare
-export const FOLDER_CLAIM_MINUTES = 15
+// processo: si può rifare. Il caso peggiore di uno vivo è sui 15 minuti
+// (pagina con un nuovo tentativo, poi tre giri di 4 PDF a timeout pieno più
+// il caricamento): il doppio, perché un lavoro ancora in corso non si rifaccia
+export const FOLDER_CLAIM_MINUTES = 30
 
 // Risposta di "Crea cartella del bando": già riempita, o partita in background
 export type FolderStart = { status: 'ready' } | { status: 'filling' }

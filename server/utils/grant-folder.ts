@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import { createError } from 'h3'
 import type postgres from 'postgres'
-import { cleanFileName, MAX_FILE_BYTES, MAX_FILE_MB } from '#shared/grant-files'
+import { cleanFileName, MAX_FILE_BYTES, MAX_FILE_MB, uniqueName } from '#shared/grant-files'
 import { FOLDER_CLAIM_MINUTES, type FolderStart } from '#shared/radar'
 import type { FileStore } from './file-store'
 import { addFileOnce, grantSourceFolder } from './grant-files'
@@ -13,8 +14,8 @@ import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, mainHtml, 
 // dalla pagina del bando. Il resto lo aggiunge chi ci lavora.
 //
 // Gira in background (siti lenti, PDF grossi) con lo stato nel database:
-// folder_at = cartella creata (protegge il bando), folder_claimed_at = in
-// corso, folder_filled_at = finita, folder_failed_at = finita con un errore,
+// folder_at = cartella creata (protegge il bando), folder_claim = gettone del
+// turno in corso, folder_claimed_at = da quando (per la scadenza), folder_filled_at = finita, folder_failed_at = finita con un errore,
 // folder_note = com'è andata, folder_source_id = la "Dal bando". Il turno nel
 // database vale anche con più istanze del sito; un riempimento rimasto a
 // metà si riprende al clic successivo.
@@ -52,23 +53,24 @@ export async function startGrantFolder(
   `
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
   if (row.folder_filled_at) return { status: 'ready' }
-  // Ora del turno decisa qui, al millisecondo: fa da gettone per liberarlo
-  const claimedAt = new Date()
-  const [claim] = await sql`
-    update radar_grants set folder_claimed_at = ${claimedAt}, folder_note = '', folder_failed_at = null
+  // Gettone casuale del turno: due turni presi nello stesso istante restano
+  // distinti. L'ora serve solo a far scadere il turno
+  const claim = randomUUID()
+  const [claimed] = await sql`
+    update radar_grants set folder_claim = ${claim}, folder_claimed_at = now(), folder_note = '', folder_failed_at = null
     where id = ${id} and folder_filled_at is null
       and (folder_claimed_at is null or folder_claimed_at < now() - ${`${FOLDER_CLAIM_MINUTES} minutes`}::interval)
     returning id
   `
   // Già in corso (altro clic, altra istanza): il pannello aspetta lo stesso lavoro
-  if (claim) run(() => fillFolder(sql, store, id, claimedAt))
+  if (claimed) run(() => fillFolder(sql, store, id, claim))
   return { status: 'filling' }
 }
 
-// `claimedAt`: il turno di questo lavoro. Lo stato si scrive solo se il turno
+// `claim`: il gettone del turno di questo lavoro. Lo stato si scrive solo se il turno
 // è ancora suo: un lavoro rimasto indietro (turno scaduto e ripreso da un
 // altro) non copre quello nuovo.
-async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Date) {
+async function fillFolder(sql: Sql, store: FileStore, id: string, claim: string) {
   try {
     const { grant, content, profile } = await readGrantDocument(sql, id)
     const source = await grantSourceFolder(sql, id, SOURCE_FOLDER)
@@ -98,25 +100,25 @@ async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Dat
     const { note, complete } = pdfs.value
     await sql`
       update radar_grants set folder_filled_at = ${complete ? new Date() : null}, folder_note = ${note},
-        folder_claimed_at = null, folder_failed_at = null
-      where id = ${id} and folder_claimed_at = ${claimedAt}
+        folder_claim = null, folder_claimed_at = null, folder_failed_at = null
+      where id = ${id} and folder_claim = ${claim}
     `
   }
   catch (err) {
     console.error('[radar] cartella del bando non riempita', err)
     await sql`
-      update radar_grants set folder_claimed_at = null, folder_failed_at = now(),
+      update radar_grants set folder_claim = null, folder_claimed_at = null, folder_failed_at = now(),
         folder_note = ${`Non riuscita: ${(err as Error).message}`.slice(0, 500)}
-      where id = ${id} and folder_claimed_at = ${claimedAt}
+      where id = ${id} and folder_claim = ${claim}
     `
   }
 }
 
 type PdfOutcome = 'loaded' | 'notDownloaded' | 'tooLarge' | 'notUploaded'
+type PdfLink = { href: string, name: string }
 type Saver = { has: (name: string) => boolean, save: (name: string, mime: string, data: Buffer) => Promise<void> }
 
-async function savePdf(href: string, { has, save }: Saver): Promise<PdfOutcome> {
-  const name = pdfFileName(href)
+async function savePdf({ href, name }: PdfLink, { has, save }: Saver): Promise<PdfOutcome> {
   // Già nella cartella: non si riscarica
   if (has(name)) return 'loaded'
   const data = await fetchFromSource(href, { origin: new URL(href).origin, maxBytes: MAX_DOWNLOAD_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
@@ -138,7 +140,16 @@ async function savePdfs(url: string, saver: Saver): Promise<{ note: string, comp
     return { note: 'Pagina del bando non raggiungibile: riprova più tardi o aggiungi i PDF a mano', complete: false }
   }
   if (!pdfs.length) return { note: 'Nessun PDF trovato sulla pagina del bando', complete: true }
-  const outcomes = await inPool(pdfs, FILE_CONCURRENCY, href => savePdf(href, saver))
+  // Due link con lo stesso nome (lo stesso "Allegato A.pdf" in due cartelle
+  // del sito): il secondo prende "(2)". Il nome dipende solo dall'ordine dei
+  // link, così una ripresa ritrova gli stessi nomi e salta i file presenti
+  const taken = new Set<string>()
+  const links = pdfs.map((href) => {
+    const name = uniqueName(taken, pdfFileName(href))
+    taken.add(name)
+    return { href, name }
+  })
+  const outcomes = await inPool(links, FILE_CONCURRENCY, link => savePdf(link, saver))
   const count = (o: PdfOutcome) => outcomes.filter(x => x === o).length
   const note = [
     `${count('loaded')} PDF del bando caricati`,

@@ -59,7 +59,7 @@ describe('entryNameSchema', () => {
   })
 
   it('rifiuta barre, punti, nomi vuoti e troppo lunghi', () => {
-    for (const bad of ['a/b', 'a\\b', '.', '..', '   ', 'a\nb', 'x'.repeat(201)]) {
+    for (const bad of ['a/b', 'a\\b', '.', '..', '   ', 'a\nb', 'fattura\u202Efdp.exe', 'a\u200Bb', 'x'.repeat(201)]) {
       const r = entryNameSchema.safeParse(bad)
       expect(r.success, bad).toBe(false)
       expect(r.error?.issues[0]?.message).toBe('Nome non valido')

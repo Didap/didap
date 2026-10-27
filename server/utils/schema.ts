@@ -209,6 +209,16 @@ export const DB_SCHEMA = `
   -- Elenco e controllo dei nomi di una cartella: bando più cartella
   create index if not exists grant_folders_grant_parent on grant_folders (grant_id, parent_id);
   create index if not exists grant_files_grant_folder on grant_files (grant_id, folder_id);
+  -- Bozza della candidatura, una per bando: la versione sale a ogni
+  -- salvataggio; saved_by è il nome, resta anche se la persona viene eliminata
+  create table if not exists grant_drafts (
+    grant_id uuid primary key references radar_grants(id) on delete cascade,
+    content text not null,
+    version int not null,
+    saved_at timestamptz not null default now(),
+    saved_by text not null,
+    by_claude boolean not null default false
+  );
   -- Registro degli import: moduli, tempi, conteggi e token
   create table if not exists radar_runs (
     id uuid primary key default gen_random_uuid(),

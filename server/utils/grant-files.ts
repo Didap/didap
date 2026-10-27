@@ -340,3 +340,17 @@ export async function readFileEntry(
   if (!row) throw fileNotFound()
   return { name: row.name, mime: row.mime, storeKey: row.store_key }
 }
+
+// Cartelle e file di tutta la cartella del bando in due letture (per Claude);
+// 404 se il bando non c'è, 409 se non ha la cartella
+export async function grantFolderContents(
+  sql: Sql,
+  grantId: string,
+): Promise<{ folders: TreeRow[], files: (FileEntry & { folderId: string | null })[] }> {
+  await requireGrantFolder(sql, grantId)
+  const [folders, files] = await Promise.all([
+    folderTree(sql, grantId),
+    sql`select * from grant_files where grant_id = ${grantId} order by lower(name), name, id`,
+  ])
+  return { folders, files: files.map(r => ({ ...rowToFile(r), folderId: r.folder_id as string | null })) }
+}

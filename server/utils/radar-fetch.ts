@@ -322,11 +322,11 @@ export function innerHtml(html: string, marker: string): string | null {
 export type Attachment = { name: string, data: Buffer }
 
 // Ogni pagina porta file e numero, così il modello può citarla
-const pageMarker = (file: string, page: number) => `[[${file} | pagina ${page}]]`
+export const pageMarker = (file: string, page: number) => `[[${file} | pagina ${page}]]`
 
 const isPdf = (data: Buffer) => data.subarray(0, 5).toString('latin1') === '%PDF-'
 
-async function pdfPages(data: Buffer): Promise<string[]> {
+export async function pdfPages(data: Buffer): Promise<string[]> {
   const { extractText } = await import('unpdf')
   const { text } = await extractText(new Uint8Array(data), { mergePages: false })
   return text

@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import AdminConfirm from '~/components/admin/AdminConfirm.vue'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import NewPasswordFields from '~/components/admin/NewPasswordFields.vue'
 import { adminErrorText } from '~/utils/adminErrors'
+import { formatDateTime } from '~/utils/format'
 import { PASSWORD_MAX } from '#shared/users'
 
 // Il proprio account: nome, email e cambio password. Aperto a chiunque
@@ -42,6 +44,35 @@ async function changePassword() {
   }
   finally {
     saving.value = false
+  }
+}
+
+// Claude collegato con questo account: elenco e "Scollega"
+type ClaudeLink = { id: string, clientName: string, createdAt: string, lastUsedAt: string | null }
+const { data: links, refresh: refreshLinks } = await useFetch<ClaudeLink[]>('/api/admin/account/claude', { default: () => [] })
+const siteOrigin = useRequestURL().origin
+const unlinking = ref<ClaudeLink | null>(null)
+const confirmUnlink = computed({
+  get: () => !!unlinking.value,
+  set: (v) => { if (!v) unlinking.value = null },
+})
+const unlinkBusy = ref(false)
+
+async function unlink() {
+  const link = unlinking.value
+  if (!link) return
+  unlinkBusy.value = true
+  try {
+    await $fetch(`/api/admin/account/claude/${link.id}`, { method: 'DELETE' })
+    notify('ok', 'Claude scollegato')
+  }
+  catch (err) {
+    notify('error', adminErrorText(err))
+  }
+  finally {
+    unlinkBusy.value = false
+    unlinking.value = null
+    await refreshLinks()
   }
 }
 </script>
@@ -140,7 +171,63 @@ async function changePassword() {
             </div>
           </AdminSection>
         </form>
+
+        <AdminSection
+          id="claude"
+          title="Claude collegato"
+          description="I Claude che leggono i bandi con il tuo account."
+        >
+          <p
+            v-if="!links.length"
+            class="wrap-break-word opacity-70"
+          >
+            Nessun Claude collegato. Per collegarlo aggiungi il connettore
+            <code>{{ siteOrigin }}/mcp</code> nelle impostazioni di Claude.
+          </p>
+          <ul
+            v-else
+            class="flex flex-col gap-3"
+          >
+            <li
+              v-for="link in links"
+              :key="link.id"
+              class="
+                flex flex-wrap items-center justify-between gap-3 rounded-xl
+                bg-ink/5 p-4
+              "
+            >
+              <div class="min-w-0">
+                <p class="font-medium wrap-break-word">
+                  {{ link.clientName }}
+                </p>
+                <p class="text-sm opacity-60">
+                  Collegato il {{ formatDateTime(link.createdAt) }}.
+                  {{ link.lastUsedAt ? `Ultimo uso ${formatDateTime(link.lastUsedAt)}` : 'Mai usato' }}
+                </p>
+              </div>
+              <button
+                type="button"
+                class="
+                  rounded-full px-4 py-2 text-sm font-medium text-red
+                  hover:bg-red/10
+                "
+                @click="unlinking = link"
+              >
+                Scollega
+              </button>
+            </li>
+          </ul>
+        </AdminSection>
       </div>
     </main>
+
+    <AdminConfirm
+      v-model:open="confirmUnlink"
+      title="Scollegare Claude?"
+      description="Dovrà rifare l'accesso."
+      confirm-label="Sì, scollega"
+      :busy="unlinkBusy"
+      @confirm="unlink"
+    />
   </AdminShell>
 </template>

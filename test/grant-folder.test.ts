@@ -13,8 +13,9 @@ describe('nomi dei PDF del bando', () => {
   it('dal link, puliti per la cartella', () => {
     expect(pdfFileName('https://example.com/docs/avviso.pdf')).toBe('avviso.pdf')
     expect(pdfFileName('https://example.com/docs/Avviso%20pubblico.pdf')).toBe('Avviso pubblico.pdf')
-    // Barre e caratteri di controllo dal nome decodificato
+    // Barre, caratteri di controllo e di formato (bidi) dal nome decodificato
     expect(pdfFileName('https://example.com/docs/a%2Fb%0Ac.pdf')).toBe('a b c.pdf')
+    expect(pdfFileName('https://example.com/docs/fattura%E2%80%AEfdp.pdf')).toBe('fattura fdp.pdf')
     const long = pdfFileName(`https://example.com/docs/${'x'.repeat(400)}.pdf`)
     expect(long.length).toBeLessThanOrEqual(160)
     expect(long.endsWith('.pdf')).toBe(true)
@@ -26,17 +27,23 @@ describe('nomi dei PDF del bando', () => {
 const isPdf = (data: Buffer) => data.subarray(0, 4).toString() === '%PDF'
 
 // Il sito del bando finto: ogni richiesta finisce in `calls`
-// `bigPdf`: avviso.pdf di 10 MB + 1 byte; `pageDown`: la pagina del bando dà 404
-function fakeWeb(calls: string[], { bigPdf = false, pageDown = false } = {}) {
+// `bigPdf`: avviso.pdf di 10 MB + 1 byte; `pageDown`: la pagina del bando dà 404;
+// `twins`: la pagina linka due "Allegato A.pdf" diversi, nello stile Liferay
+function fakeWeb(calls: string[], { bigPdf = false, pageDown = false, twins = false } = {}) {
   return vi.fn(async (input: string | URL) => {
     const url = String(input)
     calls.push(url)
+    if (url === 'https://example.com/a' && twins) {
+      return new Response('<main><a href="/documents/1/Allegato+A.pdf/u1">A</a><a href="/documents/2/Allegato+A.pdf/u2">A bis</a></main>', { headers: { 'content-type': 'text/html' } })
+    }
     if (url === 'https://example.com/a' && !pageDown) {
       return new Response('<main><p>Bando</p><a href="/docs/avviso.pdf">Avviso</a><a href="/docs/rotto.pdf">Rotto</a></main>', { headers: { 'content-type': 'text/html' } })
     }
     if (url === 'https://example.com/docs/avviso.pdf') {
       return new Response(bigPdf ? Buffer.alloc(MAX_FILE_BYTES + 1) : Buffer.from('%PDF-1.4 finto'))
     }
+    const twin = /^https:\/\/example\.com\/documents\/(\d)\/Allegato\+A\.pdf\/u\d$/.exec(url)
+    if (twin) return new Response(Buffer.from(`%PDF-1.4 allegato ${twin[1]}`))
     return new Response('', { status: 404 })
   })
 }
@@ -149,6 +156,25 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['bando-voucher-bando-a.md'])
   })
 
+  it('due PDF diversi con lo stesso nome entrano entrambi, anche alla ripresa', async () => {
+    const grant = await oneGrant()
+    vi.stubGlobal('fetch', fakeWeb(calls, { twins: true }))
+    const store = memoryStore()
+    await startGrantFolder(sql, store, grant.id, run)
+    await finish()
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['Allegato A (2).pdf', 'Allegato A.pdf', 'bando-voucher-bando-a.md'])
+    expect([...store.files.values()].map(b => b.toString())).toEqual(expect.arrayContaining(['%PDF-1.4 allegato 1', '%PDF-1.4 allegato 2']))
+    expect((await reread()).folderNote).toBe('2 PDF del bando caricati')
+
+    // Una ripresa ritrova gli stessi nomi: niente "(3)" né nuovi download
+    await sql`update radar_grants set folder_filled_at = null where id = ${grant.id}`
+    calls.length = 0
+    await startGrantFolder(sql, store, grant.id, run)
+    await finish()
+    expect((await fromSite(grant.id)).map(f => f.name)).toEqual(['Allegato A (2).pdf', 'Allegato A.pdf', 'bando-voucher-bando-a.md'])
+    expect(calls).toEqual(['https://example.com/a'])
+  })
+
   it('se lo store si ferma a metà, il clic dopo riprende nella stessa cartella', async () => {
     const grant = await oneGrant()
     vi.stubGlobal('fetch', fakeWeb(calls))
@@ -249,8 +275,10 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
     vi.stubGlobal('fetch', fakeWeb(calls))
     const store = memoryStore()
     await startGrantFolder(sql, store, grant.id, run)
-    // Il turno del primo scade e un altro clic lo riprende
+    // Il turno del primo scade e un altro clic lo riprende, in un altro
+    // millisecondo: l'ora del turno fa da gettone
     await sql`update radar_grants set folder_claimed_at = now() - interval '1 hour' where id = ${grant.id}`
+    await new Promise(resolve => setTimeout(resolve, 2))
     await startGrantFolder(sql, store, grant.id, run)
     const [stale, fresh] = jobs.splice(0)
     // Il vecchio finisce per primo: lo stato resta quello del nuovo, in corso

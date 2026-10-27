@@ -13,21 +13,22 @@ export const TOO_MANY_FILES = `Al massimo ${MAX_UPLOAD_FILES} file per volta`
 // Tipi che si aprono nel browser (anteprima); il resto si scarica
 export const INLINE_MIMES: ReadonlySet<string> = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'])
 
-// Niente barre, caratteri di controllo, "." e ".."
+// Niente barre, caratteri di controllo o di formato (U+202E e gli altri bidi
+// fanno leggere "fdp.exe" come "exe.pdf"), "." e ".."
 export const entryNameSchema = z
   .string()
   .trim()
   .min(1, 'Nome non valido')
   .max(200, 'Nome non valido')
-  .refine(n => n !== '.' && n !== '..' && !/[/\\\p{Cc}]/u.test(n), 'Nome non valido')
+  .refine(n => n !== '.' && n !== '..' && !/[/\\\p{Cc}\p{Cf}]/u.test(n), 'Nome non valido')
 
 const MAX_FILE_NAME = 150
 
 // Nome di un file che arriva da fuori (link, browser): barre e caratteri di
-// controllo diventano spazi, la base si accorcia tenendo l'estensione; se non
+// controllo o di formato diventano spazi, la base si accorcia tenendo l'estensione; se non
 // resta un nome valido, `fallback`
 export function cleanFileName(name: string, fallback: string): string {
-  const flat = name.replace(/[/\\\p{Cc}]/gu, ' ').replace(/\s+/g, ' ').trim()
+  const flat = name.replace(/[/\\\p{Cc}\p{Cf}]/gu, ' ').replace(/\s+/g, ' ').trim()
   const ext = /\.[^.\s]{1,10}$/.exec(flat)?.[0] ?? ''
   const base = flat.slice(0, flat.length - ext.length).slice(0, MAX_FILE_NAME).trim()
   const clean = `${base}${ext}`

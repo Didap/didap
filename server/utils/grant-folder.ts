@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
-import { cleanFileName, MAX_FILE_BYTES, MAX_FILE_MB } from '#shared/grant-files'
+import { cleanFileName, MAX_FILE_BYTES, MAX_FILE_MB, uniqueName } from '#shared/grant-files'
 import { FOLDER_CLAIM_MINUTES, type FolderStart } from '#shared/radar'
 import type { FileStore } from './file-store'
 import { addFileOnce, grantSourceFolder } from './grant-files'
@@ -113,10 +113,10 @@ async function fillFolder(sql: Sql, store: FileStore, id: string, claimedAt: Dat
 }
 
 type PdfOutcome = 'loaded' | 'notDownloaded' | 'tooLarge' | 'notUploaded'
+type PdfLink = { href: string, name: string }
 type Saver = { has: (name: string) => boolean, save: (name: string, mime: string, data: Buffer) => Promise<void> }
 
-async function savePdf(href: string, { has, save }: Saver): Promise<PdfOutcome> {
-  const name = pdfFileName(href)
+async function savePdf({ href, name }: PdfLink, { has, save }: Saver): Promise<PdfOutcome> {
   // Già nella cartella: non si riscarica
   if (has(name)) return 'loaded'
   const data = await fetchFromSource(href, { origin: new URL(href).origin, maxBytes: MAX_DOWNLOAD_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
@@ -138,7 +138,16 @@ async function savePdfs(url: string, saver: Saver): Promise<{ note: string, comp
     return { note: 'Pagina del bando non raggiungibile: riprova più tardi o aggiungi i PDF a mano', complete: false }
   }
   if (!pdfs.length) return { note: 'Nessun PDF trovato sulla pagina del bando', complete: true }
-  const outcomes = await inPool(pdfs, FILE_CONCURRENCY, href => savePdf(href, saver))
+  // Due link con lo stesso nome (lo stesso "Allegato A.pdf" in due cartelle
+  // del sito): il secondo prende "(2)". Il nome dipende solo dall'ordine dei
+  // link, così una ripresa ritrova gli stessi nomi e salta i file presenti
+  const taken = new Set<string>()
+  const links = pdfs.map((href) => {
+    const name = uniqueName(taken, pdfFileName(href))
+    taken.add(name)
+    return { href, name }
+  })
+  const outcomes = await inPool(links, FILE_CONCURRENCY, link => savePdf(link, saver))
   const count = (o: PdfOutcome) => outcomes.filter(x => x === o).length
   const note = [
     `${count('loaded')} PDF del bando caricati`,

@@ -37,7 +37,12 @@ async function changePassword() {
     current.value = ''
     next.value = ''
     confirm.value = ''
-    notify('ok', 'Password cambiata. Le altre sessioni sono state chiuse.')
+    // Il cambio password scollega anche i Claude: si rilegge l'elenco
+    const hadLinks = links.value.length > 0
+    await refreshLinks()
+    notify('ok', hadLinks
+      ? 'Password cambiata. Le altre sessioni e Claude sono stati scollegati.'
+      : 'Password cambiata. Le altre sessioni sono state chiuse.')
   }
   catch (err) {
     notify('error', adminErrorText(err))
@@ -49,8 +54,11 @@ async function changePassword() {
 
 // Claude collegato con questo account: elenco e "Scollega"
 type ClaudeLink = { id: string, clientName: string, createdAt: string, lastUsedAt: string | null }
-const { data: links, refresh: refreshLinks } = await useFetch<ClaudeLink[]>('/api/admin/account/claude', { default: () => [] })
-const siteOrigin = useRequestURL().origin
+type ClaudeInfo = { links: ClaudeLink[], mcpUrl: string, hasBandi: boolean }
+const { data: claude, refresh: refreshLinks } = await useFetch<ClaudeInfo>('/api/admin/account/claude', {
+  default: () => ({ links: [], mcpUrl: '', hasBandi: false }),
+})
+const links = computed(() => claude.value.links)
 const unlinking = ref<ClaudeLink | null>(null)
 const confirmUnlink = computed({
   get: () => !!unlinking.value,
@@ -178,11 +186,18 @@ async function unlink() {
           description="I Claude che leggono i bandi con il tuo account."
         >
           <p
-            v-if="!links.length"
+            v-if="!claude.hasBandi"
+            class="wrap-break-word opacity-70"
+          >
+            Per collegare Claude ai bandi serve l'accesso alla pagina Bandi:
+            chiedilo a chi gestisce i collaboratori.
+          </p>
+          <p
+            v-else-if="!links.length"
             class="wrap-break-word opacity-70"
           >
             Nessun Claude collegato. Per collegarlo aggiungi il connettore
-            <code>{{ siteOrigin }}/mcp</code> nelle impostazioni di Claude.
+            <code>{{ claude.mcpUrl }}</code> nelle impostazioni di Claude.
           </p>
           <ul
             v-else
@@ -202,7 +217,7 @@ async function unlink() {
                 </p>
                 <p class="text-sm opacity-60">
                   Collegato il {{ formatDateTime(link.createdAt) }}.
-                  {{ link.lastUsedAt ? `Ultimo uso ${formatDateTime(link.lastUsedAt)}` : 'Mai usato' }}
+                  {{ link.lastUsedAt ? `Ultimo uso ${formatDateTime(link.lastUsedAt)}.` : 'Mai usato.' }}
                 </p>
               </div>
               <button

@@ -126,7 +126,8 @@ function download() {
             inline-flex items-center rounded-full bg-ink px-4 py-2 font-medium
             text-paper-light
             hover:bg-green
-            disabled:opacity-40 disabled:hover:bg-ink
+            disabled:opacity-40
+            disabled:hover:bg-ink
           "
           :disabled="!editor.dirty || editor.saving || !!editor.conflict"
           @click="editor.save()"
@@ -138,7 +139,8 @@ function download() {
           class="
             inline-flex items-center rounded-full border border-ink/20 px-4 py-2
             hover:border-ink
-            disabled:opacity-40 disabled:hover:border-ink/20
+            disabled:opacity-40
+            disabled:hover:border-ink/20
           "
           :disabled="!editor.text"
           title="Scarica il testo com'è adesso in un file Markdown"

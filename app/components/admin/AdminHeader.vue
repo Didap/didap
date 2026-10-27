@@ -3,8 +3,20 @@ import { firstAllowedPath } from '#shared/admin-access'
 import { ADMIN_PAGES, ADMIN_PAGE_INFO } from '#shared/users'
 
 // Barra di /admin: logo e, con una sessione, sezioni della persona, link al
-// sito, account e uscita
-const emit = defineEmits<{ logout: [] }>()
+// sito, account e uscita. "Esci": chi passa @logout decide lui (Prodotti
+// chiede prima delle modifiche non salvate), altrimenti si esce qui
+const props = defineProps<{ onLogout?: () => unknown }>()
+const { notify } = useAdminToast()
+
+async function logout() {
+  if (props.onLogout) return props.onLogout()
+  try {
+    await adminLogout()
+  }
+  catch {
+    notify('error', 'Uscita non riuscita')
+  }
+}
 
 const session = useAdminSessionState()
 const user = computed(() => (session.value?.authenticated ? session.value.user : null))
@@ -89,7 +101,7 @@ const isActive = (to: string) => (to === '/admin' ? route.path === '/admin' : ro
           rounded-full border border-ink/20 px-3 py-1
           hover:border-ink
         "
-        @click="emit('logout')"
+        @click="logout"
       >
         Esci
       </button>

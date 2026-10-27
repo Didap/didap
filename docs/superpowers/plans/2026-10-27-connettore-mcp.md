@@ -481,3 +481,227 @@ git commit -am "fix(mcp): <cosa>"
 ```
 
 Note per la PR (non per il codice): su Coolify il proxy deve passare `/.well-known/*`, `/oauth/*` e `/mcp`; `NUXT_PUBLIC_SITE_URL` deve essere il dominio pubblico in https; nessun blocco degli IP di Anthropic (`160.79.104.0/21`). La prova da claude.ai si fa dopo il deploy, aggiungendo il connettore personalizzato `https://<dominio>/mcp`.
+
+---
+
+## Seconda parte (2026-10-27): correzioni della revisione finale e bozza della candidatura
+
+La spec è stata aggiornata (commit bdb57c6): bozza della candidatura modificabile, testo a parti, limite immagini, pulizia dei client. Valgono le Global Constraints sopra, più:
+
+- Testo verso Claude a parti di al massimo `MAX_TOOL_TEXT = 60_000` caratteri, con "parte X di Y" in testa.
+- Immagini verso Claude solo fino a `MAX_TOOL_IMAGE_BYTES = 3_500_000` byte.
+- Bozza: Markdown, al massimo `MAX_DRAFT_CHARS = 200_000` caratteri, una per bando, versione numerica, salvataggio solo "a partire dalla versione N" o "prima bozza".
+
+### Review Focus (seconda parte)
+
+1. Claude salva la bozza mentre una persona la sta correggendo nel pannello: il salvataggio più vecchio dei due è rifiutato con `409`, nessun testo perso. (Task 10, 12)
+2. Prima bozza su un bando senza cartella e senza Cloudinary: la bozza si salva, il bando ha `folder_at` e resta dopo `radarWipe`. (Task 10)
+3. `leggi_bando` su un bando da 1,5 milioni di caratteri: la parte 1 ha i dati estratti in testa, l'ultima parte finisce il testo, una parte oltre l'ultima dà un errore chiaro. (Task 8)
+4. Chi si scollega e ricollega Claude dopo più di 7 giorni dalla registrazione: il client c'è ancora. (Task 8)
+5. Una foto da 6 MB nella cartella: `leggi_file` risponde con nome e dimensione, non con l'immagine. (Task 8)
+
+---
+
+### Task 8: Correzioni lato server dalla revisione finale
+
+**Files:**
+- Modify: `server/utils/schema.ts` (`alter table oauth_clients add column if not exists linked_at timestamptz`)
+- Modify: `server/utils/oauth.ts` (`exchangeCode` scrive `linked_at = coalesce(linked_at, now())`; la pulizia in `registerClient` cancella solo `linked_at is null and created_at < now() - 7 giorni`)
+- Modify: `server/utils/mcp-bandi.ts` (parti, limite immagini)
+- Modify: `server/utils/mcp-server.ts` (argomento `parte` per `leggi_bando` e `leggi_file`; `openWorldHint: true` su `crea_cartella_bando`; il 503 di Cloudinary verso Claude diventa "La cartella dei file non è configurata sul server.")
+- Modify: `server/routes/mcp.ts` (`createMcpHandler(..., { onerror: e => console.warn('[mcp]', e) })` se l'opzione esiste nella 2.3.1; altrimenti il modo che l'SDK offre per non perdere gli errori)
+- Modify: `test/mcp-bandi.test.ts` (`withFolder` raccoglie i lavori con un `run` e `afterEach` li aspetta prima di `vi.unstubAllGlobals()`, come `test/mcp-server.test.ts`)
+- Test: `test/oauth.test.ts`, `test/mcp-bandi.test.ts`, `test/mcp-server.test.ts`
+
+**Interfaces:**
+- Produces in `mcp-bandi.ts`:
+  - `MAX_TOOL_TEXT = 60_000`, `MAX_TOOL_IMAGE_BYTES = 3_500_000`
+  - `textPart(text: string, part: number): { text: string, part: number, parts: number }` (parti consecutive di `MAX_TOOL_TEXT`; `parts` almeno 1; `part` fuori da 1..parts: h3 400 "Parte <n> inesistente: il testo ha <parts> parti")
+  - `readGrantText(sql, id, part = 1): Promise<string>`: la parte richiesta di `grantExport`, con in testa `[Parte X di Y. Chiedi la parte X+1 con parte: X+1.]` se `parts > 1` (sull'ultima: `[Parte Y di Y, l'ultima.]`)
+  - `readGrantFile(sql, store, grantId, fileId, extract = pdfPages, part = 1)`: stesso schema a parti per testo e PDF; immagini oltre `MAX_TOOL_IMAGE_BYTES`: il testo `File "<nome>" (<tipo>, <KB> KB): immagine troppo grande per Claude, aprila dal pannello.`
+- Il vecchio `cut()` e `CUT_NOTE` spariscono.
+
+- [ ] **Step 1: Write the failing tests**
+
+```ts
+// oauth.test.ts
+it('la pulizia tiene i client che hanno avuto un collegamento', async () => {
+  // client collegato (exchangeCode), poi revokeLink, poi created_at spostato a 8 giorni fa;
+  // un secondo client mai collegato, anche lui di 8 giorni fa
+  await registerClient(sql, { name: 'altro', redirectUris: [CLAUDE] })
+  expect(await getOAuthClient(sql, c.id)).not.toBeNull()
+  expect(await getOAuthClient(sql, mai.id)).toBeNull()
+})
+// mcp-bandi.test.ts
+it('testo a parti', () => {
+  const long = 'a'.repeat(MAX_TOOL_TEXT * 2 + 5)
+  expect(textPart(long, 1)).toMatchObject({ part: 1, parts: 3 })
+  expect(textPart(long, 3).text).toHaveLength(5)
+  expect(() => textPart(long, 4)).toThrow(/Parte 4 inesistente/)
+  expect(textPart('', 1)).toMatchObject({ part: 1, parts: 1, text: '' })
+})
+it('leggi_bando a parti con la guida in testa', async () => { /* documento > 60k: parte 1 comincia con "[Parte 1 di" e contiene "## Cosa fare"; l'ultima comincia con "[Parte N di N, l'ultima.]" */ })
+it('immagine troppo grande: solo descritta', async () => { /* PNG di MAX_TOOL_IMAGE_BYTES + 1 byte: testo con "troppo grande" */ })
+// mcp-server.test.ts
+it('leggi_bando accetta parte e la valida', async () => { /* parte 0: isError; parte oltre l'ultima: isError con "inesistente" */ })
+it('crea_cartella_bando dichiara il mondo aperto', async () => { /* annotations.openWorldHint true */ })
+```
+
+- [ ] **Step 2: Run to see them fail**
+
+Run: `npx vitest run test/oauth.test.ts test/mcp-bandi.test.ts test/mcp-server.test.ts`
+Expected: FAIL sui test nuovi.
+
+- [ ] **Step 3: Implement** come nell'Interfaces block e nella lista dei file.
+
+- [ ] **Step 4: Run the covering tests, then the full suite three times** (per provare che il test instabile non lo è più)
+
+Run: `npx vitest run test/oauth.test.ts test/mcp-bandi.test.ts test/mcp-server.test.ts`, poi `npx vitest run` tre volte.
+Expected: PASS ogni volta.
+
+- [ ] **Step 5: Commit** `fix(mcp): text in parts, image cap, keep linked clients, stable folder test`
+
+---
+
+### Task 9: Pagina Account, ritocchi dalla revisione finale
+
+**Files:**
+- Modify: `server/api/admin/account/claude.get.ts` (risponde `{ links: ClaudeLink[], mcpUrl: string, hasBandi: boolean }` con `mcpUrl = mcpResourceUrl()`)
+- Modify: `app/pages/admin/account.vue`
+
+**Interfaces:**
+- Consumes: `mcpResourceUrl()` (Task 1), `listLinks` (Task 2).
+- Pagina:
+  - l'indirizzo del connettore viene da `mcpUrl`, non più da `useRequestURL()`;
+  - senza la pagina Bandi la sezione mostra solo "Per collegare Claude ai bandi serve l'accesso alla pagina Bandi: chiedilo a chi gestisce i collaboratori." (nessun elenco, nessun indirizzo);
+  - dopo un cambio di password riuscito si ricarica l'elenco, e il toast diventa "Password cambiata. Le altre sessioni e Claude sono stati scollegati." se c'erano collegamenti, altrimenti resta quello di oggi;
+  - "Ultimo uso <data>." con il punto, come "Collegato il <data>.".
+
+- [ ] **Step 1: Implement the endpoint change and the page**
+- [ ] **Step 2: Verify with curl** (cookie di una persona di prova con e senza Bandi): la risposta ha `mcpUrl` uguale a `<NUXT_PUBLIC_SITE_URL>/mcp` e `hasBandi`; l'HTML della pagina mostra il testo giusto nei due casi.
+- [ ] **Step 3: `npx nuxt typecheck`, `npx eslint .`, `npx vitest run`**
+- [ ] **Step 4: Commit** `fix(mcp): connector address from the server and Bandi-aware Claude section`
+
+---
+
+### Task 10: Bozza della candidatura: dati e API
+
+**Files:**
+- Modify: `server/utils/schema.ts` (tabella `grant_drafts`: `grant_id uuid primary key references radar_grants(id) on delete cascade`, `content text not null`, `version int not null`, `saved_at timestamptz not null default now()`, `saved_by text not null`, `by_claude boolean not null default false`)
+- Modify: `test/helpers/db.ts` (`grant_drafts` nel truncate dei bandi)
+- Create: `shared/grant-draft.ts`
+- Create: `server/utils/grant-draft.ts`
+- Create: `server/api/admin/radar/grants/[id]/draft.get.ts`, `server/api/admin/radar/grants/[id]/draft.put.ts`
+- Test: `test/grant-draft.test.ts`
+
+**Interfaces:**
+- `shared/grant-draft.ts`:
+  - `MAX_DRAFT_CHARS = 200_000`
+  - `type GrantDraft = { content: string, version: number, savedAt: string, savedBy: string, byClaude: boolean }`
+  - `draftSaveSchema` (zod): `{ content: string max MAX_DRAFT_CHARS, baseVersion: number int >= 1 | null }` strict
+  - `type DraftConflict = { version: number, savedAt: string, savedBy: string, byClaude: boolean }`
+- `server/utils/grant-draft.ts`:
+  - `readDraft(sql, grantId): Promise<GrantDraft | null>` (h3 404 "Bando non trovato" se il bando non esiste)
+  - `saveDraft(sql, input: { grantId: string, content: string, baseVersion: number | null, savedBy: string, byClaude: boolean }): Promise<{ draft: GrantDraft, folderCreated: boolean }>`: in una transazione con lock sulla riga del bando (`select ... for update` su `radar_grants`): 404 se manca; se la versione attuale non è `baseVersion` (o c'è una bozza e `baseVersion` è null) lancia h3 409 "La bozza è cambiata" con `data: DraftConflict`; scrive la bozza con `version + 1` (o 1); `update radar_grants set folder_at = coalesce(folder_at, now()), liked_at = coalesce(liked_at, now())`; `folderCreated` vero se `folder_at` era null prima.
+  - `saveDraftAndFill(sql, store: FileStore | null, input, run?)`: `saveDraft`, poi se `folderCreated` e `store` c'è chiama `startGrantFolder(sql, store, grantId, run)`. Chi chiama passa `useFileStore()` (null senza Cloudinary).
+- API: `GET .../draft` → `{ draft: GrantDraft | null, hasFolder: boolean }`; `PUT .../draft` con `draftSaveSchema` → `{ draft }`, `savedBy` = nome della persona della sessione, `byClaude: false`; il 409 porta `data` con la `DraftConflict`. I permessi sono quelli di `/api/admin/radar` (pagina Bandi), già in `shared/admin-access.ts`.
+
+- [ ] **Step 1: Write the failing test** (`describe.skipIf(!TEST_DATABASE_URL)`, bando creato come in `test/mcp-bandi.test.ts`)
+
+```ts
+it('prima bozza: versione 1, bando protetto', async () => {
+  const { draft, folderCreated } = await saveDraft(sql, { grantId: g, content: '# Domanda', baseVersion: null, savedBy: 'Ale', byClaude: false })
+  expect(draft).toMatchObject({ content: '# Domanda', version: 1, savedBy: 'Ale', byClaude: false })
+  expect(folderCreated).toBe(true)
+  await radarWipe(sql)
+  expect(await readDraft(sql, g)).toMatchObject({ version: 1 })
+})
+it('da versione vecchia: 409 con chi ha salvato, niente scritto', async () => {
+  await saveDraft(sql, { grantId: g, content: 'uno', baseVersion: null, savedBy: 'Ale', byClaude: false })
+  await saveDraft(sql, { grantId: g, content: 'due', baseVersion: 1, savedBy: 'Ale', byClaude: true })
+  await expect(saveDraft(sql, { grantId: g, content: 'tre', baseVersion: 1, savedBy: 'Bea', byClaude: false }))
+    .rejects.toMatchObject({ statusCode: 409, data: { version: 2, savedBy: 'Ale', byClaude: true } })
+  await expect(saveDraft(sql, { grantId: g, content: 'tre', baseVersion: null, savedBy: 'Bea', byClaude: false }))
+    .rejects.toMatchObject({ statusCode: 409 })
+  expect((await readDraft(sql, g))!.content).toBe('due')
+})
+it('due salvataggi insieme dalla stessa versione: uno solo passa', async () => { /* Promise.allSettled di due saveDraft con baseVersion 1: un fulfilled, un rejected 409 */ })
+it('senza store la bozza si salva, con store parte il riempimento', async () => { /* saveDraftAndFill con null: nessun lavoro; con memoryStore e un run che raccoglie: un lavoro, eseguito e atteso, poi folder_filled_at valorizzato (fetch finto come test/grant-folder.test.ts) */ })
+it('bando inesistente: 404; testo oltre il limite: rifiutato dallo schema', async () => { /* readDraft e saveDraft su uuid casuale: 404; draftSaveSchema.safeParse con MAX_DRAFT_CHARS + 1: success false */ })
+```
+
+- [ ] **Step 2: Run to see it fail**: `npx vitest run test/grant-draft.test.ts` → FAIL, modulo mancante.
+- [ ] **Step 3: Implement schema, shared types, utils and the two endpoints.**
+- [ ] **Step 4: Run** `npx vitest run test/grant-draft.test.ts` → PASS; curl con una persona di prova su un bando di prova: GET senza bozza `{ draft: null }`, PUT prima bozza, PUT da versione vecchia `409` con `data`.
+- [ ] **Step 5: Commit** `feat(mcp): grant application draft with versioned saves`
+
+---
+
+### Task 11: Strumenti della bozza e prompt "Prepara la candidatura"
+
+**Files:**
+- Modify: `server/utils/mcp-server.ts`, `server/utils/mcp-text.ts`
+- Modify: `server/routes/mcp.ts` (passa anche `useFileStore()` per la bozza, accanto a `requireFileStore` per i file)
+- Test: `test/mcp-server.test.ts`
+
+**Interfaces:**
+- Consumes: `readDraft`, `saveDraftAndFill`, `GrantDraft`, `MAX_DRAFT_CHARS` (Task 10).
+- Strumenti nuovi:
+  - `leggi_bozza` (`id`), `readOnlyHint: true`: JSON `{ testo, versione, salvata_il, salvata_da, da_claude }`, o il testo "Questo bando non ha ancora una bozza: scrivila con salva_bozza senza versione."
+  - `salva_bozza` (`id`, `testo` stringa fino a `MAX_DRAFT_CHARS`, `versione` intero >= 1 facoltativo), `readOnlyHint: false`, `destructiveHint: false`: `saveDraftAndFill` con `savedBy` = nome della persona del token, `byClaude: true`; risposta "Bozza salvata (versione N). La trovi nel pannello, scheda Bozza del bando." più " Ho creato la cartella del bando e l'ho messo tra gli interessanti." se `folderCreated`; un 409 diventa `isError` con "La bozza è cambiata (versione N, salvata da <nome> il <data>): rileggila con leggi_bozza e riapplica le modifiche."
+- Il prompt `come_candidarsi` diventa `prepara_candidatura` (argomento `bando`, obbligatorio), con il testo della spec ("Istruzioni e prompt per Claude"): leggere bando (a parti se serve) e profilo; dalla cartella solo i file caricati dalle persone (quelli con autore in `elenca_cartella`); dire se Didap può candidarsi e cosa verificare; se c'è già una bozza leggerla e partire da quella; scrivere la bozza seguendo struttura e criteri del bando con le sezioni della spec e "Da completare" in fondo, segnaposto `[DA COMPLETARE: ...]` per i dati mancanti; chiedere conferma e salvarla con `salva_bozza`; dire in chat cosa ha scritto e cosa resta da fare.
+- Le istruzioni del server prendono i punti nuovi della spec (segnaposto, leggere la bozza prima di cambiarla, tenere le correzioni delle persone, chiedere conferma prima di scrivere).
+
+- [ ] **Step 1: Write the failing tests**
+
+```ts
+it('nove strumenti, prompt prepara_candidatura', async () => {
+  expect((await client.listTools()).tools.map(t => t.name).sort()).toEqual(['cerca_bandi', 'crea_cartella_bando', 'elenca_cartella', 'leggi_bando', 'leggi_bozza', 'leggi_file', 'profilo_azienda', 'salva_bozza', 'segna_interessante'])
+  const [p] = (await client.listPrompts()).prompts
+  expect(p).toMatchObject({ name: 'prepara_candidatura', arguments: [{ name: 'bando', required: true }] })
+})
+it('salva e rilegge la bozza come Claude per la persona', async () => {
+  const r = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda' } })
+  expect(r.isError).toBeFalsy()
+  expect(await readDraft(sql, g)).toMatchObject({ version: 1, savedBy: user.name, byClaude: true })
+  const stale = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'x' } })
+  expect(stale).toMatchObject({ isError: true, content: [{ type: 'text', text: expect.stringContaining('leggi_bozza') }] })
+  const ok = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: '# Domanda v2', versione: 1 } })
+  expect(ok.isError).toBeFalsy()
+})
+```
+
+- [ ] **Step 2: Run to see it fail**: `npx vitest run test/mcp-server.test.ts`
+- [ ] **Step 3: Implement**
+- [ ] **Step 4: Run** `npx vitest run test/mcp-server.test.ts test/grant-draft.test.ts` → PASS, poi suite completa, typecheck, lint.
+- [ ] **Step 5: Commit** `feat(mcp): draft tools and the prepara_candidatura prompt`
+
+---
+
+### Task 12: Scheda "Bozza" nel pannello
+
+**Files:**
+- Create: `app/components/admin/RadarGrantDraft.vue`
+- Modify: `app/components/admin/RadarGrantDetail.vue` (terza scheda; tipo `'detail' | 'files' | 'draft'`)
+- Modify: `app/pages/admin/bandi/index.vue` (tipo di `detailTab`)
+
+**Interfaces:**
+- Consumes: le API del Task 10 (`GET`/`PUT .../draft`), `GrantDraft`, `DraftConflict`, `MAX_DRAFT_CHARS` da `#shared/grant-draft`.
+- Componente con prop sul bando (id, titolo, hasFolder) e `:key` per bando come `RadarGrantFiles` (si rimonta a ogni bando):
+  - senza bozza: "Nessuna bozza. Chiedi a Claude di preparare la candidatura, oppure scrivila qui."; senza cartella, sotto Salva: "Salvando, il bando va tra gli interessanti e gli si crea la cartella.";
+  - `textarea` alta, carattere del pannello, `maxlength` `MAX_DRAFT_CHARS`; "Salva" spento senza modifiche; sotto "Ultimo salvataggio: <formatDateTime>, <nome>" con " via Claude" se `byClaude`;
+  - salvataggio con `baseVersion` = versione caricata (null per la prima); dopo il salvataggio la versione caricata diventa quella nuova; toast "Bozza salvata";
+  - `409`: riquadro "La bozza è stata cambiata da <nome> alle <ora>. Copia le tue modifiche, ricarica e riapplicale." con bottone "Ricarica" (rilegge e sostituisce il testo, chiedendo conferma con `AdminConfirm` se ci sono modifiche); il testo scritto resta finché non si ricarica;
+  - modifiche non salvate: cambio di bando o di scheda e uscita dalla pagina chiedono conferma (`AdminConfirm` dentro il pannello; per la chiusura della scheda del browser solo il `beforeunload` standard);
+  - "Scarica" crea nel browser un file `bozza-<slug del titolo>.md` dal testo attuale;
+  - dopo il primo salvataggio da pannello su un bando senza cartella, il bando nell'elenco si aggiorna (cuore e cartella), con lo stesso refresh che usa "Crea cartella del bando".
+
+- [ ] **Step 1: Implement the component and the tab**
+- [ ] **Step 2: Verify**: typecheck, lint, suite. L'interazione la prova il controllore nel browser con Alessandro; il report elenca i casi da provare (prima bozza, salva, conflitto con un salvataggio fatto via API nel mezzo, ricarica, uscita con modifiche, scarica).
+- [ ] **Step 3: Commit** `feat(mcp): Bozza tab in the grant detail`
+
+---
+
+### Task 13: Prova completa della seconda parte
+
+Come il Task 7 (giro scriptato, nessun `claude mcp add`), più: `leggi_bando` a parti su un bando lungo del database di sviluppo; `salva_bozza`, conflitto e `leggi_bozza` su un bando di prova creato apposta (mai sui bandi veri del database di sviluppo); poi la stessa bozza letta dall'API del pannello. Pulizia di persone, client e bando di prova alla fine. Correzioni come `fix(mcp): <cosa>` con test.

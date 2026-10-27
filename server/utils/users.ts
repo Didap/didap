@@ -20,11 +20,19 @@ const normEmail = (email: string) => email.trim().toLowerCase()
 
 const userCount = async (sql: Sql) => (await sql`select count(*)::int as n from admin_users`)[0]!.n as number
 
-// Fuori dal pannello: via i link d'invito o di reset e le sessioni (tranne
-// `keepSid`, quella di chi cambia la propria password)
+// Fuori da Claude: via i collegamenti (i token vanno per cascata) e i codici
+// non ancora scambiati (il resto dell'OAuth sta in oauth.ts)
+async function revokeOAuth(t: Sql, userId: string) {
+  await t`delete from oauth_links where user_id = ${userId}`
+  await t`delete from oauth_codes where user_id = ${userId}`
+}
+
+// Fuori dal pannello: via i link d'invito o di reset, le sessioni (tranne
+// `keepSid`, quella di chi cambia la propria password) e Claude
 async function revokeAccess(t: Sql, userId: string, keepSid?: string) {
   await t`delete from admin_user_tokens where user_id = ${userId}`
   await t`delete from admin_sessions where user_id = ${userId} and id is distinct from ${keepSid ?? null}`
+  await revokeOAuth(t, userId)
 }
 
 function rowToUser(r: postgres.Row): AdminUser {
@@ -93,6 +101,8 @@ export async function updateUser(sql: Sql, actorId: string, id: string, input: U
     if (!row) throw notFound()
     // Disattivata: fuori subito, e i link vecchi non tornano validi alla riattivazione
     if (!input.active) await revokeAccess(t, id)
+    // Senza Bandi: Claude scollegato, e ridare la pagina non lo ricollega
+    else if (!input.pages.includes('bandi')) await revokeOAuth(t, id)
     await assertManagerLeft(t)
     return rowToUserRow(row)
   })

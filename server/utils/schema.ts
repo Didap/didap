@@ -1,5 +1,6 @@
 // Schema del database, applicato a ogni avvio (idempotente).
-// Prodotti, asset e sessioni di /admin; poi preventivi, clienti e radar bandi.
+// Prodotti, asset e sessioni di /admin; poi preventivi, clienti, radar bandi
+// e OAuth del connettore MCP.
 export const DB_SCHEMA = `
   create table if not exists product_overrides (
     slug text not null,
@@ -224,4 +225,40 @@ export const DB_SCHEMA = `
   );
   -- Tabelle create quando i comuni si spuntavano uno a uno
   alter table radar_runs add column if not exists provinces text[] not null default '{}';
+
+  -- Connettore MCP: client OAuth registrati da Claude, codici d'autorizzazione,
+  -- collegamenti persona e client, token. Di codici e token solo l'hash
+  create table if not exists oauth_clients (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    redirect_uris text[] not null,
+    created_at timestamptz not null default now()
+  );
+  create table if not exists oauth_codes (
+    hash text primary key,
+    client_id uuid not null references oauth_clients(id) on delete cascade,
+    user_id uuid not null references admin_users(id) on delete cascade,
+    redirect_uri text not null,
+    code_challenge text not null,
+    expires_at timestamptz not null
+  );
+  create table if not exists oauth_links (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references admin_users(id) on delete cascade,
+    client_id uuid not null references oauth_clients(id) on delete cascade,
+    created_at timestamptz not null default now(),
+    last_used_at timestamptz
+  );
+  create table if not exists oauth_tokens (
+    hash text primary key,
+    link_id uuid not null references oauth_links(id) on delete cascade,
+    kind text not null check (kind in ('access', 'refresh')),
+    expires_at timestamptz not null
+  );
+  create index if not exists oauth_codes_user on oauth_codes (user_id);
+  create index if not exists oauth_codes_client on oauth_codes (client_id);
+  create index if not exists oauth_links_user on oauth_links (user_id);
+  create index if not exists oauth_links_client on oauth_links (client_id);
+  create index if not exists oauth_tokens_link on oauth_tokens (link_id);
+  create index if not exists oauth_tokens_expires on oauth_tokens (expires_at);
 `

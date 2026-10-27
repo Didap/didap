@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventListener, useIntervalFn, useMediaQuery } from '@vueuse/core'
+import { until, useEventListener, useIntervalFn, useMediaQuery } from '@vueuse/core'
 import {
   CollapsibleContent,
   PopoverContent,
@@ -31,6 +31,7 @@ import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { GRANT_DRAFT, useGrantDraft } from '~/composables/useGrantDraft'
+import { holdsDraft, shownGrant } from '~/utils/grantDraftEditor'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime } from '~/utils/format'
 import { romeDate } from '#shared/dates'
@@ -273,7 +274,10 @@ const draft = useGrantDraft((id) => {
 provide(GRANT_DRAFT, draft)
 
 // Bozza con modifiche non salvate: prima di cambiare bando, scheda o pagina
-// si chiede conferma, e confermando le modifiche si buttano
+// si chiede conferma, e confermando le modifiche si buttano. Con un
+// salvataggio in corso si aspetta che torni: andato bene, l'editor ha già
+// il testo salvato e non si chiede niente; rifiutato o fallito, le
+// modifiche ci sono ancora e si chiede. Mai buttare un testo in viaggio.
 const pendingLeave = ref<null | (() => unknown)>(null)
 const leaveOpen = computed({
   get: () => !!pendingLeave.value,
@@ -282,7 +286,10 @@ const leaveOpen = computed({
   },
 })
 
-function guardDraft(action: () => unknown) {
+const saveSettled = () => until(() => draft.saving).toBe(false)
+
+async function guardDraft(action: () => unknown) {
+  await saveSettled()
   if (draft.dirty) pendingLeave.value = action
   else action()
 }
@@ -295,14 +302,15 @@ function leaveDraft() {
 }
 
 const router = useRouter()
-onBeforeRouteLeave((to) => {
+onBeforeRouteLeave(async (to) => {
+  await saveSettled()
   if (!draft.dirty) return true
   pendingLeave.value = () => router.push(to.fullPath)
   return false
 })
 // Chiudere o ricaricare la scheda del browser: la domanda standard del browser
 useEventListener('beforeunload', (e: BeforeUnloadEvent) => {
-  if (draft.dirty) e.preventDefault()
+  if (draft.dirty || draft.saving) e.preventDefault()
 })
 
 function setDetailTab(t: DetailTab) {
@@ -310,15 +318,19 @@ function setDetailTab(t: DetailTab) {
 }
 
 const selectedId = ref<string | null>(null)
-// Con la bozza da salvare il bando resta aperto anche se un filtro o la
-// ricerca lo tolgono dall'elenco
-const selected = computed(() => visible.value.find(g => g.id === selectedId.value)
-  ?? (draft.dirty && draft.grantId === selectedId.value ? grants.value.find(g => g.id === selectedId.value) : null)
-  ?? null)
+// Con la bozza da salvare (o in salvataggio) il bando resta aperto anche se
+// un filtro, la ricerca o i moduli e le province della ricerca non ancora
+// salvata lo tolgono dall'elenco: preso da tutti i bandi, valutato qui
+const keepsDraft = computed(() => holdsDraft(draft, selectedId.value))
+const selected = computed(() => shownGrant(selectedId.value, visible.value, keepsDraft.value, (id) => {
+  const g = data.value?.grants.find(x => x.id === id)
+  return g && form.value ? { ...g, ...evaluateRadarGrant(g, form.value.profile, now) } : null
+}))
 
-// Sullo schermo largo la scheda a destra non resta mai vuota se c'è un bando
+// Sullo schermo largo la scheda a destra non resta mai vuota se c'è un bando;
+// mai al posto di un bando con la bozza da tenere (anche sparito dai dati)
 watchEffect(() => {
-  if (isXl.value && !selected.value && visible.value.length) selectedId.value = visible.value[0]!.id
+  if (isXl.value && !selected.value && visible.value.length && !keepsDraft.value) selectedId.value = visible.value[0]!.id
 })
 
 function pick(id: string) {

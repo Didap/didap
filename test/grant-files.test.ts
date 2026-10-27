@@ -261,7 +261,7 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando su Postgres', () => {
     const before = await readFileEntry(sql, g, a.id)
     await renameEntry(sql, g, 'file', a.id, 'A.pdf')
     const after = await readFileEntry(sql, g, a.id)
-    expect(after).toEqual({ name: 'A.pdf', mime: 'application/pdf', storeKey: before.storeKey })
+    expect(after).toEqual({ name: 'A.pdf', mime: 'application/pdf', bytes: before.bytes, storeKey: before.storeKey })
     expect(store.files.has(after.storeKey)).toBe(true)
   })
 

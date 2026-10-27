@@ -261,16 +261,22 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
       expect((longPdf[0] as { text: string }).text).toContain('[[avviso.pdf | pagina 2]]\nq')
     })
 
-    it('immagine troppo grande: solo descritta', async () => {
+    it('immagine troppo grande: solo descritta, senza scaricarla', async () => {
       const g = await folderGrant('Bando con foto')
       const store = memoryStore()
       const bigId = await put(store, g, 'foto.png', 'image/png', 'a'.repeat(MAX_TOOL_IMAGE_BYTES + 1))
       const okId = await put(store, g, 'giusta.png', 'image/png', 'a'.repeat(MAX_TOOL_IMAGE_BYTES))
+      const zipId = await put(store, g, 'tutto.zip', 'application/zip', 'ZIP')
+      const gets: string[] = []
+      const counted = { ...store, get: (key: string) => (gets.push(key), store.get(key)) }
       const kb = Math.round((MAX_TOOL_IMAGE_BYTES + 1) / 1024)
-      expect(await readGrantFile(sql, store, g, bigId)).toEqual([
+      expect(await readGrantFile(sql, counted, g, bigId)).toEqual([
         { type: 'text', text: `File "foto.png" (image/png, ${kb} KB): immagine troppo grande per Claude, aprila dal pannello.` },
       ])
-      expect((await readGrantFile(sql, store, g, okId))[0]).toMatchObject({ type: 'image', mimeType: 'image/png' })
+      await readGrantFile(sql, counted, g, zipId)
+      expect(gets).toEqual([])
+      expect((await readGrantFile(sql, counted, g, okId))[0]).toMatchObject({ type: 'image', mimeType: 'image/png' })
+      expect(gets).toHaveLength(1)
     })
 
     it('file di un altro bando: 404', async () => {

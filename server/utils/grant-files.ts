@@ -335,10 +335,10 @@ export async function readFileEntry(
   sql: Sql,
   grantId: string,
   fileId: string,
-): Promise<{ name: string, mime: string, storeKey: string }> {
-  const [row] = await sql`select name, mime, store_key from grant_files where id = ${fileId} and grant_id = ${grantId}`
+): Promise<{ name: string, mime: string, bytes: number, storeKey: string }> {
+  const [row] = await sql`select name, mime, bytes, store_key from grant_files where id = ${fileId} and grant_id = ${grantId}`
   if (!row) throw fileNotFound()
-  return { name: row.name, mime: row.mime, storeKey: row.store_key }
+  return { name: row.name, mime: row.mime, bytes: Number(row.bytes), storeKey: row.store_key }
 }
 
 // Cartelle e file di tutta la cartella del bando in due letture (per Claude);

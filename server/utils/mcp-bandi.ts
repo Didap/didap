@@ -160,7 +160,8 @@ const asText = (text: string): ToolContent[] => [{ type: 'text', text }]
 
 // Un file della cartella in una forma che Claude legge: testo e PDF a pagine
 // (a parti come il bando), immagine; il resto solo descritto. 404 se il file
-// non è di quel bando. `part` vale solo per testo e PDF
+// non è di quel bando. `part` vale solo per testo e PDF. Il file si scarica
+// dallo store solo se Claude lo riceve: la dimensione è nel database
 export async function readGrantFile(
   sql: postgres.Sql,
   store: FileStore,
@@ -169,19 +170,20 @@ export async function readGrantFile(
   extract: (data: Buffer) => Promise<string[]> = pdfPages,
   part = 1,
 ): Promise<ToolContent[]> {
-  const { name, mime, storeKey } = await readFileEntry(sql, grantId, fileId)
+  const { name, mime, bytes, storeKey } = await readFileEntry(sql, grantId, fileId)
   const type = mime.toLowerCase().split(';')[0]!.trim()
-  const data = await store.get(storeKey)
-  const kb = Math.max(1, Math.round(data.length / 1024))
+  const kb = Math.max(1, Math.round(bytes / 1024))
 
   if (IMAGE_MIMES.has(type)) {
-    if (data.length > MAX_TOOL_IMAGE_BYTES) {
+    if (bytes > MAX_TOOL_IMAGE_BYTES) {
       return asText(`File "${name}" (${type}, ${kb} KB): immagine troppo grande per Claude, aprila dal pannello.`)
     }
+    const data = await store.get(storeKey)
     return [{ type: 'image', data: data.toString('base64'), mimeType: type }]
   }
 
   if (type === 'application/pdf' || /\.pdf$/i.test(name)) {
+    const data = await store.get(storeKey)
     let pages: string[]
     try {
       pages = await extract(data)
@@ -198,6 +200,7 @@ export async function readGrantFile(
   }
 
   if (type.startsWith('text/') || type === 'application/json' || TEXT_EXTENSIONS.test(name)) {
+    const data = await store.get(storeKey)
     return asText(paged(data.toString('utf8'), part))
   }
 

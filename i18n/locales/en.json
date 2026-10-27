@@ -19,6 +19,7 @@
     "products_intro": "We design them, write them and keep them in production ourselves. The fastest way to see how we work is to use them.",
     "featured_more": "Read the case",
     "status_live": "Live",
+    "status_development": "In development",
     "status_pilot": "Pilot",
     "status_pending": "Status to be confirmed",
     "open_product": "Open the product",
@@ -135,6 +136,7 @@
       "qube_more": "Partner page",
       "message": "Tell us",
       "message_placeholder": "A few lines about the project, draft is fine.",
+      "notify_message": "Hi, please let me know when {name} launches.",
       "consent": "I agree to the data processing as per the",
       "privacy_link": "privacy policy",
       "submit": "Send",
@@ -175,7 +177,9 @@
     "status": "Status",
     "scope": "Role",
     "stack": "Stack",
+    "platform": "Platform",
     "open": "Open {host}",
+    "notify": "Tell me when it launches",
     "next": "Next product",
     "placeholder_image": "Image"
   }

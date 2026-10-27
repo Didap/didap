@@ -24,13 +24,19 @@ useSeoMeta({
   description: t('contact.intro').replace(/\s+/g, ' '),
 })
 
+// Dal bottone "Avvisami quando esce" di una scheda prodotto: ?product=Nome
+const route = useRoute()
+const notifyProduct = typeof route.query.product === 'string'
+  ? route.query.product.trim().slice(0, 80)
+  : ''
+
 const form = reactive({
   name: '',
   email: '',
   company: '',
   projectType: '',
   fundingHelp: '',
-  message: '',
+  message: notifyProduct ? t('contact.form.notify_message', { name: notifyProduct }) : '',
   consent: false,
   website: '', // honeypot
 })

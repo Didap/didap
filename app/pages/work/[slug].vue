@@ -159,6 +159,17 @@ useSeoMeta({
                 {{ project.stack }}
               </dd>
             </div>
+            <div
+              v-if="project.platform"
+              class="flex flex-col gap-1.5"
+            >
+              <dt class="text-label opacity-60">
+                {{ t('product.platform') }}
+              </dt>
+              <dd class="text-body">
+                {{ project.platform }}
+              </dd>
+            </div>
           </dl>
 
           <div class="flex flex-col items-start gap-8">
@@ -170,6 +181,13 @@ useSeoMeta({
               :href="project.url"
             >
               {{ t('product.open', { host }) }}
+            </DidapButton>
+            <!-- Prodotto non ancora uscito: la richiesta passa dai contatti -->
+            <DidapButton
+              v-else-if="project.notify"
+              :to="localePath({ path: '/contact', query: { product: project.title } })"
+            >
+              {{ t('product.notify') }}
             </DidapButton>
           </div>
         </div>

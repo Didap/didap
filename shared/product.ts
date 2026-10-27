@@ -7,7 +7,7 @@ import { text } from './text'
 // (stringa vuota o null nascondono il blocco).
 
 export const PRODUCT_COLORS = ['ink', 'red', 'green', 'banana'] as const
-export const PRODUCT_STATUSES = ['live', 'pilot', 'pending'] as const
+export const PRODUCT_STATUSES = ['live', 'development', 'pilot', 'pending'] as const
 
 // Link esterni solo http(s); immagini solo percorsi del sito o https
 const httpUrl = z
@@ -48,8 +48,10 @@ export const productOverrideSchema = z
     status: z.enum(PRODUCT_STATUSES).nullable(),
     scope: text(200),
     stack: text(300),
+    platform: text(300),
     lede: text(600),
     url: z.union([z.literal(''), httpUrl]),
+    notify: z.boolean(),
     logo: imageSrc,
     hero: mediaSlotSchema.nullable(),
     intro: text(3000),

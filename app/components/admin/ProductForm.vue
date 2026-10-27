@@ -29,7 +29,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ focus: [section: string] }>()
 
-const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Stato da confermare' }
+const STATUS_LABELS = { live: 'Live', development: 'In sviluppo', pilot: 'Pilot', pending: 'Stato da confermare' }
 const STATUS_OPTIONS = [
   { value: '', label: 'Nessuno' },
   ...PRODUCT_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
@@ -217,7 +217,19 @@ const usesMarkdownBody = computed(
             class="admin-input"
           >
         </AdminField>
+        <AdminField label="Piattaforma">
+          <input
+            v-model="form.platform"
+            maxlength="300"
+            placeholder="Es. App iOS e Android"
+            class="admin-input"
+          >
+        </AdminField>
       </div>
+      <AdminSwitch
+        v-model="form.notify"
+        label="Senza sito: bottone «Avvisami quando esce», porta ai contatti"
+      />
       <AdminField
         label="Frase di apertura"
         :value="form.lede"

@@ -30,9 +30,12 @@ const projectSchema = z.object({
   strategic: z.boolean().default(false),
   order: z.number().int().default(0),
   // Scheda prodotto (Figma "Scheda prodotto · Desktop 1440")
-  status: z.enum(['live', 'pilot', 'pending']).optional(),
+  status: z.enum(['live', 'development', 'pilot', 'pending']).optional(),
   scope: z.string().optional(),
   stack: z.string().optional(),
+  platform: z.string().optional(),
+  // Senza `url`, il bottone "Avvisami quando esce" porta ai contatti
+  notify: z.boolean().default(false),
   lede: z.string().optional(),
   hero: mediaSlot.optional(),
   intro: z.string().optional(),

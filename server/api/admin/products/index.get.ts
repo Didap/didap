@@ -13,6 +13,6 @@ export default defineEventHandler(async () => {
     updatedAt: r.updated_at as string,
     title: (r.title as string | null) ?? undefined,
     // undefined = non modificato, null = stato tolto
-    status: r.status as 'live' | 'pilot' | 'pending' | null | undefined,
+    status: r.status as 'live' | 'development' | 'pilot' | 'pending' | null | undefined,
   }))
 })

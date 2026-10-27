@@ -62,7 +62,7 @@ const { data: edits, refresh: refreshEdits } = await useFetch('/api/admin/produc
     locale: string
     updatedAt: string
     title?: string
-    status?: 'live' | 'pilot' | 'pending' | null
+    status?: 'live' | 'development' | 'pilot' | 'pending' | null
   }[],
 })
 
@@ -433,7 +433,7 @@ const others = computed(() =>
 const lastSaved = computed(() =>
   updatedAt.value ? formatDateTime(updatedAt.value) : null,
 )
-const STATUS_LABELS = { live: 'Live', pilot: 'Pilot', pending: 'Da confermare' } as const
+const STATUS_LABELS = { live: 'Live', development: 'In sviluppo', pilot: 'Pilot', pending: 'Da confermare' } as const
 </script>
 
 <template>

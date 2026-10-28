@@ -1,28 +1,25 @@
-// Ogni link a /contact apre il modulo sopra la pagina invece di cambiarla:
-// bottoni della nav, della home, delle schede e anche i link nei testi.
-// Il link resta un link vero: con ctrl, cmd o shift apre la pagina in una
-// nuova scheda, e /contact funziona da sola per chi ci arriva da fuori.
 import { productFromQuery } from '#shared/contact'
 
+// Andare verso /contact da una pagina del sito apre il modulo sopra la
+// pagina invece di cambiarla: bottoni, link nei testi, navigateTo. Con
+// ctrl, cmd o shift il link apre /contact in una nuova scheda senza
+// passare dal router, e /contact funziona da sola per chi arriva da fuori.
+// Ogni altro cambio di pagina (privacy, indietro) chiude il modulo.
 export default defineNuxtPlugin(() => {
   const router = useRouter()
-  const { openContact } = useContactDialog()
+  const routeBaseName = useRouteBaseName()
+  const { open, openContact } = useContactDialog()
 
-  const isContact = (name: unknown) => String(name ?? '').startsWith('contact___')
+  const isContact = (route: Parameters<typeof routeBaseName>[0]) => routeBaseName(route) === 'contact'
 
-  document.addEventListener(
-    'click',
-    (e) => {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
-      const a = (e.target as HTMLElement).closest('a')
-      if (!a || a.target === '_blank' || a.origin !== window.location.origin) return
-      const to = router.resolve(a.pathname + a.search)
-      // Sulla pagina /contact il modulo c'è già
-      if (!isContact(to.name) || isContact(router.currentRoute.value.name)) return
-      // In cattura, prima di NuxtLink: con defaultPrevented non naviga
-      e.preventDefault()
-      openContact(productFromQuery(to.query.product))
-    },
-    true,
-  )
+  router.beforeEach((to, from) => {
+    // Al primo caricamento (stessa pagina) e su /contact il modulo c'è già
+    if (to.path === from.path || !isContact(to) || isContact(from)) return
+    openContact(productFromQuery(to.query.product))
+    return false
+  })
+
+  router.afterEach((_to, _from, failure) => {
+    if (!failure) open.value = false
+  })
 })

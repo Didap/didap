@@ -17,9 +17,9 @@ const product = computed(() => productFromQuery(route.query.product))
 </script>
 
 <template>
-  <section class="bg-ink text-paper-light">
+  <section class="page-x">
     <div class="
-      page-x pt-8 pb-24
+      border-t-[1.5px] border-ink pt-8 pb-24
       lg:pb-[136px]
     ">
       <ContactForm

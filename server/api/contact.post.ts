@@ -10,8 +10,13 @@ import {
 
 const ContactSchema = z.object({
   name: text(120).min(1),
-  // Email o telefono, in un campo solo
-  contact: text(200).refine((v) => contactKind(v) !== null),
+  // Email o telefono, in un campo solo: con il tipo accanto
+  contact: text(200).transform((value, ctx) => {
+    const kind = contactKind(value)
+    if (kind) return { value, kind }
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Email o telefono non valido' })
+    return z.NEVER
+  }),
   projectType: z.enum(PROJECT_TYPES).optional().or(z.literal('')),
   message: text(5000).min(1),
   // honeypot - must be empty
@@ -19,16 +24,7 @@ const ContactSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const parsed = ContactSchema.safeParse(body)
-
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'INVALID_PAYLOAD',
-      data: { issues: parsed.error.issues },
-    })
-  }
+  const data = await readSchemaBody(event, ContactSchema)
 
   if (!hasMailer()) {
     throw createError({
@@ -38,9 +34,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const resend = resendClient()
-  const { contact, ...rest } = parsed.data
-  const email = contactKind(contact) === 'email' ? contact : undefined
-  const data = { ...rest, email, phone: email ? undefined : contact }
+  const email = data.contact.kind === 'email' ? data.contact.value : undefined
 
   const fromAddress = mailFrom()
   const toAddress = process.env.CONTACT_RECIPIENT ?? CONTACT_EMAIL

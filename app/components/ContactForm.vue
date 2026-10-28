@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { DialogClose, DialogTitle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
+import type { Component } from 'vue'
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
+import DidapButton from '~/components/DidapButton.vue'
 import { CONTACT_EMAIL, CONTACT_PHONE, PROJECT_TYPES, contactKind, telHref } from '#shared/contact'
 import { untypeset } from '#shared/typeset'
 
-// Il modulo di contatto su fondo inchiostro: titolo grande, poi colonna
+// Il modulo di contatto, come una sezione della home: titolo grande, poi colonna
 // etichetta 302 con i contatti diretti e colonna 954 con il modulo.
-// `dialog`: dentro il modulo a tutto schermo (titolo del dialog e
-// bottone per chiudere dopo l'invio); altrimenti è la pagina /contact.
-// `product`: arriva da "Avvisami quando esce", il messaggio è già scritto.
-const props = defineProps<{ dialog?: boolean; product?: string }>()
+// Chi lo usa decide il resto: `titleAs` è il tag del titolo (h1 sulla
+// pagina, il titolo del dialog sopra le pagine), lo slot `done` è
+// l'azione dopo l'invio. `product`: arriva da "Avvisami quando esce", il
+// messaggio è già scritto.
+const props = defineProps<{ titleAs?: Component | string; product?: string }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -25,13 +28,8 @@ const form = reactive({
 const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const contactInvalid = ref(false)
 const contactInput = ref<HTMLInputElement>()
-const sentName = ref('')
 const invalidId = useId()
 const typeId = useId()
-
-function pickProjectType(v: unknown) {
-  form.projectType = typeof v === 'string' ? v : ''
-}
 
 async function onSubmit() {
   if (status.value === 'sending') return
@@ -52,7 +50,6 @@ async function onSubmit() {
         website: form.website,
       },
     })
-    sentName.value = form.name.trim()
     status.value = 'success'
   } catch {
     status.value = 'error'
@@ -60,17 +57,17 @@ async function onSubmit() {
 }
 
 const field = `
-  w-full border-b-[1.5px] border-paper-light/40 bg-transparent py-3 text-body
+  w-full border-b-[1.5px] border-ink/40 bg-transparent py-3 text-body
   transition-colors outline-none
-  placeholder:text-paper-light/35
-  focus:border-banana
+  placeholder:text-ink/35
+  focus:border-green
 `
 </script>
 
 <template>
   <div class="flex flex-col gap-16">
     <component
-      :is="dialog ? DialogTitle : 'h1'"
+      :is="titleAs ?? 'h1'"
       class="text-display whitespace-pre-line"
     >
       {{ t('contact.title') }}
@@ -93,7 +90,7 @@ const field = `
             class="
               self-start text-body-medium break-all underline underline-offset-4
               transition-colors
-              hover:text-banana
+              hover:text-green
             "
           >{{ CONTACT_EMAIL }}</a>
           <a
@@ -102,7 +99,7 @@ const field = `
             class="
               self-start text-body-medium underline underline-offset-4
               transition-colors
-              hover:text-banana
+              hover:text-green
             "
           >{{ CONTACT_PHONE }}</a>
         </div>
@@ -121,21 +118,12 @@ const field = `
             class="w-[160px]"
           >
           <p class="text-title">
-            {{ t('contact.form.success_title', { name: sentName }) }}
+            {{ t('contact.form.success_title', { name: form.name.trim() }) }}
           </p>
           <p class="text-body">
             {{ t('contact.form.success_body') }}
           </p>
-          <DialogClose
-            v-if="dialog"
-            class="
-              rounded-full bg-banana px-[26px] py-4 text-button text-ink
-              transition-colors
-              hover:bg-paper-light
-            "
-          >
-            {{ t('contact.close') }}
-          </DialogClose>
+          <slot name="done" />
         </div>
 
         <form
@@ -188,7 +176,7 @@ const field = `
               >
               <span
                 :id="invalidId"
-                class="mt-1 text-label text-blush normal-case"
+                class="mt-1 text-label text-red normal-case"
               >{{ contactInvalid ? t('contact.form.contact_invalid') : '' }}</span>
             </label>
           </div>
@@ -199,24 +187,23 @@ const field = `
               class="text-label opacity-60"
             >{{ t('contact.form.project_type') }}</span>
             <ToggleGroupRoot
-              :model-value="form.projectType"
+              v-model="form.projectType"
               type="single"
               :aria-labelledby="typeId"
               class="flex flex-wrap gap-3"
-              @update:model-value="pickProjectType"
             >
               <ToggleGroupItem
                 v-for="p in PROJECT_TYPES"
                 :key="p"
                 :value="p"
                 class="
-                  rounded-full border-[1.5px] border-paper-light/40 px-5 py-3
-                  text-label transition-colors
-                  hover:border-paper-light
+                  rounded-full border-[1.5px] border-ink/40 px-5 py-3 text-label
+                  transition-colors
+                  hover:border-ink
                   focus-visible:outline-2 focus-visible:outline-offset-2
-                  focus-visible:outline-banana
-                  data-[state=on]:border-banana data-[state=on]:bg-banana
-                  data-[state=on]:text-ink
+                  focus-visible:outline-ink
+                  data-[state=on]:border-green data-[state=on]:bg-green
+                  data-[state=on]:text-paper-light
                 "
               >
                 {{ t(`contact.form.option_${p}`) }}
@@ -233,7 +220,7 @@ const field = `
                 rel="noopener"
                 class="
                   underline underline-offset-4 transition-colors
-                  hover:text-banana
+                  hover:text-green
                 "
               >{{ t('contact.form.qube_link') }}&nbsp;↗</a>
             </p>
@@ -254,24 +241,16 @@ const field = `
           </label>
 
           <div class="flex flex-col items-start gap-5">
-            <button
+            <DidapButton
               type="submit"
               :disabled="status === 'sending'"
-              class="
-                rounded-full bg-banana px-[26px] py-4 text-button text-ink
-                transition-colors
-                hover:bg-paper-light
-                focus-visible:outline-2 focus-visible:outline-offset-2
-                focus-visible:outline-banana
-                disabled:opacity-50
-              "
             >
               {{ status === 'sending' ? t('contact.form.submitting') : t('contact.form.submit') }}
-            </button>
+            </DidapButton>
             <p
               v-if="status === 'error'"
               role="alert"
-              class="text-body text-blush"
+              class="text-body text-red"
             >
               {{ t('contact.form.error', { email: CONTACT_EMAIL }) }}
             </p>
@@ -280,7 +259,7 @@ const field = `
                 :to="localePath('/privacy')"
                 class="
                   underline underline-offset-4 transition-colors
-                  hover:text-banana
+                  hover:text-green
                 "
               >{{ t('contact.form.privacy_link') }}</NuxtLink>.
             </p>

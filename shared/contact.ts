@@ -8,7 +8,8 @@ export const CONTACT_PHONE = ''
 export const PROJECT_TYPES = ['product', 'app', 'site', 'grant'] as const
 export type ProjectType = (typeof PROJECT_TYPES)[number]
 
-// Dominio a etichette: niente punti doppi o in coda
+// Stessi esiti di z.string().email() sugli indirizzi dei test, senza
+// portare zod nel modulo del sito. Niente punti doppi o in coda
 const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/
 // Da 6 a 15 cifre, con il + davanti e spazi, punti, trattini o parentesi
 const PHONE = /^\+?\d{6,15}$/
@@ -17,7 +18,9 @@ const PHONE = /^\+?\d{6,15}$/
  * Il campo "email o telefono": dice quale dei due è, o null se non è
  * nessuno dei due.
  */
-export function contactKind(value: string): 'email' | 'phone' | null {
+export type ContactKind = 'email' | 'phone'
+
+export function contactKind(value: string): ContactKind | null {
   const v = value.trim()
   if (v.includes('@')) return EMAIL.test(v) ? 'email' : null
   return PHONE.test(v.replace(/[\s.()-]/g, '')) ? 'phone' : null

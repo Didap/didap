@@ -36,15 +36,16 @@ const { project: productNav } = await useProductPage(productSlug)
 const showProduct = computed(() => props.product && productNav.value)
 
 const menuOpen = ref(false)
-// Si chiude cambiando pagina e aprendo il modulo di contatto, che
-// arriva dal menu senza cambiare pagina
-const { open: contactOpen } = useContactDialog()
 watch(
-  [() => route.fullPath, contactOpen],
+  () => route.fullPath,
   () => {
     menuOpen.value = false
   },
 )
+// Anche con un link che non cambia pagina (il modulo di contatto)
+function closeMenuOnLink(e: MouseEvent) {
+  if ((e.target as Element).closest('a')) menuOpen.value = false
+}
 </script>
 
 <template>
@@ -253,7 +254,10 @@ watch(
         lg:hidden
       "
     >
-      <nav class="page-x flex flex-col gap-5 py-8">
+      <nav
+        class="page-x flex flex-col gap-5 py-8"
+        @click="closeMenuOnLink"
+      >
         <NuxtLink
           v-for="l in links"
           :key="l.id"

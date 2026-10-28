@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+/* La radice di Vite è app/: anche le classi scritte in shared/ */
+@source '../../../shared';
 
 /*
   ============================================================

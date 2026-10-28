@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AppHeader from '~/components/AppHeader.vue'
 import AppFooter from '~/components/AppFooter.vue'
-import ContactDialog from '~/components/ContactDialog.vue'
 
 // Le pagine possono chiedere il fondo "cream" del Figma (scheda prodotto)
 // con definePageMeta({ surface: 'cream' }): vale anche per nav e footer.
@@ -24,6 +23,5 @@ const productNav = computed(() => route.meta.nav === 'product')
       <slot />
     </main>
     <AppFooter :cream="cream" />
-    <ContactDialog />
   </div>
 </template>

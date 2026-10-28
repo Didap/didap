@@ -1,18 +1,24 @@
 <script setup lang="ts">
+import { NuxtLink } from '#components'
+
 // Button/Primary del Figma: pillola verde, label Semibold 13 maiuscola.
-// `to` per le rotte interne, `href` per i link esterni.
+// `to` per le rotte interne, `href` per i link esterni, senza nessuno
+// dei due è un <button> (type e disabled passano come attributi).
 // `medium`: variante della Nav, label Medium invece che Semibold.
-defineProps<{
+const props = defineProps<{
   to?: string
   href?: string
   medium?: boolean
 }>()
+
+const link = computed(() => props.href ?? props.to)
 </script>
 
 <template>
-  <NuxtLink
-    :to="href ?? to"
-    :external="!!href"
+  <component
+    :is="link ? NuxtLink : 'button'"
+    :to="link"
+    :external="link ? !!href : undefined"
     :target="href ? '_blank' : undefined"
     :class="medium ? 'text-label' : 'text-button'"
     class="
@@ -21,8 +27,9 @@ defineProps<{
       hover:bg-ink
       focus-visible:outline-2 focus-visible:outline-offset-2
       focus-visible:outline-ink
+      disabled:opacity-50
     "
   >
     <slot />
-  </NuxtLink>
+  </component>
 </template>

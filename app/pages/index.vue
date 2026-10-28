@@ -12,14 +12,22 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 
 // I quattro prodotti, ognuno con la sua splash animata (2:1, il centro
-// regge anche il taglio delle card). In evidenza c'è sempre CityFix.
-const products: {
+// regge anche il taglio delle card). Il primo, CityFix, è in evidenza.
+type Product = {
   key: string
   slug: string
   name: string
   url: string
   status: ProductStatus
-}[] = [
+}
+const products: [Product, ...Product[]] = [
+  {
+    key: 'cityfix',
+    slug: 'cityfix',
+    name: 'CityFix',
+    url: 'https://cityfix.io',
+    status: 'pilot',
+  },
   {
     key: 'fanta_rainbow',
     slug: 'fanta-rainbow',
@@ -35,13 +43,6 @@ const products: {
     status: 'pending',
   },
   {
-    key: 'cityfix',
-    slug: 'cityfix',
-    name: 'CityFix',
-    url: 'https://cityfix.io',
-    status: 'pilot',
-  },
-  {
     key: 'cruciverba_lab',
     slug: 'cruciverba-lab',
     name: 'Cruciverba Lab',
@@ -50,11 +51,9 @@ const products: {
   },
 ]
 
-const FEATURED = 'cityfix'
-const featured = products.find((p) => p.key === FEATURED)!
-const others = products.filter((p) => p.key !== FEATURED)
+const [featured, ...others] = products
 
-const splash = (p: (typeof products)[number]) => ({
+const splash = (p: Product) => ({
   src: `/covers/splash-${p.slug}.mp4`,
   poster: `/covers/splash-${p.slug}-poster.webp`,
   alt: t(`home.products.${p.key}.alt`),

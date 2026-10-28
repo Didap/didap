@@ -6,15 +6,21 @@
   /Arial mantenendo gerarchia tipografica e identità di brand.
 */
 
-import { type ProjectType, telHref } from '#shared/contact'
+import { type ContactKind, type ProjectType, telHref } from '#shared/contact'
 
 // Chi scrive lascia un'email o un telefono, uno dei due
 interface ContactData {
   name: string
-  email?: string
-  phone?: string
+  contact: { value: string; kind: ContactKind }
   projectType?: ProjectType | ''
   message: string
+}
+
+// Come rispondere a chi ha scritto
+function reply({ value, kind }: ContactData['contact']) {
+  return kind === 'email'
+    ? { label: 'Email', href: `mailto:${encodeURIComponent(value)}`, action: 'Rispondi a' }
+    : { label: 'Telefono', href: telHref(value), action: 'Chiama' }
 }
 
 const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
@@ -227,14 +233,12 @@ Didap · Free the monkey · ${SITE_URL}`
 /* ----------------- Notifica admin ----------------- */
 
 export function adminNotificationHtml(d: ContactData) {
-  const reply = d.email
-    ? `mailto:${encodeURIComponent(d.email)}`
-    : telHref(d.phone ?? '')
+  const r = reply(d.contact)
   const rows: Array<[string, string]> = [
     ['Nome', escapeHtml(d.name)],
     [
-      d.email ? 'Email' : 'Telefono',
-      `<a href="${reply}" style="color:${C.accent};text-decoration:none;">${escapeHtml(d.email ?? d.phone ?? '')}</a>`,
+      r.label,
+      `<a href="${r.href}" style="color:${C.accent};text-decoration:none;">${escapeHtml(d.contact.value)}</a>`,
     ],
   ]
   if (d.projectType)
@@ -285,7 +289,7 @@ export function adminNotificationHtml(d: ContactData) {
 
           <tr>
             <td style="background:${C.white};padding:16px 32px 32px;">
-              <a href="${reply}" style="display:inline-block;background:${C.ink};color:${C.paper};font-family:${FONT_BODY};font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:2px;padding:14px 26px;border-radius:999px;text-decoration:none;">${d.email ? 'Rispondi' : 'Chiama'} ${escapeHtml(d.name)}</a>
+              <a href="${r.href}" style="display:inline-block;background:${C.ink};color:${C.paper};font-family:${FONT_BODY};font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:2px;padding:14px 26px;border-radius:999px;text-decoration:none;">${r.action} ${escapeHtml(d.name)}</a>
             </td>
           </tr>
 
@@ -304,7 +308,7 @@ export function adminNotificationText(d: ContactData) {
     `Nuovo contatto da didap.it`,
     ``,
     `Nome: ${d.name}`,
-    d.email ? `Email: ${d.email}` : `Telefono: ${d.phone}`,
+    `${reply(d.contact).label}: ${d.contact.value}`,
   ]
   if (d.projectType) lines.push(`Tipo: ${PROJECT_TYPE_LABELS[d.projectType]}`)
   lines.push('', d.message)

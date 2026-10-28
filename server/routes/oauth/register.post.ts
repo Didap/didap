@@ -11,8 +11,9 @@ const DESCRIPTIONS = {
   invalid_client_metadata: 'Metadati del client non validi',
 } as const
 
+// Come per i token: claude.ai registra dagli stessi IP per tutti, il tetto è largo
 export default defineEventHandler(async (event) => {
-  rateLimit('oauth-register', event, { max: 20, windowMs: OAUTH_WINDOW_MS })
+  rateLimit('oauth-register', event, { max: 200, windowMs: OAUTH_WINDOW_MS })
   const body = (await readBody(event).catch(() => null)) as Record<string, unknown> | null
   const uris = urisSchema.safeParse(body?.redirect_uris)
   if (!uris.success) return oauthError(event, 'invalid_redirect_uri', DESCRIPTIONS.invalid_redirect_uri)
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw err
   }
   setResponseStatus(event, 201)
-  setResponseHeaders(event, { 'Cache-Control': 'no-store', 'Pragma': 'no-cache' })
+  oauthNoStore(event)
   return {
     client_id: client.id,
     client_id_issued_at: Math.floor(Date.now() / 1000),

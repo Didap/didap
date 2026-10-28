@@ -58,6 +58,10 @@ export default defineNuxtConfig({
         'Referrer-Policy': 'no-referrer',
       },
     },
+    // Il token del link d'invito o di reset non deve uscire nel Referer
+    '/admin/password': {
+      headers: { 'Referrer-Policy': 'no-referrer' },
+    },
     // Dati dei preventivi: mai in cache né indicizzati
     '/api/quotes/**': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'private, no-store' },

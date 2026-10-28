@@ -24,6 +24,7 @@ import {
 import AdminIcon from '~/components/admin/AdminIcon.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import OptionalNumber from '~/components/admin/OptionalNumber.vue'
+import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
 import RadarGrantDetail from '~/components/admin/RadarGrantDetail.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
@@ -43,9 +44,9 @@ import {
   radarSettingsSchema,
   SOURCE_GROUPS,
   WEEKDAYS,
-  type DriveStart,
   type Eligibility,
   type EvaluatedGrant,
+  type FolderStart,
   type LegalForm,
   type RadarGrant,
   type RadarSettings,
@@ -107,10 +108,10 @@ onAdminReady(async () => {
   }
 })
 
-// Mentre il radar gira, o una cartella su Drive si sta creando, l'elenco
-// si ricarica da solo
+// Mentre il radar gira, o una cartella del bando si sta riempiendo,
+// l'elenco si ricarica da solo
 const { pause, resume } = useIntervalFn(loadGrants, 10_000, { immediate: false })
-const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.driveCreating))
+const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.folderFilling))
 watch(busyRadar, r => (r ? resume() : pause()))
 
 async function save() {
@@ -175,8 +176,8 @@ const runNow = () => act(async () => {
 const confirmWipe = ref(false)
 const wipe = () => act(async () => {
   confirmWipe.value = false
-  const { deleted } = await $fetch<{ deleted: number }>('/api/admin/radar/wipe', { method: 'POST' })
-  return `Dati svuotati: ${deleted} testi cancellati`
+  const { deleted, kept } = await $fetch<{ deleted: number, kept: number }>('/api/admin/radar/wipe', { method: 'POST' })
+  return `Dati svuotati: ${deleted} testi cancellati${kept ? `, ${kept} bandi con cartella tenuti` : ''}`
 })
 
 const sendNow = () => act(async () => {
@@ -184,16 +185,21 @@ const sendNow = () => act(async () => {
   return sent ? `Mail inviata con ${sent} bandi` : 'Nessun bando nuovo da inviare'
 })
 
-// Valutazione coi parametri del pannello, anche prima di salvarli
+// Valutazione coi parametri del pannello, anche prima di salvarli. I bandi
+// con la cartella restano anche fuori dalla ricerca scelta.
 const now = new Date()
 const grants = computed<EvaluatedGrant[]>(() => {
   const f = form.value
   const list = data.value?.grants ?? []
   if (!f) return []
-  return list.filter(g => isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
+  return list.filter(g => g.hasFolder || isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
 })
 
-// Le schede per esito, più quella dei bandi segnati col cuore
+// Le schede per esito, più quella dei bandi segnati col cuore. I bandi
+// chiusi stanno solo negli interessanti, anche senza cuore: lì si apre la
+// loro cartella. Arrivano solo quelli con la cartella (withFolders), quindi
+// basta closed.
+const isInteresting = (g: EvaluatedGrant) => g.liked || g.closed
 type Tab = Eligibility | 'liked'
 const TABS: Record<Tab, string> = { ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
 const tab = ref<Tab>('eligible')
@@ -202,8 +208,8 @@ const query = ref('')
 const counts = computed(() => {
   const out: Record<Tab, number> = { eligible: 0, to_verify: 0, excluded: 0, liked: 0 }
   for (const g of grants.value) {
-    out[g.eligibility]++
-    if (g.liked) out.liked++
+    if (!g.closed) out[g.eligibility]++
+    if (isInteresting(g)) out.liked++
   }
   return out
 })
@@ -211,7 +217,7 @@ const counts = computed(() => {
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
   return grants.value.filter(g =>
-    (tab.value === 'liked' ? g.liked : g.eligibility === tab.value)
+    (tab.value === 'liked' ? isInteresting(g) : !g.closed && g.eligibility === tab.value)
     && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
 })
 
@@ -230,14 +236,24 @@ async function toggleLike(id: string) {
   }
 }
 
-// Cartella su Drive: già pronta, o partita (l'elenco si ricarica finché
-// c'è una cartella in creazione)
-function setDrive(id: string, start: DriveStart) {
+// Cartella del bando: già riempita, o partita (l'elenco si ricarica
+// finché c'è una cartella in riempimento)
+function setFolder(id: string, start: FolderStart) {
   const g = data.value?.grants.find(x => x.id === id)
   if (!g) return
-  if (start.status === 'ready') g.driveUrl = start.url
-  else g.driveCreating = true
+  g.hasFolder = true
+  g.liked = true
+  g.folderFilled = start.status === 'ready'
+  g.folderFilling = start.status === 'filling'
+  // Il server azzera nota ed errore quando riparte: qui subito, senza aspettare
+  if (g.folderFilling) {
+    g.folderNote = ''
+    g.folderFailed = false
+  }
 }
+
+// Scheda del dettaglio ("Dettaglio" o "File"): resta passando da un bando all'altro
+const detailTab = ref<'detail' | 'files'>('detail')
 
 const selectedId = ref<string | null>(null)
 const selected = computed(() => visible.value.find(g => g.id === selectedId.value) ?? null)
@@ -444,7 +460,7 @@ function toggleGroup(group: string, on: boolean) {
                   class="flex flex-col gap-2 rounded-lg bg-red/8 p-3 text-xs"
                   role="alert"
                 >
-                  <p>Cancello tutti i bandi letti, cuori compresi. Impostazioni e registro restano.</p>
+                  <p>Cancello tutti i bandi letti, cuori compresi, tranne quelli con la cartella. Impostazioni e registro restano.</p>
                   <span class="flex gap-2">
                     <button
                       type="button"
@@ -961,7 +977,14 @@ function toggleGroup(group: string, on: boolean) {
                   flex flex-col items-end gap-1 text-right text-sm
                   whitespace-nowrap
                 ">
-                  <span :class="timeLeft(g).urgent ? 'font-medium text-red' : ''">{{ timeLeft(g).text }}</span>
+                  <RadarClosedTag
+                    v-if="g.closed"
+                    :deadline="g.deadline"
+                  />
+                  <span
+                    v-else
+                    :class="timeLeft(g).urgent ? 'font-medium text-red' : ''"
+                  >{{ timeLeft(g).text }}</span>
                   <span
                     v-if="g.maxAmount"
                     class="tabular-nums opacity-60"
@@ -1003,8 +1026,9 @@ function toggleGroup(group: string, on: boolean) {
               >
                 <RadarGrantDetail
                   :grant="g"
-                  :drive-configured="!!data?.status.driveConfigured"
-                  @drive="setDrive"
+                  v-model:tab="detailTab"
+                  :files-configured="!!data?.status.filesConfigured"
+                  @folder="setFolder"
                 />
               </div>
             </li>
@@ -1012,7 +1036,8 @@ function toggleGroup(group: string, on: boolean) {
         </div>
       </section>
 
-      <!-- Scheda del bando -->
+      <!-- Scheda del bando, da xl in su (sotto si apre nella riga): una sola
+           scheda montata, non due elenchi della cartella in parallelo -->
       <aside
         class="
           hidden min-h-0 scrollbar-none overflow-y-auto border-l border-ink/10
@@ -1022,10 +1047,11 @@ function toggleGroup(group: string, on: boolean) {
         aria-label="Scheda del bando"
       >
         <RadarGrantDetail
-          v-if="selected"
+          v-if="isXl && selected"
           :grant="selected"
-          :drive-configured="!!data?.status.driveConfigured"
-          @drive="setDrive"
+          v-model:tab="detailTab"
+          :files-configured="!!data?.status.filesConfigured"
+          @folder="setFolder"
         />
       </aside>
     </div>

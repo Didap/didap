@@ -19,6 +19,26 @@ export const DB_SCHEMA = `
     id text primary key,
     expires_at timestamptz not null
   );
+  -- Persone del pannello, inviti e reset, sessioni legate alla persona
+  create table if not exists admin_users (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    email text not null unique,
+    password_hash text,
+    pages text[] not null default '{}',
+    active boolean not null default true,
+    created_at timestamptz not null default now(),
+    last_login_at timestamptz
+  );
+  create table if not exists admin_user_tokens (
+    hash text primary key,
+    user_id uuid not null references admin_users(id) on delete cascade,
+    kind text not null check (kind in ('invite', 'reset')),
+    expires_at timestamptz not null
+  );
+  alter table admin_sessions add column if not exists user_id uuid references admin_users(id) on delete cascade;
+  delete from admin_sessions where user_id is null;
+  create index if not exists admin_sessions_expires on admin_sessions (expires_at);
 
   create table if not exists settings (
     id int primary key check (id = 1),
@@ -144,11 +164,52 @@ export const DB_SCHEMA = `
   alter table radar_grants add column if not exists judged_profile text;
   -- Piattaforma e documenti da presentare
   alter table radar_grants add column if not exists application jsonb;
-  -- Cartella di Google Drive coi file del bando
-  alter table radar_grants add column if not exists drive_folder_id text;
-  alter table radar_grants add column if not exists drive_ready_at timestamptz;
-  alter table radar_grants add column if not exists drive_claimed_at timestamptz;
-  alter table radar_grants add column if not exists drive_note text not null default '';
+  -- Cartella di Google Drive, sostituita da quella del bando
+  alter table radar_grants drop column if exists drive_folder_id;
+  alter table radar_grants drop column if exists drive_ready_at;
+  alter table radar_grants drop column if exists drive_claimed_at;
+  alter table radar_grants drop column if exists drive_note;
+  -- Cartella del bando: creata (mai azzerata, protegge il bando da
+  -- "Svuota" e dalla rilettura), riempimento in corso, finito, com'è andata
+  alter table radar_grants add column if not exists folder_at timestamptz;
+  alter table radar_grants add column if not exists folder_claimed_at timestamptz;
+  -- Gettone del turno di riempimento: solo chi lo ha scrive lo stato
+  alter table radar_grants add column if not exists folder_claim uuid;
+  alter table radar_grants add column if not exists folder_filled_at timestamptz;
+  alter table radar_grants add column if not exists folder_note text not null default '';
+  -- Ultimo riempimento finito con un errore (si azzera al nuovo tentativo)
+  alter table radar_grants add column if not exists folder_failed_at timestamptz;
+  -- Cartella del bando: sottocartelle e file (parent_id e folder_id null: la
+  -- cartella principale; uploaded_by_name null: messo dal radar). I byte stanno
+  -- nel file store, qui solo la chiave.
+  create table if not exists grant_folders (
+    id uuid primary key default gen_random_uuid(),
+    grant_id uuid not null references radar_grants(id) on delete cascade,
+    parent_id uuid references grant_folders(id) on delete cascade,
+    name text not null,
+    created_at timestamptz not null default now()
+  );
+  create table if not exists grant_files (
+    id uuid primary key default gen_random_uuid(),
+    grant_id uuid not null references radar_grants(id) on delete cascade,
+    folder_id uuid references grant_folders(id) on delete cascade,
+    name text not null,
+    mime text not null,
+    bytes int not null,
+    store_key text not null unique,
+    uploaded_by uuid references admin_users(id) on delete set null,
+    created_at timestamptz not null default now()
+  );
+  -- Nome di chi l'ha caricato, fissato al caricamento: resta anche se la
+  -- persona viene eliminata (null: messo dal radar)
+  alter table grant_files add column if not exists uploaded_by_name text;
+  -- "Dal bando" del riempimento: si ritrova per id anche se rinominata
+  alter table radar_grants add column if not exists folder_source_id uuid references grant_folders(id) on delete set null;
+  create index if not exists grant_folders_parent on grant_folders (parent_id);
+  create index if not exists grant_files_folder on grant_files (folder_id);
+  -- Elenco e controllo dei nomi di una cartella: bando più cartella
+  create index if not exists grant_folders_grant_parent on grant_folders (grant_id, parent_id);
+  create index if not exists grant_files_grant_folder on grant_files (grant_id, folder_id);
   -- Registro degli import: moduli, tempi, conteggi e token
   create table if not exists radar_runs (
     id uuid primary key default gen_random_uuid(),

@@ -343,11 +343,17 @@ export type RadarGrant = {
   notifiedAt: string | null
   // Segnato come interessante per noi
   liked: boolean
-  // Cartella di Google Drive coi file del bando: pronta (link), in
-  // creazione, e com'è andata l'ultima volta (PDF mancanti, errore)
-  driveUrl: string | null
-  driveCreating: boolean
-  driveNote: string
+  // Cartella del bando: creata, riempita coi file del bando (false con
+  // hasFolder: riempimento fallito o interrotto, si può riprovare), in
+  // riempimento, l'ultimo finito con un errore, e com'è andato (PDF
+  // mancanti, errore)
+  hasFolder: boolean
+  folderFilled: boolean
+  folderFilling: boolean
+  folderFailed: boolean
+  folderNote: string
+  // Chiuso o scaduto: si vede solo se ha la cartella
+  closed: boolean
   createdAt: string
 }
 
@@ -417,15 +423,17 @@ export type RadarStatus = {
   pending: number
   llmConfigured: boolean
   emailConfigured: boolean
-  driveConfigured: boolean
+  filesConfigured: boolean
 }
 
-// Una cartella su Drive in creazione da più di così è morta col processo:
-// si può rifare
-export const DRIVE_CLAIM_MINUTES = 15
+// Un riempimento della cartella in corso da più di così è morto col
+// processo: si può rifare. Il caso peggiore di uno vivo è sui 15 minuti
+// (pagina con un nuovo tentativo, poi tre giri di 4 PDF a timeout pieno più
+// il caricamento): il doppio, perché un lavoro ancora in corso non si rifaccia
+export const FOLDER_CLAIM_MINUTES = 30
 
-// Risposta di "Crea cartella su Drive": già pronta, o partita in background
-export type DriveStart = { status: 'ready', url: string } | { status: 'creating' }
+// Risposta di "Crea cartella del bando": già riempita, o partita in background
+export type FolderStart = { status: 'ready' } | { status: 'filling' }
 
 // ---------- registro degli import ----------
 

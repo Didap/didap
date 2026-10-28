@@ -1,0 +1,18 @@
+import { z } from 'zod'
+import { PASSWORD_MAX, passwordSchema } from '#shared/users'
+
+// Cambio della propria password: le altre sessioni si chiudono. Limite di
+// tentativi per persona sulla password attuale; riuscito, si azzera.
+const changeSchema = z.object({
+  current: z.string().max(PASSWORD_MAX),
+  next: passwordSchema,
+})
+
+export default defineEventHandler(async (event) => {
+  const { user, sid } = await requireSession(event)
+  const { current, next } = await readSchemaBody(event, changeSchema)
+  limitAttempt('password-change', user.id, { max: 8, windowMs: 10 * 60 * 1000 })
+  await changeOwnPassword(await useDb(), user, sid, current, next)
+  clearAttempts('password-change', user.id)
+  return { ok: true }
+})

@@ -11,13 +11,16 @@ import type { ProductStatus } from '#shared/product'
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-// I quattro prodotti, ognuno con la sua splash animata (2:1, il centro
-// regge anche il taglio delle card). Il primo, CityFix, è in evidenza.
+// I prodotti, ognuno con la sua splash animata (2:1, il centro regge
+// anche il taglio delle card) o un'immagine ferma (`image`). Il primo,
+// CityFix, è in evidenza. Senza `url` il prodotto non è ancora uscito:
+// la card porta a "Avvisami quando esce".
 type Product = {
   key: string
   slug: string
   name: string
-  url: string
+  url?: string
+  image?: string
   status: ProductStatus
 }
 const products: [Product, ...Product[]] = [
@@ -49,13 +52,20 @@ const products: [Product, ...Product[]] = [
     url: 'https://cruciverba-lab.it',
     status: 'pending',
   },
+  {
+    key: 'helllo',
+    slug: 'helllo',
+    name: 'Helllo',
+    image: '/covers/helllo-illustrazione.webp',
+    status: 'development',
+  },
 ]
 
 const [featured, ...others] = products
 
 const splash = (p: Product) => ({
-  src: `/covers/splash-${p.slug}.mp4`,
-  poster: `/covers/splash-${p.slug}-poster.webp`,
+  src: p.image ?? `/covers/splash-${p.slug}.mp4`,
+  poster: p.image ? undefined : `/covers/splash-${p.slug}-poster.webp`,
   alt: t(`home.products.${p.key}.alt`),
 })
 
@@ -178,7 +188,10 @@ useSeoMeta({
                 {{ t(`home.products.${featured.key}.desc`) }}
               </p>
               <div class="flex flex-wrap items-center gap-6">
-                <DidapButton :href="featured.url">
+                <DidapButton
+                  v-if="featured.url"
+                  :href="featured.url"
+                >
                   {{ t('product.open', { host: host(featured.url) }) }}
                 </DidapButton>
                 <NuxtLink
@@ -198,7 +211,7 @@ useSeoMeta({
         <!-- Card prodotto -->
         <div class="
           grid gap-16
-          md:grid-cols-3 md:gap-6
+          md:grid-cols-2 md:gap-6
         ">
           <article
             v-for="p in others"
@@ -242,6 +255,7 @@ useSeoMeta({
               {{ t(`home.products.${p.key}.desc`) }}
             </p>
             <a
+              v-if="p.url"
               :href="p.url"
               target="_blank"
               rel="noopener"
@@ -252,6 +266,16 @@ useSeoMeta({
             >
               {{ t('home.open_product') }}
             </a>
+            <NuxtLink
+              v-else
+              :to="localePath({ path: '/contact', query: { product: p.name } })"
+              class="
+                self-start text-label underline transition-colors
+                hover:text-green
+              "
+            >
+              {{ t('product.notify') }}
+            </NuxtLink>
           </article>
         </div>
       </div>

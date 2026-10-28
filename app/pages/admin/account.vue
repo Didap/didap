@@ -55,9 +55,13 @@ async function changePassword() {
 // Claude collegato con questo account: elenco e "Scollega"
 type ClaudeLink = { id: string, clientName: string, createdAt: string, lastUsedAt: string | null }
 type ClaudeInfo = { links: ClaudeLink[], mcpUrl: string, hasBandi: boolean }
-const { data: claude, refresh: refreshLinks } = await useFetch<ClaudeInfo>('/api/admin/account/claude', {
+// Si carica a ogni accesso, non una volta sola: chi entra dal login di questa
+// pagina, o con un altro account, vede i propri
+const { data: claude, refresh: refreshLinks } = useFetch<ClaudeInfo>('/api/admin/account/claude', {
+  immediate: false,
   default: () => ({ links: [], mcpUrl: '', hasBandi: false }),
 })
+onAdminReady(refreshLinks)
 const links = computed(() => claude.value.links)
 const unlinking = ref<ClaudeLink | null>(null)
 const confirmUnlink = computed({

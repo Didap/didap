@@ -1,5 +1,6 @@
 // Schema del database, applicato a ogni avvio (idempotente).
-// Prodotti, asset e sessioni di /admin; poi preventivi, clienti e radar bandi.
+// Prodotti, asset e sessioni di /admin; poi preventivi, clienti, radar bandi
+// e OAuth del connettore MCP.
 export const DB_SCHEMA = `
   create table if not exists product_overrides (
     slug text not null,
@@ -19,6 +20,26 @@ export const DB_SCHEMA = `
     id text primary key,
     expires_at timestamptz not null
   );
+  -- Persone del pannello, inviti e reset, sessioni legate alla persona
+  create table if not exists admin_users (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    email text not null unique,
+    password_hash text,
+    pages text[] not null default '{}',
+    active boolean not null default true,
+    created_at timestamptz not null default now(),
+    last_login_at timestamptz
+  );
+  create table if not exists admin_user_tokens (
+    hash text primary key,
+    user_id uuid not null references admin_users(id) on delete cascade,
+    kind text not null check (kind in ('invite', 'reset')),
+    expires_at timestamptz not null
+  );
+  alter table admin_sessions add column if not exists user_id uuid references admin_users(id) on delete cascade;
+  delete from admin_sessions where user_id is null;
+  create index if not exists admin_sessions_expires on admin_sessions (expires_at);
 
   create table if not exists settings (
     id int primary key check (id = 1),
@@ -144,11 +165,62 @@ export const DB_SCHEMA = `
   alter table radar_grants add column if not exists judged_profile text;
   -- Piattaforma e documenti da presentare
   alter table radar_grants add column if not exists application jsonb;
-  -- Cartella di Google Drive coi file del bando
-  alter table radar_grants add column if not exists drive_folder_id text;
-  alter table radar_grants add column if not exists drive_ready_at timestamptz;
-  alter table radar_grants add column if not exists drive_claimed_at timestamptz;
-  alter table radar_grants add column if not exists drive_note text not null default '';
+  -- Cartella di Google Drive, sostituita da quella del bando
+  alter table radar_grants drop column if exists drive_folder_id;
+  alter table radar_grants drop column if exists drive_ready_at;
+  alter table radar_grants drop column if exists drive_claimed_at;
+  alter table radar_grants drop column if exists drive_note;
+  -- Cartella del bando: creata (mai azzerata, protegge il bando da
+  -- "Svuota" e dalla rilettura), riempimento in corso, finito, com'è andata
+  alter table radar_grants add column if not exists folder_at timestamptz;
+  alter table radar_grants add column if not exists folder_claimed_at timestamptz;
+  -- Gettone del turno di riempimento: solo chi lo ha scrive lo stato
+  alter table radar_grants add column if not exists folder_claim uuid;
+  alter table radar_grants add column if not exists folder_filled_at timestamptz;
+  alter table radar_grants add column if not exists folder_note text not null default '';
+  -- Ultimo riempimento finito con un errore (si azzera al nuovo tentativo)
+  alter table radar_grants add column if not exists folder_failed_at timestamptz;
+  -- Cartella del bando: sottocartelle e file (parent_id e folder_id null: la
+  -- cartella principale; uploaded_by_name null: messo dal radar). I byte stanno
+  -- nel file store, qui solo la chiave.
+  create table if not exists grant_folders (
+    id uuid primary key default gen_random_uuid(),
+    grant_id uuid not null references radar_grants(id) on delete cascade,
+    parent_id uuid references grant_folders(id) on delete cascade,
+    name text not null,
+    created_at timestamptz not null default now()
+  );
+  create table if not exists grant_files (
+    id uuid primary key default gen_random_uuid(),
+    grant_id uuid not null references radar_grants(id) on delete cascade,
+    folder_id uuid references grant_folders(id) on delete cascade,
+    name text not null,
+    mime text not null,
+    bytes int not null,
+    store_key text not null unique,
+    uploaded_by uuid references admin_users(id) on delete set null,
+    created_at timestamptz not null default now()
+  );
+  -- Nome di chi l'ha caricato, fissato al caricamento: resta anche se la
+  -- persona viene eliminata (null: messo dal radar)
+  alter table grant_files add column if not exists uploaded_by_name text;
+  -- "Dal bando" del riempimento: si ritrova per id anche se rinominata
+  alter table radar_grants add column if not exists folder_source_id uuid references grant_folders(id) on delete set null;
+  create index if not exists grant_folders_parent on grant_folders (parent_id);
+  create index if not exists grant_files_folder on grant_files (folder_id);
+  -- Elenco e controllo dei nomi di una cartella: bando più cartella
+  create index if not exists grant_folders_grant_parent on grant_folders (grant_id, parent_id);
+  create index if not exists grant_files_grant_folder on grant_files (grant_id, folder_id);
+  -- Bozza della candidatura, una per bando: la versione sale a ogni
+  -- salvataggio; saved_by è il nome, resta anche se la persona viene eliminata
+  create table if not exists grant_drafts (
+    grant_id uuid primary key references radar_grants(id) on delete cascade,
+    content text not null,
+    version int not null,
+    saved_at timestamptz not null default now(),
+    saved_by text not null,
+    by_claude boolean not null default false
+  );
   -- Registro degli import: moduli, tempi, conteggi e token
   create table if not exists radar_runs (
     id uuid primary key default gen_random_uuid(),
@@ -165,4 +237,44 @@ export const DB_SCHEMA = `
   );
   -- Tabelle create quando i comuni si spuntavano uno a uno
   alter table radar_runs add column if not exists provinces text[] not null default '{}';
+
+  -- Connettore MCP: client OAuth registrati da Claude, codici d'autorizzazione,
+  -- collegamenti persona e client, token. Di codici e token solo l'hash
+  create table if not exists oauth_clients (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    redirect_uris text[] not null,
+    created_at timestamptz not null default now()
+  );
+  -- Primo collegamento del client: la pulizia toglie solo i mai collegati
+  alter table oauth_clients add column if not exists linked_at timestamptz;
+  create table if not exists oauth_codes (
+    hash text primary key,
+    client_id uuid not null references oauth_clients(id) on delete cascade,
+    user_id uuid not null references admin_users(id) on delete cascade,
+    redirect_uri text not null,
+    code_challenge text not null,
+    expires_at timestamptz not null
+  );
+  create table if not exists oauth_links (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references admin_users(id) on delete cascade,
+    client_id uuid not null references oauth_clients(id) on delete cascade,
+    created_at timestamptz not null default now(),
+    last_used_at timestamptz
+  );
+  create table if not exists oauth_tokens (
+    hash text primary key,
+    link_id uuid not null references oauth_links(id) on delete cascade,
+    kind text not null check (kind in ('access', 'refresh')),
+    expires_at timestamptz not null
+  );
+  -- Refresh token già scambiato: resta fino alla scadenza per riconoscerne il riuso
+  alter table oauth_tokens add column if not exists used_at timestamptz;
+  create index if not exists oauth_codes_user on oauth_codes (user_id);
+  create index if not exists oauth_codes_client on oauth_codes (client_id);
+  create index if not exists oauth_links_user on oauth_links (user_id);
+  create index if not exists oauth_links_client on oauth_links (client_id);
+  create index if not exists oauth_tokens_link on oauth_tokens (link_id);
+  create index if not exists oauth_tokens_expires on oauth_tokens (expires_at);
 `

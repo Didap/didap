@@ -58,12 +58,32 @@ export default defineNuxtConfig({
         'Referrer-Policy': 'no-referrer',
       },
     },
+    // Il token del link d'invito o di reset non deve uscire nel Referer
+    '/admin/password': {
+      headers: { 'Referrer-Policy': 'no-referrer' },
+    },
     // Dati dei preventivi: mai in cache né indicizzati
     '/api/quotes/**': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'private, no-store' },
     },
     '/api/admin/**': {
       headers: { 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' },
+    },
+    // Connettore MCP: login OAuth e metadati, mai in cache
+    '/oauth/**': {
+      headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' },
+    },
+    '/.well-known/**': {
+      headers: { 'Cache-Control': 'no-store' },
+    },
+    // Consenso: la query (state, challenge) non esce nel Referer e la pagina
+    // non si apre dentro un frame altrui, dove un clic su Consenti si ruba
+    '/oauth/authorize': {
+      headers: {
+        'Referrer-Policy': 'no-referrer',
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': 'frame-ancestors \'none\'',
+      },
     },
   },
 

@@ -1,19 +1,22 @@
-// Stato dell'admin per la pagina /admin. Non fallisce mai: se il database
+import type { AdminUser } from '#shared/users'
+
+// Stato dell'admin per le pagine /admin. Non fallisce mai: se il database
 // non risponde lo segnala invece di dare errore.
 export default defineEventHandler(async (event) => {
-  let authenticated = false
+  let user: AdminUser | null = null
   let databaseError = false
   try {
     if (hasDatabase()) await useDb()
-    authenticated = await isAdmin(event)
+    user = await currentUser(event)
   }
   catch (err) {
     console.error('[admin/session]', err)
     databaseError = true
   }
   return {
-    configured: adminPassword() !== '',
+    configured: sessionSecret() !== '',
     database: hasDatabase() && !databaseError,
-    authenticated,
+    authenticated: user !== null,
+    user,
   }
 })

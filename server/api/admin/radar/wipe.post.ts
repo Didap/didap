@@ -1,2 +1,3 @@
-// "Svuota i dati": via bandi e testi letti; impostazioni e registro restano
-export default defineEventHandler(async () => ({ deleted: await radarWipe(await useDb()) }))
+// "Svuota i dati": via bandi e testi letti, tranne i bandi con cartella;
+// impostazioni e registro restano
+export default defineEventHandler(async () => radarWipe(await useDb()))

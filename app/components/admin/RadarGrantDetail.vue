@@ -1,29 +1,25 @@
 <script setup lang="ts">
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
+import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
+import RadarGrantDraft from '~/components/admin/RadarGrantDraft.vue'
+import RadarGrantFiles from '~/components/admin/RadarGrantFiles.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
-import { adminErrorText } from '~/utils/adminErrors'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
-import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type DriveStart, type EvaluatedGrant } from '#shared/radar'
+import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type EvaluatedGrant, type FolderStart } from '#shared/radar'
 
-// Scheda di un bando: giudizio, dati, sintesi, requisiti e come si
-// presenta. Il motivo di un requisito compare solo quando c'è qualcosa da
-// guardare; la frase del bando si apre col clic.
-const props = defineProps<{ grant: EvaluatedGrant, driveConfigured: boolean }>()
-// La cartella si crea in background: il pannello segna il bando e lo
+// Scheda di un bando, in tre schede: "Dettaglio" (giudizio, dati, sintesi,
+// requisiti e come si presenta), "File" (la cartella del bando) e "Bozza"
+// (la bozza della candidatura, condivisa con Claude). Il motivo
+// di un requisito compare solo quando c'è qualcosa da guardare; la frase del
+// bando si apre col clic.
+const props = defineProps<{ grant: EvaluatedGrant, filesConfigured: boolean }>()
+// La scheda scelta la tiene la pagina: resta passando da un bando all'altro.
+// Lasciando la bozza con modifiche la pagina chiede prima conferma.
+const tab = defineModel<'detail' | 'files' | 'draft'>('tab', { required: true })
+// La cartella si riempie in background: la pagina segna il bando e lo
 // ricarica finché non è pronta
-const emit = defineEmits<{ drive: [id: string, start: DriveStart] }>()
-
-const { notify } = useAdminToast()
-
-async function createFolder() {
-  const id = props.grant.id
-  try {
-    emit('drive', id, await $fetch<DriveStart>(`/api/admin/radar/grants/${id}/drive`, { method: 'POST' }))
-  }
-  catch (err) {
-    notify('error', adminErrorText(err))
-  }
-}
+defineEmits<{ folder: [id: string, start: FolderStart] }>()
 
 const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
 
@@ -62,6 +58,12 @@ const note = (i: number) => {
           <p class="text-sm opacity-60">
             {{ grant.issuer }}
           </p>
+          <RadarClosedTag
+            v-if="grant.closed"
+            :deadline="grant.deadline"
+            label="Scadenza"
+            class="text-sm"
+          />
         </div>
       </div>
       <div class="ml-9 flex flex-wrap gap-2">
@@ -92,35 +94,6 @@ const note = (i: number) => {
             />
           </svg>
         </a>
-        <!-- La cartella condivisa del bando: si crea una volta, poi si apre -->
-        <a
-          v-if="grant.driveUrl"
-          :href="grant.driveUrl"
-          target="_blank"
-          rel="noopener"
-          class="
-            inline-flex w-fit items-center rounded-full border border-ink/20
-            px-4 py-2 text-sm
-            hover:border-ink
-          "
-        >
-          Apri cartella Drive
-        </a>
-        <button
-          v-else
-          type="button"
-          class="
-            inline-flex w-fit items-center rounded-full border border-ink/20
-            px-4 py-2 text-sm
-            hover:border-ink
-            disabled:opacity-40
-          "
-          :disabled="!driveConfigured || grant.driveCreating"
-          :title="driveConfigured ? 'Crea la cartella del bando nel Drive condiviso, col bando e i suoi PDF' : 'Google Drive non configurato'"
-          @click="createFolder"
-        >
-          {{ grant.driveCreating ? 'Creo la cartella…' : 'Crea cartella su Drive' }}
-        </button>
         <!-- Il bando in un file Markdown + YAML, per lavorarci con Claude Code -->
         <a
           :href="`/api/admin/radar/grants/${grant.id}/export`"
@@ -135,15 +108,41 @@ const note = (i: number) => {
           Esporta per Claude
         </a>
       </div>
-      <p
-        v-if="grant.driveNote && !grant.driveCreating"
-        class="ml-9 text-xs"
-        :class="grant.driveUrl ? 'opacity-60' : 'text-red'"
+      <ToggleGroupRoot
+        :model-value="tab"
+        type="single"
+        class="ml-9 toggle-segmented w-fit"
+        aria-label="Scheda del bando"
+        @update:model-value="v => v && (tab = v as 'detail' | 'files' | 'draft')"
       >
-        Drive: {{ grant.driveNote }}
-      </p>
+        <ToggleGroupItem value="detail">
+          Dettaglio
+        </ToggleGroupItem>
+        <ToggleGroupItem value="files">
+          File
+        </ToggleGroupItem>
+        <ToggleGroupItem value="draft">
+          Bozza
+        </ToggleGroupItem>
+      </ToggleGroupRoot>
     </header>
 
+    <!-- Per id: un altro bando ha una cartella nuova, dalla principale -->
+    <RadarGrantFiles
+      v-if="tab === 'files'"
+      :key="grant.id"
+      :grant="grant"
+      :configured="filesConfigured"
+      @folder="(id, start) => $emit('folder', id, start)"
+    />
+
+    <RadarGrantDraft
+      v-else-if="tab === 'draft'"
+      :key="grant.id"
+      :grant="grant"
+    />
+
+    <template v-else>
     <div
       v-if="grant.verdict"
       class="flex items-start gap-3 rounded-xl bg-ink/4 p-3 text-sm"
@@ -296,5 +295,6 @@ const note = (i: number) => {
         </li>
       </ul>
     </section>
+    </template>
   </article>
 </template>

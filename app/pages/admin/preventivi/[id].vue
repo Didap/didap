@@ -51,8 +51,10 @@ defineI18nRoute(false)
 
 const route = useRoute()
 const id = computed(() => String(route.params.id))
-const { data: session } = await useAdminSession()
-const { notify } = useAdminToast()
+await useAdminSession()
+// Solo chi ha Preventivi carica la bozza: gli altri vanno alla loro prima pagina
+const allowed = useAdminPageAllowed()
+const { notify, copyText } = useAdminToast()
 
 const detail = ref<QuoteDetail | null>(null)
 const form = ref<DraftInput | null>(null)
@@ -115,7 +117,7 @@ async function load() {
 
 onMounted(() => {
   origin.value = location.origin
-  watch(() => session.value?.authenticated, (ok) => {
+  watch(allowed, (ok) => {
     if (!ok) return
     // Rientro dopo una sessione scaduta: load() rimpiazzerebbe la bozza modificata
     if (dirty.value) {
@@ -268,15 +270,7 @@ async function remove() {
   }
 }
 
-async function copyLink() {
-  try {
-    await navigator.clipboard.writeText(publicUrl.value)
-    notify('ok', 'Link copiato')
-  }
-  catch {
-    notify('error', 'Copia non riuscita: seleziona il link a mano')
-  }
-}
+const copyLink = () => copyText(publicUrl.value, 'Link copiato')
 
 // ---- Fasi e sconto ----------------------------------------------------------
 function addPhase() {

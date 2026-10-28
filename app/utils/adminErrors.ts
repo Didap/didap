@@ -10,6 +10,8 @@ export function adminErrorText(err: unknown): string {
     refreshAdminSession()
     return 'Sessione scaduta, accedi di nuovo'
   }
+  // Pagina tolta nel frattempo: con la sessione aggiornata il guscio porta altrove
+  if (e.statusCode === 403) refreshAdminSession()
   const problems = e.data?.data?.problems
   if (problems?.length) return problems.join(' · ')
   if (e.statusCode === 422 && e.statusMessage === 'Dati non validi') return 'Alcuni campi non sono validi'

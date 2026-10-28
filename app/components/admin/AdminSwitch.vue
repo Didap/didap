@@ -3,7 +3,7 @@ import { Label, SwitchRoot, SwitchThumb } from 'reka-ui'
 
 // Interruttore on/off (Switch di Reka UI); anche la scritta lo accende
 const model = defineModel<boolean>({ default: false })
-defineProps<{ label: string }>()
+defineProps<{ label: string, disabled?: boolean }>()
 
 const id = useId()
 </script>
@@ -13,8 +13,10 @@ const id = useId()
     <SwitchRoot
       :id="id"
       v-model="model"
+      :disabled="disabled"
       class="
         relative h-6 w-11 shrink-0 rounded-full bg-ink/20 transition-colors
+        data-disabled:cursor-not-allowed data-disabled:opacity-50
         data-[state=checked]:bg-green
       "
     >

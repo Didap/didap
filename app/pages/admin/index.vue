@@ -16,6 +16,7 @@ import ProductForm from '~/components/admin/ProductForm.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
+import AdminNoAccess from '~/components/admin/AdminNoAccess.vue'
 import { isProductLocale, type ProductLocale, type ProductOverride } from '#shared/product'
 import {
   formSignature,
@@ -36,6 +37,9 @@ const route = useRoute()
 const router = useRouter()
 
 const { data: session, refresh: refreshSession } = await useAdminSession()
+// Chi non ha Prodotti va alla sua prima pagina e non chiama queste API
+const { state: access } = useAdminPageAccess()
+const allowed = computed(() => access.value === 'allowed')
 
 async function logout() {
   await guard(async () => {
@@ -56,7 +60,7 @@ const { data: productRows, error: productsError } = await useAsyncData('admin-pr
 )
 
 const { data: edits, refresh: refreshEdits } = await useFetch('/api/admin/products', {
-  immediate: !!session.value?.authenticated,
+  immediate: allowed.value,
   default: () => [] as {
     slug: string
     locale: string
@@ -67,7 +71,7 @@ const { data: edits, refresh: refreshEdits } = await useFetch('/api/admin/produc
 })
 
 // Dopo l'accesso le modifiche salvate vanno caricate (da sloggati non lo sono)
-watch(() => session.value?.authenticated, (ok) => {
+watch(allowed, (ok) => {
   if (ok) refreshEdits()
 })
 
@@ -192,7 +196,7 @@ async function load() {
   resetHistory(null)
   restorable.value = null
   loadError.value = ''
-  if (!selected.value || !session.value?.authenticated) return
+  if (!selected.value || !allowed.value) return
   loading.value = true
   try {
     const slug = selected.value
@@ -226,7 +230,7 @@ async function load() {
 }
 
 onMounted(() => {
-  watch([selected, locale, () => session.value?.authenticated], load, { immediate: true })
+  watch([selected, locale, allowed], load, { immediate: true })
 })
 
 // ---- Messaggi ------------------------------------------------------------
@@ -457,17 +461,17 @@ const STATUS_LABELS = { live: 'Live', development: 'In sviluppo', pilot: 'Pilot'
     lg:h-screen
   ">
     <!-- Barra -->
-    <AdminHeader
-      :authenticated="!!session?.authenticated"
-      @logout="logout"
-    />
+    <AdminHeader @logout="logout" />
 
     <!-- Accesso -->
-    <AdminLogin v-if="!session?.authenticated" />
+    <AdminLogin v-if="access === 'login'" />
+
+    <!-- Nessuna sezione -->
+    <AdminNoAccess v-else-if="access === 'none'" />
 
     <!-- App -->
     <div
-      v-else
+      v-else-if="allowed"
       class="
         grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)]
         lg:grid-cols-[260px_minmax(0,1fr)]
@@ -726,7 +730,7 @@ const STATUS_LABELS = { live: 'Live', development: 'In sviluppo', pilot: 'Pilot'
                 hover:bg-ink
                 disabled:cursor-not-allowed disabled:opacity-40
               "
-              :disabled="!dirty || saving || !session.database"
+              :disabled="!dirty || saving || !session?.database"
               title="Salva (Ctrl+S)"
               @click="save"
             >

@@ -45,9 +45,13 @@ async function grant(body: Record<string, unknown>, grantType: string): Promise<
   return null
 }
 
+// Le richieste di claude.ai arrivano tutte dagli stessi IP di Anthropic: per IP
+// solo un tetto largo, il limite vero è per IP e client
 export default defineEventHandler(async (event) => {
-  rateLimit('oauth-token', event, { max: 60, windowMs: OAUTH_WINDOW_MS })
+  rateLimit('oauth-token-ip', event, { max: 600, windowMs: OAUTH_WINDOW_MS })
   const body = await readBody(event).catch(() => null)
+  const clientId = body && typeof body === 'object' ? (body as Record<string, unknown>).client_id : undefined
+  rateLimit('oauth-token', event, { max: 60, windowMs: OAUTH_WINDOW_MS }, typeof clientId === 'string' ? clientId.slice(0, 64) : '')
   const grantType = body && typeof body === 'object' ? (body as Record<string, unknown>).grant_type : undefined
   if (typeof grantType !== 'string' || !grantType) {
     return oauthError(event, 'invalid_request', 'Manca grant_type')

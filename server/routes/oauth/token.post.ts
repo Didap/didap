@@ -49,23 +49,23 @@ async function grant(body: Record<string, unknown>, grantType: string): Promise<
 // solo un tetto largo, il limite vero è per IP e client
 export default defineEventHandler(async (event) => {
   rateLimit('oauth-token-ip', event, { max: 600, windowMs: OAUTH_WINDOW_MS })
-  const body = await readBody(event).catch(() => null)
-  const clientId = body && typeof body === 'object' ? (body as Record<string, unknown>).client_id : undefined
+  const body = (await readBody(event).catch(() => null)) as Record<string, unknown> | null
+  const clientId = body?.client_id
   rateLimit('oauth-token', event, { max: 60, windowMs: OAUTH_WINDOW_MS }, typeof clientId === 'string' ? clientId.slice(0, 64) : '')
-  const grantType = body && typeof body === 'object' ? (body as Record<string, unknown>).grant_type : undefined
+  const grantType = body?.grant_type
   if (typeof grantType !== 'string' || !grantType) {
     return oauthError(event, 'invalid_request', 'Manca grant_type')
   }
   let tokens
   try {
-    tokens = await grant(body as Record<string, unknown>, grantType)
+    tokens = await grant(body ?? {}, grantType)
   }
   catch (err) {
     if (err instanceof OAuthFailure) return oauthError(event, err.code, DESCRIPTIONS[err.code])
     throw err
   }
   if (!tokens) return oauthError(event, 'unsupported_grant_type', 'Si accettano authorization_code e refresh_token')
-  setResponseHeaders(event, { 'Cache-Control': 'no-store', 'Pragma': 'no-cache' })
+  oauthNoStore(event)
   return {
     access_token: tokens.accessToken,
     token_type: 'Bearer',

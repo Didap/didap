@@ -326,10 +326,12 @@ const selected = computed(() => shownGrant(selectedId.value, visible.value, keep
   const g = data.value?.grants.find(x => x.id === id)
   return g && form.value ? { ...g, ...evaluateRadarGrant(g, form.value.profile, now) } : null
 }))
-// Sotto xl la scheda sta nella riga: un bando tenuto per la bozza ma fuori
-// dall'elenco si apre sopra l'elenco
-const heldOutside = computed(() =>
-  !isXl.value && selected.value && !visible.value.some(g => g.id === selected.value!.id) ? selected.value : null)
+// L'elenco mostrato: il bando tenuto per la bozza, se i filtri lo tolgono,
+// resta in cima con la sua riga (sotto xl la scheda si apre lì)
+const listed = computed(() => {
+  const s = selected.value
+  return s && !visible.value.some(g => g.id === s.id) ? [s, ...visible.value] : visible.value
+})
 
 // Tornando sulla pagina la bozza aperta e intatta si rilegge: chi la riprende
 // non scrive su un testo vecchio fino al 409
@@ -1001,18 +1003,6 @@ function toggleGroup(group: string, on: boolean) {
             lg:overflow-y-auto
           "
         >
-          <div
-            v-if="heldOutside"
-            class="border-b border-ink/10 bg-white"
-          >
-            <RadarGrantDetail
-              :grant="heldOutside"
-              :tab="detailTab"
-              @update:tab="setDetailTab"
-              :files-configured="!!data?.status.filesConfigured"
-              @folder="setFolder"
-            />
-          </div>
           <p
             v-if="!data"
             class="px-8 py-10 opacity-60"
@@ -1020,7 +1010,7 @@ function toggleGroup(group: string, on: boolean) {
             Carico i bandi…
           </p>
           <p
-            v-else-if="!visible.length"
+            v-else-if="!listed.length"
             class="px-8 py-10 opacity-60"
           >
             <template v-if="query">
@@ -1035,7 +1025,7 @@ function toggleGroup(group: string, on: boolean) {
           </p>
           <ul v-else>
             <li
-              v-for="g in visible"
+              v-for="g in listed"
               :key="g.id"
               class="border-b border-ink/10"
             >

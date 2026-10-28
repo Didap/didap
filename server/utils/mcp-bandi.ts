@@ -158,35 +158,41 @@ const TEXT_EXTENSIONS = /\.(md|csv|json)$/i
 
 const asText = (text: string): ToolContent[] => [{ type: 'text', text }]
 
-// Pagine dei PDF già estratte: Claude legge un PDF lungo a parti, e ogni parte
+// Testo dei file già letti: Claude legge un file lungo a parti, e ogni parte
 // non riscarica e rianalizza il file. Pochi file per pochi minuti; il file di
-// uno store_key non cambia mai
-const PDF_CACHE_MAX = 8
-const PDF_CACHE_MS = 10 * 60 * 1000
-const pdfCache = new Map<string, { pages: string[], at: number }>()
+// uno store_key non cambia mai, il nome sì (va nei segni di pagina dei PDF)
+const TEXT_CACHE_MAX = 8
+const TEXT_CACHE_MS = 10 * 60 * 1000
+const textCache = new Map<string, { text: string, at: number }>()
 
-async function cachedPdfPages(
-  store: FileStore,
-  storeKey: string,
-  name: string,
-  extract: (data: Buffer) => Promise<string[]>,
-): Promise<string[]> {
+async function cachedText(key: string, read: () => Promise<string>): Promise<string> {
   const now = Date.now()
-  const hit = pdfCache.get(storeKey)
-  if (hit && now - hit.at < PDF_CACHE_MS) return hit.pages
-  const data = await store.get(storeKey)
+  for (const [k, e] of textCache) {
+    if (now - e.at < TEXT_CACHE_MS) break
+    textCache.delete(k)
+  }
+  const hit = textCache.get(key)
+  if (hit) return hit.text
+  const text = await read()
+  if (textCache.size >= TEXT_CACHE_MAX) textCache.delete(textCache.keys().next().value!)
+  textCache.set(key, { text, at: now })
+  return text
+}
+
+async function pdfText(data: Buffer, name: string, extract: (data: Buffer) => Promise<string[]>): Promise<string> {
   let pages: string[]
   try {
     pages = await extract(data)
   }
   catch (err) {
     console.warn(`[mcp] PDF illeggibile: ${name}`, err)
-    return []
+    pages = []
   }
-  pdfCache.delete(storeKey)
-  if (pdfCache.size >= PDF_CACHE_MAX) pdfCache.delete(pdfCache.keys().next().value!)
-  pdfCache.set(storeKey, { pages, at: now })
-  return pages
+  const text = pages
+    .map((page, i) => (page.trim() ? `${pageMarker(name, i + 1)}\n${page.trim()}` : ''))
+    .filter(Boolean)
+    .join('\n\n')
+  return text || NO_PDF_TEXT
 }
 
 // Un file della cartella in una forma che Claude legge: testo e PDF a pagine
@@ -198,8 +204,8 @@ export async function readGrantFile(
   store: FileStore,
   grantId: string,
   fileId: string,
-  extract: (data: Buffer) => Promise<string[]> = pdfPages,
   part = 1,
+  extract: (data: Buffer) => Promise<string[]> = pdfPages,
 ): Promise<ToolContent[]> {
   const { name, mime, bytes, storeKey } = await readFileEntry(sql, grantId, fileId)
   const type = mime.toLowerCase().split(';')[0]!.trim()
@@ -213,17 +219,13 @@ export async function readGrantFile(
     return [{ type: 'image', data: data.toString('base64'), mimeType: type }]
   }
 
-  if (type === 'application/pdf' || /\.pdf$/i.test(name)) {
-    const text = (await cachedPdfPages(store, storeKey, name, extract))
-      .map((page, i) => (page.trim() ? `${pageMarker(name, i + 1)}\n${page.trim()}` : ''))
-      .filter(Boolean)
-      .join('\n\n')
-    return asText(paged(text || NO_PDF_TEXT, part))
-  }
-
-  if (type.startsWith('text/') || type === 'application/json' || TEXT_EXTENSIONS.test(name)) {
-    const data = await store.get(storeKey)
-    return asText(paged(data.toString('utf8'), part))
+  const isPdf = type === 'application/pdf' || /\.pdf$/i.test(name)
+  if (isPdf || type.startsWith('text/') || type === 'application/json' || TEXT_EXTENSIONS.test(name)) {
+    const text = await cachedText(`${storeKey}|${name}`, async () => {
+      const data = await store.get(storeKey)
+      return isPdf ? pdfText(data, name, extract) : data.toString('utf8')
+    })
+    return asText(paged(text, part))
   }
 
   return asText(`File "${name}" (${type || 'tipo sconosciuto'}, ${kb} KB): Claude non lo legge da qui, aprilo dal pannello.`)

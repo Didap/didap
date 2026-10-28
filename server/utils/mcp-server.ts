@@ -43,7 +43,7 @@ const part = z.number().int().min(1).optional()
 const partJson = (description: string): JsonSchemaType => ({ type: 'integer', minimum: 1, description })
 
 const text = (t: string): CallToolResult => ({ content: [{ type: 'text', text: t }] })
-const failure = (t: string): CallToolResult => ({ content: [{ type: 'text', text: t }], isError: true })
+const failure = (t: string): CallToolResult => ({ ...text(t), isError: true })
 const json = (data: Record<string, unknown>): CallToolResult => ({
   content: [{ type: 'text', text: JSON.stringify(data) }],
   structuredContent: data,
@@ -154,7 +154,7 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore | null, 
     },
     required: ['id', 'file_id'],
   }, z.object({ id: uuid, file_id: uuid, parte: part }), READ_ONLY,
-  async a => ({ content: await readGrantFile(sql, store(), a.id, a.file_id, undefined, a.parte) }))
+  async a => ({ content: await readGrantFile(sql, store(), a.id, a.file_id, a.parte) }))
 
   tool('segna_interessante', {
     properties: {

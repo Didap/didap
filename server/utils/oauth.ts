@@ -1,6 +1,7 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import type { AdminPage, AdminUser } from '#shared/users'
+import { isUuid } from './http'
 import { isAllowedRedirect, OAUTH_SCOPE, verifyPkce } from './oauth-rules'
 import { hashToken, newToken } from './passwords'
 import { inTx } from './pg'
@@ -47,9 +48,6 @@ const CLIENT_UNUSED_DAYS = 7
 // client non sparisce mentre gli si crea il collegamento
 const CLIENTS_LOCK = 7_301_002
 
-// Id dal client: se non è un uuid non arriva a Postgres (darebbe errore)
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 const invalidGrant = () => new OAuthFailure('invalid_grant')
 
 const canUseBandi = (u: postgres.Row) => u.active && (u.pages as AdminPage[]).includes('bandi')
@@ -85,7 +83,7 @@ export async function registerClient(sql: Sql, input: { name: string, redirectUr
 }
 
 export async function getOAuthClient(sql: Sql, id: string): Promise<OAuthClient | null> {
-  if (!UUID.test(id)) return null
+  if (!isUuid(id)) return null
   const [row] = await sql`select id, name, redirect_uris from oauth_clients where id = ${id}`
   return row ? rowToClient(row) : null
 }
@@ -157,7 +155,7 @@ export async function exchangeCode(
       insert into oauth_links (user_id, client_id) values (${code.user_id}, ${code.client_id})
       returning id
     `
-    await t`update oauth_clients set linked_at = coalesce(linked_at, now()) where id = ${code.client_id}`
+    await t`update oauth_clients set linked_at = now() where id = ${code.client_id} and linked_at is null`
     return await issuePair(t, link!.id)
   })
   if (!tokens) throw invalidGrant()
@@ -198,8 +196,7 @@ export async function refreshTokens(sql: Sql, input: { refreshToken: string, cli
       `
       return null
     }
-    if (!user || !link) return null
-    if (!tok.live || link.client_id !== input.clientId || !canUseBandi(user)) return null
+    if (!user || !link || !tok.live || link.client_id !== input.clientId || !canUseBandi(user)) return null
     return await issuePair(t, peek.link_id)
   })
   if (!tokens) throw invalidGrant()
@@ -255,7 +252,7 @@ export async function listLinks(sql: Sql, userId: string): Promise<ClaudeLink[]>
 // Scollega: i token vanno per cascata
 export async function revokeLink(sql: Sql, userId: string, linkId: string): Promise<void> {
   const notFound = () => createError({ statusCode: 404, statusMessage: 'Collegamento non trovato' })
-  if (!UUID.test(linkId)) throw notFound()
+  if (!isUuid(linkId)) throw notFound()
   const [row] = await sql`delete from oauth_links where id = ${linkId} and user_id = ${userId} returning id`
   if (!row) throw notFound()
 }

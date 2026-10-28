@@ -241,9 +241,9 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
       const longPdfId = await put(store, g, 'lungo.pdf', 'application/pdf', 'x')
 
       expect(await readGrantFile(sql, store, g, mdId)).toEqual([{ type: 'text', text: '# Nota' }])
-      const pdf = await readGrantFile(sql, store, g, pdfId, async () => ['prima', ''])
+      const pdf = await readGrantFile(sql, store, g, pdfId, 1, async () => ['prima', ''])
       expect(pdf[0]).toMatchObject({ type: 'text', text: expect.stringContaining('[[avviso.pdf | pagina 1]]\nprima') })
-      expect(await readGrantFile(sql, store, g, scanId, async () => ['', ''])).toEqual([
+      expect(await readGrantFile(sql, store, g, scanId, 1, async () => ['', ''])).toEqual([
         { type: 'text', text: expect.stringContaining('PDF senza testo leggibile') },
       ])
       expect((await readGrantFile(sql, store, g, pngId))[0]).toEqual({ type: 'image', data: Buffer.from('PNG').toString('base64'), mimeType: 'image/png' })
@@ -254,10 +254,10 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
       // Testo e PDF lunghi: a parti, come leggi_bando
       const big = (await readGrantFile(sql, store, g, bigTxtId))[0] as { text: string }
       expect(big.text).toBe(`[Parte 1 di 2. Chiedi la parte 2 con parte: 2.]\n\n${'a'.repeat(MAX_TOOL_TEXT)}`)
-      const bigEnd = (await readGrantFile(sql, store, g, bigTxtId, undefined, 2))[0] as { text: string }
+      const bigEnd = (await readGrantFile(sql, store, g, bigTxtId, 2))[0] as { text: string }
       expect(bigEnd.text).toBe(`[Parte 2 di 2, l'ultima.]\n\n${'a'.repeat(5000)}`)
-      await expect(readGrantFile(sql, store, g, bigTxtId, undefined, 3)).rejects.toMatchObject({ statusCode: 400 })
-      const longPdf = await readGrantFile(sql, store, g, longPdfId, async () => ['p'.repeat(MAX_TOOL_TEXT), 'q'], 2)
+      await expect(readGrantFile(sql, store, g, bigTxtId, 3)).rejects.toMatchObject({ statusCode: 400 })
+      const longPdf = await readGrantFile(sql, store, g, longPdfId, 2, async () => ['p'.repeat(MAX_TOOL_TEXT), 'q'])
       expect(longPdf[0]).toMatchObject({ type: 'text', text: expect.stringMatching(/^\[Parte 2 di 2, l'ultima\.\]\n\n/) })
       expect((longPdf[0] as { text: string }).text).toContain('[[lungo.pdf | pagina 2]]\nq')
     })
@@ -270,8 +270,8 @@ describe.skipIf(!TEST_DATABASE_URL)('bandi per Claude', () => {
       let extracts = 0
       const counted = { ...store, get: (key: string) => (gets++, store.get(key)) }
       const extract = async () => (extracts++, ['p'.repeat(MAX_TOOL_TEXT), 'q'])
-      await readGrantFile(sql, counted, g, id, extract, 1)
-      const second = (await readGrantFile(sql, counted, g, id, extract, 2))[0] as { text: string }
+      await readGrantFile(sql, counted, g, id, 1, extract)
+      const second = (await readGrantFile(sql, counted, g, id, 2, extract))[0] as { text: string }
       expect(second.text).toContain('[[lungo.pdf | pagina 2]]\nq')
       expect([gets, extracts]).toEqual([1, 1])
     })

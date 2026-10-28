@@ -10,11 +10,15 @@ import { useDb } from './db'
 
 export const OAUTH_WINDOW_MS = 10 * 60 * 1000
 
+// Token, client ed errori OAuth mai in cache (RFC 6749 5.1)
+export const oauthNoStore = (event: H3Event) =>
+  setResponseHeaders(event, { 'Cache-Control': 'no-store', 'Pragma': 'no-cache' })
+
 // Errore OAuth (RFC 6749 5.2, RFC 7591 3.2.2): `{ error, error_description }`,
-// 401 solo per invalid_client, mai in cache
+// 401 solo per invalid_client
 export function oauthError(event: H3Event, error: string, description: string) {
   setResponseStatus(event, error === 'invalid_client' ? 401 : 400)
-  setResponseHeaders(event, { 'Cache-Control': 'no-store', 'Pragma': 'no-cache' })
+  oauthNoStore(event)
   return { error, error_description: description }
 }
 

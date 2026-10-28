@@ -8,7 +8,8 @@ export const CONTACT_PHONE = ''
 export const PROJECT_TYPES = ['product', 'app', 'site', 'grant'] as const
 export type ProjectType = (typeof PROJECT_TYPES)[number]
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Dominio a etichette: niente punti doppi o in coda
+const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/
 // Da 6 a 15 cifre, con il + davanti e spazi, punti, trattini o parentesi
 const PHONE = /^\+?\d{6,15}$/
 
@@ -20,4 +21,12 @@ export function contactKind(value: string): 'email' | 'phone' | null {
   const v = value.trim()
   if (v.includes('@')) return EMAIL.test(v) ? 'email' : null
   return PHONE.test(v.replace(/[\s.()-]/g, '')) ? 'phone' : null
+}
+
+// Il numero come link tel: solo cifre e il + davanti
+export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`
+
+// ?product= di "Avvisami quando esce": il nome del prodotto, ripulito
+export function productFromQuery(product: unknown) {
+  return typeof product === 'string' ? product.trim().slice(0, 80) : ''
 }

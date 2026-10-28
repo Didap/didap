@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ContactForm from '~/components/ContactForm.vue'
+import { productFromQuery } from '#shared/contact'
 
 // Lo stesso modulo che si apre sopra le pagine, qui da solo: per i link
 // condivisi e per chi apre /contact in una nuova scheda.
@@ -12,10 +13,7 @@ useSeoMeta({
 })
 
 // Da "Avvisami quando esce" di una scheda prodotto: ?product=Nome
-const product = computed(() => {
-  const p = route.query.product
-  return typeof p === 'string' ? p.trim().slice(0, 80) : ''
-})
+const product = computed(() => productFromQuery(route.query.product))
 </script>
 
 <template>

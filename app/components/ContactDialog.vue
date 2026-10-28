@@ -4,9 +4,19 @@ import ContactForm from '~/components/ContactForm.vue'
 
 // Il modulo di contatto a tutto schermo, sopra qualunque pagina: la
 // barra in alto è alta come la nav, la ✕ sta dove c'era il bottone.
-// Chiuso, il contenuto si smonta: alla riapertura il modulo è vuoto.
+// Ogni apertura è un modulo nuovo, anche se si riapre mentre l'uscita
+// è ancora in corso. Cambiare pagina (privacy, indietro) lo chiude.
 const { t } = useI18n()
+const route = useRoute()
 const { open, product } = useContactDialog()
+
+const session = ref(0)
+watch(open, (o) => {
+  if (o) session.value++
+})
+watch(() => route.fullPath, () => {
+  open.value = false
+})
 </script>
 
 <template>
@@ -56,6 +66,7 @@ const { open, product } = useContactDialog()
             lg:pb-[136px]
           ">
             <ContactForm
+              :key="session"
               dialog
               :product="product"
             />

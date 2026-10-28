@@ -2,6 +2,7 @@
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
+import { CONTACT_EMAIL } from '#shared/contact'
 import type { ProductStatus } from '#shared/product'
 
 // Home - Figma "Home · Desktop 1440 · v0.1".
@@ -365,13 +366,13 @@ useSeoMeta({
             {{ t('home.contact_cta') }}
           </DidapButton>
           <a
-            href="mailto:amministrazione@didap.it"
+            :href="`mailto:${CONTACT_EMAIL}`"
             class="
               text-body transition-colors
               hover:text-green
             "
           >
-            amministrazione@didap.it
+            {{ CONTACT_EMAIL }}
           </a>
         </div>
         <div class="

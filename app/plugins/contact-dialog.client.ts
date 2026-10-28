@@ -2,6 +2,8 @@
 // bottoni della nav, della home, delle schede e anche i link nei testi.
 // Il link resta un link vero: con ctrl, cmd o shift apre la pagina in una
 // nuova scheda, e /contact funziona da sola per chi ci arriva da fuori.
+import { productFromQuery } from '#shared/contact'
+
 export default defineNuxtPlugin(() => {
   const router = useRouter()
   const { openContact } = useContactDialog()
@@ -19,8 +21,7 @@ export default defineNuxtPlugin(() => {
       if (!isContact(to.name) || isContact(router.currentRoute.value.name)) return
       // In cattura, prima di NuxtLink: con defaultPrevented non naviga
       e.preventDefault()
-      const product = to.query.product
-      openContact(typeof product === 'string' ? product.trim().slice(0, 80) : '')
+      openContact(productFromQuery(to.query.product))
     },
     true,
   )

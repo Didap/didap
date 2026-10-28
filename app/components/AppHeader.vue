@@ -36,8 +36,11 @@ const { project: productNav } = await useProductPage(productSlug)
 const showProduct = computed(() => props.product && productNav.value)
 
 const menuOpen = ref(false)
+// Si chiude cambiando pagina e aprendo il modulo di contatto, che
+// arriva dal menu senza cambiare pagina
+const { open: contactOpen } = useContactDialog()
 watch(
-  () => route.fullPath,
+  [() => route.fullPath, contactOpen],
   () => {
     menuOpen.value = false
   },

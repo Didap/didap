@@ -6,7 +6,7 @@
   /Arial mantenendo gerarchia tipografica e identità di brand.
 */
 
-import type { ProjectType } from '#shared/contact'
+import { type ProjectType, telHref } from '#shared/contact'
 
 // Chi scrive lascia un'email o un telefono, uno dei due
 interface ContactData {
@@ -229,7 +229,7 @@ Didap · Free the monkey · ${SITE_URL}`
 export function adminNotificationHtml(d: ContactData) {
   const reply = d.email
     ? `mailto:${encodeURIComponent(d.email)}`
-    : `tel:${(d.phone ?? '').replace(/[^\d+]/g, '')}`
+    : telHref(d.phone ?? '')
   const rows: Array<[string, string]> = [
     ['Nome', escapeHtml(d.name)],
     [

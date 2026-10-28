@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DialogClose, DialogTitle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
-import { CONTACT_EMAIL, CONTACT_PHONE, PROJECT_TYPES, contactKind } from '#shared/contact'
+import { CONTACT_EMAIL, CONTACT_PHONE, PROJECT_TYPES, contactKind, telHref } from '#shared/contact'
 import { untypeset } from '#shared/typeset'
 
 // Il modulo di contatto su fondo inchiostro: titolo grande, poi colonna
@@ -32,8 +32,6 @@ const typeId = useId()
 function pickProjectType(v: unknown) {
   form.projectType = typeof v === 'string' ? v : ''
 }
-
-const telHref = `tel:${CONTACT_PHONE.replace(/[^\d+]/g, '')}`
 
 async function onSubmit() {
   if (status.value === 'sending') return
@@ -100,7 +98,7 @@ const field = `
           >{{ CONTACT_EMAIL }}</a>
           <a
             v-if="CONTACT_PHONE"
-            :href="telHref"
+            :href="telHref(CONTACT_PHONE)"
             class="
               self-start text-body-medium underline underline-offset-4
               transition-colors

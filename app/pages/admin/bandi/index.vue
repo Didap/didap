@@ -326,6 +326,10 @@ const selected = computed(() => shownGrant(selectedId.value, visible.value, keep
   const g = data.value?.grants.find(x => x.id === id)
   return g && form.value ? { ...g, ...evaluateRadarGrant(g, form.value.profile, now) } : null
 }))
+// Sotto xl la scheda sta nella riga: un bando tenuto per la bozza ma fuori
+// dall'elenco si apre sopra l'elenco
+const heldOutside = computed(() =>
+  !isXl.value && selected.value && !visible.value.some(g => g.id === selected.value!.id) ? selected.value : null)
 
 // Tornando sulla pagina la bozza aperta e intatta si rilegge: chi la riprende
 // non scrive su un testo vecchio fino al 409
@@ -997,6 +1001,18 @@ function toggleGroup(group: string, on: boolean) {
             lg:overflow-y-auto
           "
         >
+          <div
+            v-if="heldOutside"
+            class="border-b border-ink/10 bg-white"
+          >
+            <RadarGrantDetail
+              :grant="heldOutside"
+              :tab="detailTab"
+              @update:tab="setDetailTab"
+              :files-configured="!!data?.status.filesConfigured"
+              @folder="setFolder"
+            />
+          </div>
           <p
             v-if="!data"
             class="px-8 py-10 opacity-60"

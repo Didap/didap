@@ -59,7 +59,7 @@ describe('i18n', () => {
     const { createI18n } = await import('vue-i18n')
     const config = (await import('../i18n/i18n.config')).default as unknown as () => object
     const i18n = createI18n({ legacy: false, locale: 'it', messages: { it: itMessages }, ...config() })
-    expect(i18n.global.t('home.team_intro')).toBe(`Tre full-stack engineer, un${NB}designer, un${NB}project manager. E${NB}Didi.`)
+    expect(i18n.global.t('contact.intro')).toBe(`Due righe bastano. Rispondiamo a${NB}tutti entro 2${NB}giorni${NB}lavorativi.`)
   })
 })
 

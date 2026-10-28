@@ -11,8 +11,7 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 
 // I quattro prodotti, ognuno con la sua splash animata (2:1, il centro
-// regge anche il taglio delle card). Quello in evidenza si estrae a caso
-// a ogni visita: lo sceglie il server e lo passa al client nel payload.
+// regge anche il taglio delle card). In evidenza c'è sempre CityFix.
 const products: {
   key: string
   slug: string
@@ -50,11 +49,9 @@ const products: {
   },
 ]
 
-const featuredIndex = useState('home-featured', () =>
-  Math.floor(Math.random() * products.length),
-)
-const featured = computed(() => products[featuredIndex.value]!)
-const others = computed(() => products.filter((_, i) => i !== featuredIndex.value))
+const FEATURED = 'cityfix'
+const featured = products.find((p) => p.key === FEATURED)!
+const others = products.filter((p) => p.key !== FEATURED)
 
 const splash = (p: (typeof products)[number]) => ({
   src: `/covers/splash-${p.slug}.mp4`,
@@ -74,60 +71,6 @@ const partners = [
   { slug: 'sudel', name: 'Sudel', type: 'app' },
   { slug: 'tmi', name: 'TMI', type: 'app' },
 ]
-
-// width: larghezza dell'illustrazione sulla foto (193.3 di base)
-const team = computed<
-  {
-    name: string
-    role: string
-    bg: string
-    illustration: string
-    width: string
-  }[]
->(() => [
-  {
-    name: 'Barbara',
-    role: t('home.roles.ceo'),
-    bg: 'bg-banana',
-    illustration: '/team/illustrations/barbara.svg',
-    width: 'w-[75%]',
-  },
-  {
-    name: 'William',
-    role: '¯\\_(ツ)_/¯',
-    bg: 'bg-green',
-    illustration: '/team/illustrations/william.svg',
-    width: 'w-[64.1%]',
-  },
-  {
-    name: 'Cristiano',
-    role: t('home.roles.fullstack'),
-    bg: 'bg-cream',
-    illustration: '/team/illustrations/cristiano.svg',
-    width: 'w-[66.7%]',
-  },
-  {
-    name: 'Alessandro',
-    role: t('home.roles.fullstack'),
-    bg: 'bg-blush',
-    illustration: '/team/illustrations/alessandro.svg',
-    width: 'w-[64.7%]',
-  },
-  {
-    name: 'Vitantonio',
-    role: t('home.roles.art_director'),
-    bg: 'bg-ink',
-    illustration: '/team/illustrations/vitantonio.svg',
-    width: 'w-[68.3%]',
-  },
-  {
-    name: 'Didi',
-    role: t('home.roles.mascot'),
-    bg: 'bg-red',
-    illustration: '/brand/didi-testa.svg',
-    width: 'w-[73.3%]',
-  },
-])
 
 useSeoMeta({
   title: 'Didap',
@@ -188,7 +131,7 @@ useSeoMeta({
           </p>
         </header>
 
-        <!-- In evidenza: uno dei quattro, a caso. Video e titolo aprono la
+        <!-- In evidenza: CityFix. Video e titolo aprono la
              scheda; il video è un doppione del titolo per il lettore di schermo. -->
         <article class="group flex flex-col gap-6">
           <NuxtLink
@@ -400,55 +343,6 @@ useSeoMeta({
             </li>
           </ul>
         </div>
-      </div>
-    </section>
-
-    <!-- Team -->
-    <section class="page-x">
-      <div
-        class="
-          flex flex-col gap-16 border-t-[1.5px] border-ink pt-8 pb-24
-          lg:pb-[136px]
-        "
-      >
-        <div class="flex flex-col gap-7">
-          <h2 class="text-title">
-            {{ t('home.team_title') }}
-          </h2>
-          <p class="text-body">
-            {{ t('home.team_intro') }}
-          </p>
-        </div>
-
-        <ul class="
-          grid grid-cols-2 gap-x-6 gap-y-10
-          md:grid-cols-3
-          lg:grid-cols-6 lg:gap-y-6
-        ">
-          <li
-            v-for="m in team"
-            :key="m.name"
-            class="flex min-w-0 flex-col gap-3"
-          >
-            <div
-              class="flex aspect-[193.3/250] w-full items-center justify-center"
-              :class="m.bg"
-            >
-              <img
-                :src="m.illustration"
-                :alt="m.name"
-                class="h-auto"
-                :class="m.width"
-              >
-            </div>
-            <p class="text-body">
-              {{ m.name }}
-            </p>
-            <p class="overflow-hidden text-label whitespace-nowrap opacity-60">
-              {{ m.role }}
-            </p>
-          </li>
-        </ul>
       </div>
     </section>
 

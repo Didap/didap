@@ -6,26 +6,22 @@
   /Arial mantenendo gerarchia tipografica e identità di brand.
 */
 
+import type { ProjectType } from '#shared/contact'
+
+// Chi scrive lascia un'email o un telefono, uno dei due
 interface ContactData {
   name: string
-  email: string
-  company?: string
-  projectType?: string
-  fundingHelp?: 'have_budget' | 'need_help' | ''
+  email?: string
+  phone?: string
+  projectType?: ProjectType | ''
   message: string
 }
 
-const PROJECT_TYPE_LABELS: Record<string, string> = {
-  product: 'Un prodotto su misura',
-  saas: 'Un gestionale o SaaS',
-  app: "Un'app mobile",
+const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+  product: 'Un prodotto nuovo',
+  app: 'App o SaaS',
   site: 'Un sito',
-  other: 'Altro',
-}
-
-const FUNDING_LABELS: Record<string, string> = {
-  have_budget: 'Budget coperto',
-  need_help: 'Vuole consiglio su finanza agevolata',
+  grant: 'Cerca un bando',
 }
 
 export function escapeHtml(s: string) {
@@ -140,7 +136,7 @@ export function brandFooter() {
 
 export function userAutoReplyHtml(d: ContactData) {
   const fundingBox =
-    d.fundingHelp === 'need_help'
+    d.projectType === 'grant'
       ? `
       <tr>
         <td style="background:${C.white};padding:8px 40px 24px;">
@@ -149,7 +145,7 @@ export function userAutoReplyHtml(d: ContactData) {
               <td style="padding:22px 28px;">
                 <p style="margin:0 0 8px;font-family:${FONT_BODY};font-size:11px;font-weight:700;color:${C.paper};text-transform:uppercase;letter-spacing:3px;">Finanza agevolata</p>
                 <p style="margin:0;font-family:${FONT_BODY};font-size:15px;line-height:1.5;color:${C.paper};">
-                  Hai chiesto un consiglio sulla finanza agevolata: mettiamo in copia il team di <strong style="color:${C.gold};">The Qube</strong>, il nostro partner. Li sentirai a stretto giro.
+                  Stai cercando un bando: mettiamo in copia il team di <strong style="color:${C.gold};">The Qube</strong>, il nostro partner. Li sentirai a stretto giro.
                 </p>
               </td>
             </tr>
@@ -211,8 +207,8 @@ export function userAutoReplyHtml(d: ContactData) {
 
 export function userAutoReplyText(d: ContactData) {
   const fundingNote =
-    d.fundingHelp === 'need_help'
-      ? '\nFinanza agevolata - Hai chiesto un consiglio sulla finanza agevolata: mettiamo in copia il team di The Qube, il nostro partner. Li sentirai a stretto giro.\n'
+    d.projectType === 'grant'
+      ? '\nFinanza agevolata - Stai cercando un bando: mettiamo in copia il team di The Qube, il nostro partner. Li sentirai a stretto giro.\n'
       : ''
 
   return `Ciao ${d.name},
@@ -231,21 +227,18 @@ Didap · Free the monkey · ${SITE_URL}`
 /* ----------------- Notifica admin ----------------- */
 
 export function adminNotificationHtml(d: ContactData) {
+  const reply = d.email
+    ? `mailto:${encodeURIComponent(d.email)}`
+    : `tel:${(d.phone ?? '').replace(/[^\d+]/g, '')}`
   const rows: Array<[string, string]> = [
     ['Nome', escapeHtml(d.name)],
     [
-      'Email',
-      `<a href="mailto:${encodeURIComponent(d.email)}" style="color:${C.accent};text-decoration:none;">${escapeHtml(d.email)}</a>`,
+      d.email ? 'Email' : 'Telefono',
+      `<a href="${reply}" style="color:${C.accent};text-decoration:none;">${escapeHtml(d.email ?? d.phone ?? '')}</a>`,
     ],
   ]
-  if (d.company) rows.push(['Azienda', escapeHtml(d.company)])
   if (d.projectType)
-    rows.push([
-      'Tipo',
-      escapeHtml(PROJECT_TYPE_LABELS[d.projectType] ?? d.projectType),
-    ])
-  const funding = d.fundingHelp ? FUNDING_LABELS[d.fundingHelp] : undefined
-  if (funding) rows.push(['Finanza', escapeHtml(funding)])
+    rows.push(['Tipo', escapeHtml(PROJECT_TYPE_LABELS[d.projectType])])
 
   const rowsHtml = rows
     .map(
@@ -292,7 +285,7 @@ export function adminNotificationHtml(d: ContactData) {
 
           <tr>
             <td style="background:${C.white};padding:16px 32px 32px;">
-              <a href="mailto:${encodeURIComponent(d.email)}" style="display:inline-block;background:${C.ink};color:${C.paper};font-family:${FONT_BODY};font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:2px;padding:14px 26px;border-radius:999px;text-decoration:none;">Rispondi a ${escapeHtml(d.name)}</a>
+              <a href="${reply}" style="display:inline-block;background:${C.ink};color:${C.paper};font-family:${FONT_BODY};font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:2px;padding:14px 26px;border-radius:999px;text-decoration:none;">${d.email ? 'Rispondi' : 'Chiama'} ${escapeHtml(d.name)}</a>
             </td>
           </tr>
 
@@ -311,13 +304,9 @@ export function adminNotificationText(d: ContactData) {
     `Nuovo contatto da didap.it`,
     ``,
     `Nome: ${d.name}`,
-    `Email: ${d.email}`,
+    d.email ? `Email: ${d.email}` : `Telefono: ${d.phone}`,
   ]
-  if (d.company) lines.push(`Azienda: ${d.company}`)
-  if (d.projectType)
-    lines.push(`Tipo: ${PROJECT_TYPE_LABELS[d.projectType] ?? d.projectType}`)
-  if (d.fundingHelp && FUNDING_LABELS[d.fundingHelp])
-    lines.push(`Finanza: ${FUNDING_LABELS[d.fundingHelp]}`)
+  if (d.projectType) lines.push(`Tipo: ${PROJECT_TYPE_LABELS[d.projectType]}`)
   lines.push('', d.message)
   return lines.join('\n')
 }

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "historyId": "c7667dc5-b926-4af0-9509-c278e9f4c1de",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/caprasimo-400.woff2": {
+      "hash": "8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\c7667dc5-b926-4af0-9509-c278e9f4c1de\\blobs\\8b\\8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a"
+    },
+    "assets/fonts/piazzolla-var-italic.woff2": {
+      "hash": "df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\c7667dc5-b926-4af0-9509-c278e9f4c1de\\blobs\\df\\df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4"
+    },
+    "assets/fonts/piazzolla-var.woff2": {
+      "hash": "d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\c7667dc5-b926-4af0-9509-c278e9f4c1de\\blobs\\d1\\d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\c7667dc5-b926-4af0-9509-c278e9f4c1de\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "291bd73848d3c587500c38ad0b24a4fa8110c8145f904c687c0c1e2adb047e32",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\c7667dc5-b926-4af0-9509-c278e9f4c1de\\blobs\\29\\291bd73848d3c587500c38ad0b24a4fa8110c8145f904c687c0c1e2adb047e32"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "1e92afef-04fe-4ed4-8c70-0f76e858d6e3",
+      "completedAt": 1793190111933,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cruciverba-lab\\out\\classifica-mobile.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

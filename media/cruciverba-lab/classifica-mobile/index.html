@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=810, height=1012" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var-italic.woff2') format('woff2');font-weight:100 900;font-style:italic}
+:root{--paper:#FCFCF9;--ink:#1F130E;--soft:#473A33;--mute:#6D6059;--brand:#E93F29;--brand-soft:#FBE7E2;--hair:#DAD7D2}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:810px;height:1012px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink)}
+.h1{position:absolute;left:40px;top:70px;font-family:Caprasimo;font-size:80px;line-height:1}
+.sub{position:absolute;left:40px;top:172px;font-size:17px;letter-spacing:.3em;color:var(--mute)}
+.lead{position:absolute;left:40px;top:220px;width:730px;font-size:32px;line-height:1.35}
+.lead u{text-decoration:none;border-bottom:2px solid var(--ink)}
+.lh{position:absolute;left:40px;width:730px;top:364px;display:flex;justify-content:space-between;font-size:18px;letter-spacing:.3em;color:var(--mute);padding-bottom:14px;border-bottom:2px solid var(--ink)}
+.r{position:absolute;left:40px;top:420px;width:730px;height:64px;display:flex;align-items:center;gap:18px;padding:0 18px;border-bottom:1px solid var(--hair);background:var(--paper);font-size:26px}
+.r .p{width:2ch;text-align:right;font-size:20px;color:var(--mute)}
+.r .a{width:38px;height:38px;border-radius:8px}
+.r .n{flex:1}
+.r .t{font-size:19px;color:var(--mute)}
+.r .s{width:3.2ch;text-align:right;font-weight:600}
+.r.new{background:var(--brand-soft)}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="810" data-height="1012">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap>
+<div class="h1">Classifica</div>
+<div class="sub">OGGI · MERCOLEDÌ 28 OTTOBRE</div>
+<div class="lh"><span>CRUCIVERBA · OGGI</span><span>313 GIOCATORI</span></div>
+<div class="r" id="r_vocale_muta"><span class="p" id="p_vocale_muta">1</span><span class="a" style="background:#F6C8B8"></span><span class="n">vocale-muta</span><span class="t">02:21,4</span><span class="s">1000</span></div>
+<div class="r" id="r_orizzontale7"><span class="p" id="p_orizzontale7">2</span><span class="a" style="background:#C9C3EE"></span><span class="n">orizzontale7</span><span class="t">02:37,0</span><span class="s">1000</span></div>
+<div class="r" id="r_cicerchia"><span class="p" id="p_cicerchia">3</span><span class="a" style="background:#F3C6DA"></span><span class="n">cicerchia</span><span class="t">03:02,9</span><span class="s">1000</span></div>
+<div class="r" id="r_pennino"><span class="p" id="p_pennino">4</span><span class="a" style="background:#D9C9F0"></span><span class="n">pennino</span><span class="t">03:11,2</span><span class="s">1000</span></div>
+<div class="r" id="r_lucciola_blu"><span class="p" id="p_lucciola_blu">5</span><span class="a" style="background:#F8D6B0"></span><span class="n">lucciola-blu</span><span class="t">03:18,5</span><span class="s">1000</span></div>
+<div class="r" id="r_tiralinee"><span class="p" id="p_tiralinee">6</span><span class="a" style="background:#BFE3CF"></span><span class="n">tiralinee</span><span class="t">03:47,1</span><span class="s">981</span></div>
+<div class="r" id="r_bisillabo"><span class="p" id="p_bisillabo">7</span><span class="a" style="background:#C3E4EE"></span><span class="n">bisillabo</span><span class="t">04:26,8</span><span class="s">925</span></div>
+<div class="r" id="r_enigma88"><span class="p" id="p_enigma88">8</span><span class="a" style="background:#F2E2A6"></span><span class="n">enigma88</span><span class="t">04:43,0</span><span class="s">907</span></div>
+<div class="r new" id="r_parolaia"><span class="p" id="p_parolaia">9</span><span class="a" style="background:#F7B9A6"></span><span class="n">parolaia</span><span class="t">02:58,7</span><span class="s">1000</span></div>
+<div class="r new" id="r_rebus_rosso"><span class="p" id="p_rebus_rosso">10</span><span class="a" style="background:#E7C7F2"></span><span class="n">rebus-rosso</span><span class="t">02:14,3</span><span class="s">1000</span></div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+gsap.set("#r_vocale_muta",{y:0});
+gsap.set("#r_orizzontale7",{y:64});
+gsap.set("#r_cicerchia",{y:128});
+gsap.set("#r_pennino",{y:192});
+gsap.set("#r_lucciola_blu",{y:256});
+gsap.set("#r_tiralinee",{y:320});
+gsap.set("#r_bisillabo",{y:384});
+gsap.set("#r_enigma88",{y:448});
+gsap.set("#r_parolaia",{y:552,opacity:0});
+gsap.set("#r_rebus_rosso",{y:552,opacity:0});
+tl.fromTo("#r_parolaia",{opacity:0,y:552},{opacity:1,y:448,duration:0.4,ease:"expo.out"},2.40);
+tl.to("#r_vocale_muta",{y:0,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_vocale_muta",{textContent:"1"},3.30);
+tl.to("#r_orizzontale7",{y:64,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_orizzontale7",{textContent:"2"},3.30);
+tl.to("#r_parolaia",{y:128,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_parolaia",{textContent:"3"},3.30);
+tl.to("#r_cicerchia",{y:192,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_cicerchia",{textContent:"4"},3.30);
+tl.to("#r_pennino",{y:256,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_pennino",{textContent:"5"},3.30);
+tl.to("#r_lucciola_blu",{y:320,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_lucciola_blu",{textContent:"6"},3.30);
+tl.to("#r_tiralinee",{y:384,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_tiralinee",{textContent:"7"},3.30);
+tl.to("#r_bisillabo",{y:448,opacity:1,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_bisillabo",{textContent:"8"},3.30);
+tl.to("#r_enigma88",{y:512,opacity:0,duration:0.6,ease:"power3.inOut"},3.00);
+tl.set("#p_enigma88",{textContent:"9"},3.30);
+tl.fromTo("#r_rebus_rosso",{opacity:0,y:552},{opacity:1,y:448,duration:0.4,ease:"expo.out"},6.40);
+tl.to("#r_rebus_rosso",{y:0,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_rebus_rosso",{textContent:"1"},7.30);
+tl.to("#r_vocale_muta",{y:64,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_vocale_muta",{textContent:"2"},7.30);
+tl.to("#r_orizzontale7",{y:128,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_orizzontale7",{textContent:"3"},7.30);
+tl.to("#r_parolaia",{y:192,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_parolaia",{textContent:"4"},7.30);
+tl.to("#r_cicerchia",{y:256,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_cicerchia",{textContent:"5"},7.30);
+tl.to("#r_pennino",{y:320,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_pennino",{textContent:"6"},7.30);
+tl.to("#r_lucciola_blu",{y:384,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_lucciola_blu",{textContent:"7"},7.30);
+tl.to("#r_tiralinee",{y:448,opacity:1,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_tiralinee",{textContent:"8"},7.30);
+tl.to("#r_bisillabo",{y:512,opacity:0,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_bisillabo",{textContent:"9"},7.30);
+tl.to("#r_enigma88",{y:576,opacity:0,duration:0.6,ease:"power3.inOut"},7.00);
+tl.set("#p_enigma88",{textContent:"10"},7.30);
+tl.to("#r_parolaia",{opacity:0,duration:0.3},10.60);
+tl.to("#r_rebus_rosso",{opacity:0,duration:0.3},10.60);
+tl.to("#r_vocale_muta",{y:0,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_vocale_muta",{textContent:"1"},11.20);
+tl.to("#r_orizzontale7",{y:64,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_orizzontale7",{textContent:"2"},11.20);
+tl.to("#r_cicerchia",{y:128,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_cicerchia",{textContent:"3"},11.20);
+tl.to("#r_pennino",{y:192,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_pennino",{textContent:"4"},11.20);
+tl.to("#r_lucciola_blu",{y:256,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_lucciola_blu",{textContent:"5"},11.20);
+tl.to("#r_tiralinee",{y:320,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_tiralinee",{textContent:"6"},11.20);
+tl.to("#r_bisillabo",{y:384,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_bisillabo",{textContent:"7"},11.20);
+tl.to("#r_enigma88",{y:448,opacity:1,duration:0.6,ease:"power3.inOut"},10.90);
+tl.set("#p_enigma88",{textContent:"8"},11.20);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

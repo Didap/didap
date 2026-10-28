@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1256, height=1520" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var-italic.woff2') format('woff2');font-weight:100 900;font-style:italic}
+:root{--paper:#FCFCF9;--ink:#1F130E;--soft:#473A33;--mute:#6D6059;--alv:#8A7410;--vivid:#F2C20F;--tile:#F8E59B;--hair:#DAD7D2}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1256px;height:1520px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink)}
+.title{position:absolute;left:110px;top:100px;font-family:Caprasimo;font-size:72px;color:var(--alv)}
+.count{position:absolute;left:110px;top:210px;font-family:Caprasimo;font-size:48px}
+.count .of{color:var(--alv)}
+.bar{position:absolute;left:110px;right:110px;top:300px;height:16px;border-radius:8px;background:#F4EBC4}
+.fill{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:8px;background:var(--vivid);transform-origin:0 50%}
+.field{position:absolute;left:110px;right:110px;top:380px;height:120px;display:flex;justify-content:center;align-items:center;border-bottom:2px solid var(--ink)}
+.w{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:center;align-items:center;gap:6px;font-family:Caprasimo;font-size:84px;letter-spacing:.04em}
+.w span{opacity:0}
+.w span.req{color:#C99A00}
+.hex{position:absolute;width:230px;height:262px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--tile);display:flex;align-items:center;justify-content:center;font-family:Caprasimo;font-size:84px}
+.hex.c{background:var(--vivid)}
+.ok{position:absolute;right:110px;top:222px;text-align:right;font-style:italic;font-size:36px;color:var(--alv)}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1256" data-height="1520">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap>
+<div class="title">Alveare</div>
+<div class="count">Trovate <span id="n">0</span> <span class="of">su 109</span></div>
+<div class="bar"><div class="fill" id="fill"></div></div>
+<div class="field">
+<div class="w" id="w0"><span id="w0_0" class="">M</span><span id="w0_1" class="">O</span><span id="w0_2" class="req">L</span><span id="w0_3" class="req">L</span><span id="w0_4" class="">E</span></div>
+<div class="w" id="w1"><span id="w1_0" class="">O</span><span id="w1_1" class="req">L</span><span id="w1_2" class="">I</span><span id="w1_3" class="">O</span></div>
+<div class="w" id="w2"><span id="w2_0" class="">M</span><span id="w2_1" class="">O</span><span id="w2_2" class="">B</span><span id="w2_3" class="">I</span><span id="w2_4" class="req">L</span><span id="w2_5" class="">E</span></div>
+<div class="w" id="w3"><span id="w3_0" class="">Z</span><span id="w3_1" class="">O</span><span id="w3_2" class="req">L</span><span id="w3_3" class="req">L</span><span id="w3_4" class="">E</span></div>
+<div class="w" id="w4"><span id="w4_0" class="">B</span><span id="w4_1" class="">O</span><span id="w4_2" class="">Z</span><span id="w4_3" class="">Z</span><span id="w4_4" class="">O</span><span id="w4_5" class="req">L</span><span id="w4_6" class="">O</span></div>
+</div>
+<div class="ok" id="ok" style="opacity:0">Bella!</div>
+<div class="hex " id="hZ" style="left:391px;top:588px">Z</div>
+<div class="hex " id="hB" style="left:635px;top:588px">B</div>
+<div class="hex " id="hO" style="left:269px;top:799px">O</div>
+<div class="hex c" id="hL" style="left:513px;top:799px">L</div>
+<div class="hex " id="hE" style="left:757px;top:799px">E</div>
+<div class="hex " id="hM" style="left:391px;top:1010px">M</div>
+<div class="hex " id="hI" style="left:635px;top:1010px">I</div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+gsap.set("#fill",{scaleX:0.02});
+tl.fromTo("#w0_0",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},0.50);
+tl.fromTo("#hM",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},0.50);
+tl.fromTo("#w0_1",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},0.66);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},0.66);
+tl.fromTo("#w0_2",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},0.82);
+tl.fromTo("#hL",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},0.82);
+tl.fromTo("#w0_3",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},0.98);
+tl.fromTo("#hL",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},0.98);
+tl.fromTo("#w0_4",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},1.14);
+tl.fromTo("#hE",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},1.14);
+tl.fromTo("#ok",{opacity:0},{opacity:1,duration:0.12},1.55);
+tl.to("#ok",{opacity:0,duration:0.15},2.15);
+tl.to("#w0 span",{opacity:0,y:-30,duration:0.25,stagger:0.02,ease:"power2.in"},1.90);
+tl.set("#n",{textContent:"1"},1.55);
+tl.to("#fill",{scaleX:0.08,duration:0.4,ease:"power3.out"},1.55);
+tl.fromTo("#w1_0",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},2.55);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},2.55);
+tl.fromTo("#w1_1",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},2.71);
+tl.fromTo("#hL",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},2.71);
+tl.fromTo("#w1_2",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},2.87);
+tl.fromTo("#hI",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},2.87);
+tl.fromTo("#w1_3",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},3.03);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},3.03);
+tl.fromTo("#ok",{opacity:0},{opacity:1,duration:0.12},3.44);
+tl.to("#ok",{opacity:0,duration:0.15},4.04);
+tl.to("#w1 span",{opacity:0,y:-30,duration:0.25,stagger:0.02,ease:"power2.in"},3.79);
+tl.set("#n",{textContent:"2"},3.44);
+tl.to("#fill",{scaleX:0.14,duration:0.4,ease:"power3.out"},3.44);
+tl.fromTo("#w2_0",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},4.44);
+tl.fromTo("#hM",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},4.44);
+tl.fromTo("#w2_1",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},4.60);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},4.60);
+tl.fromTo("#w2_2",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},4.76);
+tl.fromTo("#hB",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},4.76);
+tl.fromTo("#w2_3",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},4.92);
+tl.fromTo("#hI",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},4.92);
+tl.fromTo("#w2_4",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},5.08);
+tl.fromTo("#hL",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},5.08);
+tl.fromTo("#w2_5",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},5.24);
+tl.fromTo("#hE",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},5.24);
+tl.fromTo("#ok",{opacity:0},{opacity:1,duration:0.12},5.65);
+tl.to("#ok",{opacity:0,duration:0.15},6.25);
+tl.to("#w2 span",{opacity:0,y:-30,duration:0.25,stagger:0.02,ease:"power2.in"},6.00);
+tl.set("#n",{textContent:"3"},5.65);
+tl.to("#fill",{scaleX:0.20,duration:0.4,ease:"power3.out"},5.65);
+tl.fromTo("#w3_0",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},6.65);
+tl.fromTo("#hZ",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},6.65);
+tl.fromTo("#w3_1",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},6.81);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},6.81);
+tl.fromTo("#w3_2",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},6.97);
+tl.fromTo("#hL",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},6.97);
+tl.fromTo("#w3_3",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},7.13);
+tl.fromTo("#hL",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},7.13);
+tl.fromTo("#w3_4",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},7.29);
+tl.fromTo("#hE",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},7.29);
+tl.fromTo("#ok",{opacity:0},{opacity:1,duration:0.12},7.70);
+tl.to("#ok",{opacity:0,duration:0.15},8.30);
+tl.to("#w3 span",{opacity:0,y:-30,duration:0.25,stagger:0.02,ease:"power2.in"},8.05);
+tl.set("#n",{textContent:"4"},7.70);
+tl.to("#fill",{scaleX:0.26,duration:0.4,ease:"power3.out"},7.70);
+tl.fromTo("#w4_0",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},8.70);
+tl.fromTo("#hB",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},8.70);
+tl.fromTo("#w4_1",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},8.86);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},8.86);
+tl.fromTo("#w4_2",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},9.02);
+tl.fromTo("#hZ",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},9.02);
+tl.fromTo("#w4_3",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},9.18);
+tl.fromTo("#hZ",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},9.18);
+tl.fromTo("#w4_4",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},9.34);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},9.34);
+tl.fromTo("#w4_5",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},9.50);
+tl.fromTo("#hL",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},9.50);
+tl.fromTo("#w4_6",{opacity:0,y:10},{opacity:1,y:0,duration:0.12,ease:"power3.out"},9.66);
+tl.fromTo("#hO",{scale:1},{scale:0.92,duration:0.06,ease:"power2.out",yoyo:true,repeat:1},9.66);
+tl.fromTo("#ok",{opacity:0},{opacity:1,duration:0.12},10.07);
+tl.to("#ok",{opacity:0,duration:0.15},10.67);
+tl.to("#w4 span",{opacity:0,y:-30,duration:0.25,stagger:0.02,ease:"power2.in"},10.42);
+tl.set("#n",{textContent:"5"},10.07);
+tl.to("#fill",{scaleX:0.32,duration:0.4,ease:"power3.out"},10.07);
+tl.set("#n",{textContent:"0"},11.40);
+tl.to("#fill",{scaleX:0.02,duration:0.5,ease:"power2.inOut"},11.10);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=816, height=1520" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var-italic.woff2') format('woff2');font-weight:100 900;font-style:italic}
+:root{--paper:#FCFCF9;--ink:#1F130E;--soft:#473A33;--mute:#6D6059;--gh:#9A5A12;--vivid:#D9731F;--tile:#F8E6D6}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:816px;height:1520px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink)}
+.title{position:absolute;left:70px;top:110px;font-family:Caprasimo;font-size:64px;color:var(--gh)}
+.slot{position:absolute;width:318px;height:132px;border:2px dashed #E7B48C;border-radius:6px;background:var(--tile)}
+.card{position:absolute;width:318px;height:132px;border:2px solid var(--ink);border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;font-family:Caprasimo;font-size:38px;letter-spacing:.03em;box-shadow:0 4px 0 var(--ink)}
+.card.win{background:var(--ink);color:var(--paper)}
+.o{position:absolute;width:40px;text-align:center;font-style:italic;font-size:28px;color:var(--mute)}
+.ans{position:absolute;left:70px;right:70px;top:1160px;height:150px;border-top:2px solid var(--ink);display:flex;align-items:center;justify-content:center;gap:8px;font-family:Caprasimo;font-size:88px;color:var(--vivid)}
+.ans span{opacity:0}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="816" data-height="1520">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap>
+<div class="title">Ghigliottina</div>
+<div class="slot" style="left:70px;top:270px"></div><div class="slot" style="left:428px;top:270px"></div>
+<div class="o" style="left:388px;top:316px">o</div>
+<div class="card" id="p00" style="left:70px;top:270px;opacity:0">ASSENTE</div>
+<div class="card" id="p01" style="left:428px;top:270px;opacity:0">PRESENTE</div>
+<div class="slot" style="left:70px;top:424px"></div><div class="slot" style="left:428px;top:424px"></div>
+<div class="o" style="left:388px;top:470px">o</div>
+<div class="card" id="p10" style="left:70px;top:424px;opacity:0">STAFFE</div>
+<div class="card" id="p11" style="left:428px;top:424px;opacity:0">SPERONI</div>
+<div class="slot" style="left:70px;top:578px"></div><div class="slot" style="left:428px;top:578px"></div>
+<div class="o" style="left:388px;top:624px">o</div>
+<div class="card" id="p20" style="left:70px;top:578px;opacity:0">QUARESIMA</div>
+<div class="card" id="p21" style="left:428px;top:578px;opacity:0">BATTESIMO</div>
+<div class="slot" style="left:70px;top:732px"></div><div class="slot" style="left:428px;top:732px"></div>
+<div class="o" style="left:388px;top:778px">o</div>
+<div class="card" id="p30" style="left:70px;top:732px;opacity:0">BOTTA</div>
+<div class="card" id="p31" style="left:428px;top:732px;opacity:0">RISPOSTA</div>
+<div class="slot" style="left:70px;top:886px"></div><div class="slot" style="left:428px;top:886px"></div>
+<div class="o" style="left:388px;top:932px">o</div>
+<div class="card" id="p40" style="left:70px;top:886px;opacity:0">ZAMPA</div>
+<div class="card" id="p41" style="left:428px;top:886px;opacity:0">MUSO</div>
+<div class="ans"><span id="a0">T</span><span id="a1">E</span><span id="a2">N</span><span id="a3">E</span><span id="a4">R</span><span id="a5">E</span></div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo(["#p00","#p01"],{opacity:0,y:-24,filter:"blur(6px)"},{opacity:1,y:0,filter:"blur(0px)",duration:0.3,stagger:0.08,ease:"expo.out"},0.40);
+tl.to("#p01",{backgroundColor:"#1F130E",color:"#FCFCF9",duration:0.15},1.15);
+tl.to("#p00",{opacity:0.25,duration:0.25},1.15);
+tl.fromTo(["#p10","#p11"],{opacity:0,y:-24,filter:"blur(6px)"},{opacity:1,y:0,filter:"blur(0px)",duration:0.3,stagger:0.08,ease:"expo.out"},1.85);
+tl.to("#p10",{backgroundColor:"#1F130E",color:"#FCFCF9",duration:0.15},2.60);
+tl.to("#p11",{opacity:0.25,duration:0.25},2.60);
+tl.fromTo(["#p20","#p21"],{opacity:0,y:-24,filter:"blur(6px)"},{opacity:1,y:0,filter:"blur(0px)",duration:0.3,stagger:0.08,ease:"expo.out"},3.30);
+tl.to("#p21",{backgroundColor:"#1F130E",color:"#FCFCF9",duration:0.15},4.05);
+tl.to("#p20",{opacity:0.25,duration:0.25},4.05);
+tl.fromTo(["#p30","#p31"],{opacity:0,y:-24,filter:"blur(6px)"},{opacity:1,y:0,filter:"blur(0px)",duration:0.3,stagger:0.08,ease:"expo.out"},4.75);
+tl.to("#p30",{backgroundColor:"#1F130E",color:"#FCFCF9",duration:0.15},5.50);
+tl.to("#p31",{opacity:0.25,duration:0.25},5.50);
+tl.fromTo(["#p40","#p41"],{opacity:0,y:-24,filter:"blur(6px)"},{opacity:1,y:0,filter:"blur(0px)",duration:0.3,stagger:0.08,ease:"expo.out"},6.20);
+tl.to("#p41",{backgroundColor:"#1F130E",color:"#FCFCF9",duration:0.15},6.95);
+tl.to("#p40",{opacity:0.25,duration:0.25},6.95);
+tl.fromTo("#a0",{opacity:0,y:20},{opacity:1,y:0,duration:0.16,ease:"back.out(2)"},7.85);
+tl.fromTo("#a1",{opacity:0,y:20},{opacity:1,y:0,duration:0.16,ease:"back.out(2)"},7.95);
+tl.fromTo("#a2",{opacity:0,y:20},{opacity:1,y:0,duration:0.16,ease:"back.out(2)"},8.05);
+tl.fromTo("#a3",{opacity:0,y:20},{opacity:1,y:0,duration:0.16,ease:"back.out(2)"},8.15);
+tl.fromTo("#a4",{opacity:0,y:20},{opacity:1,y:0,duration:0.16,ease:"back.out(2)"},8.25);
+tl.fromTo("#a5",{opacity:0,y:20},{opacity:1,y:0,duration:0.16,ease:"back.out(2)"},8.35);
+tl.to(["#a0","#a1","#a2","#a3","#a4","#a5"],{opacity:0,duration:0.25,stagger:0.02},10.90);
+tl.to(["#p00","#p01","#p10","#p11","#p20","#p21","#p30","#p31","#p40","#p41"],{opacity:0,duration:0.3,stagger:0.02,ease:"power2.in"},11.00);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

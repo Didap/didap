@@ -1,0 +1,208 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"stage\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#stage",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\chiave\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"stage\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 12,
+    "samples": [
+      0.667,
+      2,
+      3.333,
+      4.667,
+      6,
+      7.333,
+      8.667,
+      10,
+      11.333
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 4,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.58:1; WCAG AA requires 3:1.",
+        "text": "A",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(175,215,190)",
+        "ratio": 1.58,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(115,115,115)",
+        "large": true,
+        "selector": "#c14",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 611,
+          "y": 360,
+          "width": 112,
+          "height": 112
+        },
+        "time": 11.333,
+        "times": [
+          11.333
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.93:1; WCAG AA requires 3:1.",
+        "text": "P",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(143,199,166)",
+        "ratio": 1.93,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(101,101,101)",
+        "large": true,
+        "selector": "#c20",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 99,
+          "y": 488,
+          "width": 112,
+          "height": 112
+        },
+        "time": 11.333,
+        "times": [
+          11.333
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.29:1; WCAG AA requires 3:1.",
+        "text": "R",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(116,186,144)",
+        "ratio": 2.29,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(90,90,90)",
+        "large": true,
+        "selector": "#c21",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 227,
+          "y": 488,
+          "width": 112,
+          "height": 112
+        },
+        "time": 11.333,
+        "times": [
+          11.333
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.66:1; WCAG AA requires 3:1.",
+        "text": "E",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(92,175,127)",
+        "ratio": 2.66,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(80,80,80)",
+        "large": true,
+        "selector": "#c22",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 355,
+          "y": 488,
+          "width": 112,
+          "height": 112
+        },
+        "time": 11.333,
+        "times": [
+          11.333
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      0.667,
+      3.333,
+      6,
+      8.667,
+      11.333
+    ],
+    "checked": 53,
+    "passed": 49
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 96
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

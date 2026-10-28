@@ -1,0 +1,243 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"stage\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#stage",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\oggi\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"stage\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 12,
+    "samples": [
+      0.667,
+      2,
+      3.333,
+      4.667,
+      6,
+      7.333,
+      8.667,
+      10,
+      11.333
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0.667,
+      3.333,
+      6,
+      8.667,
+      11.333
+    ],
+    "checked": 120,
+    "passed": 120
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 40 px (2.6% of the 1520 px short side, what a phone can read) and 14 text elements stay under it for 0.5 s or more, the smallest \"LAB.\" at 22 px: set reading text to at least 40 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "LAB.",
+        "selector": "span.lab",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 475.25,
+          "y": 110,
+          "width": 75.34,
+          "height": 31
+        },
+        "time": 0,
+        "times": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "fontPx": 21.76,
+        "floorPx": 40,
+        "seconds": 12,
+        "elements": [
+          {
+            "selector": "span.lab",
+            "text": "LAB.",
+            "fontPx": 21.76,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g0 > div:nth-of-type(2)",
+            "text": "Il classico, con definizioni scritte a quattro mani.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g1 > div:nth-of-type(2)",
+            "text": "Dieci parole a tema nascoste in un campo di lettere.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g2 > div:nth-of-type(2)",
+            "text": "Otto parole in colonna, ognuna legata alla vicina.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g3 > div:nth-of-type(2)",
+            "text": "Un cruciverba senza definizioni: ogni numero è una lettera.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g4 > div:nth-of-type(2)",
+            "text": "Cinque rulli di lettere da girare finché la riga forma una parola.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g5 > div:nth-of-type(2)",
+            "text": "Una parola di cinque lettere da trovare in sei tentativi.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g6 > div:nth-of-type(2)",
+            "text": "Sedici parole da dividere in quattro gruppi.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g7 > div:nth-of-type(2)",
+            "text": "Cinque coppie di parole e la parola che le lega tutte.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g8 > div:nth-of-type(2)",
+            "text": "Sette lettere, una obbligatoria: tutte le parole che riesci a formare.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#g9 > div:nth-of-type(2)",
+            "text": "Un solitario con le carte napoletane, una partita al giorno.",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "div.bar > b:nth-of-type(1)",
+            "text": "Fatti oggi",
+            "fontPx": 34,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "div.bar > span:nth-of-type(1)",
+            "text": "su 10",
+            "fontPx": 34,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cnt",
+            "text": "0",
+            "fontPx": 34,
+            "time": 0,
+            "seconds": 12
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 96
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

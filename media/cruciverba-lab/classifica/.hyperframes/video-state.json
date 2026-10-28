@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "historyId": "987ddc88-9aba-4a17-97a8-d60dd9038b1f",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/caprasimo-400.woff2": {
+      "hash": "8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\987ddc88-9aba-4a17-97a8-d60dd9038b1f\\blobs\\8b\\8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a"
+    },
+    "assets/fonts/piazzolla-var-italic.woff2": {
+      "hash": "df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\987ddc88-9aba-4a17-97a8-d60dd9038b1f\\blobs\\df\\df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4"
+    },
+    "assets/fonts/piazzolla-var.woff2": {
+      "hash": "d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\987ddc88-9aba-4a17-97a8-d60dd9038b1f\\blobs\\d1\\d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\987ddc88-9aba-4a17-97a8-d60dd9038b1f\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "95f90ddaab57d924e0e4594e19aa2e7189848897b9670ea57cf8276d0ab4817b",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\987ddc88-9aba-4a17-97a8-d60dd9038b1f\\blobs\\95\\95f90ddaab57d924e0e4594e19aa2e7189848897b9670ea57cf8276d0ab4817b"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "a7a516c2-2656-41ce-8ce3-fb6f1a395c65"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "a7a516c2-2656-41ce-8ce3-fb6f1a395c65",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\classifica\\.hyperframes\\artifacts\\checks\\a7a516c2-2656-41ce-8ce3-fb6f1a395c65.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793190068657,
+        "contentHash": "3f6bf4cfe7283886d97e7fbaed0ff7dbb052551295aefd670e4380d42bd9feee",
+        "revision": null,
+        "inputFingerprint": "d181ff66d3a388589446e05b69d4cc0eaedacb9b865f1ac7b21aaaa19ed32313",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "03f20a2e-0890-4dad-acef-07d70a087ca8-2"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "03f20a2e-0890-4dad-acef-07d70a087ca8-0",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\classifica\\.hyperframes\\artifacts\\snapshots\\f1f69a8b-2388-4de0-950b-22014cd25446\\frame-00-at-4.5s.png",
+        "time": 4.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190071874,
+        "contentHash": "d261de97d3e9677b95b9059a57ac446c79d1afc41adc791fecb9db0cf9377015",
+        "revision": null,
+        "inputFingerprint": "d181ff66d3a388589446e05b69d4cc0eaedacb9b865f1ac7b21aaaa19ed32313",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "03f20a2e-0890-4dad-acef-07d70a087ca8-1",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\classifica\\.hyperframes\\artifacts\\snapshots\\f1f69a8b-2388-4de0-950b-22014cd25446\\frame-01-at-9s.png",
+        "time": 9,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190071874,
+        "contentHash": "74c898625f4f4af70f7465901286057358762ab46d01cb54c64a4b15f2a65183",
+        "revision": null,
+        "inputFingerprint": "d181ff66d3a388589446e05b69d4cc0eaedacb9b865f1ac7b21aaaa19ed32313",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "03f20a2e-0890-4dad-acef-07d70a087ca8-2",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\classifica\\.hyperframes\\artifacts\\snapshots\\f1f69a8b-2388-4de0-950b-22014cd25446\\frame-02-at-11.64s.png",
+        "time": 11.64,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190071874,
+        "contentHash": "20253e609eb27f52943faf3ab7c586a7c04748a35ccb0c0c523bc642d7c3ada7",
+        "revision": null,
+        "inputFingerprint": "d181ff66d3a388589446e05b69d4cc0eaedacb9b865f1ac7b21aaaa19ed32313",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "6b69a60a-537c-47a0-b2f5-06fa4fcac340",
+      "completedAt": 1793190097441,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cruciverba-lab\\out\\classifica.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

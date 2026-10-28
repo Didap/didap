@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=816, height=1520" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/bod.css" />
+    <link rel="stylesheet" href="assets/cards.css" />
+    <style>
+      html, body { width: 816px; height: 1520px; }
+      #root { position: relative; width: 100%; height: 100%; background: var(--paper); overflow: hidden; }
+      #stage { position: absolute; inset: 0; zoom: 2; padding: 34px 20px; }
+      .rm { border-top: 3px double var(--ink); padding-top: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+      .rm .nm { font-family: "BOD Display", serif; font-weight: 700; font-size: 16px; letter-spacing: -0.03em; margin-top: 4px; }
+      .rm .avg { font-family: "BOD Mono", monospace; font-weight: 800; font-size: 26px; text-align: right; white-space: nowrap; }
+      .te { position: relative; margin-top: 18px; border: 2px solid var(--ink); background: var(--paper-deep); padding: 14px; }
+      .te-on { position: absolute; inset: -2px; border: 2px solid var(--deal); background: #e1dcc4; }
+      .te > *:not(.te-on) { position: relative; }
+      .te .top { display: flex; justify-content: space-between; align-items: center; font-family: "BOD Mono", monospace; }
+      .te .top b { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+      .att { background: var(--deal); color: var(--paper); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 5px; margin-left: 6px; }
+      .te .mr { font-size: 10px; color: var(--ink-muted); }
+      .fld { margin-top: 14px; }
+      .fld label { display: block; font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+      .inp { position: relative; margin-top: 6px; height: 40px; border: 2px solid var(--ink); background: var(--surface); font-family: "BOD Mono", monospace; font-size: 18px; display: flex; align-items: center; padding: 0 10px; }
+      .inp .ph { position: absolute; left: 10px; color: var(--ink-faint); }
+      .inp .eur { position: absolute; right: 10px; font-size: 13px; color: var(--ink-muted); }
+      .inp .typed { position: absolute; left: 10px; display: flex; }
+      .fld p { margin-top: 5px; font-size: 10px; color: var(--ink-muted); }
+      .btnrow { margin-top: 16px; display: flex; align-items: center; gap: 14px; }
+      .btn { position: relative; height: 40px; width: 170px; background: var(--ink); color: var(--paper); font-family: "BOD Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+      .btn span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+      #b-ok { background: var(--deal); }
+      .rst { font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+      .cards { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+      .cards .card { height: 104px; }
+      .cards .thumb { width: 74px; }
+      .cards .title { font-size: 14px; }
+      .cards .price { font-size: 20px; }
+      .cards .body { padding: 10px 12px; }
+      .bx { position: relative; width: 74px; height: 17px; }
+      .bx .badge { position: absolute; right: 0; top: 0; }
+      .bl { position: absolute; left: -6px; top: -2px; bottom: -2px; width: 6px; background: var(--deal); }
+      #cursor { position: absolute; left: 0; top: 0; width: 22px; height: 22px; z-index: 10; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="816" data-height="1520">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap>
+        <div class="rm">
+          <div><div class="kicker">Prezzo di riferimento · cardmarket</div><div class="nm">Charizard, Base Set (Unlimited) #4</div></div>
+          <div><div class="kicker" style="text-align:right">AVG</div><div class="avg">185 €</div></div>
+        </div>
+        <div class="te">
+          <div class="te-on" id="te-on"></div>
+          <div class="top"><span style="display:flex;align-items:center"><b>Personalizza Scoring</b><span class="att" id="att">Attivo</span></span><span class="mr">Market Ref: 185 €</span></div>
+          <div class="fld"><label>Soglia DEAL (Prezzo massimo)</label>
+            <div class="inp"><span class="ph" id="ph-deal">151.70</span><span class="typed"><span id="k1">1</span><span id="k2">7</span><span id="k3">0</span></span><span class="eur">€</span></div>
+            <p>I risultati sotto questo prezzo saranno marcati <b class="t-deal">DEAL</b>.</p></div>
+          <div class="fld"><label>Soglia BIN (Prezzo minimo)</label>
+            <div class="inp"><span class="ph">199.80</span><span class="eur">€</span></div>
+            <p>I risultati sopra questo prezzo saranno marcati <b class="t-bin">BIN</b>.</p></div>
+          <div class="btnrow"><div class="btn"><span id="b-idle">Applica Soglie</span><span id="b-ok">✓ Salvato</span></div><span class="rst" id="rst">Ripristina Default</span></div>
+        </div>
+        <div class="cards">
+          <article class="card fair">
+            <div class="bl" id="bl"></div>
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(170,70%,62%)"/><stop offset="1" stop-color="hsl(200,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g1)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(170,90%,82%)" opacity=".7"/></svg><div class="plat mono">Vinted</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard base set mint</div><span class="bx"><span class="badge fair" id="bf">FAIR −11%</span><span class="badge deal" id="bd">DEAL −11%</span></span></div>
+              <div class="meta"><span>live</span>·<span>Firenze</span>·<span>mint</span></div>
+              <div class="prow"><div class="price">165 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">185 €</div></div></div>
+            </div>
+          </article>
+          <article class="card bin">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(14,70%,62%)"/><stop offset="1" stop-color="hsl(44,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g2)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(14,90%,82%)" opacity=".7"/></svg><div class="plat mono">Wallapop</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard holo base set NM</div><span class="badge bin">BIN +13%</span></div>
+              <div class="meta"><span>live</span>·<span>Barcelona</span>·<span>near-mint</span></div>
+              <div class="prow"><div class="price">199 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">176 €</div></div></div>
+            </div>
+          </article>
+        </div>
+        <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2 L3 19 L8 14.5 L11.5 22 L14.5 20.6 L11 13.4 L18 13.4 Z" fill="#15120d" stroke="#f4eedb" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // t=0 and t=12: default thresholds, listing is Fair
+      tl.set(["#te-on", "#att", "#k1", "#k2", "#k3", "#b-ok", "#bd", "#bl"], { opacity: 0 }, 0);
+      tl.set(["#ph-deal", "#b-idle", "#bf"], { opacity: 1 }, 0);
+      tl.set("#cursor", { x: 330, y: 660 }, 0);
+      // into the Deal field and type 170
+      tl.to("#cursor", { x: 120, y: 190, duration: 0.8, ease: "power3.inOut" }, 0.6);
+      tl.to("#cursor", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 1.45);
+      tl.to("#ph-deal", { opacity: 0, duration: 0.05 }, 1.7);
+      tl.to("#k1", { opacity: 1, duration: 0.04 }, 1.75);
+      tl.to("#k2", { opacity: 1, duration: 0.04 }, 1.92);
+      tl.to("#k3", { opacity: 1, duration: 0.04 }, 2.08);
+      // Applica Soglie
+      tl.to("#cursor", { x: 90, y: 300, duration: 0.6, ease: "power3.inOut" }, 2.4);
+      tl.to("#cursor", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 3.05);
+      tl.to("#b-idle", { opacity: 0, duration: 0.1 }, 3.15);
+      tl.to("#b-ok", { opacity: 1, duration: 0.15 }, 3.2);
+      tl.to(["#te-on", "#att"], { opacity: 1, duration: 0.3, ease: "power2.out" }, 3.3);
+      // the listing is re-scored
+      tl.to("#bf", { opacity: 0, filter: "blur(4px)", duration: 0.15 }, 3.7);
+      tl.set("#bd", { opacity: 0, scale: 1.4, filter: "blur(4px)" }, 3.8);
+      tl.to("#bd", { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "power4.out" }, 3.8);
+      tl.to("#bl", { opacity: 1, duration: 0.3 }, 3.85);
+      tl.to("#cursor", { x: 330, y: 660, duration: 1.0, ease: "power3.inOut" }, 4.2);
+      tl.to("#b-ok", { opacity: 0, duration: 0.2 }, 5.2);
+      tl.to("#b-idle", { opacity: 1, duration: 0.2 }, 5.25);
+      // Ripristina Default
+      tl.to("#cursor", { x: 250, y: 300, duration: 0.9, ease: "power3.inOut" }, 8.0);
+      tl.to("#cursor", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 9.0);
+      tl.to(["#k1", "#k2", "#k3"], { opacity: 0, duration: 0.08 }, 9.1);
+      tl.to("#ph-deal", { opacity: 1, duration: 0.15 }, 9.15);
+      tl.to(["#te-on", "#att"], { opacity: 0, duration: 0.3 }, 9.2);
+      tl.to("#bd", { opacity: 0, filter: "blur(4px)", duration: 0.15 }, 9.6);
+      tl.to("#bl", { opacity: 0, duration: 0.3 }, 9.6);
+      tl.set("#bf", { opacity: 0, scale: 1.4, filter: "blur(4px)" }, 9.7);
+      tl.to("#bf", { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "power4.out" }, 9.7);
+      tl.to("#cursor", { x: 330, y: 660, duration: 1.0, ease: "power3.inOut" }, 10.2);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

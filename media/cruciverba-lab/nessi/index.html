@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=822, height=1080" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900}
+:root{--paper:#FCFCF9;--ink:#1F130E;--nessi:#B02E8F;--hair:#C2BDB5}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:822px;height:1080px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink)}
+.title{position:absolute;left:64px;top:110px;font-family:Caprasimo;font-size:64px;color:var(--nessi)}
+.t{position:absolute;left:0;top:0;width:166px;height:150px;border:2px solid #8E857D;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;letter-spacing:.04em;text-align:center;padding:0 4px}
+.t.sel{background:#3A2E28;color:#fff}
+.row{position:absolute;left:64px;width:694px;height:150px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0}
+.row b{font-weight:700;font-size:20px;letter-spacing:.12em}
+.row span{font-size:20px;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="822" data-height="1080">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap>
+<div class="title">Nessi</div>
+<div class="t" id="t_ZECCA">ZECCA</div>
+<div class="t" id="t_CARRO">CARRO</div>
+<div class="t" id="t_SOLE">SOLE</div>
+<div class="t" id="t_CANTAUTORE">CANTAUTORE</div>
+<div class="t" id="t_TANDEM">TANDEM</div>
+<div class="t" id="t_FUSO">FUSO</div>
+<div class="t" id="t_SCORPIONE">SCORPIONE</div>
+<div class="t" id="t_NETTURBINO">NETTURBINO</div>
+<div class="t" id="t_TARANTOLA">TARANTOLA</div>
+<div class="t" id="t_MANDARANCIO">MANDARANCIO</div>
+<div class="t" id="t_TATTO">TATTO</div>
+<div class="t" id="t_ZATTERA">ZATTERA</div>
+<div class="t" id="t_FANTASCIENZA">FANTASCIENZA</div>
+<div class="t" id="t_ACARO">ACARO</div>
+<div class="t" id="t_DILIGENZA">DILIGENZA</div>
+<div class="t" id="t_SORTE">SORTE</div>
+<div class="row" id="r0" style="top:250px;background:#F2CC4A"><b>POSSONO SEGUIRE CON</b><span>SOLE, TATTO, FUSO, SORTE</span></div>
+<div class="row" id="r1" style="top:410px;background:#8CC97A"><b>HANNO OTTO ZAMPE</b><span>TARANTOLA, SCORPIONE, ZECCA, ACARO</span></div>
+<div class="row" id="r2" style="top:570px;background:#8FB3E8"><b>MEZZI SENZA MOTORE</b><span>CARRO, DILIGENZA, TANDEM, ZATTERA</span></div>
+<div class="row" id="r3" style="top:730px;background:#C79BE0"><b>DUE PAROLE RICUCITE IN UNA</b><span>FANTASCIENZA, CANTAUTORE, MANDARANCIO, NETTURBINO</span></div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+gsap.set("#t_ZECCA",{x:64,y:250});
+gsap.set("#t_CARRO",{x:240,y:250});
+gsap.set("#t_SOLE",{x:416,y:250});
+gsap.set("#t_CANTAUTORE",{x:592,y:250});
+gsap.set("#t_TANDEM",{x:64,y:410});
+gsap.set("#t_FUSO",{x:240,y:410});
+gsap.set("#t_SCORPIONE",{x:416,y:410});
+gsap.set("#t_NETTURBINO",{x:592,y:410});
+gsap.set("#t_TARANTOLA",{x:64,y:570});
+gsap.set("#t_MANDARANCIO",{x:240,y:570});
+gsap.set("#t_TATTO",{x:416,y:570});
+gsap.set("#t_ZATTERA",{x:592,y:570});
+gsap.set("#t_FANTASCIENZA",{x:64,y:730});
+gsap.set("#t_ACARO",{x:240,y:730});
+gsap.set("#t_DILIGENZA",{x:416,y:730});
+gsap.set("#t_SORTE",{x:592,y:730});
+tl.to("#t_SOLE",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},0.50);
+tl.to("#t_TATTO",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},0.72);
+tl.to("#t_FUSO",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},0.94);
+tl.to("#t_SORTE",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},1.16);
+tl.to("#t_SOLE",{x:64,y:250,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_TATTO",{x:240,y:250,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_FUSO",{x:416,y:250,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_SORTE",{x:592,y:250,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_ZECCA",{x:64,y:410,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_CARRO",{x:240,y:410,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_CANTAUTORE",{x:416,y:410,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_TANDEM",{x:592,y:410,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_SCORPIONE",{x:64,y:570,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_NETTURBINO",{x:240,y:570,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_TARANTOLA",{x:416,y:570,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_MANDARANCIO",{x:592,y:570,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_ZATTERA",{x:64,y:730,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_FANTASCIENZA",{x:240,y:730,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_ACARO",{x:416,y:730,duration:0.45,ease:"power3.inOut"},1.68);
+tl.to("#t_DILIGENZA",{x:592,y:730,duration:0.45,ease:"power3.inOut"},1.68);
+tl.fromTo("#r0",{opacity:0,scale:0.96},{opacity:1,scale:1,duration:0.25,ease:"power3.out"},2.18);
+tl.to(["#t_SOLE","#t_TATTO","#t_FUSO","#t_SORTE"],{opacity:0,duration:0.1},2.28);
+tl.to("#t_TARANTOLA",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},2.78);
+tl.to("#t_SCORPIONE",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},3.00);
+tl.to("#t_ZECCA",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},3.22);
+tl.to("#t_ACARO",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},3.44);
+tl.to("#t_TARANTOLA",{x:64,y:410,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_SCORPIONE",{x:240,y:410,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_ZECCA",{x:416,y:410,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_ACARO",{x:592,y:410,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_CARRO",{x:64,y:570,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_CANTAUTORE",{x:240,y:570,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_TANDEM",{x:416,y:570,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_NETTURBINO",{x:592,y:570,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_MANDARANCIO",{x:64,y:730,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_ZATTERA",{x:240,y:730,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_FANTASCIENZA",{x:416,y:730,duration:0.45,ease:"power3.inOut"},3.96);
+tl.to("#t_DILIGENZA",{x:592,y:730,duration:0.45,ease:"power3.inOut"},3.96);
+tl.fromTo("#r1",{opacity:0,scale:0.96},{opacity:1,scale:1,duration:0.25,ease:"power3.out"},4.46);
+tl.to(["#t_TARANTOLA","#t_SCORPIONE","#t_ZECCA","#t_ACARO"],{opacity:0,duration:0.1},4.56);
+tl.to("#t_CARRO",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},5.06);
+tl.to("#t_DILIGENZA",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},5.28);
+tl.to("#t_TANDEM",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},5.50);
+tl.to("#t_ZATTERA",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},5.72);
+tl.to("#t_CARRO",{x:64,y:570,duration:0.45,ease:"power3.inOut"},6.24);
+tl.to("#t_DILIGENZA",{x:240,y:570,duration:0.45,ease:"power3.inOut"},6.24);
+tl.to("#t_TANDEM",{x:416,y:570,duration:0.45,ease:"power3.inOut"},6.24);
+tl.to("#t_ZATTERA",{x:592,y:570,duration:0.45,ease:"power3.inOut"},6.24);
+tl.to("#t_CANTAUTORE",{x:64,y:730,duration:0.45,ease:"power3.inOut"},6.24);
+tl.to("#t_NETTURBINO",{x:240,y:730,duration:0.45,ease:"power3.inOut"},6.24);
+tl.to("#t_MANDARANCIO",{x:416,y:730,duration:0.45,ease:"power3.inOut"},6.24);
+tl.to("#t_FANTASCIENZA",{x:592,y:730,duration:0.45,ease:"power3.inOut"},6.24);
+tl.fromTo("#r2",{opacity:0,scale:0.96},{opacity:1,scale:1,duration:0.25,ease:"power3.out"},6.74);
+tl.to(["#t_CARRO","#t_DILIGENZA","#t_TANDEM","#t_ZATTERA"],{opacity:0,duration:0.1},6.84);
+tl.to("#t_FANTASCIENZA",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},7.34);
+tl.to("#t_CANTAUTORE",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},7.56);
+tl.to("#t_MANDARANCIO",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},7.78);
+tl.to("#t_NETTURBINO",{backgroundColor:"#3A2E28",color:"#fff",duration:0.12},8.00);
+tl.to("#t_FANTASCIENZA",{x:64,y:730,duration:0.45,ease:"power3.inOut"},8.52);
+tl.to("#t_CANTAUTORE",{x:240,y:730,duration:0.45,ease:"power3.inOut"},8.52);
+tl.to("#t_MANDARANCIO",{x:416,y:730,duration:0.45,ease:"power3.inOut"},8.52);
+tl.to("#t_NETTURBINO",{x:592,y:730,duration:0.45,ease:"power3.inOut"},8.52);
+tl.fromTo("#r3",{opacity:0,scale:0.96},{opacity:1,scale:1,duration:0.25,ease:"power3.out"},9.02);
+tl.to(["#t_FANTASCIENZA","#t_CANTAUTORE","#t_MANDARANCIO","#t_NETTURBINO"],{opacity:0,duration:0.1},9.12);
+tl.to(["#r0","#r1","#r2","#r3"],{opacity:0,duration:0.3,stagger:0.05},10.60);
+tl.to("#t_ZECCA",{x:64,y:250,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_CARRO",{x:240,y:250,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_SOLE",{x:416,y:250,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_CANTAUTORE",{x:592,y:250,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_TANDEM",{x:64,y:410,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_FUSO",{x:240,y:410,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_SCORPIONE",{x:416,y:410,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_NETTURBINO",{x:592,y:410,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_TARANTOLA",{x:64,y:570,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_MANDARANCIO",{x:240,y:570,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_TATTO",{x:416,y:570,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_ZATTERA",{x:592,y:570,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_FANTASCIENZA",{x:64,y:730,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_ACARO",{x:240,y:730,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_DILIGENZA",{x:416,y:730,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.to("#t_SORTE",{x:592,y:730,backgroundColor:"#ffffff",color:"#1F130E",opacity:1,duration:0.01},10.60);
+tl.fromTo(".t",{opacity:0},{opacity:1,duration:0.3,stagger:0.02,immediateRender:false},10.95);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

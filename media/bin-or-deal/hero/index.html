@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1152" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/bod.css" />
+    <style>
+      html, body { width: 1920px; height: 1152px; }
+      #root { position: relative; width: 100%; height: 100%; background: var(--paper); overflow: hidden; }
+      .tape { position: absolute; left: 0; right: 0; height: 76px; border-top: 4px solid var(--ink); border-bottom: 4px solid var(--ink); background: rgba(21,18,13,0.04); display: flex; align-items: center; overflow: hidden; }
+      #tape-top { top: 84px; }
+      #tape-bottom { top: 992px; }
+      .tape-label { position: relative; z-index: 2; height: 100%; flex-shrink: 0; background: var(--ink); color: var(--paper); padding: 0 34px; display: flex; align-items: center; gap: 16px; font-size: 20px; letter-spacing: 0.3em; }
+      .tape-label i { width: 12px; height: 12px; border-radius: 50%; background: var(--deal); display: block; }
+      .tape-win { flex: 1; overflow: hidden; height: 100%; display: flex; align-items: center; }
+      .track { display: flex; white-space: nowrap; }
+      .tk { display: inline-flex; align-items: center; gap: 16px; font-size: 26px; padding-right: 72px; }
+      .tk b { font-weight: 700; letter-spacing: 0.1em; }
+      .tk .lbl { color: var(--ink-soft); }
+      #eyebrow { position: absolute; left: 190px; top: 300px; display: flex; align-items: center; gap: 22px; font-size: 22px; letter-spacing: 0.25em; color: var(--ink-soft); }
+      #eyebrow span.rule { width: 60px; height: 4px; background: var(--ink); display: block; }
+      #headline { position: absolute; left: 180px; top: 360px; font-size: 330px; line-height: 0.88; }
+      #headline .soft { color: var(--ink); }
+      .stampwrap { position: absolute; left: 1290px; top: 470px; width: 520px; }
+      .stamp { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1; border: 9px solid currentColor; padding: 22px 34px 24px; transform-origin: left center; }
+      .stamp .display { font-size: 150px; text-transform: uppercase; }
+      .stamp .mono { font-size: 54px; opacity: 0.8; margin-top: 10px; }
+      .cap { margin-top: 44px; font-size: 24px; letter-spacing: 0.08em; color: var(--ink-muted); line-height: 1.5; }
+      .cap strong { color: var(--ink); font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1920" data-height="1152">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0;">
+        <div class="tape" id="tape-top">
+          <div class="tape-label mono up" data-layout-allow-occlusion><i></i>Live feed</div>
+          <div class="tape-win" data-layout-allow-occlusion>
+            <div class="track mono" id="track-top">
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">Charizard base ITA NM</span><b class="t-deal">−34%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-bin up">▲ bin</b><span class="lbl">500 lire argento 1961</span><b class="t-bin">+22%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">Blastoise olo shadowless</span><b class="t-deal">−28%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-fair up">◆ fair</b><span class="lbl">Pikachu base ENG</span><b class="t-fair">−4%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">2€ Grecia 2004 olimpiadi</span><b class="t-deal">−41%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">Charizard base ITA NM</span><b class="t-deal">−34%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-bin up">▲ bin</b><span class="lbl">500 lire argento 1961</span><b class="t-bin">+22%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">Blastoise olo shadowless</span><b class="t-deal">−28%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-fair up">◆ fair</b><span class="lbl">Pikachu base ENG</span><b class="t-fair">−4%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">2€ Grecia 2004 olimpiadi</span><b class="t-deal">−41%</b><span class="t-faint">·</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="eyebrow" class="mono up"><span class="rule"></span>EU marketplace aggregator · 2026</div>
+        <h1 id="headline" class="display"><span class="t-bin">Bin.</span><br /><span class="soft">or</span> <span class="t-deal">Deal?</span></h1>
+
+        <div class="stampwrap" id="s-deal">
+          <div class="stamp t-deal" id="s-deal-box"><span class="display">Deal</span><span class="mono">−21%</span></div>
+          <div class="cap mono" id="s-deal-cap"><strong>Charizard Base Set · 139 €</strong><br />Vinted · near-mint · rif. 176 €</div>
+        </div>
+        <div class="stampwrap" id="s-fair">
+          <div class="stamp t-fair" id="s-fair-box"><span class="display">Fair</span><span class="mono">−5%</span></div>
+          <div class="cap mono" id="s-fair-cap"><strong>Charizard Base Set · 155 €</strong><br />eBay · eccellente · rif. 163 €</div>
+        </div>
+        <div class="stampwrap" id="s-bin">
+          <div class="stamp t-bin" id="s-bin-box"><span class="display">Bin</span><span class="mono">+15%</span></div>
+          <div class="cap mono" id="s-bin-cap"><strong>Charizard Base Set · 165 €</strong><br />Subito · buono · rif. 144 €</div>
+        </div>
+
+        <div class="tape" id="tape-bottom">
+          <div class="tape-win" data-layout-allow-occlusion>
+            <div class="track mono" id="track-bottom">
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">50 lire Vulcano 1958 FDC</span><b class="t-deal">−26%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-bin up">▲ bin</b><span class="lbl">Venusaur 1ED ITA</span><b class="t-bin">+18%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-fair up">◆ fair</b><span class="lbl">Mewtwo base EX</span><b class="t-fair">+2%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">Eevee gold star POP 5</span><b class="t-deal">−22%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-bin up">▲ bin</b><span class="lbl">Blastoise base PL condition</span><b class="t-bin">+31%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">50 lire Vulcano 1958 FDC</span><b class="t-deal">−26%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-bin up">▲ bin</b><span class="lbl">Venusaur 1ED ITA</span><b class="t-bin">+18%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-fair up">◆ fair</b><span class="lbl">Mewtwo base EX</span><b class="t-fair">+2%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-deal up">▼ deal</b><span class="lbl">Eevee gold star POP 5</span><b class="t-deal">−22%</b><span class="t-faint">·</span></span>
+              <span class="tk"><b class="t-bin up">▲ bin</b><span class="lbl">Blastoise base PL condition</span><b class="t-bin">+31%</b><span class="t-faint">·</span></span>
+            </div>
+          </div>
+          <div class="tape-label mono up" data-layout-allow-occlusion><i></i>Deal · Fair · Bin</div>
+        </div>
+        
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const D = 12;
+      // Tapes: each track holds the token list twice, so half its width is one seamless period.
+      tl.fromTo("#track-top", { xPercent: 0 }, { xPercent: -50, duration: D, ease: "none" }, 0);
+      tl.fromTo("#track-bottom", { xPercent: -50 }, { xPercent: 0, duration: D, ease: "none" }, 0);
+
+      // Stamps: Deal is settled at 0 and again at 12, so the loop closes.
+      const hidden = { opacity: 0, scale: 1.35, rotation: -2.5, filter: "blur(10px)" };
+      const shown = { opacity: 1, scale: 1, rotation: -2.5, filter: "blur(0px)" };
+      tl.set(["#s-fair", "#s-bin"], { opacity: 0 }, 0);
+      tl.set("#s-deal", { opacity: 1 }, 0);
+      tl.set(["#s-deal-box", "#s-fair-box", "#s-bin-box"], shown, 0);
+      function out(id, t) {
+        tl.to("#" + id, { opacity: 0, filter: "blur(8px)", duration: 0.22, ease: "power3.in" }, t);
+      }
+      function land(id, t) {
+        tl.set("#" + id, { opacity: 1, filter: "blur(0px)" }, t);
+        tl.set("#" + id + "-box", hidden, t);
+        tl.to("#" + id + "-box", { ...shown, duration: 0.32, ease: "power4.out" }, t);
+        tl.fromTo("#" + id + "-cap", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out", immediateRender: false }, t + 0.18);
+      }
+      out("s-deal", 3.5); land("s-fair", 3.8);
+      out("s-fair", 7.5); land("s-bin", 7.8);
+      out("s-bin", 11.2); land("s-deal", 11.45);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

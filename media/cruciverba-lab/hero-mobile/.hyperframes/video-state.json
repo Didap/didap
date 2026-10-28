@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "historyId": "23d1cd34-0002-4f88-b2a0-54598ca05c3b",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/caprasimo-400.woff2": {
+      "hash": "8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\23d1cd34-0002-4f88-b2a0-54598ca05c3b\\blobs\\8b\\8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a"
+    },
+    "assets/fonts/piazzolla-var-italic.woff2": {
+      "hash": "df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\23d1cd34-0002-4f88-b2a0-54598ca05c3b\\blobs\\df\\df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4"
+    },
+    "assets/fonts/piazzolla-var.woff2": {
+      "hash": "d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\23d1cd34-0002-4f88-b2a0-54598ca05c3b\\blobs\\d1\\d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\23d1cd34-0002-4f88-b2a0-54598ca05c3b\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "36a418593edd6f937ff8850f28997984c1ba167535c6955854894e58cb4d9cf2",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\23d1cd34-0002-4f88-b2a0-54598ca05c3b\\blobs\\36\\36a418593edd6f937ff8850f28997984c1ba167535c6955854894e58cb4d9cf2"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "18107d8b-e2c7-4fde-8340-7b1937bb4091",
+      "completedAt": 1793189709827,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cruciverba-lab\\out\\hero-mobile.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

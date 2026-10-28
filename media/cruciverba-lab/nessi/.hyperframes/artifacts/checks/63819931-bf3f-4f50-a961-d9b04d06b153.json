@@ -1,0 +1,627 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"stage\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#stage",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"stage\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 12,
+    "samples": [
+      0.667,
+      2,
+      3.333,
+      4.667,
+      6,
+      7.333,
+      8.667,
+      10,
+      11.333
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0.667,
+      3.333,
+      6,
+      8.667,
+      11.333
+    ],
+    "checked": 33,
+    "passed": 33
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 17,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"CANTAUTORE\" (1 word) is on screen 1.25 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "CANTAUTORE",
+        "selector": "#t_CANTAUTORE",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 610.59,
+          "y": 313,
+          "width": 128.82000000000005,
+          "height": 24
+        },
+        "time": 10.75,
+        "words": 1,
+        "seconds": 1.254,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"TARANTOLA\" (1 word) is on screen 1.25 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "TARANTOLA",
+        "selector": "#t_TARANTOLA",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 89.97,
+          "y": 633,
+          "width": 114.04999999999998,
+          "height": 24
+        },
+        "time": 10.75,
+        "words": 1,
+        "seconds": 1.254,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"MANDARANCIO\" (1 word) is on screen 1.25 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "MANDARANCIO",
+        "selector": "#t_MANDARANCIO",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 250.83,
+          "y": 633,
+          "width": 144.34,
+          "height": 24
+        },
+        "time": 10.75,
+        "words": 1,
+        "seconds": 1.254,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"SORTE\" (1 word) is on screen 1.25 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "SORTE",
+        "selector": "#t_SORTE",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 643.33,
+          "y": 793,
+          "width": 63.33000000000004,
+          "height": 24
+        },
+        "time": 10.75,
+        "words": 1,
+        "seconds": 1.254,
+        "floorSeconds": 2
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 21 px (2.6% of the 822 px short side, what a phone can read) and 24 text elements stay under it for 0.5 s or more, the smallest \"CANTAUTORE\" at 17 px: set reading text to at least 21 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "CANTAUTORE",
+        "selector": "#t_CANTAUTORE",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 610.59,
+          "y": 313,
+          "width": 128.82,
+          "height": 24
+        },
+        "time": 10.75,
+        "times": [
+          2.25,
+          2.25,
+          4.5,
+          4.5,
+          6.875,
+          6.875,
+          9.125,
+          9.125,
+          10.75,
+          10.75,
+          10.75,
+          10.75,
+          11.125,
+          11.125,
+          11.125,
+          11.25,
+          11.25,
+          11.25,
+          11.25,
+          11.375,
+          11.375,
+          11.375,
+          11.375,
+          11.375
+        ],
+        "fontPx": 17,
+        "floorPx": 21,
+        "seconds": 1.25,
+        "elements": [
+          {
+            "selector": "#t_CANTAUTORE",
+            "text": "CANTAUTORE",
+            "fontPx": 17,
+            "time": 10.75,
+            "seconds": 1.25
+          },
+          {
+            "selector": "#t_TARANTOLA",
+            "text": "TARANTOLA",
+            "fontPx": 17,
+            "time": 10.75,
+            "seconds": 1.25
+          },
+          {
+            "selector": "#t_MANDARANCIO",
+            "text": "MANDARANCIO",
+            "fontPx": 17,
+            "time": 10.75,
+            "seconds": 1.25
+          },
+          {
+            "selector": "#t_SORTE",
+            "text": "SORTE",
+            "fontPx": 17,
+            "time": 10.75,
+            "seconds": 1.25
+          },
+          {
+            "selector": "#t_ZECCA",
+            "text": "ZECCA",
+            "fontPx": 17,
+            "time": 11.125,
+            "seconds": 0.875
+          },
+          {
+            "selector": "#t_CARRO",
+            "text": "CARRO",
+            "fontPx": 17,
+            "time": 11.125,
+            "seconds": 0.875
+          },
+          {
+            "selector": "#t_SOLE",
+            "text": "SOLE",
+            "fontPx": 17,
+            "time": 11.125,
+            "seconds": 0.875
+          },
+          {
+            "selector": "#t_TANDEM",
+            "text": "TANDEM",
+            "fontPx": 17,
+            "time": 11.25,
+            "seconds": 0.75
+          },
+          {
+            "selector": "#t_FUSO",
+            "text": "FUSO",
+            "fontPx": 17,
+            "time": 11.25,
+            "seconds": 0.75
+          },
+          {
+            "selector": "#t_SCORPIONE",
+            "text": "SCORPIONE",
+            "fontPx": 17,
+            "time": 11.25,
+            "seconds": 0.75
+          },
+          {
+            "selector": "#t_NETTURBINO",
+            "text": "NETTURBINO",
+            "fontPx": 17,
+            "time": 11.25,
+            "seconds": 0.75
+          },
+          {
+            "selector": "#t_TATTO",
+            "text": "TATTO",
+            "fontPx": 17,
+            "time": 11.375,
+            "seconds": 0.625
+          },
+          {
+            "selector": "#t_ZATTERA",
+            "text": "ZATTERA",
+            "fontPx": 17,
+            "time": 11.375,
+            "seconds": 0.625
+          },
+          {
+            "selector": "#t_FANTASCIENZA",
+            "text": "FANTASCIENZA",
+            "fontPx": 17,
+            "time": 11.375,
+            "seconds": 0.625
+          },
+          {
+            "selector": "#t_ACARO",
+            "text": "ACARO",
+            "fontPx": 17,
+            "time": 11.375,
+            "seconds": 0.625
+          },
+          {
+            "selector": "#t_DILIGENZA",
+            "text": "DILIGENZA",
+            "fontPx": 17,
+            "time": 11.375,
+            "seconds": 0.625
+          },
+          {
+            "selector": "#r1 > b:nth-of-type(1)",
+            "text": "HANNO OTTO ZAMPE",
+            "fontPx": 19.6,
+            "time": 4.5,
+            "seconds": 6.375
+          },
+          {
+            "selector": "#r1 > span:nth-of-type(1)",
+            "text": "TARANTOLA, SCORPIONE, ZECCA, ACARO",
+            "fontPx": 19.6,
+            "time": 4.5,
+            "seconds": 6.375
+          },
+          {
+            "selector": "#r0 > b:nth-of-type(1)",
+            "text": "POSSONO SEGUIRE CON",
+            "fontPx": 19.69,
+            "time": 2.25,
+            "seconds": 8.5
+          },
+          {
+            "selector": "#r0 > span:nth-of-type(1)",
+            "text": "SOLE, TATTO, FUSO, SORTE",
+            "fontPx": 19.69,
+            "time": 2.25,
+            "seconds": 8.5
+          },
+          {
+            "selector": "#r3 > b:nth-of-type(1)",
+            "text": "DUE PAROLE RICUCITE IN UNA",
+            "fontPx": 19.83,
+            "time": 9.125,
+            "seconds": 1.75
+          },
+          {
+            "selector": "#r3 > span:nth-of-type(1)",
+            "text": "FANTASCIENZA, CANTAUTORE, MANDARANCIO, NETTURBINO",
+            "fontPx": 19.83,
+            "time": 9.125,
+            "seconds": 1.75
+          },
+          {
+            "selector": "#r2 > b:nth-of-type(1)",
+            "text": "MEZZI SENZA MOTORE",
+            "fontPx": 19.95,
+            "time": 6.875,
+            "seconds": 4
+          },
+          {
+            "selector": "#r2 > span:nth-of-type(1)",
+            "text": "CARRO, DILIGENZA, TANDEM, ZATTERA",
+            "fontPx": 19.95,
+            "time": 6.875,
+            "seconds": 4
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"ZECCA\" (1 word) is on screen 0.93 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "ZECCA",
+        "selector": "#t_ZECCA",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 116.33,
+          "y": 313,
+          "width": 61.33,
+          "height": 24
+        },
+        "time": 11.07,
+        "words": 1,
+        "seconds": 0.934,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"CARRO\" (1 word) is on screen 0.93 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "CARRO",
+        "selector": "#t_CARRO",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 290.92,
+          "y": 313,
+          "width": 64.16000000000003,
+          "height": 24
+        },
+        "time": 11.07,
+        "words": 1,
+        "seconds": 0.934,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"SOLE\" (1 word) is on screen 0.90 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "SOLE",
+        "selector": "#t_SOLE",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 474.56,
+          "y": 313,
+          "width": 48.88000000000005,
+          "height": 24
+        },
+        "time": 11.102,
+        "words": 1,
+        "seconds": 0.902,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"TANDEM\" (1 word) is on screen 0.86 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "TANDEM",
+        "selector": "#t_TANDEM",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 105.61,
+          "y": 473,
+          "width": 82.77,
+          "height": 24
+        },
+        "time": 11.141,
+        "words": 1,
+        "seconds": 0.863,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"FUSO\" (1 word) is on screen 0.83 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "FUSO",
+        "selector": "#t_FUSO",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 297.8,
+          "y": 473,
+          "width": 50.39999999999998,
+          "height": 24
+        },
+        "time": 11.172,
+        "words": 1,
+        "seconds": 0.832,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"SCORPIONE\" (1 word) is on screen 0.83 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "SCORPIONE",
+        "selector": "#t_SCORPIONE",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 444.28,
+          "y": 473,
+          "width": 109.44000000000005,
+          "height": 24
+        },
+        "time": 11.172,
+        "words": 1,
+        "seconds": 0.832,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"NETTURBINO\" (1 word) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "NETTURBINO",
+        "selector": "#t_NETTURBINO",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 610.92,
+          "y": 473,
+          "width": 128.14,
+          "height": 24
+        },
+        "time": 11.203,
+        "words": 1,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"TATTO\" (1 word) is on screen 0.73 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "TATTO",
+        "selector": "#t_TATTO",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 468.23,
+          "y": 633,
+          "width": 61.539999999999964,
+          "height": 24
+        },
+        "time": 11.273,
+        "words": 1,
+        "seconds": 0.73,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"ZATTERA\" (1 word) is on screen 0.73 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "ZATTERA",
+        "selector": "#t_ZATTERA",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 630.91,
+          "y": 633,
+          "width": 88.16999999999996,
+          "height": 24
+        },
+        "time": 11.273,
+        "words": 1,
+        "seconds": 0.73,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"FANTASCIENZA\" (1 word) is on screen 0.70 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "FANTASCIENZA",
+        "selector": "#t_FANTASCIENZA",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 73.88,
+          "y": 793,
+          "width": 146.25,
+          "height": 24
+        },
+        "time": 11.305,
+        "words": 1,
+        "seconds": 0.699,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"ACARO\" (1 word) is on screen 0.70 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "ACARO",
+        "selector": "#t_ACARO",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 291.28,
+          "y": 793,
+          "width": 63.420000000000016,
+          "height": 24
+        },
+        "time": 11.305,
+        "words": 1,
+        "seconds": 0.699,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"DILIGENZA\" (1 word) is on screen 0.67 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "DILIGENZA",
+        "selector": "#t_DILIGENZA",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 446.19,
+          "y": 793,
+          "width": 105.61999999999995,
+          "height": 24
+        },
+        "time": 11.336,
+        "words": 1,
+        "seconds": 0.668,
+        "floorSeconds": 2
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 96
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

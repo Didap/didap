@@ -1,0 +1,26 @@
+/* Listing card, score badge, formula panel: rebuilt from listing-card.tsx, score-badge.tsx and the landing page */
+.card { position: relative; background: var(--surface); border: 2px solid var(--ink); border-left-width: 6px; display: flex; }
+.card.deal { border-left-color: var(--deal); } .card.fair { border-left-color: var(--fair); } .card.bin { border-left-color: var(--bin); } .card.unk { border-left-color: var(--line-strong); }
+.thumb { position: relative; width: 112px; flex-shrink: 0; border-right: 2px solid var(--ink); background: rgba(21,18,13,0.05); overflow: hidden; }
+.thumb .art { width: 100%; aspect-ratio: 4/5; display: block; }
+.thumb .plat { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ink); color: var(--paper); font-size: 10px; text-align: center; padding: 2px 0; letter-spacing: 0.06em; text-transform: uppercase; }
+.body { flex: 1; min-width: 0; padding: 14px 16px; display: flex; flex-direction: column; }
+.row1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.title { font-family: "BOD Display", serif; font-weight: 700; font-size: 17px; line-height: 1.1; letter-spacing: -0.04em; }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-family: "BOD Mono", monospace; font-weight: 700; font-size: 10px; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 2px; white-space: nowrap; }
+.badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.8; }
+.badge.deal { background: var(--deal); color: var(--paper); } .badge.fair { background: var(--fair); color: var(--ink); } .badge.bin { background: var(--bin); color: var(--paper); }
+.meta { margin-top: 6px; font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted); display: flex; gap: 6px; }
+.prow { margin-top: auto; padding-top: 12px; display: flex; justify-content: space-between; align-items: flex-end; }
+.price { font-family: "BOD Mono", monospace; font-weight: 700; font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ship { margin-top: 4px; font-family: "BOD Mono", monospace; font-size: 11px; color: var(--deal); }
+.ship.m { color: var(--ink-muted); }
+.ref { text-align: right; font-family: "BOD Mono", monospace; }
+.ref .k { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+.ref .v { font-size: 14px; color: var(--ink-soft); text-decoration: line-through; text-decoration-color: var(--ink-muted); }
+.arow { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+.arow b { color: var(--ink); font-weight: 400; }
+.kicker { font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-muted); }
+.stamp { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1; border: 3px solid currentColor; padding: 7px 11px; transform-origin: left center; }
+.stamp .display { font-size: 30px; text-transform: uppercase; }
+.stamp .mono { font-size: 12px; opacity: 0.8; margin-top: 3px; }

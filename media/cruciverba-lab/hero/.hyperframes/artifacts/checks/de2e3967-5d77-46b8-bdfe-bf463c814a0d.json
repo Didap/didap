@@ -1,0 +1,638 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "composition_file_too_large",
+        "severity": "warning",
+        "message": "This HTML composition file has 370 lines. Smaller sub-compositions are easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\hero\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Split coherent scenes or layers into separate .html files under compositions/, then mount them from the parent with data-composition-src so each file stays small enough to inspect, revise, and validate independently."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"stage\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#stage",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\hero\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"stage\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 12,
+    "samples": [
+      0.667,
+      2,
+      3.333,
+      4.667,
+      6,
+      7.333,
+      8.667,
+      10,
+      11.333
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 3.87:1; WCAG AA requires 4.5:1.",
+        "text": "14",
+        "fg": "rgb(109,96,89)",
+        "bg": "rgb(247,195,180)",
+        "ratio": 3.87,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(98,86,80)",
+        "large": false,
+        "selector": "div > div > div:nth-of-type(4) > span:nth-of-type(35)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 886.390625,
+          "y": 441.59375,
+          "width": 15.421875,
+          "height": 16
+        },
+        "time": 6,
+        "times": [
+          6
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 3.87:1; WCAG AA requires 4.5:1.",
+        "text": "20",
+        "fg": "rgb(109,96,89)",
+        "bg": "rgb(247,195,180)",
+        "ratio": 3.87,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(98,86,80)",
+        "large": false,
+        "selector": "div > div > div:nth-of-type(4) > span:nth-of-type(51)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 566.390625,
+          "y": 601.59375,
+          "width": 19.578125,
+          "height": 16
+        },
+        "time": 8.667,
+        "times": [
+          8.667
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      0.667,
+      3.333,
+      6,
+      8.667,
+      11.333
+    ],
+    "checked": 539,
+    "passed": 537
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 30 px (2.6% of the 1152 px short side, what a phone can read) and 55 text elements stay under it for 0.5 s or more, the smallest \"1\" at 16 px: set reading text to at least 30 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "1",
+        "selector": "#grid > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 166.39,
+          "y": 197.59,
+          "width": 6.49,
+          "height": 23
+        },
+        "time": 0,
+        "times": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "fontPx": 16,
+        "floorPx": 30,
+        "seconds": 12,
+        "elements": [
+          {
+            "selector": "#grid > span:nth-of-type(1)",
+            "text": "1",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(3)",
+            "text": "2",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(5)",
+            "text": "3",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(7)",
+            "text": "4",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(9)",
+            "text": "5",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(11)",
+            "text": "6",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(13)",
+            "text": "7",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(17)",
+            "text": "8",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(21)",
+            "text": "9",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(25)",
+            "text": "10",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(30)",
+            "text": "11",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(31)",
+            "text": "12",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(33)",
+            "text": "13",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(35)",
+            "text": "14",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(37)",
+            "text": "15",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(39)",
+            "text": "16",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(41)",
+            "text": "17",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(45)",
+            "text": "18",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(50)",
+            "text": "19",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(51)",
+            "text": "20",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(57)",
+            "text": "21",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(61)",
+            "text": "22",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(63)",
+            "text": "23",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(67)",
+            "text": "24",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(70)",
+            "text": "25",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(73)",
+            "text": "26",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(75)",
+            "text": "27",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(77)",
+            "text": "28",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(79)",
+            "text": "29",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(81)",
+            "text": "30",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(86)",
+            "text": "31",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(91)",
+            "text": "32",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(97)",
+            "text": "33",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(102)",
+            "text": "34",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#grid > span:nth-of-type(107)",
+            "text": "35",
+            "fontPx": 16,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "span.lab",
+            "text": "LAB.",
+            "fontPx": 21.76,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "div.head",
+            "text": "ORIZZONTALI",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl0 > b:nth-of-type(1)",
+            "text": "1.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl0 > span:nth-of-type(1)",
+            "text": "Il naufrago lo traccia sulla spiaggia a lettere enormi (sigla)",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl1 > b:nth-of-type(1)",
+            "text": "4.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl1 > span:nth-of-type(1)",
+            "text": "Sotto la propria, il maestro prende l’allievo più promettente",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl2 > b:nth-of-type(1)",
+            "text": "7.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl2 > span:nth-of-type(1)",
+            "text": "Le ____ e le altre: tutte quante",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl3 > b:nth-of-type(1)",
+            "text": "8.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl3 > span:nth-of-type(1)",
+            "text": "Il comico la prova cento volte perché sembri improvvisata",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl4 > b:nth-of-type(1)",
+            "text": "9.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl4 > span:nth-of-type(1)",
+            "text": "Passavamo dalle parole ai fatti",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl5 > b:nth-of-type(1)",
+            "text": "12.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl5 > span:nth-of-type(1)",
+            "text": "Dal parrucchiere fa coppia con la spazzola per la piega",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl6 > b:nth-of-type(1)",
+            "text": "15.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl6 > span:nth-of-type(1)",
+            "text": "Le alza chi vince la finale, le cala chi gioca a briscola",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl7 > b:nth-of-type(1)",
+            "text": "18.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl7 > span:nth-of-type(1)",
+            "text": "Chi lo perde resta in aeroporto, chi lo spicca si stacca da terra",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl8 > b:nth-of-type(1)",
+            "text": "20.",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#cl8 > span:nth-of-type(1)",
+            "text": "Al Nord sono le soffitte dove finiscono i bauli della nonna",
+            "fontPx": 27,
+            "time": 0,
+            "seconds": 12
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 96
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1696, height=1520" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/bod.css" />
+    <link rel="stylesheet" href="assets/cards.css" />
+    <style>
+      html, body { width: 1696px; height: 1520px; }
+      #root { position: relative; width: 100%; height: 100%; background: var(--paper); overflow: hidden; }
+      #stage { position: absolute; inset: 0; zoom: 2; padding: 34px 32px; display: grid; grid-template-columns: 220px 1fr; gap: 28px; }
+      .blk h3 { border-top: 2px solid var(--ink); padding: 8px 0 10px; font-family: "BOD Mono", monospace; font-weight: 400; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; }
+      .blk { margin-bottom: 20px; }
+      .chip { position: relative; display: flex; justify-content: space-between; align-items: center; border: 2px solid var(--ink); background: var(--surface); padding: 7px 9px; margin-bottom: 6px; }
+      .chip .tag { font-family: "BOD Mono", monospace; font-weight: 700; font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; }
+      .chip .d { font-family: "BOD Mono", monospace; font-size: 11px; color: var(--ink-muted); margin-left: 8px; }
+      .chip .n { font-family: "BOD Mono", monospace; font-size: 12px; color: var(--ink-soft); }
+      .bg-deal { background: var(--deal); color: var(--paper); } .bg-fair { background: var(--fair); color: var(--ink); } .bg-bin { background: var(--bin); color: var(--paper); }
+      .mk { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      .mk span { border: 2px solid var(--ink); background: var(--ink); color: var(--paper); font-family: "BOD Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; text-align: center; padding: 7px 0; }
+      .in { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .in span, .sel { border: 2px solid var(--ink); background: var(--surface); font-family: "BOD Mono", monospace; font-size: 13px; padding: 7px 9px; color: var(--ink-faint); }
+      .sel { color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; }
+      .head { display: flex; align-items: center; gap: 14px; height: 34px; margin-bottom: 12px; font-family: "BOD Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+      .head .cnt { margin-left: auto; position: relative; width: 120px; height: 16px; text-align: right; }
+      .head .cnt span { position: absolute; right: 0; top: 0; }
+      .list { position: relative; height: 1200px; }
+      .lc { position: absolute; left: 0; right: 0; height: 98px; }
+      .lc .thumb { width: 78px; }
+      .lc .title { font-size: 15px; }
+      .lc .price { font-size: 22px; }
+      #cursor { position: absolute; left: 0; top: 0; width: 22px; height: 22px; z-index: 10; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1696" data-height="1520">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow>
+        <aside>
+          <div class="blk"><h3>Score</h3>
+            <div class="chip" id="f-deal"><span><span class="tag bg-deal">DEAL</span><span class="d">sotto il mercato</span></span><span class="n">5</span></div>
+            <div class="chip" id="f-fair"><span><span class="tag bg-fair">FAIR</span><span class="d">prezzo equo</span></span><span class="n">2</span></div>
+            <div class="chip" id="f-bin"><span><span class="tag bg-bin">BIN</span><span class="d">sopra il mercato</span></span><span class="n">2</span></div>
+          </div>
+          <div class="blk"><h3>Marketplace</h3><div class="mk"><span>eBay</span><span>Vinted</span><span>Wallapop</span><span>Subito</span></div></div>
+          <div class="blk"><h3>Prezzo (€)</h3><div class="in"><span>min</span><span>max</span></div></div>
+          <div class="blk"><h3>Ordina</h3><div class="sel">Più recenti</div></div>
+        </aside>
+        <section>
+          <div class="head"><span class="badge deal">DEAL</span><b class="t-soft">5</b><span class="badge fair">FAIR</span><b class="t-soft">2</b><span class="badge bin">BIN</span><b class="t-soft">2</b>
+            <span class="cnt"><span id="cnt-all">9 annunci</span><span id="cnt-deal">5 annunci</span></span></div>
+          <div class="list">
+          <article class="card deal lc" id="c0" style="top:0px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g0" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(14,70%,62%)"/><stop offset="1" stop-color="hsl(44,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g0)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(14,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Vinted</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard Base Set Unlimited, Near Mint</div><span class="badge deal">DEAL −21%</span></div>
+              <div class="meta"><span>live</span>·<span>Milano</span>·<span>near-mint</span>·<span>20m fa</span></div>
+              <div class="prow"><div class="price">139 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">176 €</div></div></div>
+            </div>
+          </article>
+          <article class="card fair lc" id="c1" style="top:108px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(40,70%,62%)"/><stop offset="1" stop-color="hsl(70,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g1)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(40,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">eBay</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard 4/102 Base Set Holo Rare</div><span class="badge fair">FAIR −5%</span></div>
+              <div class="meta"><span>live</span>·<span>DE</span>·<span>eccellente</span>·<span>1h fa</span></div>
+              <div class="prow"><div class="price">155 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">163 €</div></div></div>
+            </div>
+          </article>
+          <article class="card bin lc" id="c2" style="top:216px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(210,70%,62%)"/><stop offset="1" stop-color="hsl(240,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g2)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(210,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Subito</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard Set Base Ita 4/102</div><span class="badge bin">BIN +15%</span></div>
+              <div class="meta"><span>live</span>·<span>Napoli</span>·<span>buono</span>·<span>2h fa</span></div>
+              <div class="prow"><div class="price">165 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">144 €</div></div></div>
+            </div>
+          </article>
+          <article class="card deal lc" id="c3" style="top:324px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g3" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(280,70%,62%)"/><stop offset="1" stop-color="hsl(310,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g3)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(280,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Wallapop</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard base set holo 1999</div><span class="badge deal">DEAL −26%</span></div>
+              <div class="meta"><span>live</span>·<span>Madrid</span>·<span>eccellente</span>·<span>3h fa</span></div>
+              <div class="prow"><div class="price">120 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">163 €</div></div></div>
+            </div>
+          </article>
+          <article class="card fair lc" id="c4" style="top:432px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g4" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(170,70%,62%)"/><stop offset="1" stop-color="hsl(200,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g4)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(170,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Vinted</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Carta Charizard set base originale</div><span class="badge fair">FAIR −3%</span></div>
+              <div class="meta"><span>live</span>·<span>Torino</span>·<span>near-mint</span>·<span>4h fa</span></div>
+              <div class="prow"><div class="price">170 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">176 €</div></div></div>
+            </div>
+          </article>
+          <article class="card deal lc" id="c5" style="top:540px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g5" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(320,70%,62%)"/><stop offset="1" stop-color="hsl(350,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g5)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(320,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">eBay</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Pokemon Charizard 4/102 Unlimited</div><span class="badge deal">DEAL −21%</span></div>
+              <div class="meta"><span>live</span>·<span>FR</span>·<span>eccellente</span>·<span>5h fa</span></div>
+              <div class="prow"><div class="price">128 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">163 €</div></div></div>
+            </div>
+          </article>
+          <article class="card bin lc" id="c6" style="top:648px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g6" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(14,70%,62%)"/><stop offset="1" stop-color="hsl(44,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g6)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(14,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Wallapop</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard holo base set NM</div><span class="badge bin">BIN +13%</span></div>
+              <div class="meta"><span>live</span>·<span>Barcelona</span>·<span>near-mint</span>·<span>7h fa</span></div>
+              <div class="prow"><div class="price">199 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">176 €</div></div></div>
+            </div>
+          </article>
+          <article class="card deal lc" id="c7" style="top:756px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g7" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(40,70%,62%)"/><stop offset="1" stop-color="hsl(70,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g7)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(40,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Subito</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard 4/102 italiano</div><span class="badge deal">DEAL −24%</span></div>
+              <div class="meta"><span>live</span>·<span>Roma</span>·<span>buono</span>·<span>9h fa</span></div>
+              <div class="prow"><div class="price">110 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">144 €</div></div></div>
+            </div>
+          </article>
+          <article class="card deal lc" id="c8" style="top:864px">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="g8" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(210,70%,62%)"/><stop offset="1" stop-color="hsl(240,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g8)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(210,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Vinted</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard base set mint</div><span class="badge deal">DEAL −27%</span></div>
+              <div class="meta"><span>live</span>·<span>Bologna</span>·<span>mint</span>·<span>12h fa</span></div>
+              <div class="prow"><div class="price">135 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">185 €</div></div></div>
+            </div>
+          </article>
+          </div>
+        </section>
+        <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2 L3 19 L8 14.5 L11.5 22 L14.5 20.6 L11 13.4 L18 13.4 Z" fill="#15120d" stroke="#f4eedb" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const P = 108;
+      const deals = [0,3,5,7,8];
+      const others = [1,2,4,6];
+      // t=0 and t=12: full list, all tiers on, cursor parked bottom right
+      tl.set("#cursor", { x: 520, y: 600 }, 0);
+      tl.set("#cnt-deal", { opacity: 0 }, 0);
+      // cursor to the DEAL chip and click
+      tl.to("#cursor", { x: 150, y: 70, duration: 0.9, ease: "power3.inOut" }, 0.6);
+      tl.to("#cursor", { scale: 0.82, duration: 0.08, ease: "power2.out", yoyo: true, repeat: 1 }, 1.55);
+      tl.to(["#f-fair", "#f-bin"], { opacity: 0.55, backgroundColor: "rgba(0,0,0,0)", duration: 0.2 }, 1.62);
+      tl.to("#cnt-all", { opacity: 0, duration: 0.15 }, 1.62);
+      tl.to("#cnt-deal", { opacity: 1, duration: 0.2 }, 1.75);
+      others.forEach((i, k) => tl.to("#c" + i, { opacity: 0, x: 40, filter: "blur(6px)", duration: 0.3, ease: "power3.in" }, 1.7 + k * 0.05));
+      deals.forEach((i, k) => tl.to("#c" + i, { y: (k - i) * P, duration: 0.6, ease: "expo.out" }, 2.05 + k * 0.06));
+      tl.to("#cursor", { x: 560, y: 560, duration: 1.0, ease: "power3.inOut" }, 2.6);
+      // back: click DEAL again, everything returns
+      tl.to("#cursor", { x: 150, y: 70, duration: 0.9, ease: "power3.inOut" }, 8.2);
+      tl.to("#cursor", { scale: 0.82, duration: 0.08, ease: "power2.out", yoyo: true, repeat: 1 }, 9.15);
+      tl.to(["#f-fair", "#f-bin"], { opacity: 1, backgroundColor: "#f4eedb", duration: 0.2 }, 9.22);
+      tl.to("#cnt-deal", { opacity: 0, duration: 0.15 }, 9.22);
+      tl.to("#cnt-all", { opacity: 1, duration: 0.2 }, 9.35);
+      deals.forEach((i, k) => tl.to("#c" + i, { y: 0, duration: 0.6, ease: "expo.out" }, 9.3 + k * 0.04));
+      others.forEach((i, k) => tl.to("#c" + i, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 9.6 + k * 0.06));
+      tl.to("#cursor", { x: 520, y: 600, duration: 1.1, ease: "power3.inOut" }, 10.3);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

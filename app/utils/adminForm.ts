@@ -10,8 +10,10 @@ export interface AdminForm {
   status: '' | (typeof PRODUCT_STATUSES)[number]
   scope: string
   stack: string
+  platform: string
   lede: string
   url: string
+  notify: boolean
   logo: string
   heroOn: boolean
   hero: MediaSlot
@@ -45,8 +47,10 @@ export function toAdminForm(p: AdminSource): AdminForm {
     status: p.status ?? '',
     scope: p.scope ?? '',
     stack: p.stack ?? '',
+    platform: p.platform ?? '',
     lede: p.lede || p.summary || '',
     url: p.url ?? '',
+    notify: p.notify ?? false,
     logo: p.logo ?? '',
     heroOn: !!p.hero,
     hero: slot(p.hero),
@@ -94,8 +98,10 @@ export function fromAdminForm(f: AdminForm): ProductOverride {
     status: f.status || null,
     scope: f.scope,
     stack: f.stack,
+    platform: f.platform,
     lede: f.lede,
     url: f.url,
+    notify: f.notify,
     logo: f.logo,
     hero: f.heroOn ? cleanSlot(f.hero) : null,
     intro: f.intro,

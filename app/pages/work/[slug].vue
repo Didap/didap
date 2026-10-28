@@ -145,7 +145,7 @@ useSeoMeta({
                 {{ t('product.scope') }}
               </dt>
               <dd class="text-body">
-                {{ project.scope }}
+                {{ typeset(project.scope) }}
               </dd>
             </div>
             <div
@@ -156,7 +156,18 @@ useSeoMeta({
                 {{ t('product.stack') }}
               </dt>
               <dd class="text-body">
-                {{ project.stack }}
+                {{ typeset(project.stack) }}
+              </dd>
+            </div>
+            <div
+              v-if="project.platform"
+              class="flex flex-col gap-1.5"
+            >
+              <dt class="text-label opacity-60">
+                {{ t('product.platform') }}
+              </dt>
+              <dd class="text-body">
+                {{ typeset(project.platform) }}
               </dd>
             </div>
           </dl>
@@ -170,6 +181,13 @@ useSeoMeta({
               :href="project.url"
             >
               {{ t('product.open', { host }) }}
+            </DidapButton>
+            <!-- Prodotto non ancora uscito: la richiesta passa dai contatti -->
+            <DidapButton
+              v-else-if="project.notify"
+              :to="localePath({ path: '/contact', query: { product: project.title } })"
+            >
+              {{ t('product.notify') }}
             </DidapButton>
           </div>
         </div>

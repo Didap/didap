@@ -1,4 +1,5 @@
 import { defineCollection, defineContentConfig, z } from '@nuxt/content'
+import { PRODUCT_COLORS, PRODUCT_STATUSES } from './shared/product'
 
 // Slot immagine della scheda prodotto: con `src` mostra l'immagine,
 // senza resta il segnaposto colorato del Figma. Un `src` .mp4/.webm
@@ -11,7 +12,7 @@ const mediaSlot = z.object({
   srcMobile: z.string().optional(),
   posterMobile: z.string().optional(),
   alt: z.string().optional(),
-  color: z.enum(['ink', 'red', 'green', 'banana']).default('ink'),
+  color: z.enum(PRODUCT_COLORS).default('ink'),
   label: z.boolean().default(true),
 })
 
@@ -30,9 +31,12 @@ const projectSchema = z.object({
   strategic: z.boolean().default(false),
   order: z.number().int().default(0),
   // Scheda prodotto (Figma "Scheda prodotto · Desktop 1440")
-  status: z.enum(['live', 'pilot', 'pending']).optional(),
+  status: z.enum(PRODUCT_STATUSES).optional(),
   scope: z.string().optional(),
   stack: z.string().optional(),
+  platform: z.string().optional(),
+  // Senza `url`, il bottone "Avvisami quando esce" porta ai contatti
+  notify: z.boolean().default(false),
   lede: z.string().optional(),
   hero: mediaSlot.optional(),
   intro: z.string().optional(),

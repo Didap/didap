@@ -4,6 +4,10 @@
 // un trattino, e l'ultima riga non resta con una parola sola.
 
 const NBSP = String.fromCharCode(160)
+
+// Il testo senza gli spazi indivisibili di typeset(): per un campo del
+// form o un'email, dove il testo viene scritto e non solo letto
+export const untypeset = (text: string) => text.replaceAll(NBSP, ' ')
 // Uno spazio qualsiasi, normale o indivisibile
 const ANY_SPACE = `[ ${NBSP}]`
 

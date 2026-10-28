@@ -19,6 +19,7 @@
     "products_intro": "Li progettiamo, li scriviamo e li teniamo in produzione noi. Il modo più rapido per capire come lavoriamo è usarli.",
     "featured_more": "Leggi la scheda",
     "status_live": "Live",
+    "status_development": "In sviluppo",
     "status_pilot": "Pilot",
     "status_pending": "Stato da confermare",
     "open_product": "Apri il prodotto",
@@ -135,6 +136,7 @@
       "qube_more": "Scheda partner",
       "message": "Raccontaci",
       "message_placeholder": "Due righe sul progetto, anche bozza.",
+      "notify_message": "Ciao, avvisatemi quando esce {name}.",
       "consent": "Acconsento al trattamento dei dati come da",
       "privacy_link": "privacy policy",
       "submit": "Invia",
@@ -175,7 +177,9 @@
     "status": "Stato",
     "scope": "Ruolo",
     "stack": "Stack",
+    "platform": "Piattaforma",
     "open": "Apri {host}",
+    "notify": "Avvisami quando esce",
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine"
   }

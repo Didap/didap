@@ -14,8 +14,11 @@ platform: App iOS e Android
 notify: true
 lede: "L’app di lavoro in cui ci si sceglie a vicenda. Il primo passo non è il CV: è un ciao."
 hero:
-  color: red
-  label: false
+  src: /covers/helllo-hero.mp4
+  poster: /covers/helllo-hero-poster.webp
+  srcMobile: /covers/helllo-hero-mobile.mp4
+  posterMobile: /covers/helllo-hero-mobile-poster.webp
+  alt: "Una linea rossa disegna tre l in un solo tratto, come il filo di un vecchio telefono, tra due persone che si parlano al telefono, e compare la scritta È un helllo!"
 intro: "Helllo mette in contatto chi cerca lavoro e le aziende che assumono. Chi cerca lavoro scorre le offerte, l’azienda scorre le persone: se tutti e due dicono Helllo, è un match e la chat si apre subito, con le domande rompighiaccio già pronte. Niente candidature nel vuoto, niente «le faremo sapere»."
 challenge:
   title: Tre l, un solo filo.

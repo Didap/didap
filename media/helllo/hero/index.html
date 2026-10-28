@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1152" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1152px; overflow: hidden; background: #FBF5EE; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #FBF5EE; font-family: 'Segoe UI', Arial, sans-serif; }
+      #panel { position: absolute; left: 360px; top: 230px; width: 1200px; height: 560px; background: #F3E3E1; border-radius: 8px; }
+      svg { position: absolute; left: 0; top: 0; }
+      #title { position: absolute; left: 0; right: 0; top: 70px; text-align: center; white-space: nowrap; }
+      #pill { display: inline-block; background: #2557D6; color: #fff; font-weight: 800; font-size: 54px; padding: 4px 30px 10px; border-radius: 48px; transform: rotate(-8deg) translateY(-10px); margin-right: 18px; vertical-align: middle; }
+      #word { display: inline-block; color: #EE4A3A; font-weight: 900; font-size: 120px; letter-spacing: -2px; vertical-align: middle; }
+      #stage { position: absolute; left: 0; top: 96px; width: 1920px; height: 960px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="hero" data-start="0" data-duration="10" data-width="1920" data-height="1152">
+      <div id="stage" class="clip" data-start="0" data-duration="10" data-track-index="0" data-layout-allow-overflow>
+        <div id="panel"></div>
+        <svg width="1920" height="960" viewBox="0 0 1920 960" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path id="cord" stroke="#EE4A3A" stroke-width="46" d="" />
+          <g id="pl" stroke="#2557D6" stroke-width="9">
+            <path d="M330 470 C300 390 360 330 430 340 C470 300 540 320 545 380 C590 400 580 470 545 500" />
+            <path d="M350 460 C350 560 400 610 460 600 C520 590 545 540 540 480" />
+            <path d="M420 520 C430 550 470 555 490 525" />
+            <path d="M430 470 L430 490 M480 470 L480 490" />
+            <path d="M440 605 L440 650 M490 600 L490 650" />
+            <path d="M260 800 C320 700 380 660 440 650 M490 650 C540 670 580 720 600 760" />
+            <path d="M600 590 L650 600 L630 700 L580 690 Z" stroke-width="8" />
+          </g>
+          <g id="pr" stroke="#2557D6" stroke-width="9">
+            <path d="M1375 500 C1340 430 1380 340 1460 345 C1500 300 1580 320 1590 380 C1640 410 1620 480 1590 520" />
+            <path d="M1385 470 C1380 570 1430 620 1490 610 C1550 600 1575 550 1570 490" />
+            <path d="M1430 530 C1440 560 1480 565 1500 535" />
+            <path d="M1440 480 L1440 500 M1490 480 L1490 500" />
+            <path d="M1380 430 C1420 380 1560 380 1590 450 L1595 500" stroke-width="14" />
+            <path d="M1450 615 L1450 660 M1500 610 L1500 660" />
+            <path d="M1320 760 C1350 710 1400 670 1450 660 M1500 660 C1560 680 1620 730 1660 800" />
+            <path d="M1300 600 L1350 590 L1370 690 L1320 700 Z" stroke-width="8" />
+          </g>
+        </svg>
+        <div id="title"><span id="pill">È un</span><span id="word">helllo!</span></div>
+      </div>
+    </div>
+    <script>
+      // one continuous stroke: three cursive l loops between the two phones, like an old phone cord
+      let d = 'M640 660 C700 740 740 720 760 690';
+      for (let i = 0; i < 3; i++) {
+        const x = 760 + i * 200;
+        d += ` C820 600 ${x - 760 + 900} 330 ${x - 760 + 860} 300`.replace('C820', `C${x + 60}`);
+        d += ` C${x + 60} 270 ${x - 10} 500 ${x + 10} 700`;
+        d += ` C${x + 30} 780 ${x + 140} 760 ${x + 200} 690`;
+      }
+      d += ' C1380 640 1360 660 1330 650';
+      document.getElementById('cord').setAttribute('d', d);
+      const len = document.getElementById('cord').getTotalLength();
+      const tl = gsap.timeline({ paused: true });
+      tl.set('#cord', { strokeDasharray: len, strokeDashoffset: len }, 0);
+      tl.fromTo('#pl', { x: -80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: 'expo.out' }, 0.2);
+      tl.fromTo('#pr', { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: 'expo.out' }, 0.35);
+      tl.to('#cord', { strokeDashoffset: 0, duration: 2.6, ease: 'power1.inOut' }, 0.9);
+      tl.fromTo('#title', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(2)' }, 3.2);
+      tl.to('#pill', { rotation: -2, duration: 0.5, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 4.2);
+      tl.to('#title', { opacity: 0, y: -20, duration: 0.4, ease: 'power2.in' }, 8.6);
+      tl.to('#cord', { strokeDashoffset: -len, duration: 1.0, ease: 'power2.in' }, 8.6);
+      tl.to(['#pl', '#pr'], { opacity: 0, duration: 0.4 }, 9.4);
+      tl.set({}, {}, 10);
+      window.__timelines['hero'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

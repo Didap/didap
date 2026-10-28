@@ -56,7 +56,6 @@ const products: [Product, ...Product[]] = [
     key: 'helllo',
     slug: 'helllo',
     name: 'Helllo',
-    image: '/covers/helllo-illustrazione.webp',
     status: 'development',
   },
 ]

@@ -33,5 +33,7 @@ Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
   il vecchio corpo markdown dice ancora Clerk, Neon e Upstash.
 - Cruciverba Lab: i testi dicono dieci giochi al giorno (il sito ne ha dieci) e che l'account
   gratuito dà solo il gioco di oggi; da confermare con William e Cristiano.
-- Helllo ha ancora immagini ferme: niente app da cui ricostruire le schermate.
+- Helllo: splash della home e hero sono animati (`media/helllo/`) ma in bozza: il testo usa un
+  carattere di sistema al posto di Hanken Grotesk e Pacifico, e i due personaggi sono semplificati
+  rispetto all'illustrazione di Vitantonio. Gli altri slot della pagina sono ancora immagini ferme.
 - Rivedere ogni clip sulla pagina (http://localhost:3000/work/<slug>) prima del merge.

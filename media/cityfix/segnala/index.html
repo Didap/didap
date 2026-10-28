@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1256, height=1520" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* CityFix app, guided report (app/(tabs)/new-report + components/guided-report).
+         Tokens from app/src/lib/colors.ts and typography.ts, at 1.6x of a 393 pt phone. */
+      @font-face { font-family: 'Urbanist'; src: url('assets/Urbanist_400Regular.ttf'); font-weight: 400; }
+      @font-face { font-family: 'Urbanist'; src: url('assets/Urbanist_500Medium.ttf'); font-weight: 500; }
+      @font-face { font-family: 'Urbanist'; src: url('assets/Urbanist_700Bold.ttf'); font-weight: 700; }
+      @font-face { font-family: 'Bitcount'; src: url('assets/BitcountGridSingle_600SemiBold.ttf'); font-weight: 600; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1256px; height: 1520px; overflow: hidden; background: #2B1CE8; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: 'Urbanist', sans-serif;
+        background-color: #2B1CE8;
+        background-image: linear-gradient(rgba(255,255,255,0.10) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.10) 2px, transparent 2px);
+        background-size: 40px 40px; background-position: 19px 19px; }
+      #phone { position: absolute; left: 50%; top: 50%; width: 413px; height: 872px; margin: -436px 0 0 -206.5px;
+        border-radius: 62px; background: #0E0B2E; padding: 10px; scale: 1.6; box-shadow: 0 30px 60px rgba(14, 11, 46, 0.35); }
+      #screen { position: relative; width: 393px; height: 852px; border-radius: 52px; overflow: hidden; background: #F4F4F4; }
+      #band { position: absolute; left: 0; top: 0; right: 0; height: 156px; background: #2B1CE8; z-index: 2; }
+      .status { position: absolute; top: 16px; left: 34px; right: 30px; display: flex; justify-content: space-between; color: #fff; font-weight: 700; font-size: 15px; }
+      #back { position: absolute; left: 16px; top: 63px; width: 52px; height: 52px; border-radius: 26px; background: #4141FD; }
+      #back svg { position: absolute; left: 14px; top: 14px; }
+      .steps { position: absolute; left: 80px; top: 70px; height: 14px; width: 260px; }
+      .step { position: absolute; left: 0; top: 0; font-family: 'Bitcount'; font-weight: 600; font-size: 11px; letter-spacing: 0.44px; text-transform: uppercase; color: #DDDBFB; white-space: nowrap; }
+      .title { position: absolute; left: 80px; top: 86px; font-weight: 700; font-size: 22px; line-height: 28px; color: #fff; letter-spacing: -0.11px; }
+      #segs { position: absolute; left: 16px; right: 16px; bottom: 16px; height: 6px; display: flex; gap: 6px; }
+      .seg { position: relative; flex: 1; height: 6px; border-radius: 3px; background: #1A05A2; overflow: hidden; }
+      .fill { position: absolute; inset: 0; background: #fff; transform-origin: 0 50%; }
+      #chat { position: absolute; left: 0; right: 0; top: 156px; bottom: 0; overflow: hidden; }
+      #list { position: absolute; left: 16px; right: 16px; top: 16px; }
+      .row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; opacity: 0; }
+      .row.user { justify-content: flex-end; }
+      .avatar { flex: none; width: 30px; height: 30px; border-radius: 9px; background: #2B1CE8; position: relative; overflow: hidden; }
+      .avatar i { position: absolute; background: #fff; }
+      .bubble { max-width: 300px; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 22px; }
+      .bot .bubble { background: #fff; border: 1px solid #E4E3EE; border-bottom-left-radius: 6px; color: #000; }
+      .user .bubble { background: #2B1CE8; color: #fff; border-bottom-right-radius: 6px; }
+      .under { margin: -4px 0 14px 38px; opacity: 0; }
+      .minimap { position: relative; width: 300px; height: 150px; border-radius: 20px; overflow: hidden; border: 1px solid #E4E3EE; background: #fff; }
+      .minimap img { position: absolute; left: -900px; top: -520px; width: 2112px; height: 1268px; }
+      .minimap svg { position: absolute; left: 132px; top: 26px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip { padding: 9px 14px; border-radius: 999px; border: 1px solid #BFBBF8; background: #fff; font-size: 14px; line-height: 18px; color: #000; }
+      .photos { display: flex; gap: 6px; }
+      .photo { width: 56px; height: 56px; border-radius: 10px; background:
+        radial-gradient(ellipse 42% 26% at 52% 60%, #2c2a2a 0 60%, #4b4744 75%, transparent 82%),
+        radial-gradient(circle at 30% 30%, #8e8a85 0 2px, transparent 3px),
+        linear-gradient(160deg, #a19c96, #7d7873); }
+      .photo.b { background:
+        radial-gradient(ellipse 30% 20% at 45% 50%, #2c2a2a 0 60%, #4b4744 75%, transparent 82%),
+        linear-gradient(200deg, #b0aba4, #85807a 60%, #e6e2dc 61% 66%, #85807a 67%); }
+      .card { width: 300px; background: #fff; border: 1px solid #E4E3EE; border-radius: 20px; padding: 16px; }
+      .card .lab { font-family: 'Bitcount'; font-weight: 600; font-size: 11px; letter-spacing: 0.44px; text-transform: uppercase; color: #5B5B70; }
+      .card .t { font-weight: 700; font-size: 17px; line-height: 22px; margin: 4px 0 10px; }
+      .card .d { font-weight: 400; font-size: 15px; line-height: 22px; color: #5B5B70; margin-top: 4px; }
+      .send { margin-top: 14px; height: 48px; border-radius: 24px; background: #2B1CE8; color: #fff; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+      .px { flex: none; width: 28px; height: 28px; border-radius: 8px; background: #EEEDFD; position: relative; }
+      .px i { position: absolute; width: 7px; height: 7px; background: #DDDBFB; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="segnala" data-start="0" data-duration="13" data-width="1256" data-height="1520">
+      <div id="stage" class="clip" data-start="0" data-duration="13" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap>
+        <div id="phone"><div id="screen">
+          <div id="band">
+            <div class="status"><span>9:41</span><span>5G</span></div>
+            <div id="back"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff" shape-rendering="crispEdges"><path d="M10 5h2v1H10zM9 6h3v1H9zM8 7h3v1H8zM7 8h3v1H7zM6 9h3v1H6zM5 10h3v1H5zM4 11h16v1H4zM4 12h16v1H4zM5 13h3v1H5zM6 14h3v1H6zM7 15h3v1H7zM8 16h3v1H8zM9 17h3v1H9zM10 18h2v1H10z"/></svg></div>
+            <div class="steps">
+              <span class="step" id="st1">Passo 1 di 4 · Posizione</span>
+              <span class="step" id="st2">Passo 2 di 4 · Foto</span>
+              <span class="step" id="st3">Passo 3 di 4 · Dettagli</span>
+              <span class="step" id="st4">Passo 4 di 4 · Riepilogo</span>
+            </div>
+            <div class="title">Nuova segnalazione</div>
+            <div id="segs">
+              <div class="seg"><div class="fill" id="f1"></div></div>
+              <div class="seg"><div class="fill" id="f2"></div></div>
+              <div class="seg"><div class="fill" id="f3"></div></div>
+              <div class="seg"><div class="fill" id="f4"></div></div>
+            </div>
+          </div>
+          <div id="chat"><div id="list">
+            <div class="row bot" id="m1"><div class="avatar"></div><div class="bubble">Ciao Giulia! Dove si trova il problema?</div></div>
+            <div class="under" id="m1x"><div class="minimap"><img src="assets/brindisi.svg" alt="" />
+              <svg width="36" height="51" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="11.5" r="3.5" fill="#fff"/></svg></div></div>
+            <div class="row user" id="u1"><div class="bubble">Via Ostuni 14, Brindisi</div></div>
+            <div class="row bot" id="m2"><div class="avatar"></div><div class="bubble">Perfetto. Ora scatta o scegli una foto del problema: da 1 a 5.</div></div>
+            <div class="row user" id="u2"><div class="bubble"><div class="photos"><div class="photo"></div><div class="photo b"></div></div></div></div>
+            <div class="row bot" id="m3"><div class="avatar"></div><div class="bubble">Che tipo di problema è?</div></div>
+            <div class="under" id="m3x"><div class="chips">
+              <span class="chip" id="c-strade">Strade</span><span class="chip">Illuminazione</span><span class="chip">Verde pubblico</span>
+              <span class="chip">Rifiuti</span><span class="chip">Edifici</span><span class="chip">Altro</span></div></div>
+            <div class="row user" id="u3"><div class="bubble">Strade</div></div>
+            <div class="row bot" id="m4"><div class="avatar"></div><div class="bubble">Cosa hai notato sulla strada?</div></div>
+            <div class="row user" id="u4"><div class="bubble">Buca</div></div>
+            <div class="row bot" id="m5"><div class="avatar"></div><div class="bubble">Ecco la tua segnalazione. Controlla e invia.</div></div>
+            <div class="under" id="m5x"><div class="card">
+              <div class="lab">Titolo</div><div class="t">Buca in Via Ostuni</div>
+              <div class="lab">Descrizione</div><div class="d">Buca (Strade). Dimensione: come una ruota. È un pericolo per auto, bici o pedoni.</div>
+              <div class="send" id="send">Invia</div></div></div>
+            <div class="row bot" id="m6"><div class="avatar"></div><div class="bubble" style="display:flex;gap:10px;align-items:center">
+              <div class="px"><i style="left:6px;top:6px;background:#2B1CE8"></i><i style="right:6px;top:6px"></i><i style="right:6px;bottom:6px"></i><i style="left:6px;bottom:6px"></i></div>
+              <span>Fatto! La tua segnalazione è partita: il Comune la riceve adesso.</span></div></div>
+          </div></div>
+        </div></div>
+      </div>
+    </div>
+    <script>
+      // The bot avatar: a pixel spark on a blue tile (components/BotAvatar.tsx)
+      const RECTS = [[14.25,0,1.5,30,0.45],[0,14.25,30,1.5,0.45],[13,8,4,14,1],[8,13,14,4,1],[11,11,8,8,1]];
+      document.querySelectorAll('.avatar').forEach((a) => {
+        a.innerHTML = RECTS.map(([l,t,w,h,o]) => `<i style="left:${l}px;top:${t}px;width:${w}px;height:${h}px;opacity:${o}"></i>`).join('');
+      });
+      const tl = gsap.timeline({ paused: true });
+      const build = () => {
+        const VISIBLE = 852 - 156 - 56;
+        const list = document.getElementById('list');
+        const bottom = (id) => { const el = document.getElementById(id); return el.offsetTop + el.offsetHeight; };
+        // [id, time, side]
+        const seq = [
+          ['m1', 0.4, 'bot'], ['m1x', 0.75, 'x'], ['u1', 1.8, 'user'],
+          ['m2', 2.6, 'bot'], ['u2', 3.7, 'user'],
+          ['m3', 4.5, 'bot'], ['m3x', 4.8, 'x'], ['u3', 5.9, 'user'],
+          ['m4', 6.6, 'bot'], ['u4', 7.5, 'user'],
+          ['m5', 8.2, 'bot'], ['m5x', 8.5, 'x'], ['m6', 9.95, 'bot'],
+        ];
+        for (const [id, t, side] of seq) {
+          const fromX = side === 'user' ? 24 : side === 'bot' ? -24 : 0;
+          tl.fromTo('#' + id, { opacity: 0, x: fromX, y: side === 'x' ? 10 : 0 }, { opacity: 1, x: 0, y: 0, duration: 0.42, ease: 'expo.out' }, t);
+          const over = Math.max(0, bottom(id) - VISIBLE);
+          if (over > 0) tl.to('#list', { y: -over, duration: 0.5, ease: 'power3.out' }, t - 0.05);
+        }
+        // Chip pressed before the answer
+        tl.fromTo('#c-strade', { backgroundColor: '#ffffff', color: '#000000', borderColor: '#BFBBF8' }, { backgroundColor: '#2B1CE8', color: '#ffffff', borderColor: '#2B1CE8', duration: 0.15, ease: 'power2.out' }, 5.6);
+        tl.fromTo('#send', { scale: 1 }, { scale: 0.97, duration: 0.1, ease: 'power2.out' }, 9.7);
+        tl.to('#send', { scale: 1, duration: 0.2, ease: 'power2.out' }, 9.8);
+        // Steps and progress segments
+        const steps = [[1, 0], [2, 2.6], [3, 4.5], [4, 8.2]];
+        tl.fromTo('#f1', { scaleX: 1 }, { scaleX: 1, duration: 0.01 }, 0);
+        for (const [n, t] of steps) {
+          tl.fromTo('#st' + n, { opacity: n === 1 ? 1 : 0 }, { opacity: 1, duration: 0.2 }, Math.max(t - 0.2, 0));
+          if (n > 1) {
+            tl.to('#st' + (n - 1), { opacity: 0, duration: 0.2 }, t - 0.2);
+            tl.fromTo('#f' + n, { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: 'power3.out' }, t);
+          }
+        }
+        // Back to the opening state for the loop
+        tl.to('#list', { opacity: 0, duration: 0.3, ease: 'power3.in' }, 12.35);
+        tl.to(['#f2', '#f3', '#f4'], { scaleX: 0, duration: 0.35, ease: 'power3.in' }, 12.25);
+        tl.to('#st4', { opacity: 0, duration: 0.2 }, 12.3);
+        tl.to('#st1', { opacity: 1, duration: 0.2 }, 12.5);
+        tl.set('#list', { y: 0 }, 12.6);
+        tl.set('#stage', {}, 13);
+        window.__timelines['segnala'] = tl;
+        tl.seek(0);
+      };
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

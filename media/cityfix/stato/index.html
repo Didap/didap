@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=816, height=1520" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* CityFix app, report detail (components/ReportDetailContent.tsx, StatusPixels.tsx), at 1.65x of a 393 pt phone */
+      @font-face { font-family: 'Urbanist'; src: url('assets/Urbanist_400Regular.ttf'); font-weight: 400; }
+      @font-face { font-family: 'Urbanist'; src: url('assets/Urbanist_500Medium.ttf'); font-weight: 500; }
+      @font-face { font-family: 'Urbanist'; src: url('assets/Urbanist_700Bold.ttf'); font-weight: 700; }
+      @font-face { font-family: 'Bitcount'; src: url('assets/BitcountGridSingle_600SemiBold.ttf'); font-weight: 600; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 816px; height: 1520px; overflow: hidden; background: #EEEDFD; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: 'Urbanist', sans-serif; background: #EEEDFD; }
+      #phone { position: absolute; left: 50%; top: 50%; width: 413px; height: 872px; margin: -436px 0 0 -206.5px; border-radius: 62px; background: #0E0B2E; padding: 10px; scale: 1.65; }
+      #screen { position: relative; width: 393px; height: 852px; border-radius: 52px; overflow: hidden; background: #F5F7FA; }
+      #band { position: absolute; left: 0; top: 0; right: 0; height: 128px; background: #2B1CE8; }
+      .status { position: absolute; top: 16px; left: 34px; right: 30px; display: flex; justify-content: space-between; color: #fff; font-weight: 700; font-size: 15px; }
+      #back { position: absolute; left: 16px; top: 60px; width: 52px; height: 52px; border-radius: 26px; background: #4141FD; }
+      #back svg { position: absolute; left: 14px; top: 14px; }
+      .hd { position: absolute; left: 80px; top: 64px; }
+      .lab { font-family: 'Bitcount'; font-weight: 600; font-size: 11px; letter-spacing: 0.44px; text-transform: uppercase; }
+      .hd .lab { color: #DDDBFB; }
+      .hd .t { font-weight: 700; font-size: 22px; line-height: 28px; color: #fff; }
+      #body { position: absolute; left: 16px; right: 16px; top: 144px; }
+      .card { background: #fff; border: 1px solid #E4E3EE; border-radius: 20px; padding: 16px; margin-bottom: 12px; }
+      .prog { display: flex; align-items: center; gap: 16px; }
+      .pxs { position: relative; width: 56px; height: 56px; flex: none; }
+      .pxs i { position: absolute; width: 24px; height: 24px; background: #DDDBFB; }
+      .st { position: relative; height: 26px; flex: 1; }
+      .st span { position: absolute; left: 0; top: 0; font-weight: 700; font-size: 20px; line-height: 26px; color: #000; white-space: nowrap; opacity: 0; }
+      .prog .lab { color: #5B5B70; margin-bottom: 4px; }
+      .photo { height: 150px; border-radius: 14px; margin-bottom: 12px; background:
+        radial-gradient(ellipse 30% 22% at 50% 60%, #2c2a2a 0 55%, #4b4744 72%, transparent 80%),
+        radial-gradient(circle at 20% 30%, #8e8a85 0 3px, transparent 4px), linear-gradient(165deg, #a7a29c, #7a756f); }
+      .meta { font-weight: 500; font-size: 13px; color: #5B5B70; }
+      .h { font-weight: 700; font-size: 17px; line-height: 22px; margin: 2px 0 10px; }
+      .tl { position: relative; padding-left: 26px; }
+      .tl::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px; background: #E4E3EE; }
+      .ev { position: relative; margin-bottom: 14px; opacity: 0; }
+      .ev:last-child { margin-bottom: 0; }
+      .ev .dot { position: absolute; left: -26px; top: 2px; width: 16px; height: 16px; border-radius: 8px; border: 3px solid #fff; }
+      .ev b { display: block; font-weight: 700; font-size: 15px; line-height: 20px; }
+      .ev span { font-weight: 500; font-size: 13px; color: #5B5B70; }
+      .sup { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #EFF6FF; color: #1E40AF; font-weight: 700; font-size: 15px; margin-top: 12px; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="stato" data-start="0" data-duration="12" data-width="816" data-height="1520">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap>
+        <div id="phone"><div id="screen">
+          <div id="band">
+            <div class="status"><span>9:41</span><span>5G</span></div>
+            <div id="back"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff" shape-rendering="crispEdges"><path d="M10 5h2v1H10zM9 6h3v1H9zM8 7h3v1H8zM7 8h3v1H7zM6 9h3v1H6zM5 10h3v1H5zM4 11h16v1H4zM4 12h16v1H4zM5 13h3v1H5zM6 14h3v1H6zM7 15h3v1H7zM8 16h3v1H8zM9 17h3v1H9zM10 18h2v1H10z"/></svg></div>
+            <div class="hd"><div class="lab">CF-2610-0412</div><div class="t">Dettaglio</div></div>
+          </div>
+          <div id="body">
+            <div class="card">
+              <div class="prog">
+                <div class="pxs"><i id="p0" style="left:0;top:0"></i><i id="p1" style="right:0;top:0"></i><i id="p2" style="right:0;bottom:0"></i><i id="p3" style="left:0;bottom:0"></i></div>
+                <div style="flex:1"><div class="lab" id="steplab">Avanzamento</div>
+                  <div class="st"><span id="s0">Inviata</span><span id="s1">Presa in carico</span><span id="s2">Assegnata</span><span id="s3">Completata</span></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="photo"></div>
+              <div class="meta">Strade · 26 ott</div>
+              <div class="h">Buca in Via Ostuni</div>
+              <div class="meta" style="font-weight:400;font-size:15px;line-height:22px;color:#000">Buca (Strade). Dimensione: come una ruota. È un pericolo per auto, bici o pedoni.</div>
+              <div class="sup" id="sup">Fornitore assegnato · Asfalti Messapia srl</div>
+            </div>
+            <div class="card">
+              <div class="h" style="margin-top:0">Cronologia</div>
+              <div class="tl">
+                <div class="ev" id="e0"><i class="dot" style="background:#3B82F6"></i><b>Inviata</b><span>26 ott, 08:12 · da Giulia</span></div>
+                <div class="ev" id="e1"><i class="dot" style="background:#3B82F6"></i><b>Presa in carico</b><span>26 ott, 09:40 · Comune di Brindisi</span></div>
+                <div class="ev" id="e2"><i class="dot" style="background:#8B5CF6"></i><b>Assegnata</b><span>27 ott, 11:05 · Comune di Brindisi</span></div>
+                <div class="ev" id="e3"><i class="dot" style="background:#16A34A"></i><b>Completata</b><span>28 ott, 16:30 · Asfalti Messapia srl</span></div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+    <script>
+      // The 2x2 pixel progress fills clockwise; completed turns all four green.
+      const tl = gsap.timeline({ paused: true });
+      tl.set(['#s1', '#s2', '#s3', '#e1', '#e2', '#e3', '#sup'], { opacity: 0 }, 0);
+      tl.set(['#s0', '#e0'], { opacity: 1 }, 0);
+      tl.set('#p0', { backgroundColor: '#2B1CE8' }, 0);
+      tl.set(['#p1', '#p2', '#p3'], { backgroundColor: '#DDDBFB' }, 0);
+      const step = (n, t) => {
+        tl.to('#s' + (n - 1), { opacity: 0, filter: 'blur(6px)', duration: 0.18, ease: 'power3.in' }, t);
+        tl.fromTo('#s' + n, { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, t + 0.15);
+        tl.fromTo('#e' + n, { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.45, ease: 'expo.out' }, t + 0.2);
+      };
+      tl.to('#p1', { backgroundColor: '#2B1CE8', duration: 0.12 }, 2.0); step(1, 2.0);
+      tl.to('#p2', { backgroundColor: '#2B1CE8', duration: 0.12 }, 4.4); step(2, 4.4);
+      tl.fromTo('#sup', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: 'expo.out' }, 4.8);
+      tl.to(['#p0', '#p1', '#p2', '#p3'], { backgroundColor: '#479B3E', duration: 0.15, stagger: 0.06 }, 6.9); step(3, 6.9);
+      // Back to Inviata for the loop
+      tl.to(['#e1', '#e2', '#e3', '#sup'], { opacity: 0, duration: 0.3, ease: 'power3.in' }, 11.2);
+      tl.to('#s3', { opacity: 0, duration: 0.2 }, 11.3);
+      tl.to('#s0', { opacity: 1, filter: 'blur(0px)', duration: 0.2 }, 11.5);
+      tl.to('#p0', { backgroundColor: '#2B1CE8', duration: 0.2 }, 11.4);
+      tl.to(['#p1', '#p2', '#p3'], { backgroundColor: '#DDDBFB', duration: 0.2 }, 11.4);
+      tl.set({}, {}, 12);
+      window.__timelines['stato'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

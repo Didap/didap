@@ -1,0 +1,286 @@
+{
+  "version": 1,
+  "historyId": "46603cd6-c53b-4605-a10f-59e8244ae8a0",
+  "currentRevision": "55d8eefe-fc84-4638-ada8-69b7167b0eea",
+  "pendingChanges": false,
+  "files": {
+    "assets/DunbarTall-Medium.ttf": {
+      "hash": "e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\46603cd6-c53b-4605-a10f-59e8244ae8a0\\blobs\\e4\\e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6"
+    },
+    "assets/DunbarTall-Regular.ttf": {
+      "hash": "79d621c6baa1511421c67de1998132758c95cd5a17b4289aefd58fa0831dcb90",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\46603cd6-c53b-4605-a10f-59e8244ae8a0\\blobs\\79\\79d621c6baa1511421c67de1998132758c95cd5a17b4289aefd58fa0831dcb90"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\46603cd6-c53b-4605-a10f-59e8244ae8a0\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "082b5d4d757adee08181eac4ddd9fad191b3eb072172f444526982efde370496",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\46603cd6-c53b-4605-a10f-59e8244ae8a0\\blobs\\08\\082b5d4d757adee08181eac4ddd9fad191b3eb072172f444526982efde370496"
+    },
+    "meta.json": {
+      "hash": "46844288c5d825fd67e4762fb9c22913b44d998bb4e4f2f1bbca632a9fac8ff0",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\46603cd6-c53b-4605-a10f-59e8244ae8a0\\blobs\\46\\46844288c5d825fd67e4762fb9c22913b44d998bb4e4f2f1bbca632a9fac8ff0"
+    }
+  },
+  "revisions": {
+    "55d8eefe-fc84-4638-ada8-69b7167b0eea": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793190021690,
+      "endedAt": 1793190021690,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\46603cd6-c53b-4605-a10f-59e8244ae8a0\\blobs\\2d\\2db0162172c4db2267dc668fde52e79dc1d0816c4f8b06c68200ffc8c870e0ad",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\46603cd6-c53b-4605-a10f-59e8244ae8a0\\blobs\\08\\082b5d4d757adee08181eac4ddd9fad191b3eb072172f444526982efde370496"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "db391c06-a719-4ad8-b3e7-ee44b8d92f57"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "db391c06-a719-4ad8-b3e7-ee44b8d92f57",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\checks\\db391c06-a719-4ad8-b3e7-ee44b8d92f57.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793190005291,
+        "contentHash": "4f87e328fff9e6348eca772a6d0c407f7e954512b704752458612c846c20f6cc",
+        "revision": null,
+        "inputFingerprint": "e4cb57dfe4efcc7ce7cf2a91c8dd746a17621a971633306f43be33214ab3e476",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "55d8eefe-fc84-4638-ada8-69b7167b0eea",
+      "id": "739f72c1-3473-4689-b18f-efbde4266c67-3"
+    },
+    "revisions": {
+      "55d8eefe-fc84-4638-ada8-69b7167b0eea": [
+        {
+          "scope": "full",
+          "id": "739f72c1-3473-4689-b18f-efbde4266c67-0",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\a015e98f-a8be-4867-a4c3-907484028c93\\frame-00-at-3s.png",
+          "time": 3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793190023412,
+          "contentHash": "cb12e031c2d8bed46f9700c4ba0e64eaec56e172d084dfc0bbca4b012d5ae559",
+          "revision": "55d8eefe-fc84-4638-ada8-69b7167b0eea",
+          "inputFingerprint": "87e4564dc935f56227e847c21be33f039179c46fd87b6fdca0de36a913afad7f",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "739f72c1-3473-4689-b18f-efbde4266c67-1",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\a015e98f-a8be-4867-a4c3-907484028c93\\frame-01-at-5.2s.png",
+          "time": 5.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793190023412,
+          "contentHash": "db22b0900033ef48bca5d8a6673aeca00cc3042791245ab6b5ef5093b31020af",
+          "revision": "55d8eefe-fc84-4638-ada8-69b7167b0eea",
+          "inputFingerprint": "87e4564dc935f56227e847c21be33f039179c46fd87b6fdca0de36a913afad7f",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "739f72c1-3473-4689-b18f-efbde4266c67-2",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\a015e98f-a8be-4867-a4c3-907484028c93\\frame-02-at-12.99s.png",
+          "time": 12.99,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793190023412,
+          "contentHash": "0c3d3de7f554561861ff807d99c5f2cfa0261285794b5faecdfac3140ab17c2e",
+          "revision": "55d8eefe-fc84-4638-ada8-69b7167b0eea",
+          "inputFingerprint": "87e4564dc935f56227e847c21be33f039179c46fd87b6fdca0de36a913afad7f",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "739f72c1-3473-4689-b18f-efbde4266c67-3",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\a015e98f-a8be-4867-a4c3-907484028c93\\frame-03-at-12.61s.png",
+          "time": 12.61,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793190023412,
+          "contentHash": "2eff9feae194598eb01563c285071feae6f68c646697bffb99ba0de42377ace5",
+          "revision": "55d8eefe-fc84-4638-ada8-69b7167b0eea",
+          "inputFingerprint": "87e4564dc935f56227e847c21be33f039179c46fd87b6fdca0de36a913afad7f",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "a1eb080f-05e9-4b71-b547-66ac5cb61a63-0",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\67584573-7270-4fe4-ad06-6f84b241b6aa\\frame-00-at-0.2s.png",
+        "time": 0.2,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190008739,
+        "contentHash": "2113ee1f2536b00780a500823a0d945d1bb0295055f6706010cf5aa2f8834565",
+        "revision": null,
+        "inputFingerprint": "e4cb57dfe4efcc7ce7cf2a91c8dd746a17621a971633306f43be33214ab3e476",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "a1eb080f-05e9-4b71-b547-66ac5cb61a63-1",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\67584573-7270-4fe4-ad06-6f84b241b6aa\\frame-01-at-3s.png",
+        "time": 3,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190008739,
+        "contentHash": "eaf19703293b77f8ef5a1c144db605e030f58fa1b05dc0c28488fecb449e6bd6",
+        "revision": null,
+        "inputFingerprint": "e4cb57dfe4efcc7ce7cf2a91c8dd746a17621a971633306f43be33214ab3e476",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "a1eb080f-05e9-4b71-b547-66ac5cb61a63-2",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\67584573-7270-4fe4-ad06-6f84b241b6aa\\frame-02-at-6.2s.png",
+        "time": 6.2,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190008739,
+        "contentHash": "d6fd448cfad2031df9ce68fac61c0d6c9e760acbba8e4ca6efa6835a013f5d0c",
+        "revision": null,
+        "inputFingerprint": "e4cb57dfe4efcc7ce7cf2a91c8dd746a17621a971633306f43be33214ab3e476",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "a1eb080f-05e9-4b71-b547-66ac5cb61a63-3",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\67584573-7270-4fe4-ad06-6f84b241b6aa\\frame-03-at-9s.png",
+        "time": 9,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190008739,
+        "contentHash": "ef5a0a9dd320cfbd9081706b7acac331b78a43843c8a82e92e2118b9db2d5095",
+        "revision": null,
+        "inputFingerprint": "e4cb57dfe4efcc7ce7cf2a91c8dd746a17621a971633306f43be33214ab3e476",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "a1eb080f-05e9-4b71-b547-66ac5cb61a63-4",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\backoffice\\.hyperframes\\artifacts\\snapshots\\67584573-7270-4fe4-ad06-6f84b241b6aa\\frame-04-at-12.61s.png",
+        "time": 12.61,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190008739,
+        "contentHash": "2eff9feae194598eb01563c285071feae6f68c646697bffb99ba0de42377ace5",
+        "revision": null,
+        "inputFingerprint": "e4cb57dfe4efcc7ce7cf2a91c8dd746a17621a971633306f43be33214ab3e476",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "9af60330-9d3e-482f-a0b0-69ddc8518ee9",
+      "completedAt": 1793190052771,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cityfix\\render\\backoffice.mp4",
+      "status": "completed",
+      "revision": "55d8eefe-fc84-4638-ada8-69b7167b0eea"
+    },
+    "retainedRevisions": [
+      "55d8eefe-fc84-4638-ada8-69b7167b0eea"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

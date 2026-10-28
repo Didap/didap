@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* CityFix backoffice dashboard ("La Tavola Tecnica", backoffice/DESIGN.md), drawn at 1.333x of 1440 */
+      @font-face { font-family: 'DunbarTall'; src: url('assets/DunbarTall-Regular.ttf'); font-weight: 400; }
+      @font-face { font-family: 'DunbarTall'; src: url('assets/DunbarTall-Medium.ttf'); font-weight: 500; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #F9FAFB; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+      #app { position: absolute; left: 0; top: 0; width: 1440px; height: 810px; transform-origin: 0 0; scale: 1.3333; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; color: #1A1A2E; }
+      #rail { position: absolute; left: 0; top: 0; bottom: 0; width: 240px; background: #0C3EE4; color: #fff; padding: 16px 12px; }
+      #rail .brand { height: 48px; padding-left: 8px; }
+      #rail .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #C5D3FC; padding: 8px 8px 16px; }
+      .nav { height: 40px; border-radius: 4px; display: flex; align-items: center; gap: 12px; padding: 0 16px; font-family: 'DunbarTall'; font-weight: 500; font-size: 15px; color: rgba(255,255,255,0.8); margin-bottom: 4px; }
+      .nav.on { background: rgba(255,255,255,0.15); color: #fff; box-shadow: inset 2px 0 0 #fff; }
+      .nav b { width: 16px; height: 16px; border: 1.5px solid currentColor; border-radius: 3px; opacity: 0.8; }
+      #main { position: absolute; left: 240px; top: 0; right: 0; bottom: 0; }
+      #hdr { height: 48px; background: #fff; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; padding: 0 24px; font-size: 14px; }
+      #sheet { position: absolute; left: 24px; right: 24px; top: 72px; background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; }
+      .cart { display: flex; height: 76px; border-bottom: 1px solid #E5E7EB; }
+      .cell { padding: 12px 20px; border-right: 1px solid #E5E7EB; display: flex; flex-direction: column; justify-content: center; }
+      .cell.title { flex: 1; }
+      .cell h1 { font-family: 'DunbarTall'; font-weight: 500; font-size: 22px; line-height: 28px; }
+      .cell .sub { font-size: 14px; color: #4B5563; }
+      .fig { width: 112px; }
+      .fig .n { position: relative; height: 32px; font-family: 'DunbarTall'; font-size: 26px; line-height: 32px; overflow: hidden; }
+      .fig .n span { position: absolute; left: 0; top: 0; }
+      .fig .c { font-size: 12px; color: #4B5563; }
+      .red { color: #F44747; }
+      .actions { border-right: 0; flex-direction: row; align-items: center; gap: 8px; }
+      .btn { height: 32px; border-radius: 4px; padding: 0 14px; display: flex; align-items: center; font-family: 'DunbarTall'; font-weight: 500; font-size: 15px; white-space: nowrap; }
+      .btn.o { border: 1px solid #D1D5DB; background: #fff; }
+      .btn.p { background: #0C3EE4; color: #fff; }
+      .tabs { display: flex; gap: 24px; padding: 0 20px; height: 40px; border-bottom: 1px solid #E5E7EB; font-family: 'DunbarTall'; font-weight: 500; font-size: 16px; color: #4B5563; }
+      .tabs span { display: flex; align-items: center; }
+      .tabs .on { color: #0C3EE4; box-shadow: inset 0 -2px 0 #0C3EE4; }
+      table { width: 100%; border-collapse: collapse; }
+      th { height: 40px; text-align: left; padding: 0 12px; font-family: 'DunbarTall'; font-weight: 500; font-size: 13px; letter-spacing: 0.02em; text-transform: uppercase; color: #4B5563; border-bottom: 1px solid #E5E7EB; }
+      #rows { position: relative; height: 440px; }
+      .r { position: absolute; left: 0; right: 0; height: 40px; display: grid; grid-template-columns: 150px 1fr 150px 70px 150px 110px; align-items: center; border-bottom: 1px solid #E5E7EB; font-size: 14px; background: #fff; }
+      .r > * { padding: 0 12px; white-space: nowrap; }
+      .r .t { color: #0C3EE4; }
+      .r .a { color: #6B7280; }
+      .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-family: 'DunbarTall'; font-weight: 500; font-size: 12px; letter-spacing: 0.02em; text-transform: uppercase; }
+      .tg-n { background: #F3F4F6; color: #374151; }
+      .tg-p { background: #E8EEFE; color: #08278F; }
+      .tg-a { background: rgba(139, 92, 246, 0.14); color: #5B21B6; }
+      .tagbox { position: relative; height: 22px; }
+      .tagbox .tag { position: absolute; left: 12px; top: 0; }
+      #sel { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: #E8EEFE; box-shadow: inset 2px 0 0 #0C3EE4; opacity: 0; }
+      #scrim { position: absolute; inset: 0; background: rgba(26, 26, 46, 0.4); opacity: 0; }
+      #side { position: absolute; top: 0; right: 0; bottom: 0; width: 512px; background: #fff; box-shadow: 0 8px 24px -6px rgba(26,26,46,0.18), 0 2px 6px -2px rgba(26,26,46,0.10); }
+      #side .sh { height: 64px; border-bottom: 1px solid #E5E7EB; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+      #side h2 { font-family: 'DunbarTall'; font-weight: 500; font-size: 20px; }
+      #side .body { padding: 20px 24px; }
+      .photo { height: 190px; border-radius: 8px; background:
+        radial-gradient(ellipse 30% 22% at 50% 60%, #2c2a2a 0 55%, #4b4744 72%, transparent 80%),
+        radial-gradient(circle at 20% 30%, #8e8a85 0 3px, transparent 4px), radial-gradient(circle at 75% 25%, #8e8a85 0 2px, transparent 3px),
+        linear-gradient(165deg, #a7a29c, #7a756f); margin-bottom: 16px; }
+      .kv { display: grid; grid-template-columns: 140px 1fr; row-gap: 10px; font-size: 14px; margin-bottom: 18px; }
+      .kv dt { font-family: 'DunbarTall'; font-weight: 500; font-size: 14px; color: #4B5563; }
+      .lbl { font-family: 'DunbarTall'; font-weight: 500; font-size: 14px; margin-bottom: 6px; }
+      .field { height: 36px; border: 1px solid #D1D5DB; border-radius: 4px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #6B7280; position: relative; }
+      .field .v { position: absolute; left: 12px; color: #1A1A2E; opacity: 0; }
+      .menu { position: absolute; left: 0; right: 0; top: 40px; background: #fff; border-radius: 8px; padding: 4px; box-shadow: 0 8px 24px -6px rgba(26,26,46,0.18), 0 2px 6px -2px rgba(26,26,46,0.10); opacity: 0; z-index: 3; }
+      .menu div { height: 36px; border-radius: 4px; padding: 0 8px; display: flex; align-items: center; font-size: 14px; color: #1A1A2E; }
+      .foot { position: absolute; left: 0; right: 0; bottom: 0; height: 68px; border-top: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 0 24px; }
+      .btnbox { position: relative; width: 150px; height: 36px; }
+      .btnbox .btn { position: absolute; right: 0; top: 0; height: 36px; }
+      #toast { position: absolute; right: 24px; bottom: 24px; width: 360px; background: #fff; border-radius: 8px; padding: 14px 16px; display: flex; gap: 12px; box-shadow: 0 8px 24px -6px rgba(26,26,46,0.18), 0 2px 6px -2px rgba(26,26,46,0.10); opacity: 0; }
+      #toast i { width: 18px; height: 18px; border-radius: 50%; background: #22C55E; flex: none; margin-top: 2px; }
+      #toast b { display: block; font-family: 'DunbarTall'; font-weight: 500; font-size: 15px; }
+      #toast span { font-size: 13px; color: #4B5563; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="backoffice" data-start="0" data-duration="13" data-width="1920" data-height="1080">
+      <div id="stage" class="clip" data-start="0" data-duration="13" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+        <div id="app">
+          <div id="rail">
+            <div class="brand"><svg width="150" height="42" viewBox="0 0 664.14 186.23" fill="#fff" id="logo">
+    <path d="M120.6,44.94c-8.04-5.57-18.76-8.66-31.34-8.66-29.07,0-52.57,21.85-52.57,49.27,0,24.95,20,45.97,47.42,45.97,9.28,0,19.58-2.47,29.07-7.63l-4.12,34.84c-8.66,4.12-18.76,6.6-29.89,6.6C32.99,165.34,0,130.29,0,88.03,0,38.76,40.41,2.68,89.27,2.68c15.05,0,25.98,2.89,35.46,7.63l-4.12,34.63Z"/>
+    <path d="M167.19,160.8h-34.22l12.58-118.33h34.22l-12.58,118.33ZM181.42,27.42h-34.63l3.09-27.42h34.63l-3.09,27.42Z"/>
+    <path d="M243.67,71.12l-9.28,89.68h-34.02l9.07-89.68h-13.61l3.3-28.66h13.81l3.09-28.66,34.63-6.18-3.71,34.84h13.81l-3.3,28.66h-13.81Z"/>
+    <path d="M336.86,35.15c-7.43,2.54-13.78,7.81-18.97,14.59-11.71,15.3-9.36,35.66,4.61,46.35,13.97,10.69,34.51,7.84,46.21-7.46,5.19-6.79,8.62-14.29,9.13-22.13l27.67,21.18c-1.76,8.36-5.99,16.09-11.58,23.41-24.43,31.93-64.96,36.37-93.83,14.28-28.74-21.99-34.92-62.16-10.49-94.09,5.6-7.32,11.96-13.42,19.57-17.3l27.67,21.18Z"/>
+    <path d="M401.11,162.71v-.43c0-1.08.87-1.95,1.95-1.95h4.77c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h4.77c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-4.77c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h82.76c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95V14.95c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-30.77c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08.87,1.95,1.95,1.95h22.1c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95.87,1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08-.87-1.95-1.95-1.95h-26.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h4.77c1.08,0,1.95.87,1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-48.1c-1.08,0-1.95-.87-1.95-1.95Z"/>
+    <path d="M514.21,162.71v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-17.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h13.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-13.43c-1.08,0-1.95-.87-1.95-1.95ZM540.21,6.28c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h9.1c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-9.1c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95V6.28Z"/>
+    <path d="M555.81,158.38v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h9.1c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-35.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-22.1c0-1.08-.87-1.95-1.95-1.95h-4.77c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h17.77c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v22.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h13.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-9.1c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v22.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v22.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-13.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-13.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95Z"/>
+    <polygon points="330.91,122.11 288.02,186.23 252.36,186.23 301.39,108.63"/>
+  </svg></div>
+            <div class="eyebrow">Brindisi</div>
+            <div class="nav on"><b></b>Dashboard</div>
+            <div class="nav"><b></b>Segnalazioni</div>
+            <div class="nav"><b></b>Gruppi Aggregazione</div>
+            <div class="nav"><b></b>Fornitori</div>
+            <div class="nav"><b></b>Rioni</div>
+            <div class="nav"><b></b>Avvisi</div>
+          </div>
+          <div id="main">
+            <div id="hdr">Dashboard</div>
+            <div id="sheet">
+              <div class="cart">
+                <div class="cell title"><h1>Dashboard</h1><div class="sub">Brindisi</div></div>
+                <div class="cell fig"><div class="n"><span id="ap1">17</span><span id="ap2">18</span></div><div class="c">Aperte</div></div>
+                <div class="cell fig"><div class="n"><span id="ic1">5</span><span id="ic2">6</span></div><div class="c">In corso</div></div>
+                <div class="cell fig"><div class="n red">4</div><div class="c">In ritardo</div></div>
+                <div class="cell fig" style="width:150px"><div class="n"><span id="tt1">27</span><span id="tt2">28</span></div><div class="c">Segnalazioni totali</div></div>
+                <div class="cell actions"><div class="btn o">Vedi mappa</div><div class="btn p">+ Nuova segnalazione</div></div>
+              </div>
+              <div class="tabs"><span class="on">Aperte</span><span>Panoramica</span><span>Resoconto</span></div>
+              <table><thead><tr>
+                <th style="width:150px">Stato</th><th>Segnalazione</th><th style="width:150px">Categoria</th><th style="width:70px">Età</th><th style="width:150px">Indirizzo</th><th style="width:110px">Creata</th>
+              </tr></thead></table>
+              <div id="rows">
+                <div class="r" id="rn" style="top:0"><div id="sel"></div>
+                  <div class="tagbox"><span class="tag tg-n" id="tn1">Inviata</span><span class="tag tg-p" id="tn2">Presa in carico</span><span class="tag tg-a" id="tn3">Assegnata</span></div>
+                  <span class="t" style="position:relative">Buca in Via Ostuni</span><span style="position:relative">Strade</span><span style="position:relative">0 g</span><span class="a" style="position:relative">Brindisi, BR</span><span style="position:relative">28/10/2026</span></div>
+                <div id="old">
+                  <div class="r" style="top:0"><span><span class="tag tg-p">Presa in carico</span></span><span class="t">Rifiuti abbandonati sotto il ponte</span><span>Rifiuti</span><span class="red">19 g</span><span class="a">Brindisi, BR</span><span>09/10/2026</span></div>
+                  <div class="r" style="top:40px"><span><span class="tag tg-p">Presa in carico</span></span><span class="t">Cartello stradale piegato</span><span>Segnaletica</span><span class="red">18 g</span><span class="a">Brindisi, BR</span><span>10/10/2026</span></div>
+                  <div class="r" style="top:80px"><span><span class="tag tg-a">Assegnata</span></span><span class="t">Tratto al buio in Via Appia</span><span>Illuminazione</span><span class="red">17 g</span><span class="a">Brindisi, BR</span><span>11/10/2026</span></div>
+                  <div class="r" style="top:120px"><span><span class="tag tg-p">Presa in carico</span></span><span class="t">Panchina rotta al Parco Cesare Braico</span><span>Arredo urbano</span><span>9 g</span><span class="a">Brindisi, BR</span><span>19/10/2026</span></div>
+                  <div class="r" style="top:160px"><span><span class="tag tg-n">Inviata</span></span><span class="t">Marciapiede sconnesso in Corso Umberto</span><span>Strade</span><span>6 g</span><span class="a">Brindisi, BR</span><span>22/10/2026</span></div>
+                  <div class="r" style="top:200px"><span><span class="tag tg-a">Assegnata</span></span><span class="t">Lampione che lampeggia sul lungomare</span><span>Illuminazione</span><span>5 g</span><span class="a">Brindisi, BR</span><span>23/10/2026</span></div>
+                  <div class="r" style="top:240px"><span><span class="tag tg-n">Inviata</span></span><span class="t">Erba alta in Via del Mare</span><span>Aree verdi</span><span>4 g</span><span class="a">Brindisi, BR</span><span>24/10/2026</span></div>
+                  <div class="r" style="top:280px"><span><span class="tag tg-p">Presa in carico</span></span><span class="t">Strisce pedonali sbiadite</span><span>Segnaletica</span><span>3 g</span><span class="a">Brindisi, BR</span><span>25/10/2026</span></div>
+                  <div class="r" style="top:320px"><span><span class="tag tg-n">Inviata</span></span><span class="t">Fontanella senz'acqua</span><span>Arredo urbano</span><span>2 g</span><span class="a">Brindisi, BR</span><span>26/10/2026</span></div>
+                  <div class="r" style="top:360px"><span><span class="tag tg-n">Inviata</span></span><span class="t">Rami pericolanti in Viale Regina Margherita</span><span>Aree verdi</span><span>1 g</span><span class="a">Brindisi, BR</span><span>27/10/2026</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="scrim"></div>
+          <div id="side">
+            <div class="sh"><h2>Buca in Via Ostuni</h2><span class="tagbox" style="width:150px"><span class="tag tg-n" id="sn1">Inviata</span><span class="tag tg-p" id="sn2">Presa in carico</span><span class="tag tg-a" id="sn3">Assegnata</span></span></div>
+            <div class="body">
+              <div class="photo"></div>
+              <dl class="kv"><dt>Categoria</dt><dd>Strade · Buca</dd><dt>Indirizzo</dt><dd>Via Ostuni 14, Brindisi</dd><dt>Urgenza percepita</dt><dd>Alta</dd><dt>Dimensione stimata</dt><dd>Media</dd></dl>
+              <div class="lbl">Assegna fornitore</div>
+              <div class="field" id="field">Seleziona un fornitore<span class="v" id="fv">Asfalti Messapia srl</span>
+                <div class="menu" id="menu"><div id="opt" style="background:#F3F4F6">Asfalti Messapia srl</div><div>Edil Adriatica snc</div><div>Verde Pubblico Salento</div></div></div>
+            </div>
+            <div class="foot"><div class="btn o">Chiudi</div><div class="btnbox"><div class="btn p" id="b1">Prendi in carico</div><div class="btn p" id="b2">Assegna</div></div></div>
+          </div>
+          <div id="toast"><i></i><div><b>Fornitore assegnato</b><span>Asfalti Messapia srl interviene in Via Ostuni</span></div></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.set(['#sn2', '#sn3', '#tn2', '#tn3', '#b2', '#ap2', '#tt2', '#ic2', '#fv'], { opacity: 0 }, 0);
+      // New report lands at the top of the open list
+      tl.fromTo('#old', { y: 0 }, { y: 40, duration: 0.5, ease: 'power3.inOut' }, 0.6);
+      tl.fromTo('#rn', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.45, ease: 'expo.out' }, 0.95);
+      const roll = (a, b, t) => {
+        tl.fromTo(a, { yPercent: 0, opacity: 1 }, { yPercent: -100, opacity: 0, duration: 0.35, ease: 'power3.inOut' }, t);
+        tl.fromTo(b, { yPercent: 100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power3.inOut' }, t);
+      };
+      roll('#ap1', '#ap2', 1.0); roll('#tt1', '#tt2', 1.05);
+      // Operator opens it: side sheet
+      tl.fromTo('#sel', { opacity: 0 }, { opacity: 1, duration: 0.15 }, 2.0);
+      tl.fromTo('#scrim', { opacity: 0 }, { opacity: 1, duration: 0.25 }, 2.2);
+      tl.fromTo('#side', { x: 520 }, { x: 0, duration: 0.5, ease: 'power3.out' }, 2.2);
+      // Prendi in carico
+      tl.fromTo('#b1', { scale: 1 }, { scale: 0.96, duration: 0.1 }, 3.6);
+      tl.to('#b1', { scale: 1, duration: 0.15 }, 3.7);
+      const swap = (a, b, t) => { tl.fromTo(a, { opacity: 1 }, { opacity: 0, duration: 0.2 }, t); tl.fromTo(b, { opacity: 0 }, { opacity: 1, duration: 0.2 }, t); };
+      swap('#sn1', '#sn2', 3.8); swap('#tn1', '#tn2', 3.8); swap('#b1', '#b2', 3.9);
+      // Choose a supplier
+      tl.fromTo('#menu', { opacity: 0, y: -4 }, { opacity: 1, y: 0, duration: 0.15, ease: 'power2.out' }, 4.8);
+      tl.to('#menu', { opacity: 0, duration: 0.12 }, 5.8);
+      tl.fromTo('#fv', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 5.85);
+      tl.fromTo('#field', { color: '#6B7280', borderColor: '#D1D5DB' }, { color: 'rgba(107,114,128,0)', borderColor: '#0C3EE4', duration: 0.1 }, 5.85);
+      // Assegna
+      tl.fromTo('#b2', { scale: 1 }, { scale: 0.96, duration: 0.1 }, 6.8);
+      tl.to('#b2', { scale: 1, duration: 0.15 }, 6.9);
+      swap('#sn2', '#sn3', 7.0); swap('#tn2', '#tn3', 7.0);
+      roll('#ic1', '#ic2', 7.6);
+      tl.to('#side', { x: 520, duration: 0.4, ease: 'power3.in' }, 7.4);
+      tl.to('#scrim', { opacity: 0, duration: 0.25 }, 7.5);
+      tl.fromTo('#toast', { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, ease: 'power3.out' }, 7.8);
+      tl.to('#toast', { opacity: 0, x: 40, duration: 0.2, ease: 'power3.in' }, 10.6);
+      tl.to('#sel', { opacity: 0, duration: 0.2 }, 8.2);
+      // Back to the opening state for the loop
+      tl.to('#rn', { opacity: 0, duration: 0.3, ease: 'power3.in' }, 11.9);
+      tl.to('#old', { y: 0, duration: 0.5, ease: 'power3.inOut' }, 12.2);
+      tl.set(['#tn1', '#sn1', '#b1'], { opacity: 1 }, 12.3);
+      tl.set(['#tn3', '#sn3', '#b2', '#fv'], { opacity: 0 }, 12.3);
+      tl.set('#field', { color: '#6B7280', borderColor: '#D1D5DB' }, 12.3);
+      for (const [a, b] of [['#ap2', '#ap1'], ['#tt2', '#tt1'], ['#ic2', '#ic1']]) { tl.to(a, { yPercent: 100, opacity: 0, duration: 0.35, ease: 'power3.inOut' }, 12.2); tl.to(b, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power3.inOut' }, 12.2); }
+      tl.set({}, {}, 13);
+      window.__timelines['backoffice'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

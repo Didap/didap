@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "historyId": "5c972313-b051-4263-be27-cffa9e408fa4",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/Urbanist-SemiBold.ttf": {
+      "hash": "28708d3bd77d5fff40619712c365f4c03344322eeae20803a6533dd2ae44d379",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\5c972313-b051-4263-be27-cffa9e408fa4\\blobs\\28\\28708d3bd77d5fff40619712c365f4c03344322eeae20803a6533dd2ae44d379"
+    },
+    "assets/brindisi.svg": {
+      "hash": "d0af925554f0a9ba59a4f9874f9f543cd258649f34478a77f52246a0a0882992",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\5c972313-b051-4263-be27-cffa9e408fa4\\blobs\\d0\\d0af925554f0a9ba59a4f9874f9f543cd258649f34478a77f52246a0a0882992"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\5c972313-b051-4263-be27-cffa9e408fa4\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "019513619638f510f7091fbe1ad5f6e86a723c7ded138cda7e5d7445153ba10d",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\5c972313-b051-4263-be27-cffa9e408fa4\\blobs\\01\\019513619638f510f7091fbe1ad5f6e86a723c7ded138cda7e5d7445153ba10d"
+    },
+    "meta.json": {
+      "hash": "6b44cfd7cafa6d109711c3bdc68fab6575aa98f6340d1feb8b0e336f1da2fe31",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\5c972313-b051-4263-be27-cffa9e408fa4\\blobs\\6b\\6b44cfd7cafa6d109711c3bdc68fab6575aa98f6340d1feb8b0e336f1da2fe31"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "edfd3112-929c-42c2-84d5-5c99586194b8",
+      "completedAt": 1793189781273,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cityfix\\render\\hero-mobile.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

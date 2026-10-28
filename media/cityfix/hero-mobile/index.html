@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=960, height=576" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* CityFix hero: the blueprint map of the app (white ground, blue roads, pixel pins) on Brindisi */
+      @font-face { font-family: 'Urbanist'; src: url('assets/Urbanist-SemiBold.ttf'); font-weight: 600; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 960px; height: 576px; overflow: hidden; background: #FFFFFF; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: 'Urbanist', sans-serif; }
+      #cam { position: absolute; left: -48.0px; top: -29.0px; width: 2112px; height: 1268px; transform-origin: 50% 50%; }
+      #map { position: absolute; inset: 0; width: 2112px; height: 1268px; }
+      .pin { position: absolute; width: 54px; height: 76.5px; }
+      .pin-body { position: absolute; inset: 0; transform-origin: 50% 100%; opacity: 0; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.28)); }
+      .tag { position: absolute; left: 62px; top: 4px; white-space: nowrap; display: flex; align-items: center; gap: 10px;
+        background: #FFFFFF; color: #000; font-size: 24px; font-weight: 600; padding: 10px 18px 10px 14px; border-radius: 999px;
+        border: 1.5px solid rgba(43, 28, 232, 0.28); box-shadow: 0 6px 18px rgba(26, 5, 162, 0.14); opacity: 0; }
+      .tag .dot { width: 12px; height: 12px; border-radius: 3px; background: #2B1CE8; }
+      #halo { position: absolute; left: 50%; top: 50%; width: 684px; height: 363.408437979944px; margin: -181.7px 0 0 -342px;
+        background: radial-gradient(closest-side, rgba(255,255,255,0.97) 55%, rgba(255,255,255,0)); }
+      #logo { position: absolute; left: 50%; top: 50%; width: 360px; height: 100.9px; margin: -50.5px 0 0 -180px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="hero-mobile" data-start="0" data-duration="12" data-width="960" data-height="576">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow>
+        <div id="cam">
+          <img id="map" src="assets/brindisi.svg" alt="" />
+        <div class="pin" id="pin-0" style="left:529.7px;top:152.4px">
+          <div class="pin-body" id="pin-0-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M8 2h2v1H8zM14 2h2v1H14zM8 3h2v1H8zM11 3h2v1H11zM14 3h2v1H14zM8 4h2v1H8zM11 4h2v1H11zM14 4h2v1H14zM7 5h3v1H7zM11 5h2v1H11zM14 5h3v1H14zM7 6h2v1H7zM11 6h2v1H11zM15 6h2v1H15zM7 7h2v1H7zM15 7h2v1H15zM7 8h2v1H7zM15 8h2v1H15zM6 9h3v1H6zM15 9h3v1H15zM6 10h2v1H6zM11 10h2v1H11zM16 10h2v1H16zM6 11h2v1H6zM11 11h2v1H11zM16 11h2v1H16zM6 12h2v1H6zM11 12h2v1H11zM16 12h2v1H16zM6 13h2v1H6zM11 13h2v1H11zM16 13h2v1H16zM5 14h3v1H5zM16 14h3v1H16zM5 15h2v1H5zM17 15h2v1H17zM5 16h2v1H5zM17 16h2v1H17zM5 17h2v1H5zM11 17h2v1H11zM17 17h2v1H17zM4 18h3v1H4zM11 18h2v1H11zM17 18h3v1H17zM4 19h2v1H4zM11 19h2v1H11zM18 19h2v1H18zM4 20h2v1H4zM11 20h2v1H11zM18 20h2v1H18zM4 21h2v1H4zM18 21h2v1H18z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+          <div class="tag" id="pin-0-tag"><span class="dot"></span>Buca</div>
+        </div>
+        <div class="pin" id="pin-1" style="left:1531.6px;top:115.1px">
+          <div class="pin-body" id="pin-1-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M9 1h6v1H9zM8 2h8v1H8zM7 3h3v1H7zM14 3h3v1H14zM6 4h2v1H6zM16 4h2v1H16zM5 5h3v1H5zM16 5h3v1H16zM5 6h2v1H5zM17 6h2v1H17zM5 7h2v1H5zM17 7h2v1H17zM5 8h2v1H5zM17 8h2v1H17zM5 9h2v1H5zM17 9h2v1H17zM6 10h2v1H6zM16 10h2v1H16zM6 11h3v1H6zM15 11h3v1H15zM7 12h3v1H7zM14 12h3v1H14zM8 13h2v1H8zM14 13h2v1H14zM8 14h2v1H8zM14 14h2v1H14zM8 17h8v1H8zM8 18h8v1H8zM9 21h6v1H9zM9 22h6v1H9z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+          <div class="tag" id="pin-1-tag"><span class="dot"></span>Lampione spento</div>
+        </div>
+        <div class="pin" id="pin-2" style="left:420.8px;top:750.2px">
+          <div class="pin-body" id="pin-2-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M11 1h2v1H11zM8 2h8v1H8zM7 3h10v1H7zM6 4h3v1H6zM15 4h3v1H15zM5 5h3v1H5zM16 5h3v1H16zM5 6h2v1H5zM17 6h2v1H17zM4 7h2v1H4zM18 7h2v1H18zM4 8h2v1H4zM18 8h2v1H18zM4 9h2v1H4zM18 9h2v1H18zM4 10h2v1H4zM18 10h2v1H18zM4 11h2v1H4zM18 11h2v1H18zM5 12h2v1H5zM17 12h2v1H17zM5 13h3v1H5zM16 13h3v1H16zM6 14h3v1H6zM15 14h3v1H15zM7 15h10v1H7zM9 16h6v1H9zM11 17h2v1H11zM11 18h2v1H11zM11 19h2v1H11zM11 20h2v1H11zM11 21h2v1H11zM11 22h2v1H11z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+        </div>
+        <div class="pin" id="pin-3" style="left:1662.1px;top:756.4px">
+          <div class="pin-body" id="pin-3-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M7 3h10v1H7zM7 4h10v1H7zM2 5h20v1H2zM2 6h20v1H2zM4 7h3v1H4zM17 7h3v1H17zM5 8h2v1H5zM17 8h2v1H17zM5 9h2v1H5zM17 9h2v1H17zM5 10h2v1H5zM17 10h2v1H17zM5 11h2v1H5zM17 11h2v1H17zM5 12h2v1H5zM17 12h2v1H17zM5 13h2v1H5zM17 13h2v1H17zM5 14h2v1H5zM17 14h2v1H17zM5 15h2v1H5zM17 15h2v1H17zM5 16h2v1H5zM17 16h2v1H17zM5 17h2v1H5zM17 17h2v1H17zM5 18h2v1H5zM17 18h2v1H17zM5 19h3v1H5zM16 19h3v1H16zM5 20h14v1H5zM6 21h12v1H6z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+          <div class="tag" id="pin-3-tag"><span class="dot"></span>Rifiuti abbandonati</div>
+        </div>
+        <div class="pin" id="pin-4" style="left:790.2px;top:925.9px">
+          <div class="pin-body" id="pin-4-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M8 2h2v1H8zM14 2h2v1H14zM8 3h2v1H8zM11 3h2v1H11zM14 3h2v1H14zM8 4h2v1H8zM11 4h2v1H11zM14 4h2v1H14zM7 5h3v1H7zM11 5h2v1H11zM14 5h3v1H14zM7 6h2v1H7zM11 6h2v1H11zM15 6h2v1H15zM7 7h2v1H7zM15 7h2v1H15zM7 8h2v1H7zM15 8h2v1H15zM6 9h3v1H6zM15 9h3v1H15zM6 10h2v1H6zM11 10h2v1H11zM16 10h2v1H16zM6 11h2v1H6zM11 11h2v1H11zM16 11h2v1H16zM6 12h2v1H6zM11 12h2v1H11zM16 12h2v1H16zM6 13h2v1H6zM11 13h2v1H11zM16 13h2v1H16zM5 14h3v1H5zM16 14h3v1H16zM5 15h2v1H5zM17 15h2v1H17zM5 16h2v1H5zM17 16h2v1H17zM5 17h2v1H5zM11 17h2v1H11zM17 17h2v1H17zM4 18h3v1H4zM11 18h2v1H11zM17 18h3v1H17zM4 19h2v1H4zM11 19h2v1H11zM18 19h2v1H18zM4 20h2v1H4zM11 20h2v1H11zM18 20h2v1H18zM4 21h2v1H4zM18 21h2v1H18z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+        </div>
+        <div class="pin" id="pin-5" style="left:1294.8px;top:937.4px">
+          <div class="pin-body" id="pin-5-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M4 3h11v1H4zM3 4h13v1H3zM3 5h2v1H3zM14 5h2v1H14zM3 6h2v1H3zM14 6h2v1H14zM3 7h2v1H3zM7 7h5v1H7zM14 7h2v1H14zM3 8h2v1H3zM7 8h5v1H7zM14 8h6v1H14zM3 9h2v1H3zM14 9h7v1H14zM3 10h2v1H3zM14 10h2v1H14zM19 10h2v1H19zM3 11h2v1H3zM7 11h5v1H7zM14 11h2v1H14zM19 11h2v1H19zM3 12h2v1H3zM7 12h5v1H7zM14 12h2v1H14zM19 12h2v1H19zM3 13h2v1H3zM14 13h2v1H14zM19 13h2v1H19zM3 14h2v1H3zM14 14h2v1H14zM19 14h2v1H19zM3 15h2v1H3zM7 15h5v1H7zM14 15h2v1H14zM19 15h2v1H19zM3 16h2v1H3zM7 16h5v1H7zM14 16h2v1H14zM19 16h2v1H19zM3 17h2v1H3zM14 17h2v1H14zM19 17h2v1H19zM3 18h2v1H3zM14 18h2v1H14zM19 18h2v1H19zM3 19h2v1H3zM14 19h2v1H14zM19 19h2v1H19zM2 20h20v1H2zM2 21h20v1H2z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+          <div class="tag" id="pin-5-tag"><span class="dot"></span>Panchina rotta</div>
+        </div>
+        <div class="pin" id="pin-6" style="left:256.8px;top:469.3px">
+          <div class="pin-body" id="pin-6-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M7 3h10v1H7zM7 4h10v1H7zM2 5h20v1H2zM2 6h20v1H2zM4 7h3v1H4zM17 7h3v1H17zM5 8h2v1H5zM17 8h2v1H17zM5 9h2v1H5zM17 9h2v1H17zM5 10h2v1H5zM17 10h2v1H17zM5 11h2v1H5zM17 11h2v1H17zM5 12h2v1H5zM17 12h2v1H17zM5 13h2v1H5zM17 13h2v1H17zM5 14h2v1H5zM17 14h2v1H17zM5 15h2v1H5zM17 15h2v1H17zM5 16h2v1H5zM17 16h2v1H17zM5 17h2v1H5zM17 17h2v1H17zM5 18h2v1H5zM17 18h2v1H17zM5 19h3v1H5zM16 19h3v1H16zM5 20h14v1H5zM6 21h12v1H6z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+        </div>
+        <div class="pin" id="pin-7" style="left:1777.7px;top:440.8px">
+          <div class="pin-body" id="pin-7-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M8 2h2v1H8zM14 2h2v1H14zM8 3h2v1H8zM11 3h2v1H11zM14 3h2v1H14zM8 4h2v1H8zM11 4h2v1H11zM14 4h2v1H14zM7 5h3v1H7zM11 5h2v1H11zM14 5h3v1H14zM7 6h2v1H7zM11 6h2v1H11zM15 6h2v1H15zM7 7h2v1H7zM15 7h2v1H15zM7 8h2v1H7zM15 8h2v1H15zM6 9h3v1H6zM15 9h3v1H15zM6 10h2v1H6zM11 10h2v1H11zM16 10h2v1H16zM6 11h2v1H6zM11 11h2v1H11zM16 11h2v1H16zM6 12h2v1H6zM11 12h2v1H11zM16 12h2v1H16zM6 13h2v1H6zM11 13h2v1H11zM16 13h2v1H16zM5 14h3v1H5zM16 14h3v1H16zM5 15h2v1H5zM17 15h2v1H17zM5 16h2v1H5zM17 16h2v1H17zM5 17h2v1H5zM11 17h2v1H11zM17 17h2v1H17zM4 18h3v1H4zM11 18h2v1H11zM17 18h3v1H17zM4 19h2v1H4zM11 19h2v1H11zM18 19h2v1H18zM4 20h2v1H4zM11 20h2v1H11zM18 20h2v1H18zM4 21h2v1H4zM18 21h2v1H18z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+        </div>
+        <div class="pin" id="pin-8" style="left:982.9px;top:190.0px">
+          <div class="pin-body" id="pin-8-body">
+            <svg width="54" height="76.5" viewBox="0 0 24 34"><path d="M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z" fill="#2B1CE8" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M11 1h2v1H11zM8 2h8v1H8zM7 3h10v1H7zM6 4h3v1H6zM15 4h3v1H15zM5 5h3v1H5zM16 5h3v1H16zM5 6h2v1H5zM17 6h2v1H17zM4 7h2v1H4zM18 7h2v1H18zM4 8h2v1H4zM18 8h2v1H18zM4 9h2v1H4zM18 9h2v1H18zM4 10h2v1H4zM18 10h2v1H18zM4 11h2v1H4zM18 11h2v1H18zM5 12h2v1H5zM17 12h2v1H17zM5 13h3v1H5zM16 13h3v1H16zM6 14h3v1H6zM15 14h3v1H15zM7 15h10v1H7zM9 16h6v1H9zM11 17h2v1H11zM11 18h2v1H11zM11 19h2v1H11zM11 20h2v1H11zM11 21h2v1H11zM11 22h2v1H11z" transform="translate(5.5 5) scale(0.54)" fill="#FFFFFF" shape-rendering="crispEdges"/></svg>
+          </div>
+        </div>
+        </div>
+        <div id="halo"></div>
+        <svg id="logo" viewBox="0 0 664.14 186.23" fill="#2B1CE8"><path d="M120.6,44.94c-8.04-5.57-18.76-8.66-31.34-8.66-29.07,0-52.57,21.85-52.57,49.27,0,24.95,20,45.97,47.42,45.97,9.28,0,19.58-2.47,29.07-7.63l-4.12,34.84c-8.66,4.12-18.76,6.6-29.89,6.6C32.99,165.34,0,130.29,0,88.03,0,38.76,40.41,2.68,89.27,2.68c15.05,0,25.98,2.89,35.46,7.63l-4.12,34.63Z"/><path d="M167.19,160.8h-34.22l12.58-118.33h34.22l-12.58,118.33ZM181.42,27.42h-34.63l3.09-27.42h34.63l-3.09,27.42Z"/><path d="M243.67,71.12l-9.28,89.68h-34.02l9.07-89.68h-13.61l3.3-28.66h13.81l3.09-28.66,34.63-6.18-3.71,34.84h13.81l-3.3,28.66h-13.81Z"/><path d="M336.86,35.15c-7.43,2.54-13.78,7.81-18.97,14.59-11.71,15.3-9.36,35.66,4.61,46.35,13.97,10.69,34.51,7.84,46.21-7.46,5.19-6.79,8.62-14.29,9.13-22.13l27.67,21.18c-1.76,8.36-5.99,16.09-11.58,23.41-24.43,31.93-64.96,36.37-93.83,14.28-28.74-21.99-34.92-62.16-10.49-94.09,5.6-7.32,11.96-13.42,19.57-17.3l27.67,21.18Z"/><path d="M401.11,162.71v-.43c0-1.08.87-1.95,1.95-1.95h4.77c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h4.77c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-13.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-4.77c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h82.76c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95V14.95c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-30.77c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08.87,1.95,1.95,1.95h22.1c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95.87,1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08-.87-1.95-1.95-1.95h-26.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h4.77c1.08,0,1.95.87,1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-48.1c-1.08,0-1.95-.87-1.95-1.95Z"/><path d="M514.21,162.71v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-17.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h13.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v13.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v13.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-13.43c-1.08,0-1.95-.87-1.95-1.95ZM540.21,6.28c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h9.1c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-9.1c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95V6.28Z"/><path d="M555.81,158.38v-9.1c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h9.1c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-35.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-22.1c0-1.08-.87-1.95-1.95-1.95h-4.77c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h17.77c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v22.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-4.77c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h13.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v9.1c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-9.1c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v22.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v22.1c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95.87,1.95,1.95v.43c0,1.08.87,1.95,1.95,1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95-.87,1.95-1.95v-.43c0-1.08.87-1.95,1.95-1.95h.43c1.08,0,1.95.87,1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-13.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95v-9.1c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95.87-1.95,1.95v4.77c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-.43c-1.08,0-1.95.87-1.95,1.95v.43c0,1.08-.87,1.95-1.95,1.95h-13.43c-1.08,0-1.95-.87-1.95-1.95v-.43c0-1.08-.87-1.95-1.95-1.95h-.43c-1.08,0-1.95-.87-1.95-1.95Z"/><polygon points="330.91,122.11 288.02,186.23 252.36,186.23 301.39,108.63"/></svg>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // The camera drifts out and back: the last frame meets the first.
+      tl.fromTo('#cam', { scale: 0.5, x: 0, y: 0 }, { scale: 0.525, x: -19, y: 7, duration: 6, ease: 'sine.inOut' }, 0);
+      tl.to('#cam', { scale: 0.5, x: 0, y: 0, duration: 6, ease: 'sine.inOut' }, 6);
+      const n = 9;
+      for (let i = 0; i < n; i++) {
+        const t = 0.5 + i * 0.55;
+        tl.fromTo('#pin-' + i + '-body', { opacity: 0, y: -40, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: 'expo.out' }, t);
+        tl.to('#pin-' + i + '-body', { opacity: 0, scale: 0.6, duration: 0.3, ease: 'power3.in' }, 10.6 + i * 0.08);
+        if (document.getElementById('pin-' + i + '-tag')) {
+          tl.fromTo('#pin-' + i + '-tag', { opacity: 0, x: -12, filter: 'blur(6px)' }, { opacity: 1, x: 0, filter: 'blur(0px)', duration: 0.4, ease: 'power4.out' }, t + 0.35);
+          tl.to('#pin-' + i + '-tag', { opacity: 0, filter: 'blur(6px)', duration: 0.22, ease: 'power3.in' }, 10.4 + i * 0.08);
+        }
+      }
+      tl.set({}, {}, 12);
+      window.__timelines['hero-mobile'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

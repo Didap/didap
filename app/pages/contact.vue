@@ -24,11 +24,14 @@ useSeoMeta({
   description: t('contact.intro').replace(/\s+/g, ' '),
 })
 
-// Dal bottone "Avvisami quando esce" di una scheda prodotto: ?product=Nome
+// Dal bottone "Avvisami quando esce" di una scheda prodotto: ?product=Nome.
+// Il messaggio va nel campo e nell'email: senza gli spazi unificatori che
+// typeset() mette in ogni testo tradotto
 const route = useRoute()
-const notifyProduct = typeof route.query.product === 'string'
-  ? route.query.product.trim().slice(0, 80)
-  : ''
+function notifyMessage(product: unknown) {
+  const name = typeof product === 'string' ? product.trim().slice(0, 80) : ''
+  return name ? t('contact.form.notify_message', { name }).replace(/ /g, ' ') : ''
+}
 
 const form = reactive({
   name: '',
@@ -36,9 +39,12 @@ const form = reactive({
   company: '',
   projectType: '',
   fundingHelp: '',
-  message: notifyProduct ? t('contact.form.notify_message', { name: notifyProduct }) : '',
+  message: notifyMessage(route.query.product),
   consent: false,
   website: '', // honeypot
+})
+watch(() => route.query.product, (product) => {
+  form.message = notifyMessage(product)
 })
 
 const status = ref<'idle' | 'sending' | 'success' | 'error'>('idle')

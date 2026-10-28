@@ -145,7 +145,7 @@ useSeoMeta({
                 {{ t('product.scope') }}
               </dt>
               <dd class="text-body">
-                {{ project.scope }}
+                {{ typeset(project.scope) }}
               </dd>
             </div>
             <div
@@ -156,7 +156,7 @@ useSeoMeta({
                 {{ t('product.stack') }}
               </dt>
               <dd class="text-body">
-                {{ project.stack }}
+                {{ typeset(project.stack) }}
               </dd>
             </div>
             <div
@@ -167,7 +167,7 @@ useSeoMeta({
                 {{ t('product.platform') }}
               </dt>
               <dd class="text-body">
-                {{ project.platform }}
+                {{ typeset(project.platform) }}
               </dd>
             </div>
           </dl>

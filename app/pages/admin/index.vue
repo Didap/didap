@@ -142,6 +142,16 @@ function readBackup(): { base: string; form: AdminForm; at: number } | null {
     return null
   }
 }
+// La firma da cui partiva la bozza, con i campi che allora mancavano presi
+// da quella salvata
+function withSavedFields(base: string) {
+  try {
+    return JSON.stringify({ ...JSON.parse(savedSignature.value), ...JSON.parse(base) })
+  }
+  catch {
+    return ''
+  }
+}
 function dropBackup() {
   try {
     if (backupKey.value) localStorage.removeItem(backupKey.value)
@@ -198,8 +208,12 @@ async function load() {
     updatedAt.value = override?.updatedAt ?? null
     resetHistory(loaded)
     const backup = readBackup()
-    if (backup && backup.base === savedSignature.value && formSignature(backup.form) !== savedSignature.value) {
-      restorable.value = { form: backup.form, at: backup.at }
+    // Una bozza di prima di un campo nuovo non lo ha: lo prende dalla scheda
+    // appena letta, così resta recuperabile
+    const backupForm = backup && { ...structuredClone(loaded), ...backup.form }
+    const backupBase = backup && withSavedFields(backup.base)
+    if (backupForm && backupBase === savedSignature.value && formSignature(backupForm) !== savedSignature.value) {
+      restorable.value = { form: backupForm, at: backup.at }
     }
     else if (backup) dropBackup()
   }
@@ -224,6 +238,7 @@ const FIELD_LABELS: Record<string, string> = {
   role: 'Categoria',
   scope: 'Ruolo',
   stack: 'Stack',
+  platform: 'Piattaforma',
   lede: 'Frase di apertura',
   logo: 'Logo',
   hero: 'Immagine di testata',

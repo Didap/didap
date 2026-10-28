@@ -15,6 +15,11 @@ describe('accesso al pannello', () => {
     expect(apiAccess('/api/admin/settings', 'PUT')).toEqual({ kind: 'pages', anyOf: ['impostazioni'] })
     expect(apiAccess('/api/admin/users/1', 'DELETE')).toEqual({ kind: 'pages', anyOf: ['collaboratori'] })
   })
+  it('consenso a Claude: basta la sessione, Bandi lo controlla approve', () => {
+    expect(apiAccess('/api/admin/oauth/check', 'POST')).toEqual({ kind: 'session' })
+    expect(apiAccess('/api/admin/oauth/approve', 'POST')).toEqual({ kind: 'session' })
+    expect(pageForPath('/oauth/authorize')).toBe('session')
+  })
   it('i clienti si leggono anche da Preventivi, si modificano solo da Clienti', () => {
     expect(apiAccess('/api/admin/clients', 'GET')).toEqual({ kind: 'pages', anyOf: ['clienti', 'preventivi'] })
     expect(apiAccess('/api/admin/clients/1', 'GET')).toEqual({ kind: 'pages', anyOf: ['clienti', 'preventivi'] })

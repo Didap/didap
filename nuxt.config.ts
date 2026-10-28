@@ -69,6 +69,22 @@ export default defineNuxtConfig({
     '/api/admin/**': {
       headers: { 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' },
     },
+    // Connettore MCP: login OAuth e metadati, mai in cache
+    '/oauth/**': {
+      headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' },
+    },
+    '/.well-known/**': {
+      headers: { 'Cache-Control': 'no-store' },
+    },
+    // Consenso: la query (state, challenge) non esce nel Referer e la pagina
+    // non si apre dentro un frame altrui, dove un clic su Consenti si ruba
+    '/oauth/authorize': {
+      headers: {
+        'Referrer-Policy': 'no-referrer',
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': 'frame-ancestors \'none\'',
+      },
+    },
   },
 
   app: {

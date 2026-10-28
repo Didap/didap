@@ -335,8 +335,22 @@ export async function readFileEntry(
   sql: Sql,
   grantId: string,
   fileId: string,
-): Promise<{ name: string, mime: string, storeKey: string }> {
-  const [row] = await sql`select name, mime, store_key from grant_files where id = ${fileId} and grant_id = ${grantId}`
+): Promise<{ name: string, mime: string, bytes: number, storeKey: string }> {
+  const [row] = await sql`select name, mime, bytes, store_key from grant_files where id = ${fileId} and grant_id = ${grantId}`
   if (!row) throw fileNotFound()
-  return { name: row.name, mime: row.mime, storeKey: row.store_key }
+  return { name: row.name, mime: row.mime, bytes: Number(row.bytes), storeKey: row.store_key }
+}
+
+// Cartelle e file di tutta la cartella del bando in due letture (per Claude);
+// 404 se il bando non c'è, 409 se non ha la cartella
+export async function grantFolderContents(
+  sql: Sql,
+  grantId: string,
+): Promise<{ folders: TreeRow[], files: (FileEntry & { folderId: string | null })[] }> {
+  await requireGrantFolder(sql, grantId)
+  const [folders, files] = await Promise.all([
+    folderTree(sql, grantId),
+    sql`select * from grant_files where grant_id = ${grantId} order by lower(name), name, id`,
+  ])
+  return { folders, files: files.map(r => ({ ...rowToFile(r), folderId: r.folder_id as string | null })) }
 }

@@ -5,6 +5,7 @@ import type { z } from 'zod'
 // validi 422 con i dettagli di zod (come le API dei prodotti).
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+export const isUuid = (value: string) => UUID.test(value)
 
 export function uuidParam(event: H3Event, name = 'id') {
   const value = getRouterParam(event, name) ?? ''

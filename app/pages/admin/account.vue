@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import AdminConfirm from '~/components/admin/AdminConfirm.vue'
 import AdminField from '~/components/admin/AdminField.vue'
 import AdminSection from '~/components/admin/AdminSection.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import NewPasswordFields from '~/components/admin/NewPasswordFields.vue'
 import { adminErrorText } from '~/utils/adminErrors'
+import { formatDateTime } from '~/utils/format'
 import { PASSWORD_MAX } from '#shared/users'
 
 // Il proprio account: nome, email e cambio password. Aperto a chiunque
@@ -35,13 +37,54 @@ async function changePassword() {
     current.value = ''
     next.value = ''
     confirm.value = ''
-    notify('ok', 'Password cambiata. Le altre sessioni sono state chiuse.')
+    // Il cambio password scollega anche i Claude: si rilegge l'elenco
+    const hadLinks = links.value.length > 0
+    await refreshLinks()
+    notify('ok', hadLinks
+      ? 'Password cambiata. Le altre sessioni e Claude sono stati scollegati.'
+      : 'Password cambiata. Le altre sessioni sono state chiuse.')
   }
   catch (err) {
     notify('error', adminErrorText(err))
   }
   finally {
     saving.value = false
+  }
+}
+
+// Claude collegato con questo account: elenco e "Scollega"
+type ClaudeLink = { id: string, clientName: string, createdAt: string, lastUsedAt: string | null }
+type ClaudeInfo = { links: ClaudeLink[], mcpUrl: string, hasBandi: boolean }
+// Si carica a ogni accesso, non una volta sola: chi entra dal login di questa
+// pagina, o con un altro account, vede i propri
+const { data: claude, refresh: refreshLinks } = useFetch<ClaudeInfo>('/api/admin/account/claude', {
+  immediate: false,
+  default: () => ({ links: [], mcpUrl: '', hasBandi: false }),
+})
+onAdminReady(refreshLinks)
+const links = computed(() => claude.value.links)
+const unlinking = ref<ClaudeLink | null>(null)
+const confirmUnlink = computed({
+  get: () => !!unlinking.value,
+  set: (v) => { if (!v) unlinking.value = null },
+})
+const unlinkBusy = ref(false)
+
+async function unlink() {
+  const link = unlinking.value
+  if (!link) return
+  unlinkBusy.value = true
+  try {
+    await $fetch(`/api/admin/account/claude/${link.id}`, { method: 'DELETE' })
+    notify('ok', 'Claude scollegato')
+  }
+  catch (err) {
+    notify('error', adminErrorText(err))
+  }
+  finally {
+    unlinkBusy.value = false
+    unlinking.value = null
+    await refreshLinks()
   }
 }
 </script>
@@ -140,7 +183,70 @@ async function changePassword() {
             </div>
           </AdminSection>
         </form>
+
+        <AdminSection
+          id="claude"
+          title="Claude collegato"
+          description="I Claude che leggono i bandi con il tuo account."
+        >
+          <p
+            v-if="!claude.hasBandi"
+            class="wrap-break-word opacity-70"
+          >
+            Per collegare Claude ai bandi serve l'accesso alla pagina Bandi:
+            chiedilo a chi gestisce i collaboratori.
+          </p>
+          <p
+            v-else-if="!links.length"
+            class="wrap-break-word opacity-70"
+          >
+            Nessun Claude collegato. Per collegarlo aggiungi il connettore
+            <code>{{ claude.mcpUrl }}</code> nelle impostazioni di Claude.
+          </p>
+          <ul
+            v-else
+            class="flex flex-col gap-3"
+          >
+            <li
+              v-for="link in links"
+              :key="link.id"
+              class="
+                flex flex-wrap items-center justify-between gap-3 rounded-xl
+                bg-ink/5 p-4
+              "
+            >
+              <div class="min-w-0">
+                <p class="font-medium wrap-break-word">
+                  {{ link.clientName }}
+                </p>
+                <p class="text-sm opacity-60">
+                  Collegato il {{ formatDateTime(link.createdAt) }}.
+                  {{ link.lastUsedAt ? `Ultimo uso ${formatDateTime(link.lastUsedAt)}.` : 'Mai usato.' }}
+                </p>
+              </div>
+              <button
+                type="button"
+                class="
+                  rounded-full px-4 py-2 text-sm font-medium text-red
+                  hover:bg-red/10
+                "
+                @click="unlinking = link"
+              >
+                Scollega
+              </button>
+            </li>
+          </ul>
+        </AdminSection>
       </div>
     </main>
+
+    <AdminConfirm
+      v-model:open="confirmUnlink"
+      title="Scollegare Claude?"
+      description="Dovrà rifare l'accesso."
+      confirm-label="Sì, scollega"
+      :busy="unlinkBusy"
+      @confirm="unlink"
+    />
   </AdminShell>
 </template>

@@ -435,6 +435,18 @@ export const FOLDER_CLAIM_MINUTES = 30
 // Risposta di "Crea cartella del bando": già riempita, o partita in background
 export type FolderStart = { status: 'ready' } | { status: 'filling' }
 
+// Il titolo per i nomi dei file del bando: "Voucher digitale: PMI" ->
+// "voucher-digitale-pmi", senza accenti, al massimo 60 caratteri ('' se
+// non resta niente: chi lo usa mette l'id)
+export const titleSlug = (title: string) => title
+  .normalize('NFD')
+  .replace(/[̀-ͯ]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '')
+  .slice(0, 60)
+  .replace(/-$/, '')
+
 // ---------- registro degli import ----------
 
 export type TokenUsage = { calls: number, input: number, output: number, cacheWrite: number, cacheRead: number }

@@ -2,6 +2,7 @@ import { romeDate } from '#shared/dates'
 import {
   ELIGIBILITY_LABELS,
   sourceLabel,
+  titleSlug,
   VERDICT_LABELS,
   type EvaluatedGrant,
   type Outcome,
@@ -20,17 +21,7 @@ const scalar = (v: string | number | boolean | null) => (typeof v === 'string' ?
 
 const block = (text: string, indent: string) => text.split('\n').map(l => `${indent}${l}`).join('\n')
 
-export function grantFileName(g: EvaluatedGrant): string {
-  const slug = g.title
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 60)
-    .replace(/-$/, '')
-  return `bando-${slug || g.id}.md`
-}
+export const grantFileName = (g: EvaluatedGrant) => `bando-${titleSlug(g.title) || g.id}.md`
 
 export function grantExport(g: EvaluatedGrant, content: string, profile: RadarProfile): string {
   const day = (iso: string | null) => (iso ? romeDate(new Date(iso)) : null)

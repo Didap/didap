@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
 import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
+import RadarGrantDraft from '~/components/admin/RadarGrantDraft.vue'
 import RadarGrantFiles from '~/components/admin/RadarGrantFiles.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { formatDay } from '~/utils/format'
 import { formatWholeEuro } from '#shared/money'
 import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type EvaluatedGrant, type FolderStart } from '#shared/radar'
 
-// Scheda di un bando, in due schede: "Dettaglio" (giudizio, dati, sintesi,
-// requisiti e come si presenta) e "File" (la cartella del bando). Il motivo
+// Scheda di un bando, in tre schede: "Dettaglio" (giudizio, dati, sintesi,
+// requisiti e come si presenta), "File" (la cartella del bando) e "Bozza"
+// (la bozza della candidatura, condivisa con Claude). Il motivo
 // di un requisito compare solo quando c'è qualcosa da guardare; la frase del
 // bando si apre col clic.
 const props = defineProps<{ grant: EvaluatedGrant, filesConfigured: boolean }>()
-// La scheda scelta la tiene la pagina: resta passando da un bando all'altro
-const tab = defineModel<'detail' | 'files'>('tab', { required: true })
+// La scheda scelta la tiene la pagina: resta passando da un bando all'altro.
+// Lasciando la bozza con modifiche la pagina chiede prima conferma.
+const tab = defineModel<'detail' | 'files' | 'draft'>('tab', { required: true })
 // La cartella si riempie in background: la pagina segna il bando e lo
 // ricarica finché non è pronta
 defineEmits<{ folder: [id: string, start: FolderStart] }>()
@@ -110,13 +113,16 @@ const note = (i: number) => {
         type="single"
         class="ml-9 toggle-segmented w-fit"
         aria-label="Scheda del bando"
-        @update:model-value="v => v && (tab = v as 'detail' | 'files')"
+        @update:model-value="v => v && (tab = v as 'detail' | 'files' | 'draft')"
       >
         <ToggleGroupItem value="detail">
           Dettaglio
         </ToggleGroupItem>
         <ToggleGroupItem value="files">
           File
+        </ToggleGroupItem>
+        <ToggleGroupItem value="draft">
+          Bozza
         </ToggleGroupItem>
       </ToggleGroupRoot>
     </header>
@@ -128,6 +134,12 @@ const note = (i: number) => {
       :grant="grant"
       :configured="filesConfigured"
       @folder="(id, start) => $emit('folder', id, start)"
+    />
+
+    <RadarGrantDraft
+      v-else-if="tab === 'draft'"
+      :key="grant.id"
+      :grant="grant"
     />
 
     <template v-else>

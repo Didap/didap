@@ -19,6 +19,8 @@ const RULES: Rule[] = [
   { prefix: '/api/admin/password', access: { kind: 'open' } },
   { prefix: '/api/admin/logout', access: { kind: 'session' } },
   { prefix: '/api/admin/account', access: { kind: 'session' } },
+  // Consenso a Claude: Bandi lo controlla approve, per rispondere con un messaggio
+  { prefix: '/api/admin/oauth', access: { kind: 'session' } },
   { prefix: '/api/admin/products', access: pages('prodotti') },
   { prefix: '/api/admin/assets', access: pages('prodotti') },
   { prefix: '/api/admin/quotes', access: pages('preventivi') },
@@ -51,6 +53,7 @@ export function pageForPath(routePath: string): AdminPage | 'session' | 'open' |
   const p = stripSlash(routePath)
   if (matches(p, '/admin/account')) return 'session'
   if (matches(p, '/admin/password')) return 'open'
+  if (matches(p, '/oauth/authorize')) return 'session'
   // Dalla più specifica: "/admin" vale solo esatto
   for (const page of ADMIN_PAGES) {
     const { path } = ADMIN_PAGE_INFO[page]

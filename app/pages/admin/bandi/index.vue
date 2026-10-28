@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useIntervalFn, useMediaQuery } from '@vueuse/core'
+import { until, useDocumentVisibility, useEventListener, useIntervalFn, useMediaQuery } from '@vueuse/core'
 import {
   CollapsibleContent,
   PopoverContent,
@@ -21,6 +21,7 @@ import {
   ToggleGroupItem,
   ToggleGroupRoot,
 } from 'reka-ui'
+import AdminConfirm from '~/components/admin/AdminConfirm.vue'
 import AdminIcon from '~/components/admin/AdminIcon.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import OptionalNumber from '~/components/admin/OptionalNumber.vue'
@@ -29,6 +30,8 @@ import RadarGrantDetail from '~/components/admin/RadarGrantDetail.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
+import { GRANT_DRAFT, useGrantDraft } from '~/composables/useGrantDraft'
+import { holdsDraft, refreshesDraft, shownGrant } from '~/utils/grantDraftEditor'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime } from '~/utils/format'
 import { romeDate } from '#shared/dates'
@@ -252,20 +255,106 @@ function setFolder(id: string, start: FolderStart) {
   }
 }
 
-// Scheda del dettaglio ("Dettaglio" o "File"): resta passando da un bando all'altro
-const detailTab = ref<'detail' | 'files'>('detail')
+// Scheda del dettaglio ("Dettaglio", "File" o "Bozza"): resta passando da un bando all'altro
+type DetailTab = 'detail' | 'files' | 'draft'
+const detailTab = ref<DetailTab>('detail')
+
+// Bozza della candidatura aperta: qui e non nella scheda, che si rimonta
+// (larghezza, filtri) senza perdere il testo. Il primo salvataggio crea
+// cartella e cuore: l'elenco si rilegge e segue il riempimento come dopo
+// "Crea cartella del bando".
+const draft = useGrantDraft((id) => {
+  const g = data.value?.grants.find(x => x.id === id)
+  if (g) {
+    g.hasFolder = true
+    g.liked = true
+  }
+  loadGrants()
+})
+provide(GRANT_DRAFT, draft)
+
+// Bozza con modifiche non salvate: prima di cambiare bando, scheda o pagina
+// si chiede conferma, e confermando le modifiche si buttano. Con un
+// salvataggio in corso si aspetta che torni: andato bene, l'editor ha già
+// il testo salvato e non si chiede niente; rifiutato o fallito, le
+// modifiche ci sono ancora e si chiede. Mai buttare un testo in viaggio.
+const pendingLeave = ref<null | (() => unknown)>(null)
+const leaveOpen = computed({
+  get: () => !!pendingLeave.value,
+  set: (v) => {
+    if (!v) pendingLeave.value = null
+  },
+})
+
+const saveSettled = () => until(() => draft.saving).toBe(false)
+
+async function guardDraft(action: () => unknown) {
+  await saveSettled()
+  if (draft.dirty) pendingLeave.value = action
+  else action()
+}
+
+function leaveDraft() {
+  const action = pendingLeave.value
+  pendingLeave.value = null
+  draft.discard()
+  action?.()
+}
+
+const router = useRouter()
+onBeforeRouteLeave(async (to) => {
+  await saveSettled()
+  if (!draft.dirty) return true
+  pendingLeave.value = () => router.push(to.fullPath)
+  return false
+})
+// Chiudere o ricaricare la scheda del browser: la domanda standard del browser
+useEventListener('beforeunload', (e: BeforeUnloadEvent) => {
+  if (draft.dirty || draft.saving) e.preventDefault()
+})
+
+function setDetailTab(t: DetailTab) {
+  if (t !== detailTab.value) guardDraft(() => (detailTab.value = t))
+}
 
 const selectedId = ref<string | null>(null)
-const selected = computed(() => visible.value.find(g => g.id === selectedId.value) ?? null)
+// Con la bozza da salvare (o in salvataggio) il bando resta aperto anche se
+// un filtro, la ricerca o i moduli e le province della ricerca non ancora
+// salvata lo tolgono dall'elenco: preso da tutti i bandi, valutato qui
+const keepsDraft = computed(() => holdsDraft(draft, selectedId.value))
+const selected = computed(() => shownGrant(selectedId.value, visible.value, keepsDraft.value, (id) => {
+  const g = data.value?.grants.find(x => x.id === id)
+  return g && form.value ? { ...g, ...evaluateRadarGrant(g, form.value.profile, now) } : null
+}))
+// L'elenco mostrato: il bando tenuto per la bozza, se i filtri lo tolgono,
+// resta in cima con la sua riga (sotto xl la scheda si apre lì)
+const listed = computed(() => {
+  const s = selected.value
+  return s && !visible.value.some(g => g.id === s.id) ? [s, ...visible.value] : visible.value
+})
 
-// Sullo schermo largo la scheda a destra non resta mai vuota se c'è un bando
+// Tornando sulla pagina la bozza aperta e intatta si rilegge: chi la riprende
+// non scrive su un testo vecchio fino al 409
+function refreshDraft() {
+  const shownId = detailTab.value === 'draft' ? selected.value?.id ?? null : null
+  if (refreshesDraft(draft, shownId)) void draft.load()
+}
+useEventListener('focus', refreshDraft)
+const pageVisibility = useDocumentVisibility()
+watch(pageVisibility, (v) => {
+  if (v === 'visible') refreshDraft()
+})
+
+// Sullo schermo largo la scheda a destra non resta mai vuota se c'è un bando;
+// mai al posto di un bando con la bozza da tenere (anche sparito dai dati)
 watchEffect(() => {
-  if (isXl.value && !selected.value && visible.value.length) selectedId.value = visible.value[0]!.id
+  if (isXl.value && !selected.value && visible.value.length && !keepsDraft.value) selectedId.value = visible.value[0]!.id
 })
 
 function pick(id: string) {
   // Sotto xl la scheda si apre sotto la riga: un secondo clic la chiude
-  selectedId.value = !isXl.value && selectedId.value === id ? null : id
+  const next = !isXl.value && selectedId.value === id ? null : id
+  if (next !== selectedId.value) guardDraft(() => (selectedId.value = next))
 }
 
 const DAY = 86_400_000
@@ -921,7 +1010,7 @@ function toggleGroup(group: string, on: boolean) {
             Carico i bandi…
           </p>
           <p
-            v-else-if="!visible.length"
+            v-else-if="!listed.length"
             class="px-8 py-10 opacity-60"
           >
             <template v-if="query">
@@ -936,7 +1025,7 @@ function toggleGroup(group: string, on: boolean) {
           </p>
           <ul v-else>
             <li
-              v-for="g in visible"
+              v-for="g in listed"
               :key="g.id"
               class="border-b border-ink/10"
             >
@@ -1026,7 +1115,8 @@ function toggleGroup(group: string, on: boolean) {
               >
                 <RadarGrantDetail
                   :grant="g"
-                  v-model:tab="detailTab"
+                  :tab="detailTab"
+                  @update:tab="setDetailTab"
                   :files-configured="!!data?.status.filesConfigured"
                   @folder="setFolder"
                 />
@@ -1049,11 +1139,20 @@ function toggleGroup(group: string, on: boolean) {
         <RadarGrantDetail
           v-if="isXl && selected"
           :grant="selected"
-          v-model:tab="detailTab"
+          :tab="detailTab"
+          @update:tab="setDetailTab"
           :files-configured="!!data?.status.filesConfigured"
           @folder="setFolder"
         />
       </aside>
     </div>
+
+    <AdminConfirm
+      v-model:open="leaveOpen"
+      title="Lasciare la bozza senza salvare?"
+      description="Le modifiche alla bozza che non hai salvato andranno perse."
+      confirm-label="Esci senza salvare"
+      @confirm="leaveDraft"
+    />
   </AdminShell>
 </template>

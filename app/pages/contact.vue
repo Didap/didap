@@ -15,6 +15,7 @@ import {
 } from 'reka-ui'
 import { Motion, AnimatePresence } from 'motion-v'
 import InteractiveHoverButton from '~/components/InteractiveHoverButton.vue'
+import { untypeset } from '#shared/typeset'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -25,12 +26,11 @@ useSeoMeta({
 })
 
 // Dal bottone "Avvisami quando esce" di una scheda prodotto: ?product=Nome.
-// Il messaggio va nel campo e nell'email: senza gli spazi unificatori che
-// typeset() mette in ogni testo tradotto
+// Il messaggio va nel campo e nell'email: senza gli spazi di typeset()
 const route = useRoute()
 function notifyMessage(product: unknown) {
   const name = typeof product === 'string' ? product.trim().slice(0, 80) : ''
-  return name ? t('contact.form.notify_message', { name }).replace(/ /g, ' ') : ''
+  return name ? untypeset(t('contact.form.notify_message', { name })) : ''
 }
 
 const form = reactive({

@@ -16,7 +16,7 @@ import AdminSection from '~/components/admin/AdminSection.vue'
 import AdminSwitch from '~/components/admin/AdminSwitch.vue'
 import ImageDrop from '~/components/admin/ImageDrop.vue'
 import MediaField from '~/components/admin/MediaField.vue'
-import { PRODUCT_STATUSES } from '#shared/product'
+import { PRODUCT_STATUS_LABELS, PRODUCT_STATUSES } from '#shared/product'
 import type { AdminForm } from '~/utils/adminForm'
 import type { MediaSlot as MediaSlotType } from '#shared/product'
 
@@ -29,10 +29,9 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ focus: [section: string] }>()
 
-const STATUS_LABELS = { live: 'Live', development: 'In sviluppo', pilot: 'Pilot', pending: 'Stato da confermare' }
 const STATUS_OPTIONS = [
   { value: '', label: 'Nessuno' },
-  ...PRODUCT_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+  ...PRODUCT_STATUSES.map((s) => ({ value: s, label: PRODUCT_STATUS_LABELS[s] })),
 ] as const
 
 // Un clic sulla voce attiva la spegnerebbe (undefined): resta com'è
@@ -228,6 +227,7 @@ const usesMarkdownBody = computed(
       </div>
       <AdminSwitch
         v-model="form.notify"
+        :disabled="!!form.url"
         label="Senza sito: bottone «Avvisami quando esce», porta ai contatti"
       />
       <AdminField

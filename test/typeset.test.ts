@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { typeset, typesetBody } from '#shared/typeset'
+import { typeset, typesetBody, untypeset } from '#shared/typeset'
 import itMessages from '../i18n/locales/it.json'
 import enMessages from '../i18n/locales/en.json'
 
@@ -77,5 +77,13 @@ describe('corpo markdown', () => {
     expect(p[2]).toBe(`Il${NB}banco tiene i${NB}conti. La${NB}sera dell'asta. `)
     expect(p[4]).toBe(` rilanciano dal${NB}telefono.`)
     expect((body.value[1] as unknown[])[2]).toEqual(['code', {}, 'a. B'])
+  })
+})
+
+describe('untypeset', () => {
+  it('torna agli spazi normali, per i campi del form e le email', () => {
+    const text = 'Ciao, avvisatemi quando esce Helllo.'
+    expect(typeset(text)).not.toBe(text)
+    expect(untypeset(typeset(text))).toBe(text)
   })
 })

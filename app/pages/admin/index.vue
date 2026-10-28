@@ -17,7 +17,13 @@ import StatusPill from '~/components/StatusPill.vue'
 import AdminHeader from '~/components/admin/AdminHeader.vue'
 import AdminLogin from '~/components/admin/AdminLogin.vue'
 import AdminNoAccess from '~/components/admin/AdminNoAccess.vue'
-import { isProductLocale, type ProductLocale, type ProductOverride } from '#shared/product'
+import {
+  isProductLocale,
+  PRODUCT_STATUS_LABELS,
+  type ProductLocale,
+  type ProductOverride,
+  type ProductStatus,
+} from '#shared/product'
 import {
   formSignature,
   fromAdminForm,
@@ -66,7 +72,7 @@ const { data: edits, refresh: refreshEdits } = await useFetch('/api/admin/produc
     locale: string
     updatedAt: string
     title?: string
-    status?: 'live' | 'development' | 'pilot' | 'pending' | null
+    status?: ProductStatus | null
   }[],
 })
 
@@ -452,7 +458,8 @@ const others = computed(() =>
 const lastSaved = computed(() =>
   updatedAt.value ? formatDateTime(updatedAt.value) : null,
 )
-const STATUS_LABELS = { live: 'Live', development: 'In sviluppo', pilot: 'Pilot', pending: 'Da confermare' } as const
+// Nell'elenco l'etichetta corta
+const STATUS_LABELS = { ...PRODUCT_STATUS_LABELS, pending: 'Da confermare' }
 </script>
 
 <template>

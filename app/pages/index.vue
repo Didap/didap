@@ -2,7 +2,7 @@
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
-import type { ProductStatus } from '~/components/StatusPill.vue'
+import type { ProductStatus } from '#shared/product'
 
 // Home - Figma "Home · Desktop 1440 · v0.1".
 // Ogni sezione: filetto ink 1.5 in alto, 32 sopra, 136 sotto,

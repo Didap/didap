@@ -1,3 +1,5 @@
+import type { ProductStatus } from '#shared/product'
+
 // Elenco delle modifiche salvate: per ogni prodotto e lingua, quando e
 // con quale nome e stato (per mostrarli nell'elenco di /admin)
 export default defineEventHandler(async () => {
@@ -13,6 +15,6 @@ export default defineEventHandler(async () => {
     updatedAt: r.updated_at as string,
     title: (r.title as string | null) ?? undefined,
     // undefined = non modificato, null = stato tolto
-    status: r.status as 'live' | 'development' | 'pilot' | 'pending' | null | undefined,
+    status: r.status as ProductStatus | null | undefined,
   }))
 })

@@ -184,7 +184,7 @@ describe.skipIf(!TEST_DATABASE_URL)('server MCP', () => {
     // Salvata da Claude: si dice per chi
     await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'tre', versione: 2 } })
     const again = await client.callTool({ name: 'salva_bozza', arguments: { id: g, testo: 'quattro', versione: 2 } })
-    expect(firstText(again)).toContain('salvata da Claude per Prova il ')
+    expect(firstText(again)).toContain('salvata da Prova via Claude il ')
   })
 
   it('salva_bozza con versione ma senza bozza: invito a rileggere', async () => {

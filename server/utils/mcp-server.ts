@@ -9,7 +9,7 @@ import {
 import { createError, isError } from 'h3'
 import type postgres from 'postgres'
 import { z } from 'zod'
-import type { DraftConflict } from '#shared/grant-draft'
+import { draftAuthor, type DraftConflict } from '#shared/grant-draft'
 import type { AdminUser } from '#shared/users'
 import type { FileStore } from './file-store'
 import { readDraft, saveDraftAndFill } from './grant-draft'
@@ -64,13 +64,11 @@ const romeDay = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day:
 const romeHour = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 const when = (iso: string) => `il ${romeDay.format(new Date(iso))} alle ${romeHour.format(new Date(iso))}`
 
-const author = (savedBy: string, byClaude: boolean) => byClaude ? `Claude per ${savedBy}` : savedBy
-
 // Il 409 della bozza: chi ha salvato e quando. Senza `data` la bozza non c'è
 // (Claude ha dato una versione a un bando senza bozza)
 function draftConflict(data: DraftConflict | undefined): string {
   if (!data) return 'La bozza è cambiata o non esiste: rileggila con leggi_bozza e riparti da lì.'
-  return `La bozza è cambiata (versione ${data.version}, salvata da ${author(data.savedBy, data.byClaude)} ${when(data.savedAt)}): rileggila con leggi_bozza e riapplica le modifiche.`
+  return `La bozza è cambiata (versione ${data.version}, salvata da ${draftAuthor(data)} ${when(data.savedAt)}): rileggila con leggi_bozza e riapplica le modifiche.`
 }
 
 // store: useFileStore, null senza Cloudinary. La bozza si salva anche senza;
@@ -186,7 +184,7 @@ export function buildMcpServer(deps: { sql: Sql, store: () => FileStore | null, 
       const d = await readDraft(sql, a.id)
       if (!d) return text('Questo bando non ha ancora una bozza: scrivila con salva_bozza senza versione.')
       if (d.content.length > MAX_TOOL_TEXT) {
-        return text(`${MCP_DRAFT_TOO_LONG} L'ha salvata ${author(d.savedBy, d.byClaude)} ${when(d.savedAt)}.`)
+        return text(`${MCP_DRAFT_TOO_LONG} L'ha salvata ${draftAuthor(d)} ${when(d.savedAt)}.`)
       }
       return text(JSON.stringify({
         testo: d.content,

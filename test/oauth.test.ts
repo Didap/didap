@@ -206,6 +206,7 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
     const other = await connect(c.id, u.id)
     const t = await connect(c.id, u.id)
     const t2 = await refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })
+    await sql`update oauth_tokens set used_at = now() - interval '11 seconds' where hash = ${hashToken(t.refreshToken)}`
     await expect(refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
     expect(await verifyAccessToken(sql, t.accessToken)).toBeNull()
     expect(await verifyAccessToken(sql, t2.accessToken)).toBeNull()
@@ -230,7 +231,7 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
     await expect(refreshTokens(sql, { refreshToken: t.refreshToken, clientId: c.id })).rejects.toMatchObject({ code: 'invalid_grant' })
   })
 
-  it('due rinnovi insieme dello stesso refresh: uno passa, il secondo è un riuso e chiude il collegamento', async () => {
+  it('due rinnovi insieme dello stesso refresh: uno passa, l\'altro invalid_grant, il collegamento resta', async () => {
     const { u, c } = await setup()
     for (let i = 0; i < 5; i++) {
       const t = await connect(c.id, u.id)
@@ -240,10 +241,9 @@ describe.skipIf(!TEST_DATABASE_URL)('OAuth del connettore su Postgres', () => {
       expect(ok).toHaveLength(1)
       const failed = results.find(r => r.status === 'rejected') as PromiseRejectedResult
       expect(failed.reason).toMatchObject({ code: 'invalid_grant' })
-      expect(await verifyAccessToken(sql, ok[0]!.value.accessToken)).toBeNull()
-      expect(await listLinks(sql, u.id)).toHaveLength(0)
+      expect(await verifyAccessToken(sql, ok[0]!.value.accessToken)).not.toBeNull()
+      expect(await listLinks(sql, u.id)).toHaveLength(i + 1)
     }
-    expect(await sql`select 1 from oauth_tokens`).toHaveLength(0)
   })
 
   it('rinnovo mentre Bandi viene tolto: nessun errore strano, collegamenti chiusi', async () => {

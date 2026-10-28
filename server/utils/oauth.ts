@@ -34,6 +34,9 @@ export type ClaudeLink = { id: string, clientName: string, createdAt: string, la
 const CODE_SECS = 60
 const ACCESS_SECS = 60 * 60
 const REFRESH_SECS = 60 * 60 * 24 * 30
+// Un refresh già usato che torna entro pochi secondi è Claude che rinnova due
+// volte insieme: invalid_grant, ma il collegamento resta
+const REFRESH_REUSE_GRACE_SECS = 10
 const MAX_REDIRECTS = 5
 const NAME_MAX = 100
 // Client registrati e mai collegati: via dopo una settimana. Uno che ha avuto
@@ -163,8 +166,8 @@ export async function exchangeCode(
 
 // Rinnovo con rotazione: il refresh token usato resta segnato (used_at) fino
 // alla scadenza, la coppia nuova va sullo stesso collegamento. Se un refresh
-// già usato torna indietro, qualcuno ne ha una copia: si chiude tutto il
-// collegamento, token nuovi compresi (RFC 9700, 4.14.2)
+// già usato torna indietro dopo REFRESH_REUSE_GRACE_SECS, qualcuno ne ha una
+// copia: si chiude tutto il collegamento, token nuovi compresi (RFC 9700, 4.14.2)
 export async function refreshTokens(sql: Sql, input: { refreshToken: string, clientId: string }): Promise<TokenSet> {
   const hash = hashToken(input.refreshToken)
   await sweep(sql)
@@ -179,14 +182,20 @@ export async function refreshTokens(sql: Sql, input: { refreshToken: string, cli
     // Key share: Scollega aspetta il rinnovo in corso, l'ultimo uso no
     const [link] = await t`select client_id from oauth_links where id = ${peek.link_id} for key share`
     // used_at is null: due rinnovi insieme non lo usano due volte, e il
-    // secondo lo trova già usato
+    // secondo lo trova già usato da un attimo
     const [tok] = await t`
       update oauth_tokens set used_at = now()
       where hash = ${hash} and kind = 'refresh' and used_at is null
       returning expires_at > now() as live
     `
     if (!tok) {
-      await t`delete from oauth_links where id = ${peek.link_id}`
+      await t`
+        delete from oauth_links where id = ${peek.link_id}
+          and not exists (
+            select 1 from oauth_tokens where hash = ${hash}
+              and used_at > now() - make_interval(secs => ${REFRESH_REUSE_GRACE_SECS})
+          )
+      `
       return null
     }
     if (!user || !link) return null

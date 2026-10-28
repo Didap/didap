@@ -108,7 +108,7 @@ async function logout() {
           class="mt-3 opacity-70"
           role="alert"
         >
-          {{ checkError }}. Torna su Claude e collega di nuovo il connettore.
+          {{ checkError }}. Torna su Claude, rimuovi il connettore e aggiungilo di nuovo.
         </p>
       </div>
 

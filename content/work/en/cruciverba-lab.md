@@ -10,6 +10,9 @@ tags:
 featured: true
 order: 4
 status: pending
+team:
+  - william
+  - cristiano
 ---
 
 ## The product

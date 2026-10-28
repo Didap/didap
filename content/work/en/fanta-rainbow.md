@@ -74,6 +74,12 @@ media:
     - src: /covers/fanta-rainbow-mercato.mp4
       poster: /covers/fanta-rainbow-mercato-poster.webp
       alt: "A Gazzetta Rainbow transfer story: the contract year rolls from 2026 to 2030, a signature draws itself and an Ufficiale stamp lands on Rabiot's new deal with Milan"
+team:
+  - barbara
+  - william
+  - cristiano
+  - alessandro
+  - vitantonio
 ---
 
 ## The product

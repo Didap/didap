@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "historyId": "7d2b77a6-5558-41bd-a852-349460733901",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/BitcountGridSingle_600SemiBold.ttf": {
+      "hash": "6306e5f8e73af288260c896b4bb9c352bcd965c1190914b47c8efea9afcb6465",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7d2b77a6-5558-41bd-a852-349460733901\\blobs\\63\\6306e5f8e73af288260c896b4bb9c352bcd965c1190914b47c8efea9afcb6465"
+    },
+    "assets/Urbanist_500Medium.ttf": {
+      "hash": "fe0ee819193663ccffa3de5a81b8ecd9aa16d29d39892a53fb0394a43698f7ec",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7d2b77a6-5558-41bd-a852-349460733901\\blobs\\fe\\fe0ee819193663ccffa3de5a81b8ecd9aa16d29d39892a53fb0394a43698f7ec"
+    },
+    "assets/Urbanist_700Bold.ttf": {
+      "hash": "c06728d590de58ab0ccf39c4ea80428b2976355239f2b9e025095bc065d297e9",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7d2b77a6-5558-41bd-a852-349460733901\\blobs\\c0\\c06728d590de58ab0ccf39c4ea80428b2976355239f2b9e025095bc065d297e9"
+    },
+    "assets/brindisi.svg": {
+      "hash": "d0af925554f0a9ba59a4f9874f9f543cd258649f34478a77f52246a0a0882992",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7d2b77a6-5558-41bd-a852-349460733901\\blobs\\d0\\d0af925554f0a9ba59a4f9874f9f543cd258649f34478a77f52246a0a0882992"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7d2b77a6-5558-41bd-a852-349460733901\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "bd152d1c12a86f5dc1c15b90adfeadc23d8ca1cef9709b7598ec8329670d955a",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7d2b77a6-5558-41bd-a852-349460733901\\blobs\\bd\\bd152d1c12a86f5dc1c15b90adfeadc23d8ca1cef9709b7598ec8329670d955a"
+    },
+    "meta.json": {
+      "hash": "3ee2f19dc738f1ef8e6408b9fd52b4e6ae6c20e6ebc9401df96327c75ae7ccc7",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7d2b77a6-5558-41bd-a852-349460733901\\blobs\\3e\\3ee2f19dc738f1ef8e6408b9fd52b4e6ae6c20e6ebc9401df96327c75ae7ccc7"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "12b70c07-8004-481d-a998-1c12bf170b9a",
+      "completedAt": 1793190238214,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cityfix\\render\\mappa-mobile.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1696, height=1520" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var-italic.woff2') format('woff2');font-weight:100 900;font-style:italic}
+:root{--paper:#FCFCF9;--ink:#1F130E;--soft:#473A33;--mute:#6D6059;--hair:#DAD7D2}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1696px;height:1520px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink)}
+.mast{position:absolute;left:90px;top:80px;display:flex;align-items:baseline;font-family:Caprasimo;font-size:64px;line-height:1}
+.mast .sq{display:inline-block;width:.56em;height:.56em;background:var(--ink);border-radius:.09em;margin:0 .08em;align-self:center}
+.mast .lab{font-family:Piazzolla;font-weight:500;font-size:.34em;letter-spacing:.3em;margin-left:.55em;color:var(--soft)}
+.bar{position:absolute;left:0;right:0;top:190px;height:90px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);display:flex;align-items:center;padding:0 90px;gap:20px;font-size:34px}
+.bar b{font-family:Caprasimo;font-weight:400}
+.card{position:absolute;width:282px;height:520px;border-top:3px solid var(--ink);padding-top:22px}
+.nm{font-family:Caprasimo;font-size:40px;line-height:1.1}
+.ds{margin-top:14px;font-size:24px;line-height:1.35;color:var(--soft)}
+.tile{position:absolute;left:0;right:0;bottom:0;height:250px;border-radius:8px}
+.ck{position:absolute;right:18px;bottom:18px;width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0}
+.ck svg{width:56%;height:56%}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1696" data-height="1520">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap>
+<div class="mast"><span>Cruciverb</span><span class="sq"></span><span class="lab">LAB.</span></div>
+<div class="bar"><b>Fatti oggi</b><span><span id="cnt">0</span> su 10</span></div>
+<div class="card" id="g0" style="left:90px;top:330px"><div class="nm" style="color:#D8361F">Cruciverba</div><div class="ds">Il classico, con definizioni scritte a quattro mani.</div><div class="tile" id="tl0" style="background:#F7C3B4"></div><div class="ck" id="ck0" style="background:#D8361F"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g1" style="left:398px;top:330px"><div class="nm" style="color:#2C7FA8">Setaccio</div><div class="ds">Dieci parole a tema nascoste in un campo di lettere.</div><div class="tile" id="tl1" style="background:#BFDCEB"></div><div class="ck" id="ck1" style="background:#2C7FA8"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g2" style="left:707px;top:330px"><div class="nm" style="color:#1A8A86">Catena</div><div class="ds">Otto parole in colonna, ognuna legata alla vicina.</div><div class="tile" id="tl2" style="background:#BDE3E0"></div><div class="ck" id="ck2" style="background:#1A8A86"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g3" style="left:1015px;top:330px"><div class="nm" style="color:#6A3FCB">Crittografato</div><div class="ds">Un cruciverba senza definizioni: ogni numero è una lettera.</div><div class="tile" id="tl3" style="background:#D7CBF2"></div><div class="ck" id="ck3" style="background:#6A3FCB"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g4" style="left:1324px;top:330px"><div class="nm" style="color:#C92A6B">Rulli</div><div class="ds">Cinque rulli di lettere da girare finché la riga forma una parola.</div><div class="tile" id="tl4" style="background:#F3C3D3"></div><div class="ck" id="ck4" style="background:#C92A6B"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g5" style="left:90px;top:906px"><div class="nm" style="color:#0A7A3E">Chiave</div><div class="ds">Una parola di cinque lettere da trovare in sei tentativi.</div><div class="tile" id="tl5" style="background:#BFE6CC"></div><div class="ck" id="ck5" style="background:#0A7A3E"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g6" style="left:398px;top:906px"><div class="nm" style="color:#B02E8F">Nessi</div><div class="ds">Sedici parole da dividere in quattro gruppi.</div><div class="tile" id="tl6" style="background:#EFC6E3"></div><div class="ck" id="ck6" style="background:#B02E8F"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g7" style="left:707px;top:906px"><div class="nm" style="color:#9A5A12">Ghigliottina</div><div class="ds">Cinque coppie di parole e la parola che le lega tutte.</div><div class="tile" id="tl7" style="background:#F6D9BB"></div><div class="ck" id="ck7" style="background:#9A5A12"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g8" style="left:1015px;top:906px"><div class="nm" style="color:#8A7410">Alveare</div><div class="ds">Sette lettere, una obbligatoria: tutte le parole che riesci a formare.</div><div class="tile" id="tl8" style="background:#F8E59B"></div><div class="ck" id="ck8" style="background:#8A7410"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" id="g9" style="left:1324px;top:906px"><div class="nm" style="color:#557F1C">Mosaico</div><div class="ds">Un solitario con le carte napoletane, una partita al giorno.</div><div class="tile" id="tl9" style="background:#DDEDB8"></div><div class="ck" id="ck9" style="background:#557F1C"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo("#tl0",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},0.60);
+tl.fromTo("#ck0",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},0.70);
+tl.set("#cnt",{textContent:"1"},0.75);
+tl.fromTo("#tl1",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},1.45);
+tl.fromTo("#ck1",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},1.55);
+tl.set("#cnt",{textContent:"2"},1.60);
+tl.fromTo("#tl2",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},2.30);
+tl.fromTo("#ck2",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},2.40);
+tl.set("#cnt",{textContent:"3"},2.45);
+tl.fromTo("#tl3",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},3.15);
+tl.fromTo("#ck3",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},3.25);
+tl.set("#cnt",{textContent:"4"},3.30);
+tl.fromTo("#tl4",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},4.00);
+tl.fromTo("#ck4",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},4.10);
+tl.set("#cnt",{textContent:"5"},4.15);
+tl.fromTo("#tl5",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},4.85);
+tl.fromTo("#ck5",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},4.95);
+tl.set("#cnt",{textContent:"6"},5.00);
+tl.fromTo("#tl6",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},5.70);
+tl.fromTo("#ck6",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},5.80);
+tl.set("#cnt",{textContent:"7"},5.85);
+tl.fromTo("#tl7",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},6.55);
+tl.fromTo("#ck7",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},6.65);
+tl.set("#cnt",{textContent:"8"},6.70);
+tl.fromTo("#tl8",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},7.40);
+tl.fromTo("#ck8",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},7.50);
+tl.set("#cnt",{textContent:"9"},7.55);
+tl.fromTo("#tl9",{scaleY:1},{scaleY:1.04,duration:0.12,yoyo:true,repeat:1,ease:"power2.out",transformOrigin:"50% 100%"},8.25);
+tl.fromTo("#ck9",{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.2)"},8.35);
+tl.set("#cnt",{textContent:"10"},8.40);
+tl.to(["#ck0","#ck1","#ck2","#ck3","#ck4","#ck5","#ck6","#ck7","#ck8","#ck9"],{opacity:0,scale:0.6,duration:0.25,stagger:0.03,ease:"power2.in"},11.00);
+tl.set("#cnt",{textContent:"0"},11.50);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

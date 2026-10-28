@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "historyId": "b4c04cf1-bac8-4ff2-846f-529fb28cf57e",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/BitcountGridSingle_600SemiBold.ttf": {
+      "hash": "6306e5f8e73af288260c896b4bb9c352bcd965c1190914b47c8efea9afcb6465",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b4c04cf1-bac8-4ff2-846f-529fb28cf57e\\blobs\\63\\6306e5f8e73af288260c896b4bb9c352bcd965c1190914b47c8efea9afcb6465"
+    },
+    "assets/Urbanist_500Medium.ttf": {
+      "hash": "fe0ee819193663ccffa3de5a81b8ecd9aa16d29d39892a53fb0394a43698f7ec",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b4c04cf1-bac8-4ff2-846f-529fb28cf57e\\blobs\\fe\\fe0ee819193663ccffa3de5a81b8ecd9aa16d29d39892a53fb0394a43698f7ec"
+    },
+    "assets/Urbanist_700Bold.ttf": {
+      "hash": "c06728d590de58ab0ccf39c4ea80428b2976355239f2b9e025095bc065d297e9",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b4c04cf1-bac8-4ff2-846f-529fb28cf57e\\blobs\\c0\\c06728d590de58ab0ccf39c4ea80428b2976355239f2b9e025095bc065d297e9"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b4c04cf1-bac8-4ff2-846f-529fb28cf57e\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "eb47322516f1c2a34961b8fcd0d08c0a519a72a8aa262ca6d80d1cb09c464045",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b4c04cf1-bac8-4ff2-846f-529fb28cf57e\\blobs\\eb\\eb47322516f1c2a34961b8fcd0d08c0a519a72a8aa262ca6d80d1cb09c464045"
+    },
+    "meta.json": {
+      "hash": "4839a21216c3d5324acad4b40f41536407355f5393fc26d3b4fc594577666163",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b4c04cf1-bac8-4ff2-846f-529fb28cf57e\\blobs\\48\\4839a21216c3d5324acad4b40f41536407355f5393fc26d3b4fc594577666163"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "0b9d5416-02df-4ad7-9750-2f9ccb2d1b77-1"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "0b9d5416-02df-4ad7-9750-2f9ccb2d1b77-0",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\sostieni\\.hyperframes\\artifacts\\snapshots\\e70a6210-2050-48e9-b97d-471e5ad490c3\\frame-00-at-6s.png",
+        "time": 6,
+        "metadata": {
+          "width": 822,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190321620,
+        "contentHash": "d7acdbf8ab1940da3b2f26fe04fb05407eb493cc8b8f7cd7f7fe90c1280974f3",
+        "revision": null,
+        "inputFingerprint": "e32cfc6659f52463ccceca473675ec14c8199609f48574afccea2d04d00b73a7",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "0b9d5416-02df-4ad7-9750-2f9ccb2d1b77-1",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\sostieni\\.hyperframes\\artifacts\\snapshots\\e70a6210-2050-48e9-b97d-471e5ad490c3\\frame-01-at-11.64s.png",
+        "time": 11.64,
+        "metadata": {
+          "width": 822,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190321620,
+        "contentHash": "e16e7f80284ab1759ce34f85eafa9a54c29d9d76501cea6341e6db25d84366a9",
+        "revision": null,
+        "inputFingerprint": "e32cfc6659f52463ccceca473675ec14c8199609f48574afccea2d04d00b73a7",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "d19d69c4-8833-422f-ac0f-8e2385ae85ce",
+      "completedAt": 1793190369404,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cityfix\\render\\sostieni.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

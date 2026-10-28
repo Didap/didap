@@ -13,6 +13,66 @@ tags:
 featured: true
 order: 3
 status: pilot
+scope: Full-stack design and development
+stack: Expo, Vue 3, NestJS, PostgreSQL
+lede: The citizen reports, the municipality assigns, the supplier fixes. Every step stays on record.
+hero:
+  src: /covers/cityfix-hero.mp4
+  poster: /covers/cityfix-hero-poster.webp
+  srcMobile: /covers/cityfix-hero-mobile.mp4
+  posterMobile: /covers/cityfix-hero-mobile-poster.webp
+  alt: The map of Brindisi drawn in blue like a technical drawing, with report pins appearing one after another on the streets of the centre
+intro: "CityFix is the platform for looking after a city. The citizen opens the app, answers a few questions and sends the location and a photo of a pothole, a dead street light or a broken bench. The municipality receives it in the back office, acknowledges it and assigns it to a supplier. The supplier does the work and closes it. Every status change reaches the phone of the person who reported it."
+challenge:
+  title: Eight thousand municipalities, one database.
+  body: "Every municipality is a separate authority: its own operators, its own suppliers, its own reports. One deployment has to serve all of them without a single record crossing from one to another. Every row carries its municipality and PostgreSQL enforces the isolation with Row Level Security, underneath the application code. The ISTAT registry of every Italian municipality is already loaded."
+features:
+  title: From the pothole in the street to the closed job.
+  items:
+    - name: Guided reporting
+      desc: A short conversation. Location, photo, type of problem and send, in under a minute.
+    - name: No duplicates
+      desc: "Before sending, the app shows nearby reports: you can back the one that is already there."
+    - name: Status always visible
+      desc: Sent, acknowledged, assigned, completed. The citizen sees every step.
+    - name: Municipal back office
+      desc: Open and overdue reports, grouped by place, on the map and in a table.
+    - name: Suppliers
+      desc: Applications, job assignment, documents and reviews.
+    - name: Neighbourhoods and notices
+      desc: The municipality's zones from OpenStreetMap and notices for one zone or the whole city.
+model: The app is free for citizens. The municipality pays an annual licence based on its population, covering operators, suppliers and reports with no limits. One tool for the whole life of a report, instead of emails, forms and spreadsheets.
+next: bin-or-deal
+media:
+  pair:
+    - src: /covers/cityfix-logo.svg
+      alt: The CityFix logo
+    - src: /covers/cityfix-segnala.mp4
+      poster: /covers/cityfix-segnala-poster.webp
+      alt: "Guided reporting in the CityFix app: the bot asks where the problem is, the location, the photo and the type come in, then Invia sends the report to the municipality"
+  wide:
+    src: /covers/cityfix-backoffice.mp4
+    poster: /covers/cityfix-backoffice-poster.webp
+    alt: "The back office of the Comune di Brindisi: a new report lands at the top of the open list, the operator acknowledges it, assigns it to a supplier and the In corso count goes up"
+  feature:
+    - src: /covers/cityfix-mappa.mp4
+      poster: /covers/cityfix-mappa-poster.webp
+      srcMobile: /covers/cityfix-mappa-mobile.mp4
+      posterMobile: /covers/cityfix-mappa-mobile-poster.webp
+      alt: "The report map in the CityFix app: blue pins on the streets of Brindisi, one lifts and opens its card, and the bar button turns from Segnala ora to Sostieni"
+    - src: /covers/cityfix-stato.mp4
+      poster: /covers/cityfix-stato-poster.webp
+      alt: "A report in detail: the four status pixels fill one at a time, from Inviata to Completata, while the history grows"
+  triple:
+    - src: /covers/cityfix-chiusura.mp4
+      poster: /covers/cityfix-chiusura-poster.webp
+      alt: "The supplier closes the job: the photo of the pothole wipes into the photo of the new asphalt and a Completata stamp lands"
+    - src: /covers/cityfix-sostieni.mp4
+      poster: /covers/cityfix-sostieni-poster.webp
+      alt: "Backing a report: someone who sees the same pothole taps Sostieni, the button turns to Sostenuta, one more avatar joins and the count goes to 7 people"
+    - src: /covers/cityfix-avviso.mp4
+      poster: /covers/cityfix-avviso-poster.webp
+      alt: "A notice from the municipality for the Centro neighbourhood: the zone draws itself on the map of Brindisi and the notice about water main works comes in, valid until 31 October"
 team:
   - barbara
   - william

@@ -1,0 +1,740 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"stage\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#stage",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\classifica\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"stage\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 8,
+    "findings": [
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "#p_lucciola_blu",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 893.77,
+          "top": 662.5,
+          "right": 907.94,
+          "bottom": 696.5,
+          "width": 14.17,
+          "height": 34
+        },
+        "containerSelector": "#r_parolaia",
+        "text": "6",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 893.77,
+          "y": 662.5,
+          "width": 14.17,
+          "height": 34
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 3.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.333
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "#r_lucciola_blu > span:nth-of-type(3)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 987.94,
+          "top": 658.5,
+          "right": 1141.3,
+          "bottom": 700.5,
+          "width": 153.36,
+          "height": 42
+        },
+        "containerSelector": "#r_parolaia",
+        "text": "lucciola-blu",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 987.94,
+          "y": 658.5,
+          "width": 153.36,
+          "height": 42
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 3.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.333
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "#r_lucciola_blu > span:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1610.06,
+          "top": 664,
+          "right": 1683.72,
+          "bottom": 695,
+          "width": 73.66,
+          "height": 31
+        },
+        "containerSelector": "#r_parolaia",
+        "text": "03:18,5",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1610.06,
+          "y": 664,
+          "width": 73.66,
+          "height": 31
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 3.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.333
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "#r_lucciola_blu > span:nth-of-type(5)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1701.72,
+          "top": 658.5,
+          "right": 1770.52,
+          "bottom": 700.5,
+          "width": 68.8,
+          "height": 42
+        },
+        "containerSelector": "#r_parolaia",
+        "text": "1000",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1701.72,
+          "y": 658.5,
+          "width": 68.8,
+          "height": 42
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 3.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.333
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 7.333,
+        "selector": "#p_cicerchia",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 893.55,
+          "top": 586.5,
+          "right": 907.94,
+          "bottom": 620.5,
+          "width": 14.39,
+          "height": 34
+        },
+        "containerSelector": "#r_rebus_rosso",
+        "text": "5",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 893.55,
+          "y": 586.5,
+          "width": 14.39,
+          "height": 34
+        },
+        "firstSeen": 7.333,
+        "lastSeen": 7.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.333
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 7.333,
+        "selector": "#r_cicerchia > span:nth-of-type(3)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 987.94,
+          "top": 582.5,
+          "right": 1105.52,
+          "bottom": 624.5,
+          "width": 117.58,
+          "height": 42
+        },
+        "containerSelector": "#r_rebus_rosso",
+        "text": "cicerchia",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 987.94,
+          "y": 582.5,
+          "width": 117.58,
+          "height": 42
+        },
+        "firstSeen": 7.333,
+        "lastSeen": 7.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.333
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 7.333,
+        "selector": "#r_cicerchia > span:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1605.11,
+          "top": 588,
+          "right": 1683.72,
+          "bottom": 619,
+          "width": 78.61,
+          "height": 31
+        },
+        "containerSelector": "#r_rebus_rosso",
+        "text": "03:02,9",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1605.11,
+          "y": 588,
+          "width": 78.61,
+          "height": 31
+        },
+        "firstSeen": 7.333,
+        "lastSeen": 7.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.333
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 7.333,
+        "selector": "#r_cicerchia > span:nth-of-type(5)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1701.72,
+          "top": 582.5,
+          "right": 1770.52,
+          "bottom": 624.5,
+          "width": 68.8,
+          "height": 42
+        },
+        "containerSelector": "#r_rebus_rosso",
+        "text": "1000",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1701.72,
+          "y": 582.5,
+          "width": 68.8,
+          "height": 42
+        },
+        "firstSeen": 7.333,
+        "lastSeen": 7.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.333
+        ]
+      }
+    ],
+    "duration": 12,
+    "samples": [
+      0.667,
+      2,
+      3.333,
+      4.667,
+      6,
+      7.333,
+      8.667,
+      10,
+      11.333
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 8,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0.667,
+      3.333,
+      6,
+      8.667,
+      11.333
+    ],
+    "checked": 189,
+    "passed": 189
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 9,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 23 text elements stay under it for 0.5 s or more, the smallest \"CRUCIVERBA · OGGI\" at 18 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "CRUCIVERBA · OGGI",
+        "selector": "div.lh > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 860,
+          "y": 244,
+          "width": 273.44,
+          "height": 26
+        },
+        "time": 0,
+        "times": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2.5,
+          2.5,
+          6.5,
+          6.5
+        ],
+        "fontPx": 18,
+        "floorPx": 28,
+        "seconds": 12,
+        "elements": [
+          {
+            "selector": "div.lh > span:nth-of-type(1)",
+            "text": "CRUCIVERBA · OGGI",
+            "fontPx": 18,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "div.lh > span:nth-of-type(2)",
+            "text": "313 GIOCATORI",
+            "fontPx": 18,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "div.sub",
+            "text": "OGGI · MERCOLEDÌ 28 OTTOBRE",
+            "fontPx": 20,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#r_vocale_muta > span:nth-of-type(4)",
+            "text": "02:21,4",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#r_orizzontale7 > span:nth-of-type(4)",
+            "text": "02:37,0",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#r_cicerchia > span:nth-of-type(4)",
+            "text": "03:02,9",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#r_pennino > span:nth-of-type(4)",
+            "text": "03:11,2",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#r_lucciola_blu > span:nth-of-type(4)",
+            "text": "03:18,5",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#r_tiralinee > span:nth-of-type(4)",
+            "text": "03:47,1",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#r_bisillabo > span:nth-of-type(4)",
+            "text": "04:26,8",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 7.375
+          },
+          {
+            "selector": "#r_enigma88 > span:nth-of-type(4)",
+            "text": "04:43,0",
+            "fontPx": 22,
+            "time": 0,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#r_parolaia > span:nth-of-type(4)",
+            "text": "02:58,7",
+            "fontPx": 22,
+            "time": 2.5,
+            "seconds": 8.25
+          },
+          {
+            "selector": "#r_rebus_rosso > span:nth-of-type(4)",
+            "text": "02:14,3",
+            "fontPx": 22,
+            "time": 6.5,
+            "seconds": 4.25
+          },
+          {
+            "selector": "#p_vocale_muta",
+            "text": "1",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#p_orizzontale7",
+            "text": "2",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#p_cicerchia",
+            "text": "3",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#p_pennino",
+            "text": "4",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#p_lucciola_blu",
+            "text": "5",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#p_tiralinee",
+            "text": "6",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 12
+          },
+          {
+            "selector": "#p_bisillabo",
+            "text": "7",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 7.375
+          },
+          {
+            "selector": "#p_enigma88",
+            "text": "8",
+            "fontPx": 24,
+            "time": 0,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#p_parolaia",
+            "text": "9",
+            "fontPx": 24,
+            "time": 2.5,
+            "seconds": 8.25
+          },
+          {
+            "selector": "#p_rebus_rosso",
+            "text": "10",
+            "fontPx": 24,
+            "time": 6.5,
+            "seconds": 4.25
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"7\" (1 word) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "7",
+        "selector": "#p_bisillabo",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 895.67,
+          "y": 823.95,
+          "width": 12.269999999999982,
+          "height": 34
+        },
+        "time": 11.203,
+        "words": 1,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"bisillabo\" (1 word) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "bisillabo",
+        "selector": "#r_bisillabo > span:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 987.94,
+          "y": 819.95,
+          "width": 113.82999999999993,
+          "height": 42
+        },
+        "time": 11.203,
+        "words": 1,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"04:26,8\" (3 words) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "04:26,8",
+        "selector": "#r_bisillabo > span:nth-of-type(4)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1606.53,
+          "y": 825.45,
+          "width": 77.19000000000005,
+          "height": 31
+        },
+        "time": 11.203,
+        "words": 3,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"925\" (1 word) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "925",
+        "selector": "#r_bisillabo > span:nth-of-type(5)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1708.36,
+          "y": 819.95,
+          "width": 53.6400000000001,
+          "height": 42
+        },
+        "time": 11.203,
+        "words": 1,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"8\" (1 word) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "8",
+        "selector": "#p_enigma88",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 893.94,
+          "y": 899.95,
+          "width": 14,
+          "height": 34
+        },
+        "time": 11.203,
+        "words": 1,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"enigma88\" (1 word) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "enigma88",
+        "selector": "#r_enigma88 > span:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 987.94,
+          "y": 895.95,
+          "width": 135.1199999999999,
+          "height": 42
+        },
+        "time": 11.203,
+        "words": 1,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"04:43,0\" (3 words) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "04:43,0",
+        "selector": "#r_enigma88 > span:nth-of-type(4)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1606.67,
+          "y": 901.45,
+          "width": 77.04999999999995,
+          "height": 31
+        },
+        "time": 11.203,
+        "words": 3,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"907\" (1 word) is on screen 0.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "907",
+        "selector": "#r_enigma88 > span:nth-of-type(5)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1710.13,
+          "y": 895.95,
+          "width": 51.86999999999989,
+          "height": 42
+        },
+        "time": 11.203,
+        "words": 1,
+        "seconds": 0.801,
+        "floorSeconds": 2
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 96
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

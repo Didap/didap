@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=822, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/bod.css" />
+    <link rel="stylesheet" href="assets/cards.css" />
+    <style>
+      html, body { width: 822px; height: 1080px; }
+      #root { position: relative; width: 100%; height: 100%; background: var(--paper); overflow: hidden; }
+      #stage { position: absolute; inset: 0; zoom: 2; padding: 36px 20px; }
+      h2 { font-family: "BOD Display", serif; font-weight: 900; font-size: 34px; letter-spacing: -0.04em; line-height: 0.95; margin: 8px 0 22px; }
+      h2 em { font-family: "BOD Display", serif; font-style: italic; font-weight: 300; color: var(--ink-muted); }
+      .sw { position: relative; }
+      .sw > .v { position: absolute; left: 0; top: 0; white-space: nowrap; }
+      .bx { position: relative; width: 84px; height: 17px; }
+      .bx .badge { position: absolute; right: 0; top: 0; }
+      .card { height: 130px; }
+      .thumb { width: 84px; }
+      .body { padding: 12px 14px; }
+      .title { font-size: 15px; }
+      .price { font-size: 22px; }
+      .bl { position: absolute; left: -6px; top: -2px; bottom: -2px; width: 6px; }
+      #cursor { position: absolute; left: 0; top: 0; width: 22px; height: 22px; z-index: 10; }
+      .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+      .pill { position: relative; border: 2px solid var(--ink); background: var(--surface); font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 8px; }
+      .pill i { position: absolute; inset: -2px; background: var(--ink); color: var(--paper); font-style: normal; padding: 8px 10px; }
+      .lot { display: inline-flex; gap: 6px; align-items: center; background: rgba(166,48,42,0.15); border: 2px solid var(--bin); color: var(--bin); padding: 4px 8px; font-family: "BOD Mono", monospace; font-weight: 700; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+      .chk { display: flex; align-items: center; gap: 8px; border: 2px solid var(--ink); background: var(--paper-deep); padding: 10px 12px; margin-bottom: 18px; font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+      .box { position: relative; width: 16px; height: 16px; border: 2px solid var(--ink); background: var(--surface); }
+      .box i { position: absolute; inset: 1px; background: var(--ink); color: var(--paper); font-style: normal; font-size: 10px; line-height: 10px; text-align: center; }
+      .rm { border-top: 3px double var(--ink); padding-top: 12px; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+      .rm .nm { font-family: "BOD Display", serif; font-weight: 700; font-size: 15px; letter-spacing: -0.03em; margin-top: 4px; height: 20px; width: 230px; }
+      .rm .avg { font-family: "BOD Mono", monospace; font-weight: 800; font-size: 24px; height: 30px; width: 110px; }
+      .rm .avg .v { right: 0; left: auto; }
+      .cbtn { display: inline-block; margin-top: 8px; border: 2px solid var(--ink); padding: 4px 8px; font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--paper); }
+      .cand { border: 2px solid var(--ink); background: var(--surface); margin-bottom: 14px; }
+      .cand div { display: flex; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--line); font-family: "BOD Display", serif; font-weight: 700; font-size: 13px; letter-spacing: -0.02em; }
+      .cand div:last-child { border-bottom: 0; }
+      .cand b { font-family: "BOD Mono", monospace; font-size: 12px; }
+      .cand .hd { font-family: "BOD Mono", monospace; font-weight: 400; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="822" data-height="1080">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap>
+
+        <div class="kicker">Il match del catalogo</div>
+        <h2>Non è questo?<br /><em>Cambia.</em></h2>
+        <div class="rm">
+          <div><div class="kicker">Prezzo di riferimento · cardmarket</div>
+            <div class="nm sw"><span class="v" id="nm0">Charizard, Base Set (Unlimited) #4</span><span class="v" id="nm1">Charizard, Base Set (Shadowless) #4</span></div>
+            <span class="cbtn">Non è questo? Cambia →</span></div>
+          <div class="avg sw"><span class="v" id="av0">185 €</span><span class="v" id="av1">480 €</span></div>
+        </div>
+        <div class="cand" id="cand" style="position:absolute;left:20px;right:20px;top:255px;z-index:5"><div class="hd">Altri riferimenti per questa ricerca</div><div id="c1">Charizard, Base Set (Shadowless) #4<b>480 €</b></div><div>Charizard, Base Set 1st Edition #4<b>4.200 €</b></div></div>
+        <article class="card" id="card" style="border-left-color:var(--bin)">
+          <div class="bl" id="blg" style="background:var(--deal)"></div>
+          <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="gr" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(170,70%,62%)"/><stop offset="1" stop-color="hsl(200,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#gr)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(170,90%,82%)" opacity=".7"/></svg><div class="plat mono">Wallapop</div></div>
+          <div class="body">
+            <div class="row1"><div class="title">Charizard shadowless holo NM</div><span class="bx"><span class="badge bin" id="bb">BIN +13%</span><span class="badge deal" id="bd">DEAL −56%</span></span></div>
+            <div class="meta"><span>live</span>·<span>Valencia</span>·<span>near-mint</span></div>
+            <div class="prow"><div class="price">199 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v sw" style="width:50px;height:18px;margin-left:auto"><span class="v" id="r0" style="right:0;left:auto">176 €</span><span class="v" id="r1" style="right:0;left:auto">456 €</span></div></div></div>
+          </div>
+        </article>
+        <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2 L3 19 L8 14.5 L11.5 22 L14.5 20.6 L11 13.4 L18 13.4 Z" fill="#15120d" stroke="#f4eedb" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // t=0 and t=12: auto-match on Unlimited, the Shadowless listing reads as Bin
+      tl.set(["#nm1", "#av1", "#bd", "#blg", "#r1", "#cand"], { opacity: 0 }, 0);
+      tl.set(["#nm0", "#av0", "#bb", "#r0"], { opacity: 1 }, 0);
+      tl.set("#cursor", { x: 300, y: 470 }, 0);
+      // open the candidates
+      tl.to("#cursor", { x: 120, y: 166, duration: 0.8, ease: "power3.inOut" }, 0.6);
+      tl.to("#cursor", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 1.45);
+      tl.set("#cand", { opacity: 0, y: -6 }, 1.55);
+      tl.to("#cand", { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 1.55);
+      // pick Shadowless
+      tl.to("#cursor", { x: 140, y: 290, duration: 0.6, ease: "power3.inOut" }, 2.3);
+      tl.to("#cursor", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 3.0);
+      tl.to("#cand", { opacity: 0, duration: 0.2 }, 3.15);
+      tl.to(["#nm0", "#av0"], { opacity: 0, duration: 0.15 }, 3.2);
+      tl.to(["#nm1", "#av1"], { opacity: 1, duration: 0.25 }, 3.3);
+      tl.to("#r0", { opacity: 0, duration: 0.15 }, 3.6);
+      tl.fromTo("#r1", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out", immediateRender: false }, 3.65);
+      tl.to("#bb", { opacity: 0, duration: 0.15 }, 3.9);
+      tl.set("#bd", { opacity: 0, scale: 1.4, filter: "blur(4px)" }, 4.0);
+      tl.to("#bd", { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "power4.out" }, 4.0);
+      tl.to("#blg", { opacity: 1, duration: 0.3 }, 4.0);
+      tl.to("#cursor", { x: 300, y: 470, duration: 1.0, ease: "power3.inOut" }, 4.4);
+      // back to the auto-match for the loop
+      tl.to(["#nm1", "#av1", "#r1", "#bd", "#blg"], { opacity: 0, duration: 0.25 }, 10.8);
+      tl.to(["#nm0", "#av0", "#r0", "#bb"], { opacity: 1, duration: 0.3 }, 11.0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

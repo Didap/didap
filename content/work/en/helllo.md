@@ -14,8 +14,11 @@ platform: iOS and Android app
 notify: true
 lede: "The job app where both sides choose each other. The first step isn’t a CV: it’s a hello."
 hero:
-  color: red
-  label: false
+  src: /covers/helllo-hero.mp4
+  poster: /covers/helllo-hero-poster.webp
+  srcMobile: /covers/helllo-hero-mobile.mp4
+  posterMobile: /covers/helllo-hero-mobile-poster.webp
+  alt: "A red line draws three l letters in one stroke, like an old phone cord, between two people talking on the phone, and the words È un helllo! appear"
 intro: "Helllo connects people looking for work with the companies that are hiring. Job seekers browse the openings, companies browse the people: if both say Helllo, it’s a match and the chat opens straight away, with icebreaker questions ready to go. No applications sent into the void, no “we’ll let you know”."
 challenge:
   title: Three l’s, one single thread.

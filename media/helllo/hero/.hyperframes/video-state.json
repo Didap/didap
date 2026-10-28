@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "historyId": "f37e3c79-16e9-4916-a6ba-9158ac9e7a3e",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\f37e3c79-16e9-4916-a6ba-9158ac9e7a3e\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "50f9cce0c7ab262a23f52c5445eb796c10758f925ea81a1821031c05b344f6a8",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\f37e3c79-16e9-4916-a6ba-9158ac9e7a3e\\blobs\\50\\50f9cce0c7ab262a23f52c5445eb796c10758f925ea81a1821031c05b344f6a8"
+    },
+    "meta.json": {
+      "hash": "231c91ad406d6e3c2aa7f863fbebcbca6e93db6c34985316befc0dad81833e93",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\f37e3c79-16e9-4916-a6ba-9158ac9e7a3e\\blobs\\23\\231c91ad406d6e3c2aa7f863fbebcbca6e93db6c34985316befc0dad81833e93"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "d034e5ca-f0e1-4254-a0e0-9729bfa6c5b6",
+      "completedAt": 1793191799795,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\helllo\\hero.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

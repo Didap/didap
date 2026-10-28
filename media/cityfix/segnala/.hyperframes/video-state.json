@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "historyId": "34cdc6f8-329b-4f74-918a-cc0e4230ce58",
+  "currentRevision": "cd4379d0-4a5a-47f5-8041-3985a4027150",
+  "pendingChanges": false,
+  "files": {
+    "assets/BitcountGridSingle_600SemiBold.ttf": {
+      "hash": "6306e5f8e73af288260c896b4bb9c352bcd965c1190914b47c8efea9afcb6465",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\63\\6306e5f8e73af288260c896b4bb9c352bcd965c1190914b47c8efea9afcb6465"
+    },
+    "assets/Urbanist_400Regular.ttf": {
+      "hash": "1d041125f5e805d7a14b620425a8f5b895bb89c33f5a982d95a69ad6ead1f1ad",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\1d\\1d041125f5e805d7a14b620425a8f5b895bb89c33f5a982d95a69ad6ead1f1ad"
+    },
+    "assets/Urbanist_500Medium.ttf": {
+      "hash": "fe0ee819193663ccffa3de5a81b8ecd9aa16d29d39892a53fb0394a43698f7ec",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\fe\\fe0ee819193663ccffa3de5a81b8ecd9aa16d29d39892a53fb0394a43698f7ec"
+    },
+    "assets/Urbanist_700Bold.ttf": {
+      "hash": "c06728d590de58ab0ccf39c4ea80428b2976355239f2b9e025095bc065d297e9",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\c0\\c06728d590de58ab0ccf39c4ea80428b2976355239f2b9e025095bc065d297e9"
+    },
+    "assets/brindisi.svg": {
+      "hash": "d0af925554f0a9ba59a4f9874f9f543cd258649f34478a77f52246a0a0882992",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\d0\\d0af925554f0a9ba59a4f9874f9f543cd258649f34478a77f52246a0a0882992"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "6bb4279a9e82eefd4bb98c72ed22af9fcaf93e2399557f17fa775bbc9cd03fcd",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\6b\\6bb4279a9e82eefd4bb98c72ed22af9fcaf93e2399557f17fa775bbc9cd03fcd"
+    },
+    "meta.json": {
+      "hash": "0565038de58db037a75d980901ade821e29fd6e13cbce814c8581a6975bd0335",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\05\\0565038de58db037a75d980901ade821e29fd6e13cbce814c8581a6975bd0335"
+    }
+  },
+  "revisions": {
+    "cd4379d0-4a5a-47f5-8041-3985a4027150": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793189891587,
+      "endedAt": 1793189891588,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\c4\\c44b26cce901198937bb0d290a6d4924f2b926b11ba719aa2e270a278f8b47f4",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\34cdc6f8-329b-4f74-918a-cc0e4230ce58\\blobs\\6b\\6bb4279a9e82eefd4bb98c72ed22af9fcaf93e2399557f17fa775bbc9cd03fcd"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "fba5938f-a6e9-4e19-9587-d994f4119d92"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "fba5938f-a6e9-4e19-9587-d994f4119d92",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\segnala\\.hyperframes\\artifacts\\checks\\fba5938f-a6e9-4e19-9587-d994f4119d92.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793189872583,
+        "contentHash": "17cd77a0d7560ee3d683bce6990c13c5932d5085ffd84f4a0302601001ace8d6",
+        "revision": null,
+        "inputFingerprint": "6ceeab54ccb359e73793fe44d0fe33b8fd5fbaf95a0f63b37025a0ce0eb7e1ee",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "a7b490ff-6cb5-4cad-ad4b-f3e80ab2dd69-3"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "a7b490ff-6cb5-4cad-ad4b-f3e80ab2dd69-0",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\segnala\\.hyperframes\\artifacts\\snapshots\\7dc6aa2d-ae52-48c2-8a11-28f4b3aaf8bc\\frame-00-at-5.2s.png",
+        "time": 5.2,
+        "metadata": {
+          "width": 1256,
+          "height": 1520,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793189875658,
+        "contentHash": "5ee7fcf2d286060018bf17f163e68ed7196e9f6a152ba757e8b6a78768c9683c",
+        "revision": null,
+        "inputFingerprint": "6ceeab54ccb359e73793fe44d0fe33b8fd5fbaf95a0f63b37025a0ce0eb7e1ee",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "a7b490ff-6cb5-4cad-ad4b-f3e80ab2dd69-1",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\segnala\\.hyperframes\\artifacts\\snapshots\\7dc6aa2d-ae52-48c2-8a11-28f4b3aaf8bc\\frame-01-at-9.6s.png",
+        "time": 9.6,
+        "metadata": {
+          "width": 1256,
+          "height": 1520,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793189875658,
+        "contentHash": "339344da71f25721f4c78ee7d3b2daa3fb338031a4a1cb507f7b12e03f18fffe",
+        "revision": null,
+        "inputFingerprint": "6ceeab54ccb359e73793fe44d0fe33b8fd5fbaf95a0f63b37025a0ce0eb7e1ee",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "a7b490ff-6cb5-4cad-ad4b-f3e80ab2dd69-2",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\segnala\\.hyperframes\\artifacts\\snapshots\\7dc6aa2d-ae52-48c2-8a11-28f4b3aaf8bc\\frame-02-at-11.5s.png",
+        "time": 11.5,
+        "metadata": {
+          "width": 1256,
+          "height": 1520,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793189875658,
+        "contentHash": "fd9c55bdc8ff76dc3c747076d889df01f599b0bbcd7f3f361f64ccd1f0447580",
+        "revision": null,
+        "inputFingerprint": "6ceeab54ccb359e73793fe44d0fe33b8fd5fbaf95a0f63b37025a0ce0eb7e1ee",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "a7b490ff-6cb5-4cad-ad4b-f3e80ab2dd69-3",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\segnala\\.hyperframes\\artifacts\\snapshots\\7dc6aa2d-ae52-48c2-8a11-28f4b3aaf8bc\\frame-03-at-12.61s.png",
+        "time": 12.61,
+        "metadata": {
+          "width": 1256,
+          "height": 1520,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793189875658,
+        "contentHash": "2729bd81258b137bd08abea37ae594ba8f47ee8778833c5f23eb402d7d75df66",
+        "revision": null,
+        "inputFingerprint": "6ceeab54ccb359e73793fe44d0fe33b8fd5fbaf95a0f63b37025a0ce0eb7e1ee",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "160f3913-53cd-4f42-91d1-a1c81e21d53c",
+      "completedAt": 1793189907978,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cityfix\\render\\segnala.mp4",
+      "status": "completed",
+      "revision": "cd4379d0-4a5a-47f5-8041-3985a4027150"
+    },
+    "retainedRevisions": [
+      "cd4379d0-4a5a-47f5-8041-3985a4027150"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

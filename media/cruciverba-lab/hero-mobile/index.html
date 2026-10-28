@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=960, height=576" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900;font-style:normal}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var-italic.woff2') format('woff2');font-weight:100 900;font-style:italic}
+:root{--paper:#FCFCF9;--ink:#1F130E;--mute:#6D6059;--soft:#473A33;--brand:#E93F29;--brand-ink:#BE140E;--brand-soft:#FBE7E2;--tile:#F7C3B4;--hair:#DAD7D2}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:960px;height:576px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink)}
+.mast{position:absolute;left:40px;top:26px;display:flex;align-items:baseline;font-family:Caprasimo;font-size:30px;line-height:1}
+.mast .sq{display:inline-block;width:.56em;height:.56em;background:var(--ink);border-radius:.09em;margin:0 .08em;align-self:center}
+.mast .lab{font-family:Piazzolla;font-weight:500;font-size:.34em;letter-spacing:.3em;margin-left:.55em;color:var(--soft)}
+.date{position:absolute;right:40px;top:34px;font-style:italic;font-size:17px;color:var(--soft)}
+.rule{position:absolute;left:0;right:0;top:76px;height:1px;background:var(--hair)}
+.grid{position:absolute;left:280px;top:96px;width:400px;height:440px;outline:2px solid var(--ink)}
+.c{position:absolute;width:41px;height:41px;border:1px solid var(--ink)}
+.blk{position:absolute;background:var(--ink);border-radius:4.8px;z-index:3}
+.n{position:absolute;font-size:8.0px;color:var(--mute);font-weight:500;z-index:3;line-height:1}
+.L{position:absolute;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20.8px;z-index:3;color:var(--ink)}
+.wb{position:absolute;background:var(--brand-soft);z-index:1}
+.cur{position:absolute;left:0;top:0;width:40px;height:40px;background:var(--tile);z-index:2}
+.panel{position:absolute;left:1100px;top:96px;width:-290px}
+.head{display:flex;align-items:center;gap:24px;font-weight:600;font-size:22px;letter-spacing:.3em;margin-bottom:22px}
+.head:before,.head:after{content:"";flex:1;height:1px;background:var(--ink)}
+.cl{position:relative;display:flex;gap:18px;font-size:27px;line-height:1.3;padding:14px 18px;color:var(--soft)}
+.cl b{font-weight:600;color:var(--ink);min-width:2.2ch;text-align:right}
+.hl{position:absolute;left:0;right:0;top:0;height:64px;background:var(--brand-soft)}
+.mclue{position:absolute;left:0;right:0;top:496px;height:80px;background:var(--brand-soft)}
+.mc{position:absolute;left:40px;right:40px;top:14px;font-size:19px;line-height:1.3}
+.mc .k{font-weight:600;color:var(--brand-ink);margin-right:10px}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="960" data-height="576">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap>
+<div class="mast"><span>Cruciverb</span><span class="sq"></span><span class="lab">LAB.</span></div>
+<div class="date">28 ottobre 2026</div><div class="rule"></div>
+<div class="grid" id="grid">
+<div class="wb" id="wb0" style="left:0px;top:0px;width:120px;height:40px;opacity:0"></div>
+<div class="wb" id="wb1" style="left:160px;top:0px;width:120px;height:40px;opacity:0"></div>
+<div class="wb" id="wb2" style="left:0px;top:40px;width:120px;height:40px;opacity:0"></div>
+<div class="wb" id="wb3" style="left:160px;top:40px;width:120px;height:40px;opacity:0"></div>
+<div class="wb" id="wb4" style="left:0px;top:80px;width:280px;height:40px;opacity:0"></div>
+<div class="wb" id="wb5" style="left:280px;top:120px;width:120px;height:40px;opacity:0"></div>
+<div class="wb" id="wb6" style="left:0px;top:160px;width:200px;height:40px;opacity:0"></div>
+<div class="wb" id="wb7" style="left:240px;top:160px;width:160px;height:40px;opacity:0"></div>
+<div class="wb" id="wb8" style="left:200px;top:200px;width:200px;height:40px;opacity:0"></div>
+<div class="cur" id="cur"></div>
+<div class="c" style="left:-1px;top:-1px"></div>
+<span class="n" style="left:3.2px;top:2.8px">1</span>
+<span class="L" id="l0_0" style="left:0px;top:2.4px;width:40px;height:40px;opacity:0">S</span>
+<div class="c" style="left:39px;top:-1px"></div>
+<span class="n" style="left:43.2px;top:2.8px">2</span>
+<span class="L" id="l0_1" style="left:40px;top:2.4px;width:40px;height:40px;opacity:0">O</span>
+<div class="c" style="left:79px;top:-1px"></div>
+<span class="n" style="left:83.2px;top:2.8px">3</span>
+<span class="L" id="l0_2" style="left:80px;top:2.4px;width:40px;height:40px;opacity:0">S</span>
+<div class="blk" style="left:123.2px;top:3.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:159px;top:-1px"></div>
+<span class="n" style="left:163.2px;top:2.8px">4</span>
+<span class="L" id="l0_4" style="left:160px;top:2.4px;width:40px;height:40px;opacity:0">A</span>
+<div class="c" style="left:199px;top:-1px"></div>
+<span class="n" style="left:203.2px;top:2.8px">5</span>
+<span class="L" id="l0_5" style="left:200px;top:2.4px;width:40px;height:40px;opacity:0">L</span>
+<div class="c" style="left:239px;top:-1px"></div>
+<span class="n" style="left:243.2px;top:2.8px">6</span>
+<span class="L" id="l0_6" style="left:240px;top:2.4px;width:40px;height:40px;opacity:0">A</span>
+<div class="blk" style="left:283.2px;top:3.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:323.2px;top:3.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:363.2px;top:3.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:-1px;top:39px"></div>
+<span class="n" style="left:3.2px;top:42.8px">7</span>
+<span class="L" id="l1_0" style="left:0px;top:42.4px;width:40px;height:40px;opacity:0">U</span>
+<div class="c" style="left:39px;top:39px"></div>
+<span class="L" id="l1_1" style="left:40px;top:42.4px;width:40px;height:40px;opacity:0">N</span>
+<div class="c" style="left:79px;top:39px"></div>
+<span class="L" id="l1_2" style="left:80px;top:42.4px;width:40px;height:40px;opacity:0">E</span>
+<div class="blk" style="left:123.2px;top:43.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:159px;top:39px"></div>
+<span class="n" style="left:163.2px;top:42.8px">8</span>
+<span class="L" id="l1_4" style="left:160px;top:42.4px;width:40px;height:40px;opacity:0">G</span>
+<div class="c" style="left:199px;top:39px"></div>
+<span class="L" id="l1_5" style="left:200px;top:42.4px;width:40px;height:40px;opacity:0">A</span>
+<div class="c" style="left:239px;top:39px"></div>
+<span class="L" id="l1_6" style="left:240px;top:42.4px;width:40px;height:40px;opacity:0">G</span>
+<div class="blk" style="left:283.2px;top:43.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:323.2px;top:43.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:363.2px;top:43.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:-1px;top:79px"></div>
+<span class="n" style="left:3.2px;top:82.8px">9</span>
+<span class="L" id="l2_0" style="left:0px;top:82.4px;width:40px;height:40px;opacity:0">A</span>
+<div class="c" style="left:39px;top:79px"></div>
+<span class="L" id="l2_1" style="left:40px;top:82.4px;width:40px;height:40px;opacity:0">G</span>
+<div class="c" style="left:79px;top:79px"></div>
+<span class="L" id="l2_2" style="left:80px;top:82.4px;width:40px;height:40px;opacity:0">I</span>
+<div class="c" style="left:119px;top:79px"></div>
+<span class="n" style="left:123.2px;top:82.8px">10</span>
+<span class="L" id="l2_3" style="left:120px;top:82.4px;width:40px;height:40px;opacity:0">V</span>
+<div class="c" style="left:159px;top:79px"></div>
+<span class="L" id="l2_4" style="left:160px;top:82.4px;width:40px;height:40px;opacity:0">A</span>
+<div class="c" style="left:199px;top:79px"></div>
+<span class="L" id="l2_5" style="left:200px;top:82.4px;width:40px;height:40px;opacity:0">M</span>
+<div class="c" style="left:239px;top:79px"></div>
+<span class="L" id="l2_6" style="left:240px;top:82.4px;width:40px;height:40px;opacity:0">O</span>
+<div class="blk" style="left:283.2px;top:83.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:323.2px;top:83.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:363.2px;top:83.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:3.2px;top:123.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:43.2px;top:123.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:83.2px;top:123.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:119px;top:119px"></div>
+<span class="n" style="left:123.2px;top:122.8px">11</span>
+<div class="c" style="left:159px;top:119px"></div>
+<div class="c" style="left:199px;top:119px"></div>
+<div class="blk" style="left:243.2px;top:123.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:279px;top:119px"></div>
+<span class="n" style="left:283.2px;top:122.8px">12</span>
+<span class="L" id="l3_7" style="left:280px;top:122.4px;width:40px;height:40px;opacity:0">F</span>
+<div class="c" style="left:319px;top:119px"></div>
+<span class="n" style="left:323.2px;top:122.8px">13</span>
+<span class="L" id="l3_8" style="left:320px;top:122.4px;width:40px;height:40px;opacity:0">O</span>
+<div class="c" style="left:359px;top:119px"></div>
+<span class="n" style="left:363.2px;top:122.8px">14</span>
+<span class="L" id="l3_9" style="left:360px;top:122.4px;width:40px;height:40px;opacity:0">N</span>
+<div class="c" style="left:-1px;top:159px"></div>
+<span class="n" style="left:3.2px;top:162.8px">15</span>
+<span class="L" id="l4_0" style="left:0px;top:162.4px;width:40px;height:40px;opacity:0">C</span>
+<div class="c" style="left:39px;top:159px"></div>
+<span class="n" style="left:43.2px;top:162.8px">16</span>
+<span class="L" id="l4_1" style="left:40px;top:162.4px;width:40px;height:40px;opacity:0">O</span>
+<div class="c" style="left:79px;top:159px"></div>
+<span class="n" style="left:83.2px;top:162.8px">17</span>
+<span class="L" id="l4_2" style="left:80px;top:162.4px;width:40px;height:40px;opacity:0">P</span>
+<div class="c" style="left:119px;top:159px"></div>
+<span class="L" id="l4_3" style="left:120px;top:162.4px;width:40px;height:40px;opacity:0">P</span>
+<div class="c" style="left:159px;top:159px"></div>
+<span class="L" id="l4_4" style="left:160px;top:162.4px;width:40px;height:40px;opacity:0">E</span>
+<div class="blk" style="left:203.2px;top:163.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:239px;top:159px"></div>
+<span class="n" style="left:243.2px;top:162.8px">18</span>
+<span class="L" id="l4_6" style="left:240px;top:162.4px;width:40px;height:40px;opacity:0">V</span>
+<div class="c" style="left:279px;top:159px"></div>
+<span class="L" id="l4_7" style="left:280px;top:162.4px;width:40px;height:40px;opacity:0">O</span>
+<div class="c" style="left:319px;top:159px"></div>
+<span class="L" id="l4_8" style="left:320px;top:162.4px;width:40px;height:40px;opacity:0">L</span>
+<div class="c" style="left:359px;top:159px"></div>
+<span class="L" id="l4_9" style="left:360px;top:162.4px;width:40px;height:40px;opacity:0">O</span>
+<div class="c" style="left:-1px;top:199px"></div>
+<span class="n" style="left:3.2px;top:202.8px">19</span>
+<div class="c" style="left:39px;top:199px"></div>
+<div class="c" style="left:79px;top:199px"></div>
+<div class="blk" style="left:123.2px;top:203.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:163.2px;top:203.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:199px;top:199px"></div>
+<span class="n" style="left:203.2px;top:202.8px">20</span>
+<span class="L" id="l5_5" style="left:200px;top:202.4px;width:40px;height:40px;opacity:0">S</span>
+<div class="c" style="left:239px;top:199px"></div>
+<span class="L" id="l5_6" style="left:240px;top:202.4px;width:40px;height:40px;opacity:0">O</span>
+<div class="c" style="left:279px;top:199px"></div>
+<span class="L" id="l5_7" style="left:280px;top:202.4px;width:40px;height:40px;opacity:0">L</span>
+<div class="c" style="left:319px;top:199px"></div>
+<span class="L" id="l5_8" style="left:320px;top:202.4px;width:40px;height:40px;opacity:0">A</span>
+<div class="c" style="left:359px;top:199px"></div>
+<span class="L" id="l5_9" style="left:360px;top:202.4px;width:40px;height:40px;opacity:0">I</span>
+<div class="c" style="left:-1px;top:239px"></div>
+<span class="n" style="left:3.2px;top:242.8px">21</span>
+<span class="L" id="l6_0" style="left:0px;top:242.4px;width:40px;height:40px;opacity:1">N</span>
+<div class="c" style="left:39px;top:239px"></div>
+<span class="L" id="l6_1" style="left:40px;top:242.4px;width:40px;height:40px;opacity:1">A</span>
+<div class="c" style="left:79px;top:239px"></div>
+<span class="L" id="l6_2" style="left:80px;top:242.4px;width:40px;height:40px;opacity:1">T</span>
+<div class="c" style="left:119px;top:239px"></div>
+<span class="n" style="left:123.2px;top:242.8px">22</span>
+<span class="L" id="l6_3" style="left:120px;top:242.4px;width:40px;height:40px;opacity:1">A</span>
+<div class="blk" style="left:163.2px;top:243.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:199px;top:239px"></div>
+<span class="n" style="left:203.2px;top:242.8px">23</span>
+<span class="L" id="l6_5" style="left:200px;top:242.4px;width:40px;height:40px;opacity:1">T</span>
+<div class="c" style="left:239px;top:239px"></div>
+<span class="L" id="l6_6" style="left:240px;top:242.4px;width:40px;height:40px;opacity:1">I</span>
+<div class="c" style="left:279px;top:239px"></div>
+<span class="L" id="l6_7" style="left:280px;top:242.4px;width:40px;height:40px;opacity:1">C</span>
+<div class="blk" style="left:323.2px;top:243.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:363.2px;top:243.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:3.2px;top:283.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:43.2px;top:283.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:79px;top:279px"></div>
+<span class="n" style="left:83.2px;top:282.8px">24</span>
+<span class="L" id="l7_2" style="left:80px;top:282.4px;width:40px;height:40px;opacity:1">T</span>
+<div class="c" style="left:119px;top:279px"></div>
+<span class="L" id="l7_3" style="left:120px;top:282.4px;width:40px;height:40px;opacity:1">O</span>
+<div class="c" style="left:159px;top:279px"></div>
+<span class="n" style="left:163.2px;top:282.8px">25</span>
+<span class="L" id="l7_4" style="left:160px;top:282.4px;width:40px;height:40px;opacity:1">P</span>
+<div class="c" style="left:199px;top:279px"></div>
+<span class="L" id="l7_5" style="left:200px;top:282.4px;width:40px;height:40px;opacity:1">O</span>
+<div class="blk" style="left:243.2px;top:283.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:279px;top:279px"></div>
+<span class="n" style="left:283.2px;top:282.8px">26</span>
+<span class="L" id="l7_7" style="left:280px;top:282.4px;width:40px;height:40px;opacity:1">L</span>
+<div class="c" style="left:319px;top:279px"></div>
+<span class="n" style="left:323.2px;top:282.8px">27</span>
+<span class="L" id="l7_8" style="left:320px;top:282.4px;width:40px;height:40px;opacity:1">S</span>
+<div class="c" style="left:359px;top:279px"></div>
+<span class="n" style="left:363.2px;top:282.8px">28</span>
+<span class="L" id="l7_9" style="left:360px;top:282.4px;width:40px;height:40px;opacity:1">D</span>
+<div class="c" style="left:-1px;top:319px"></div>
+<span class="n" style="left:3.2px;top:322.8px">29</span>
+<span class="L" id="l8_0" style="left:0px;top:322.4px;width:40px;height:40px;opacity:1">O</span>
+<div class="c" style="left:39px;top:319px"></div>
+<span class="n" style="left:43.2px;top:322.8px">30</span>
+<span class="L" id="l8_1" style="left:40px;top:322.4px;width:40px;height:40px;opacity:1">D</span>
+<div class="c" style="left:79px;top:319px"></div>
+<span class="L" id="l8_2" style="left:80px;top:322.4px;width:40px;height:40px;opacity:1">O</span>
+<div class="c" style="left:119px;top:319px"></div>
+<span class="L" id="l8_3" style="left:120px;top:322.4px;width:40px;height:40px;opacity:1">R</span>
+<div class="c" style="left:159px;top:319px"></div>
+<span class="L" id="l8_4" style="left:160px;top:322.4px;width:40px;height:40px;opacity:1">I</span>
+<div class="blk" style="left:203.2px;top:323.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:239px;top:319px"></div>
+<span class="n" style="left:243.2px;top:322.8px">31</span>
+<span class="L" id="l8_6" style="left:240px;top:322.4px;width:40px;height:40px;opacity:1">B</span>
+<div class="c" style="left:279px;top:319px"></div>
+<span class="L" id="l8_7" style="left:280px;top:322.4px;width:40px;height:40px;opacity:1">O</span>
+<div class="c" style="left:319px;top:319px"></div>
+<span class="L" id="l8_8" style="left:320px;top:322.4px;width:40px;height:40px;opacity:1">I</span>
+<div class="c" style="left:359px;top:319px"></div>
+<span class="L" id="l8_9" style="left:360px;top:322.4px;width:40px;height:40px;opacity:1">A</span>
+<div class="c" style="left:-1px;top:359px"></div>
+<span class="n" style="left:3.2px;top:362.8px">32</span>
+<span class="L" id="l9_0" style="left:0px;top:362.4px;width:40px;height:40px;opacity:1">P</span>
+<div class="c" style="left:39px;top:359px"></div>
+<span class="L" id="l9_1" style="left:40px;top:362.4px;width:40px;height:40px;opacity:1">O</span>
+<div class="c" style="left:79px;top:359px"></div>
+<span class="L" id="l9_2" style="left:80px;top:362.4px;width:40px;height:40px;opacity:1">R</span>
+<div class="c" style="left:119px;top:359px"></div>
+<span class="L" id="l9_3" style="left:120px;top:362.4px;width:40px;height:40px;opacity:1">T</span>
+<div class="c" style="left:159px;top:359px"></div>
+<span class="L" id="l9_4" style="left:160px;top:362.4px;width:40px;height:40px;opacity:1">A</span>
+<div class="blk" style="left:203.2px;top:363.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:239px;top:359px"></div>
+<span class="n" style="left:243.2px;top:362.8px">33</span>
+<span class="L" id="l9_6" style="left:240px;top:362.4px;width:40px;height:40px;opacity:1">U</span>
+<div class="c" style="left:279px;top:359px"></div>
+<span class="L" id="l9_7" style="left:280px;top:362.4px;width:40px;height:40px;opacity:1">R</span>
+<div class="c" style="left:319px;top:359px"></div>
+<span class="L" id="l9_8" style="left:320px;top:362.4px;width:40px;height:40px;opacity:1">T</span>
+<div class="c" style="left:359px;top:359px"></div>
+<span class="L" id="l9_9" style="left:360px;top:362.4px;width:40px;height:40px;opacity:1">I</span>
+<div class="c" style="left:-1px;top:399px"></div>
+<span class="n" style="left:3.2px;top:402.8px">34</span>
+<span class="L" id="l10_0" style="left:0px;top:402.4px;width:40px;height:40px;opacity:1">S</span>
+<div class="c" style="left:39px;top:399px"></div>
+<span class="L" id="l10_1" style="left:40px;top:402.4px;width:40px;height:40px;opacity:1">C</span>
+<div class="c" style="left:79px;top:399px"></div>
+<span class="L" id="l10_2" style="left:80px;top:402.4px;width:40px;height:40px;opacity:1">I</span>
+<div class="c" style="left:119px;top:399px"></div>
+<span class="L" id="l10_3" style="left:120px;top:402.4px;width:40px;height:40px;opacity:1">E</span>
+<div class="blk" style="left:163.2px;top:403.2px;width:33.6px;height:33.6px"></div>
+<div class="blk" style="left:203.2px;top:403.2px;width:33.6px;height:33.6px"></div>
+<div class="c" style="left:239px;top:399px"></div>
+<span class="n" style="left:243.2px;top:402.8px">35</span>
+<span class="L" id="l10_6" style="left:240px;top:402.4px;width:40px;height:40px;opacity:1">M</span>
+<div class="c" style="left:279px;top:399px"></div>
+<span class="L" id="l10_7" style="left:280px;top:402.4px;width:40px;height:40px;opacity:1">I</span>
+<div class="c" style="left:319px;top:399px"></div>
+<span class="L" id="l10_8" style="left:320px;top:402.4px;width:40px;height:40px;opacity:1">O</span>
+<div class="blk" style="left:363.2px;top:403.2px;width:33.6px;height:33.6px"></div>
+</div>
+<div class="mclue">
+<div class="mc" id="mc0" style="opacity:1"><span class="k">1 Orizz.</span>Il naufrago lo traccia sulla spiaggia a lettere enormi (sigla)</div>
+<div class="mc" id="mc1" style="opacity:0"><span class="k">4 Orizz.</span>Sotto la propria, il maestro prende l&rsquo;allievo pi&ugrave; promettente</div>
+<div class="mc" id="mc2" style="opacity:0"><span class="k">7 Orizz.</span>Le ____ e le altre: tutte quante</div>
+<div class="mc" id="mc3" style="opacity:0"><span class="k">8 Orizz.</span>Il comico la prova cento volte perch&eacute; sembri improvvisata</div>
+<div class="mc" id="mc4" style="opacity:0"><span class="k">9 Orizz.</span>Passavamo dalle parole ai fatti</div>
+<div class="mc" id="mc5" style="opacity:0"><span class="k">12 Orizz.</span>Dal parrucchiere fa coppia con la spazzola per la piega</div>
+<div class="mc" id="mc6" style="opacity:0"><span class="k">15 Orizz.</span>Le alza chi vince la finale, le cala chi gioca a briscola</div>
+<div class="mc" id="mc7" style="opacity:0"><span class="k">18 Orizz.</span>Chi lo perde resta in aeroporto, chi lo spicca si stacca da terra</div>
+<div class="mc" id="mc8" style="opacity:0"><span class="k">20 Orizz.</span>Al Nord sono le soffitte dove finiscono i bauli della nonna</div>
+</div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+const off=(id)=>document.getElementById(id).offsetTop;
+const hgt=(id)=>document.getElementById(id).offsetHeight;
+
+tl.to("#cur",{x:0,y:0,duration:0.22,ease:"power3.out"},0.35);
+tl.fromTo("#wb0",{opacity:0},{opacity:1,duration:0.15},0.35);
+tl.fromTo("#l0_0",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},0.63);
+tl.to("#cur",{x:40,duration:0.06,ease:"none"},0.69);
+tl.fromTo("#l0_1",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},0.72);
+tl.to("#cur",{x:80,duration:0.06,ease:"none"},0.78);
+tl.fromTo("#l0_2",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},0.81);
+tl.to("#cur",{x:160,y:0,duration:0.22,ease:"power3.out"},1.35);
+tl.fromTo("#wb1",{opacity:0},{opacity:1,duration:0.15},1.35);
+tl.to("#wb0",{opacity:0,duration:0.2},1.35);
+tl.to("#mc0",{opacity:0,duration:0.15},1.35);
+tl.fromTo("#mc1",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},1.45);
+tl.fromTo("#l0_4",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},1.63);
+tl.to("#cur",{x:200,duration:0.06,ease:"none"},1.69);
+tl.fromTo("#l0_5",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},1.72);
+tl.to("#cur",{x:240,duration:0.06,ease:"none"},1.78);
+tl.fromTo("#l0_6",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},1.81);
+tl.to("#cur",{x:0,y:40,duration:0.22,ease:"power3.out"},2.35);
+tl.fromTo("#wb2",{opacity:0},{opacity:1,duration:0.15},2.35);
+tl.to("#wb1",{opacity:0,duration:0.2},2.35);
+tl.to("#mc1",{opacity:0,duration:0.15},2.35);
+tl.fromTo("#mc2",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},2.45);
+tl.fromTo("#l1_0",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},2.63);
+tl.to("#cur",{x:40,duration:0.06,ease:"none"},2.69);
+tl.fromTo("#l1_1",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},2.72);
+tl.to("#cur",{x:80,duration:0.06,ease:"none"},2.78);
+tl.fromTo("#l1_2",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},2.81);
+tl.to("#cur",{x:160,y:40,duration:0.22,ease:"power3.out"},3.35);
+tl.fromTo("#wb3",{opacity:0},{opacity:1,duration:0.15},3.35);
+tl.to("#wb2",{opacity:0,duration:0.2},3.35);
+tl.to("#mc2",{opacity:0,duration:0.15},3.35);
+tl.fromTo("#mc3",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},3.45);
+tl.fromTo("#l1_4",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},3.63);
+tl.to("#cur",{x:200,duration:0.06,ease:"none"},3.69);
+tl.fromTo("#l1_5",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},3.72);
+tl.to("#cur",{x:240,duration:0.06,ease:"none"},3.78);
+tl.fromTo("#l1_6",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},3.81);
+tl.to("#cur",{x:0,y:80,duration:0.22,ease:"power3.out"},4.35);
+tl.fromTo("#wb4",{opacity:0},{opacity:1,duration:0.15},4.35);
+tl.to("#wb3",{opacity:0,duration:0.2},4.35);
+tl.to("#mc3",{opacity:0,duration:0.15},4.35);
+tl.fromTo("#mc4",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},4.45);
+tl.fromTo("#l2_0",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},4.63);
+tl.to("#cur",{x:40,duration:0.06,ease:"none"},4.69);
+tl.fromTo("#l2_1",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},4.72);
+tl.to("#cur",{x:80,duration:0.06,ease:"none"},4.78);
+tl.fromTo("#l2_2",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},4.81);
+tl.to("#cur",{x:120,duration:0.06,ease:"none"},4.87);
+tl.fromTo("#l2_3",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},4.90);
+tl.to("#cur",{x:160,duration:0.06,ease:"none"},4.96);
+tl.fromTo("#l2_4",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},4.99);
+tl.to("#cur",{x:200,duration:0.06,ease:"none"},5.05);
+tl.fromTo("#l2_5",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.08);
+tl.to("#cur",{x:240,duration:0.06,ease:"none"},5.14);
+tl.fromTo("#l2_6",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.17);
+tl.to("#cur",{x:280,y:120,duration:0.22,ease:"power3.out"},5.35);
+tl.fromTo("#wb5",{opacity:0},{opacity:1,duration:0.15},5.35);
+tl.to("#wb4",{opacity:0,duration:0.2},5.35);
+tl.to("#mc4",{opacity:0,duration:0.15},5.35);
+tl.fromTo("#mc5",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},5.45);
+tl.fromTo("#l3_7",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.63);
+tl.to("#cur",{x:320,duration:0.06,ease:"none"},5.69);
+tl.fromTo("#l3_8",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.72);
+tl.to("#cur",{x:360,duration:0.06,ease:"none"},5.78);
+tl.fromTo("#l3_9",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.81);
+tl.to("#cur",{x:0,y:160,duration:0.22,ease:"power3.out"},6.35);
+tl.fromTo("#wb6",{opacity:0},{opacity:1,duration:0.15},6.35);
+tl.to("#wb5",{opacity:0,duration:0.2},6.35);
+tl.to("#mc5",{opacity:0,duration:0.15},6.35);
+tl.fromTo("#mc6",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},6.45);
+tl.fromTo("#l4_0",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},6.63);
+tl.to("#cur",{x:40,duration:0.06,ease:"none"},6.69);
+tl.fromTo("#l4_1",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},6.72);
+tl.to("#cur",{x:80,duration:0.06,ease:"none"},6.78);
+tl.fromTo("#l4_2",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},6.81);
+tl.to("#cur",{x:120,duration:0.06,ease:"none"},6.87);
+tl.fromTo("#l4_3",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},6.90);
+tl.to("#cur",{x:160,duration:0.06,ease:"none"},6.96);
+tl.fromTo("#l4_4",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},6.99);
+tl.to("#cur",{x:240,y:160,duration:0.22,ease:"power3.out"},7.35);
+tl.fromTo("#wb7",{opacity:0},{opacity:1,duration:0.15},7.35);
+tl.to("#wb6",{opacity:0,duration:0.2},7.35);
+tl.to("#mc6",{opacity:0,duration:0.15},7.35);
+tl.fromTo("#mc7",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},7.45);
+tl.fromTo("#l4_6",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},7.63);
+tl.to("#cur",{x:280,duration:0.06,ease:"none"},7.69);
+tl.fromTo("#l4_7",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},7.72);
+tl.to("#cur",{x:320,duration:0.06,ease:"none"},7.78);
+tl.fromTo("#l4_8",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},7.81);
+tl.to("#cur",{x:360,duration:0.06,ease:"none"},7.87);
+tl.fromTo("#l4_9",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},7.90);
+tl.to("#cur",{x:200,y:200,duration:0.22,ease:"power3.out"},8.35);
+tl.fromTo("#wb8",{opacity:0},{opacity:1,duration:0.15},8.35);
+tl.to("#wb7",{opacity:0,duration:0.2},8.35);
+tl.to("#mc7",{opacity:0,duration:0.15},8.35);
+tl.fromTo("#mc8",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.18},8.45);
+tl.fromTo("#l5_5",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},8.63);
+tl.to("#cur",{x:240,duration:0.06,ease:"none"},8.69);
+tl.fromTo("#l5_6",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},8.72);
+tl.to("#cur",{x:280,duration:0.06,ease:"none"},8.78);
+tl.fromTo("#l5_7",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},8.81);
+tl.to("#cur",{x:320,duration:0.06,ease:"none"},8.87);
+tl.fromTo("#l5_8",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},8.90);
+tl.to("#cur",{x:360,duration:0.06,ease:"none"},8.96);
+tl.fromTo("#l5_9",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},8.99);
+tl.to("#wb8",{opacity:0,duration:0.3},9.55);
+tl.to(["#l0_0","#l0_1","#l0_2","#l0_4","#l0_5","#l0_6","#l1_0","#l1_1","#l1_2","#l1_4","#l1_5","#l1_6","#l2_0","#l2_1","#l2_2","#l2_3","#l2_4","#l2_5","#l2_6","#l3_7","#l3_8","#l3_9","#l4_0","#l4_1","#l4_2","#l4_3","#l4_4","#l4_6","#l4_7","#l4_8","#l4_9","#l5_5","#l5_6","#l5_7","#l5_8","#l5_9"],{opacity:0,duration:0.35,stagger:0.012,ease:"power2.in"},10.40);
+tl.to("#cur",{x:0,y:0,duration:0.4,ease:"power2.inOut"},11.00);
+tl.to("#mc8",{opacity:0,duration:0.2},11.00);
+tl.to("#mc0",{opacity:1,duration:0.2},11.30);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

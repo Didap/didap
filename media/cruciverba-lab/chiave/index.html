@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=822, height=1080" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900}
+:root{--paper:#FCFCF9;--ink:#1F130E;--soft:#473A33;--green:#008238;--yellow:#F2CC4A;--hair:#C2BDB5;--chiave:#0A7A3E}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:822px;height:1080px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink)}
+.title{position:absolute;left:97px;top:110px;font-family:Caprasimo;font-size:64px;color:var(--chiave);display:flex;align-items:center;gap:18px}
+.dots{display:flex;gap:6px}.dots i{width:14px;height:14px;border:2px solid var(--chiave);display:block}.dots i.on{background:var(--chiave)}
+.t{position:absolute;width:116px;height:116px;border:2px solid var(--hair);border-radius:8px;background:var(--paper)}
+.f{position:absolute;inset:-2px;border-radius:8px;opacity:0}
+.f.g{background:var(--green)}.f.y{background:var(--yellow)}.f.x{background:#fff;border:2px solid var(--ink)}
+.ch{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:44px;opacity:0}
+.foot{position:absolute;left:97px;right:97px;top:160px;left:auto;right:97px;text-align:right;font-style:italic;font-size:30px;color:var(--soft)}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="822" data-height="1080">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap>
+<div class="title">Chiave<span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="t" style="left:97px;top:230px"><div class="f g" id="f00"></div><div class="ch" id="c00" style="color:var(--ink)">P</div></div>
+<div class="t" style="left:225px;top:230px"><div class="f x" id="f01"></div><div class="ch" id="c01" style="color:var(--ink)">I</div></div>
+<div class="t" style="left:353px;top:230px"><div class="f y" id="f02"></div><div class="ch" id="c02" style="color:var(--ink)">A</div></div>
+<div class="t" style="left:481px;top:230px"><div class="f x" id="f03"></div><div class="ch" id="c03" style="color:var(--ink)">N</div></div>
+<div class="t" style="left:609px;top:230px"><div class="f x" id="f04"></div><div class="ch" id="c04" style="color:var(--ink)">O</div></div>
+<div class="t" style="left:97px;top:358px"><div class="f g" id="f10"></div><div class="ch" id="c10" style="color:var(--ink)">P</div></div>
+<div class="t" style="left:225px;top:358px"><div class="f g" id="f11"></div><div class="ch" id="c11" style="color:var(--ink)">R</div></div>
+<div class="t" style="left:353px;top:358px"><div class="f x" id="f12"></div><div class="ch" id="c12" style="color:var(--ink)">I</div></div>
+<div class="t" style="left:481px;top:358px"><div class="f x" id="f13"></div><div class="ch" id="c13" style="color:var(--ink)">M</div></div>
+<div class="t" style="left:609px;top:358px"><div class="f g" id="f14"></div><div class="ch" id="c14" style="color:var(--ink)">A</div></div>
+<div class="t" style="left:97px;top:486px"><div class="f g" id="f20"></div><div class="ch" id="c20" style="color:var(--ink)">P</div></div>
+<div class="t" style="left:225px;top:486px"><div class="f g" id="f21"></div><div class="ch" id="c21" style="color:var(--ink)">R</div></div>
+<div class="t" style="left:353px;top:486px"><div class="f g" id="f22"></div><div class="ch" id="c22" style="color:var(--ink)">E</div></div>
+<div class="t" style="left:481px;top:486px"><div class="f g" id="f23"></div><div class="ch" id="c23" style="color:var(--ink)">S</div></div>
+<div class="t" style="left:609px;top:486px"><div class="f g" id="f24"></div><div class="ch" id="c24" style="color:var(--ink)">A</div></div>
+<div class="t" style="left:97px;top:614px"></div>
+<div class="t" style="left:225px;top:614px"></div>
+<div class="t" style="left:353px;top:614px"></div>
+<div class="t" style="left:481px;top:614px"></div>
+<div class="t" style="left:609px;top:614px"></div>
+<div class="t" style="left:97px;top:742px"></div>
+<div class="t" style="left:225px;top:742px"></div>
+<div class="t" style="left:353px;top:742px"></div>
+<div class="t" style="left:481px;top:742px"></div>
+<div class="t" style="left:609px;top:742px"></div>
+<div class="t" style="left:97px;top:870px"></div>
+<div class="t" style="left:225px;top:870px"></div>
+<div class="t" style="left:353px;top:870px"></div>
+<div class="t" style="left:481px;top:870px"></div>
+<div class="t" style="left:609px;top:870px"></div>
+<div class="foot" id="foot" style="opacity:0">Trovata al terzo tentativo.</div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo("#c00",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},0.50);
+tl.fromTo("#c01",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},0.66);
+tl.fromTo("#c02",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},0.82);
+tl.fromTo("#c03",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},0.98);
+tl.fromTo("#c04",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},1.14);
+tl.fromTo("#f00",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},1.65);
+tl.to("#c00",{color:"#fff",duration:0.1},1.75);
+tl.fromTo("#f01",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},1.77);
+tl.fromTo("#f02",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},1.89);
+tl.fromTo("#f03",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},2.01);
+tl.fromTo("#f04",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},2.13);
+tl.fromTo("#c10",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},2.95);
+tl.fromTo("#c11",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},3.11);
+tl.fromTo("#c12",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},3.27);
+tl.fromTo("#c13",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},3.43);
+tl.fromTo("#c14",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},3.59);
+tl.fromTo("#f10",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},4.10);
+tl.to("#c10",{color:"#fff",duration:0.1},4.20);
+tl.fromTo("#f11",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},4.22);
+tl.to("#c11",{color:"#fff",duration:0.1},4.32);
+tl.fromTo("#f12",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},4.34);
+tl.fromTo("#f13",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},4.46);
+tl.fromTo("#f14",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},4.58);
+tl.to("#c14",{color:"#fff",duration:0.1},4.68);
+tl.fromTo("#c20",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.40);
+tl.fromTo("#c21",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.56);
+tl.fromTo("#c22",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.72);
+tl.fromTo("#c23",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},5.88);
+tl.fromTo("#c24",{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)"},6.04);
+tl.fromTo("#f20",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},6.55);
+tl.to("#c20",{color:"#fff",duration:0.1},6.65);
+tl.fromTo("#f21",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},6.67);
+tl.to("#c21",{color:"#fff",duration:0.1},6.77);
+tl.fromTo("#f22",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},6.79);
+tl.to("#c22",{color:"#fff",duration:0.1},6.89);
+tl.fromTo("#f23",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},6.91);
+tl.to("#c23",{color:"#fff",duration:0.1},7.01);
+tl.fromTo("#f24",{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:0.22,ease:"power3.out"},7.03);
+tl.to("#c24",{color:"#fff",duration:0.1},7.13);
+tl.fromTo("#foot",{opacity:0,filter:"blur(6px)"},{opacity:1,filter:"blur(0px)",duration:0.2},7.85);
+tl.to(["#c00","#f00","#c01","#f01","#c02","#f02","#c03","#f03","#c04","#f04","#c10","#f10","#c11","#f11","#c12","#f12","#c13","#f13","#c14","#f14","#c20","#f20","#c21","#f21","#c22","#f22","#c23","#f23","#c24","#f24","#foot"],{opacity:0,duration:0.35,stagger:0.01,ease:"power2.in"},10.80);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

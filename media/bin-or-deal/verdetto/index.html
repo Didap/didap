@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1256, height=1520" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/bod.css" />
+    <link rel="stylesheet" href="assets/cards.css" />
+    <style>
+      html, body { width: 1256px; height: 1520px; }
+      #root { position: relative; width: 100%; height: 100%; background: var(--paper); overflow: hidden; }
+      #stage { position: absolute; inset: 0; zoom: 2; padding: 44px 36px; }
+      .q { font-family: "BOD Display", serif; font-weight: 700; font-size: 34px; letter-spacing: -0.04em; margin-top: 6px; }
+      .slot { position: relative; height: 184px; margin-top: 26px; }
+      .slot .card { position: absolute; inset: 0; }
+      .slot .stamp { position: absolute; left: 300px; top: 62px; background: var(--surface); }
+      .formula { margin-top: 26px; background: var(--paper-deep); border: 2px solid var(--ink); padding: 24px 26px 22px; }
+      .eq { margin-top: 16px; font-family: "BOD Mono", monospace; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+      .frac { display: inline-flex; flex-direction: column; align-items: center; }
+      .frac span:first-child { border-bottom: 2px solid var(--ink); padding: 0 6px 3px; }
+      .frac span:last-child { padding-top: 3px; }
+      .nums { position: relative; height: 64px; margin-top: 14px; }
+      .num { position: absolute; left: 0; top: 0; font-family: "BOD Mono", monospace; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+      .num .res { font-weight: 800; }
+      .lines { margin-top: 18px; position: relative; }
+      .sl { position: relative; z-index: 1; display: flex; justify-content: space-between; font-family: "BOD Mono", monospace; font-size: 13px; border-bottom: 1px solid var(--line-strong); padding: 9px 8px; color: var(--ink-soft); }
+      .sl b { font-weight: 700; }
+      #hl { position: absolute; left: 0; right: 0; top: 0; height: 37px; z-index: 0; background: var(--surface); border: 2px solid var(--ink); }
+      .note { margin-top: 16px; font-size: 11px; color: var(--ink-muted); line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1256" data-height="1520">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0">
+        <div class="kicker">Demo · query:</div>
+        <div class="q">“charizard base set”</div>
+
+        <div class="slot">
+          <article class="card deal" id="ca">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(14,70%,62%)"/><stop offset="1" stop-color="hsl(44,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#ga)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(14,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Vinted</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard Base Set Unlimited, Near Mint</div><span class="badge deal">DEAL −21%</span></div>
+              <div class="meta"><span>live</span>·<span>Milano</span>·<span>near-mint</span>·<span>2h fa</span></div>
+              <div class="prow"><div><div class="price">139 €</div><div class="ship">spedizione inclusa</div></div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">176 €</div></div></div>
+              <div class="arow"><span>ref adjusted for near mint</span><b>Vedi annuncio ↗</b></div>
+            </div>
+          </article>
+          <article class="card fair" id="cb">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="gb" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(40,70%,62%)"/><stop offset="1" stop-color="hsl(70,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#gb)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(40,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">eBay</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard 4/102 Base Set Holo Rare</div><span class="badge fair">FAIR −5%</span></div>
+              <div class="meta"><span>live</span>·<span>DE</span>·<span>eccellente</span>·<span>5h fa</span></div>
+              <div class="prow"><div><div class="price">155 €</div><div class="ship m">+ 6 € sped. = 161 €</div></div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">163 €</div></div></div>
+              <div class="arow"><span>ref adjusted for excellent</span><b>Vedi annuncio ↗</b></div>
+            </div>
+          </article>
+          <article class="card bin" id="cc">
+            <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="gc" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(210,70%,62%)"/><stop offset="1" stop-color="hsl(240,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#gc)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(210,90%,82%)" opacity=".7"/><rect x="20" y="146" width="120" height="34" rx="4" fill="rgba(255,255,255,.2)"/></svg><div class="plat mono">Subito</div></div>
+            <div class="body">
+              <div class="row1"><div class="title">Charizard Set Base Ita 4/102</div><span class="badge bin">BIN +15%</span></div>
+              <div class="meta"><span>live</span>·<span>Napoli</span>·<span>buono</span>·<span>1g fa</span></div>
+              <div class="prow"><div><div class="price">165 €</div><div class="ship">spedizione inclusa</div></div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">144 €</div></div></div>
+              <div class="arow"><span>ref adjusted for good</span><b>Vedi annuncio ↗</b></div>
+            </div>
+          </article>
+          <div class="stamp t-deal" id="sa"><span class="display">Deal</span><span class="mono">−21%</span></div>
+          <div class="stamp t-fair" id="sb"><span class="display">Fair</span><span class="mono">−5%</span></div>
+          <div class="stamp t-bin" id="sc"><span class="display">Bin</span><span class="mono">+15%</span></div>
+        </div>
+
+        <div class="formula">
+          <div class="kicker">La formula</div>
+          <div class="eq"><span class="t-muted">score =</span><span class="frac"><span>ref − listing</span><span>ref</span></span></div>
+          <div class="nums">
+            <div class="num" id="na"><span class="t-muted">=</span><span class="frac"><span>176 − 139</span><span>176</span></span><span class="res t-deal">= 0,21</span></div>
+            <div class="num" id="nb"><span class="t-muted">=</span><span class="frac"><span>163 − 155</span><span>163</span></span><span class="res t-fair">= 0,05</span></div>
+            <div class="num" id="nc"><span class="t-muted">=</span><span class="frac"><span>144 − 165</span><span>144</span></span><span class="res t-bin">= −0,15</span></div>
+          </div>
+          <div class="lines">
+            <div id="hl"></div>
+            <div class="sl"><span>score ≥ 0.18</span><b class="t-deal">→ DEAL</b></div>
+            <div class="sl"><span>−0.08 &lt; score &lt; 0.18</span><b class="t-fair">→ FAIR</b></div>
+            <div class="sl"><span>score ≤ −0.08</span><b class="t-bin">→ BIN</b></div>
+          </div>
+          <div class="note">Il ref si adatta alla condizione dichiarata.</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const beats = [["ca", "na", "sa", 0], ["cb", "nb", "sb", 1], ["cc", "nc", "sc", 2]];
+      // t=0 holds the last beat (Bin), so 12 s flows back into 0.
+      tl.set(["#ca", "#cb", "#na", "#nb", "#sa", "#sb"], { opacity: 0 }, 0);
+      tl.set(["#cc", "#nc", "#sc"], { opacity: 1 }, 0);
+      tl.set(["#sa", "#sb", "#sc"], { rotation: -2.5, scale: 1 }, 0);
+      tl.set("#hl", { y: 74 }, 0);
+      let prev = beats[2];
+      beats.forEach((b, i) => {
+        const t = 0.3 + i * 4;
+        const [c, n, s, row] = b;
+        // out with the previous card, number and stamp
+        tl.to(["#" + prev[0], "#" + prev[1], "#" + prev[2]], { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power3.in" }, t);
+        // card in
+        tl.set("#" + c, { opacity: 0, filter: "blur(8px)", x: 24 }, t + 0.2);
+        tl.to("#" + c, { opacity: 1, filter: "blur(0px)", x: 0, duration: 0.5, ease: "expo.out" }, t + 0.2);
+        // numbers in
+        tl.set("#" + n, { opacity: 0, filter: "blur(6px)" }, t + 0.7);
+        tl.to("#" + n, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power2.out" }, t + 0.7);
+        // highlight slides to the matching threshold
+        tl.to("#hl", { y: row * 37, duration: 0.5, ease: "power3.inOut" }, t + 1.1);
+        // stamp lands
+        tl.set("#" + s, { opacity: 0, scale: 1.5, filter: "blur(8px)" }, t + 1.6);
+        tl.to("#" + s, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "power4.out" }, t + 1.6);
+        prev = b;
+      });
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "historyId": "fb8a8ec9-2b26-4f3e-85a7-67d7543bea93",
+  "currentRevision": "90fbf464-71b2-4563-a5dc-745a6c4b2de4",
+  "pendingChanges": false,
+  "files": {
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "72b30efacf725d6deded00f4084f5ab5823ec8209adf6cb280b640670793de59",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\72\\72b30efacf725d6deded00f4084f5ab5823ec8209adf6cb280b640670793de59"
+    },
+    "meta.json": {
+      "hash": "6dcd5d665833ee72a2b1c4a9a92c1c34ff62297d88c3b94abfac22e268a1add5",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\6d\\6dcd5d665833ee72a2b1c4a9a92c1c34ff62297d88c3b94abfac22e268a1add5"
+    }
+  },
+  "revisions": {
+    "90fbf464-71b2-4563-a5dc-745a6c4b2de4": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793191746576,
+      "endedAt": 1793191746576,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\97\\97b9165107a725ef23d78ccf55ce5bbb25a96f94bf09ba0c6dab728a55ec524e",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\72\\72b30efacf725d6deded00f4084f5ab5823ec8209adf6cb280b640670793de59"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "0f958b7a-9488-4c83-8601-5be48cc0264a"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "0f958b7a-9488-4c83-8601-5be48cc0264a",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\helllo\\splash\\.hyperframes\\artifacts\\checks\\0f958b7a-9488-4c83-8601-5be48cc0264a.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793191629944,
+        "contentHash": "f507a90b2ba6a282d7e6133e956c2e7fe6a689de1307e10d330c79ae531eda49",
+        "revision": null,
+        "inputFingerprint": "7cfa59d97744001d0b91cd236f2b7b95ef3e0329f7c8ba8aa45ecb6fb7e6de84",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "c1eea27d-a492-4ce2-a394-05183f51394a",
+      "completedAt": 1793191761194,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\helllo\\splash.mp4",
+      "status": "completed",
+      "revision": "90fbf464-71b2-4563-a5dc-745a6c4b2de4"
+    },
+    "retainedRevisions": [
+      "90fbf464-71b2-4563-a5dc-745a6c4b2de4"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

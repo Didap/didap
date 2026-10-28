@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "historyId": "07e96984-9ee6-4cbd-a4e8-f68f060e55fc",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/caprasimo-400.woff2": {
+      "hash": "8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\07e96984-9ee6-4cbd-a4e8-f68f060e55fc\\blobs\\8b\\8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a"
+    },
+    "assets/fonts/piazzolla-var-italic.woff2": {
+      "hash": "df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\07e96984-9ee6-4cbd-a4e8-f68f060e55fc\\blobs\\df\\df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4"
+    },
+    "assets/fonts/piazzolla-var.woff2": {
+      "hash": "d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\07e96984-9ee6-4cbd-a4e8-f68f060e55fc\\blobs\\d1\\d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\07e96984-9ee6-4cbd-a4e8-f68f060e55fc\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "ef1edef37a47da8830f182a3d2f79efbccd4bb522a53b6fa585cac6f475fa701",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\07e96984-9ee6-4cbd-a4e8-f68f060e55fc\\blobs\\ef\\ef1edef37a47da8830f182a3d2f79efbccd4bb522a53b6fa585cac6f475fa701"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "d5884ed6-d7c2-46b0-8e84-930d9a1814aa-1"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "d5884ed6-d7c2-46b0-8e84-930d9a1814aa-0",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\oggi-mobile\\.hyperframes\\artifacts\\snapshots\\54d0a5e0-d834-478d-aa85-001521e50230\\frame-00-at-6s.png",
+        "time": 6,
+        "metadata": {
+          "width": 810,
+          "height": 1440,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190132776,
+        "contentHash": "06ced2962bade63a4049d6e162bb377f3afda06c325ee628894899f33b88b5cd",
+        "revision": null,
+        "inputFingerprint": "1eb8621593cb4b504ffd1661a7a2997380ae029ee1dd4b0c103697354dacd031",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "d5884ed6-d7c2-46b0-8e84-930d9a1814aa-1",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\oggi-mobile\\.hyperframes\\artifacts\\snapshots\\54d0a5e0-d834-478d-aa85-001521e50230\\frame-01-at-11.64s.png",
+        "time": 11.64,
+        "metadata": {
+          "width": 810,
+          "height": 1440,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190132776,
+        "contentHash": "8db70378b69c0a7f680dfb182a86608b39b3c5a67d68320ddbfe55f532826771",
+        "revision": null,
+        "inputFingerprint": "1eb8621593cb4b504ffd1661a7a2997380ae029ee1dd4b0c103697354dacd031",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "8dc710f3-489e-46bb-a054-5778a684aab2",
+      "completedAt": 1793190180050,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cruciverba-lab\\out\\oggi-mobile.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1256 1520">
+  <!-- Il marchio di Cruciverba Lab: griglia 3x3 inclinata, casella centrale rossa (dal favicon del sito) -->
+  <rect width="1256" height="1520" fill="#FCFCF9"/>
+  <g transform="translate(628 760) scale(11) translate(-32 -32) rotate(-7 32 32)">
+    <rect x="7" y="7" width="50" height="50" rx="4" fill="#1F130E"/>
+    <rect x="25.67" y="10" width="12.67" height="12.67" fill="#FCFCF9"/>
+    <rect x="41.33" y="10" width="12.67" height="12.67" fill="#FCFCF9"/>
+    <rect x="10" y="25.67" width="12.67" height="12.67" fill="#FCFCF9"/>
+    <rect x="25.67" y="25.67" width="12.67" height="12.67" fill="#E93F29"/>
+    <rect x="41.33" y="25.67" width="12.67" height="12.67" fill="#FCFCF9"/>
+    <rect x="10" y="41.33" width="12.67" height="12.67" fill="#FCFCF9"/>
+    <rect x="25.67" y="41.33" width="12.67" height="12.67" fill="#FCFCF9"/>
+  </g>
+</svg>

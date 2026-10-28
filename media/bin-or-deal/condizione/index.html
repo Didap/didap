@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=822, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/bod.css" />
+    <link rel="stylesheet" href="assets/cards.css" />
+    <style>
+      html, body { width: 822px; height: 1080px; }
+      #root { position: relative; width: 100%; height: 100%; background: var(--paper); overflow: hidden; }
+      #stage { position: absolute; inset: 0; zoom: 2; padding: 36px 20px; }
+      h2 { font-family: "BOD Display", serif; font-weight: 900; font-size: 34px; letter-spacing: -0.04em; line-height: 0.95; margin: 8px 0 22px; }
+      h2 em { font-family: "BOD Display", serif; font-style: italic; font-weight: 300; color: var(--ink-muted); }
+      .sw { position: relative; }
+      .sw > .v { position: absolute; left: 0; top: 0; white-space: nowrap; }
+      .bx { position: relative; width: 84px; height: 17px; }
+      .bx .badge { position: absolute; right: 0; top: 0; }
+      .card { height: 130px; }
+      .thumb { width: 84px; }
+      .body { padding: 12px 14px; }
+      .title { font-size: 15px; }
+      .price { font-size: 22px; }
+      .bl { position: absolute; left: -6px; top: -2px; bottom: -2px; width: 6px; }
+      #cursor { position: absolute; left: 0; top: 0; width: 22px; height: 22px; z-index: 10; }
+      .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+      .pill { position: relative; border: 2px solid var(--ink); background: var(--surface); font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 8px; }
+      .pill i { position: absolute; inset: -2px; background: var(--ink); color: var(--paper); font-style: normal; padding: 8px 10px; }
+      .lot { display: inline-flex; gap: 6px; align-items: center; background: rgba(166,48,42,0.15); border: 2px solid var(--bin); color: var(--bin); padding: 4px 8px; font-family: "BOD Mono", monospace; font-weight: 700; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+      .chk { display: flex; align-items: center; gap: 8px; border: 2px solid var(--ink); background: var(--paper-deep); padding: 10px 12px; margin-bottom: 18px; font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+      .box { position: relative; width: 16px; height: 16px; border: 2px solid var(--ink); background: var(--surface); }
+      .box i { position: absolute; inset: 1px; background: var(--ink); color: var(--paper); font-style: normal; font-size: 10px; line-height: 10px; text-align: center; }
+      .rm { border-top: 3px double var(--ink); padding-top: 12px; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+      .rm .nm { font-family: "BOD Display", serif; font-weight: 700; font-size: 15px; letter-spacing: -0.03em; margin-top: 4px; height: 20px; width: 230px; }
+      .rm .avg { font-family: "BOD Mono", monospace; font-weight: 800; font-size: 24px; height: 30px; width: 110px; }
+      .rm .avg .v { right: 0; left: auto; }
+      .cbtn { display: inline-block; margin-top: 8px; border: 2px solid var(--ink); padding: 4px 8px; font-family: "BOD Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--paper); }
+      .cand { border: 2px solid var(--ink); background: var(--surface); margin-bottom: 14px; }
+      .cand div { display: flex; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--line); font-family: "BOD Display", serif; font-weight: 700; font-size: 13px; letter-spacing: -0.02em; }
+      .cand div:last-child { border-bottom: 0; }
+      .cand b { font-family: "BOD Mono", monospace; font-size: 12px; }
+      .cand .hd { font-family: "BOD Mono", monospace; font-weight: 400; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="822" data-height="1080">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap>
+
+        <div class="kicker">Condizione dichiarata</div>
+        <h2>Stessa carta.<br /><em>Altro riferimento.</em></h2>
+        <div class="pills"><span class="pill">mint</span><span class="pill">near-mint<i id="p-near-mint">near-mint</i></span><span class="pill">eccellente</span><span class="pill">buono</span><span class="pill">giocato<i id="p-giocato">giocato</i></span><span class="pill">rovinato<i id="p-rovinato">rovinato</i></span></div>
+        <article class="card unk">
+          <div class="bl" id="bl0" style="background:var(--deal)"></div><div class="bl" id="bl1" style="background:var(--fair)"></div><div class="bl" id="bl2" style="background:var(--bin)"></div>
+          <div class="thumb"><svg class="art" viewBox="0 0 160 200"><defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(14,70%,62%)"/><stop offset="1" stop-color="hsl(44,60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#ga)"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(14,90%,82%)" opacity=".7"/></svg><div class="plat mono">Vinted</div></div>
+          <div class="body">
+            <div class="row1"><div class="title">Charizard Base Set 4/102</div><span class="bx"><span class="badge deal" id="b0">DEAL −32%</span><span class="badge fair" id="b1">FAIR +4%</span><span class="badge bin" id="b2">BIN +45%</span></span></div>
+            <div class="meta"><span>live</span>·<span>Torino</span>·<span class="sw" style="width:80px;height:12px"><span class="v" id="m0">near-mint</span><span class="v" id="m1">giocato</span><span class="v" id="m2">rovinato</span></span></div>
+            <div class="prow"><div class="price">120 €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v sw" style="width:50px;height:18px;margin-left:auto"><span class="v" id="r0" style="right:0;left:auto">176 €</span><span class="v" id="r1" style="right:0;left:auto">115 €</span><span class="v" id="r2" style="right:0;left:auto">83 €</span></div></div></div>
+            <div class="arow"><span class="sw" style="width:200px;height:12px"><span class="v" id="n0">ref adjusted for near mint</span><span class="v" id="n1">ref adjusted for played</span><span class="v" id="n2">ref adjusted for poor</span></span></div>
+          </div>
+        </article>
+        <div class="formula" style="margin-top:18px;font-family:'BOD Mono',monospace;font-size:12px;color:var(--ink-muted);line-height:1.6">Cardmarket 185 € <span class="sw" style="display:inline-block;width:46px;height:14px;vertical-align:top"><span class="v" id="f0" style="color:var(--ink)">×0,95</span><span class="v" id="f1" style="color:var(--ink)">×0,62</span><span class="v" id="f2" style="color:var(--ink)">×0,45</span></span></div>
+        <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2 L3 19 L8 14.5 L11.5 22 L14.5 20.6 L11 13.4 L18 13.4 Z" fill="#15120d" stroke="#f4eedb" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const n = 3;
+      const ids = (k) => ["#p-", "#bl", "#b", "#m", "#r", "#n", "#f"].map((p) => (p === "#p-" ? "#p-" + ["near-mint","giocato","rovinato"][k] : p + k));
+      // t=0 shows the last state (rovinato), so 12 s flows into 0
+      for (let k = 0; k < n; k++) tl.set(ids(k), { opacity: k === n - 1 ? 1 : 0 }, 0);
+      tl.set("#cursor", { x: 300, y: 420 }, 0);
+      const px = [115, 354, 57], py = [150, 150, 185];
+      for (let k = 0; k < n; k++) {
+        const t = 0.4 + k * 4, prev = (k + n - 1) % n;
+        tl.to("#cursor", { x: px[k], y: py[k], duration: 0.7, ease: "power3.inOut" }, t);
+        tl.to("#cursor", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, t + 0.75);
+        tl.to(ids(prev), { opacity: 0, duration: 0.15 }, t + 0.85);
+        tl.to(["#p-" + ["near-mint","giocato","rovinato"][k], "#m" + k, "#f" + k, "#n" + k], { opacity: 1, duration: 0.15 }, t + 0.9);
+        tl.fromTo("#r" + k, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out", immediateRender: false }, t + 1.2);
+        tl.set("#b" + k, { opacity: 0, scale: 1.4, filter: "blur(4px)" }, t + 1.6);
+        tl.to("#b" + k, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "power4.out" }, t + 1.6);
+        tl.to("#bl" + k, { opacity: 1, duration: 0.3 }, t + 1.6);
+      }
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

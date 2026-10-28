@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "historyId": "7c90f06d-f1b8-4fab-8ed1-88c738ddef21",
+  "currentRevision": "11c213f1-536f-447d-ad00-70911f27f659",
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/caprasimo-400.woff2": {
+      "hash": "8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7c90f06d-f1b8-4fab-8ed1-88c738ddef21\\blobs\\8b\\8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a"
+    },
+    "assets/fonts/piazzolla-var-italic.woff2": {
+      "hash": "df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7c90f06d-f1b8-4fab-8ed1-88c738ddef21\\blobs\\df\\df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4"
+    },
+    "assets/fonts/piazzolla-var.woff2": {
+      "hash": "d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7c90f06d-f1b8-4fab-8ed1-88c738ddef21\\blobs\\d1\\d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7c90f06d-f1b8-4fab-8ed1-88c738ddef21\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "f3dad11fba855d0d3c8866cc990db7936a0f522cc4d9ca2d1f213e5d8c28e618",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7c90f06d-f1b8-4fab-8ed1-88c738ddef21\\blobs\\f3\\f3dad11fba855d0d3c8866cc990db7936a0f522cc4d9ca2d1f213e5d8c28e618"
+    }
+  },
+  "revisions": {
+    "11c213f1-536f-447d-ad00-70911f27f659": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793189993004,
+      "endedAt": 1793189993005,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7c90f06d-f1b8-4fab-8ed1-88c738ddef21\\blobs\\6f\\6f422f15dcd5602066e13f0bb6eaab9313c1dd3f4de0ba7915d00a8b3e46156a",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\7c90f06d-f1b8-4fab-8ed1-88c738ddef21\\blobs\\f3\\f3dad11fba855d0d3c8866cc990db7936a0f522cc4d9ca2d1f213e5d8c28e618"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "63819931-bf3f-4f50-a961-d9b04d06b153"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "63819931-bf3f-4f50-a961-d9b04d06b153",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\.hyperframes\\artifacts\\checks\\63819931-bf3f-4f50-a961-d9b04d06b153.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793189978530,
+        "contentHash": "fdb21f940ff5f2deb55a1a7947306d60c9a5ca2b6cf715d7f373ea4c03405ac3",
+        "revision": null,
+        "inputFingerprint": "18387bc304b93b88e10936a1fa5574076a4bc4c6ad0f7ddf998051b959172e44",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "11c213f1-536f-447d-ad00-70911f27f659",
+      "id": "792c76de-f1d8-42a9-99ea-cede4e1d3dbf-3"
+    },
+    "revisions": {
+      "11c213f1-536f-447d-ad00-70911f27f659": [
+        {
+          "scope": "full",
+          "id": "792c76de-f1d8-42a9-99ea-cede4e1d3dbf-0",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\.hyperframes\\artifacts\\snapshots\\cea841d9-c7d9-41ce-adf3-826090d46461\\frame-00-at-1.5s.png",
+          "time": 1.5,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793189994622,
+          "contentHash": "d51fadfa3681ec4f0f39343544457fe5ba0fd8d7ae690b9cdbe8cbfa7668c051",
+          "revision": "11c213f1-536f-447d-ad00-70911f27f659",
+          "inputFingerprint": "258a7a6c0a2b35df84c16bb0e78b4f7edd6daff2ce4ae4370b361c1aba879a79",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "792c76de-f1d8-42a9-99ea-cede4e1d3dbf-1",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\.hyperframes\\artifacts\\snapshots\\cea841d9-c7d9-41ce-adf3-826090d46461\\frame-01-at-5s.png",
+          "time": 5,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793189994622,
+          "contentHash": "388cf301afe2fc9a3f386886c37f0e4863aade6b459f9fff443687ac54a831d8",
+          "revision": "11c213f1-536f-447d-ad00-70911f27f659",
+          "inputFingerprint": "258a7a6c0a2b35df84c16bb0e78b4f7edd6daff2ce4ae4370b361c1aba879a79",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "792c76de-f1d8-42a9-99ea-cede4e1d3dbf-2",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\.hyperframes\\artifacts\\snapshots\\cea841d9-c7d9-41ce-adf3-826090d46461\\frame-02-at-11.9s.png",
+          "time": 11.9,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793189994622,
+          "contentHash": "151e713c2aac7a66d98a86f1f36df2201d183b1b4f91f2ecfa28169914b0e774",
+          "revision": "11c213f1-536f-447d-ad00-70911f27f659",
+          "inputFingerprint": "258a7a6c0a2b35df84c16bb0e78b4f7edd6daff2ce4ae4370b361c1aba879a79",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "792c76de-f1d8-42a9-99ea-cede4e1d3dbf-3",
+          "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\.hyperframes\\artifacts\\snapshots\\cea841d9-c7d9-41ce-adf3-826090d46461\\frame-03-at-11.64s.png",
+          "time": 11.64,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793189994622,
+          "contentHash": "151e713c2aac7a66d98a86f1f36df2201d183b1b4f91f2ecfa28169914b0e774",
+          "revision": "11c213f1-536f-447d-ad00-70911f27f659",
+          "inputFingerprint": "258a7a6c0a2b35df84c16bb0e78b4f7edd6daff2ce4ae4370b361c1aba879a79",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "116f8635-cb87-4480-83ec-b5f63db4929a-0",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\.hyperframes\\artifacts\\snapshots\\b4971009-79a5-413d-8162-995a26179dcd\\frame-00-at-5s.png",
+        "time": 5,
+        "metadata": {
+          "width": 822,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793189981440,
+        "contentHash": "eae56d41684e64249e44bef52fd68e01c83b0bb239ebf436d64511047ada0cc0",
+        "revision": null,
+        "inputFingerprint": "18387bc304b93b88e10936a1fa5574076a4bc4c6ad0f7ddf998051b959172e44",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "116f8635-cb87-4480-83ec-b5f63db4929a-1",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\nessi\\.hyperframes\\artifacts\\snapshots\\b4971009-79a5-413d-8162-995a26179dcd\\frame-01-at-11.64s.png",
+        "time": 11.64,
+        "metadata": {
+          "width": 822,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793189981440,
+        "contentHash": "151e713c2aac7a66d98a86f1f36df2201d183b1b4f91f2ecfa28169914b0e774",
+        "revision": null,
+        "inputFingerprint": "18387bc304b93b88e10936a1fa5574076a4bc4c6ad0f7ddf998051b959172e44",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "6da83b4f-f5da-47f4-a4e0-a0ebc9721f5b",
+      "completedAt": 1793190022108,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cruciverba-lab\\out\\nessi.mp4",
+      "status": "completed",
+      "revision": "11c213f1-536f-447d-ad00-70911f27f659"
+    },
+    "retainedRevisions": [
+      "11c213f1-536f-447d-ad00-70911f27f659"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

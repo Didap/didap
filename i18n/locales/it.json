@@ -41,8 +41,13 @@
       },
       "cruciverba_lab": {
         "category": "Giochi",
-        "desc": "La casa dei cruciverba italiani online. Sette nuovi giochi di parole ogni giorno, nel browser.",
+        "desc": "La casa dei cruciverba italiani online. Dieci nuovi giochi di parole ogni giorno, nel browser.",
         "alt": "Cruciverba Lab: una griglia si riempie con CRUCIVERBA e LAB, intorno i giochi del giorno come Chiave, Setaccio, Alveare e Nessi"
+      },
+      "helllo": {
+        "category": "Lavoro",
+        "desc": "L’app di lavoro in cui ci si sceglie a vicenda. Se tutti e due dicono Helllo, la chat si apre subito.",
+        "alt": "Helllo: due persone al telefono unite dalle tre l rosse del marchio, scritte in un unico tratto"
       }
     },
     "how_label": "Come lavoriamo",
@@ -163,5 +168,8 @@
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine",
     "team": "Ci hanno messo le mani"
+  },
+  "splash": {
+    "skip": "Salta"
   }
 }

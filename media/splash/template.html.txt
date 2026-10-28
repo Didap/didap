@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --paper: #fffbf2;
+        --ink: #161412;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: var(--paper);
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+      }
+      #monkey,
+      #dplain,
+      #logo {
+        position: absolute;
+        display: block;
+        overflow: visible;
+      }
+      #monkey {
+        z-index: 1;
+      }
+      #dplain {
+        z-index: 2;
+      }
+      #logo {
+        z-index: 3;
+        left: 400.62px;
+        top: 380px;
+        width: 1118.76px;
+        height: 320px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="6.8"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="stage" class="clip" data-start="0" data-duration="6.8" data-track-index="0">
+        <svg id="monkey" viewBox="0 0 218.06 200" aria-hidden="true">%%TESTA%%</svg>
+        <svg id="dplain" viewBox="0 0 182.16 180.93" preserveAspectRatio="none" aria-hidden="true">
+          <path d="%%DPLAIN%%" fill="#161412" />
+        </svg>
+        <svg id="logo" viewBox="0 0 559.38 160" aria-label="Didap">%%ESTESO%%</svg>
+      </div>
+    </div>
+    <script>
+      // La splash di Didap: la D aspetta, Didi cade accanto, rimbalza, si
+      // guarda intorno, salta dentro la D e il logo si completa.
+      const S = 2 // il logo esteso a 1118.76 x 320
+      const LOGO_X = 400.62
+      const LOGO_Y = 380
+
+      // Misure dalla sagoma della D del logo esteso (unità del viewBox)
+      const bb = document.querySelector('#l-dbody').getBBox()
+      const dx = LOGO_X + bb.x * S
+      const dy = LOGO_Y + bb.y * S
+      const dw = bb.width * S
+      const dh = bb.height * S
+      // Nel logo contratto il ciuffo occupa il 9.5% in alto: la D piena sta sotto
+      const TUFT = 19.0697 / 200
+      const dTop = dy + dh * TUFT
+      const dBottom = dy + dh
+
+      const dplain = document.querySelector('#dplain')
+      Object.assign(dplain.style, {
+        left: `${dx}px`,
+        top: `${dTop}px`,
+        width: `${dw}px`,
+        height: `${dBottom - dTop}px`,
+      })
+
+      // Didi: alta poco meno della D, atterra a sinistra
+      const H = (dBottom - dTop) * 0.8
+      const W = (H * 218.06) / 200
+      const landX = dx - dw * 0.42 - W
+      const monkey = document.querySelector('#monkey')
+      Object.assign(monkey.style, {
+        left: `${landX}px`,
+        top: `${dBottom - H}px`,
+        width: `${W}px`,
+        height: `${H}px`,
+      })
+      const intoD = dx + dw / 2 - W / 2 - landX
+
+      // All'inizio la D sta al centro dello schermo, alla fine il logo intero
+      const centerShift = 960 - (dx + dw / 2)
+      const dOrigin = `${dx + dw / 2 - LOGO_X}px ${dBottom - LOGO_Y}px`
+
+      gsap.set('#l-i, #l-d, #l-a, #l-p, #l-dbody, #l-dface', { opacity: 0 })
+
+      const tl = gsap.timeline({ paused: true })
+      const bottom = { transformOrigin: '50% 100%' }
+
+      tl.fromTo('#stage', { x: centerShift }, { x: centerShift, duration: 0.01 }, 0)
+
+      // 0.0 la D compare
+      tl.fromTo('#dplain', { scaleY: 0.4, scaleX: 1.2, opacity: 0, ...bottom },
+        { scaleY: 1, scaleX: 1, opacity: 1, duration: 0.55, ease: 'back.out(2.2)' }, 0.05)
+
+      // 0.4 Didi cade dall'alto, un po' storta
+      tl.fromTo('#monkey', { y: -(dBottom + 80), rotation: -28, scaleX: 0.92, scaleY: 1.12, ...bottom },
+        { y: 0, rotation: 0, duration: 0.46, ease: 'power2.in' }, 0.4)
+      // atterra: schiacciata, poi si allunga e rimbalza
+      tl.to('#monkey', { scaleY: 0.64, scaleX: 1.26, duration: 0.09, ease: 'power1.out' }, 0.86)
+      tl.to('#monkey', { scaleY: 1.1, scaleX: 0.92, duration: 0.12, ease: 'power2.out' }, 0.95)
+      tl.to('#monkey', { y: -dh * 0.75, duration: 0.34, ease: 'power2.out' }, 0.95)
+      tl.to('#monkey', { scaleY: 1, scaleX: 1, rotation: 8, duration: 0.22, ease: 'sine.inOut' }, 1.07)
+      tl.to('#monkey', { y: 0, rotation: 0, duration: 0.3, ease: 'power2.in' }, 1.29)
+      tl.to('#monkey', { scaleY: 0.8, scaleX: 1.14, duration: 0.08, ease: 'power1.out' }, 1.59)
+      tl.to('#monkey', { scaleY: 1, scaleX: 1, duration: 0.6, ease: 'elastic.out(1, 0.4)' }, 1.67)
+
+      // 2.3 si guarda intorno: a sinistra, a destra, di nuovo davanti
+      tl.to('#monkey', { rotation: -13, x: -14, scaleX: 0.93, duration: 0.32, ease: 'sine.inOut' }, 2.30)
+      tl.to('#monkey', { rotation: 11, x: 12, scaleX: 0.93, duration: 0.42, ease: 'sine.inOut' }, 2.80)
+      tl.to('#monkey', { rotation: 0, x: 0, scaleX: 1, duration: 0.3, ease: 'sine.inOut' }, 3.35)
+
+      // 3.7 carica il salto e finisce dentro la D
+      tl.to('#monkey', { scaleY: 0.76, scaleX: 1.16, duration: 0.16, ease: 'power2.in' }, 3.70)
+      tl.to('#monkey', { y: -dh * 1.05, scaleY: 1.14, scaleX: 0.9, rotation: 14, duration: 0.34, ease: 'power2.out' }, 3.86)
+      tl.to('#monkey', { x: intoD, duration: 0.6, ease: 'sine.inOut' }, 3.86)
+      tl.to('#monkey', { y: 0, scaleY: 1.06, scaleX: 0.95, rotation: 0, duration: 0.26, ease: 'power2.in' }, 4.20)
+
+      // 4.46 dentro: la D diventa il logo, schiacciata dall'urto
+      tl.set('#monkey, #dplain', { opacity: 0 }, 4.46)
+      tl.set('#l-dbody, #l-dface', { opacity: 1 }, 4.46)
+      tl.fromTo('#logo', { scaleY: 1, scaleX: 1, transformOrigin: dOrigin },
+        { scaleY: 0.84, scaleX: 1.1, duration: 0.09, ease: 'power2.out' }, 4.46)
+      tl.to('#logo', { scaleY: 1, scaleX: 1, duration: 0.7, ease: 'elastic.out(1, 0.45)' }, 4.55)
+
+      // 5.1 il logo si sposta e le lettere salgono una dopo l'altra
+      tl.to('#stage', { x: 0, duration: 0.8, ease: 'power3.inOut' }, 5.10)
+      tl.fromTo('#l-i, #l-d, #l-a, #l-p', { y: 26, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.8)', stagger: 0.07 }, 5.35)
+
+      window.__timelines['main'] = tl
+      tl.seek(0)
+    </script>
+  </body>
+</html>

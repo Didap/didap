@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "historyId": "3250381e-9b49-4237-baf1-dcd6e5e97d84",
+  "currentRevision": "0559b018-1d67-4c84-b8ce-d826124c89f2",
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/caprasimo-400.woff2": {
+      "hash": "8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\8b\\8be0594f223844d398b066640ab4303555978a8a72c6558ff769251007bd431a"
+    },
+    "assets/fonts/piazzolla-var-italic.woff2": {
+      "hash": "df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\df\\df279da961fdf9b9a37b0e3dcdff5092b8d98df165f510443961e99949b793f4"
+    },
+    "assets/fonts/piazzolla-var.woff2": {
+      "hash": "d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\d1\\d157ebfdf365841501586e0ba0dbd5677cbd7c6cce64ddaa849a8fb1384b8997"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "89ec466cbfaead49adc6ed13e97f17c8db8b7cba2270df477beb4bda74f111c6",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\89\\89ec466cbfaead49adc6ed13e97f17c8db8b7cba2270df477beb4bda74f111c6"
+    }
+  },
+  "revisions": {
+    "e3f4d873-df09-4ed4-9a3c-c9890da4cf79": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793190263885,
+      "endedAt": 1793190263886,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\26\\26d6763e3c9be95efefd6122bab96d4833fe97e5dd3bd9e87bc8929e858cc425",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\6e\\6e61a6c94738a0f11b51606286d3e9e18cea36fc681b960a922ce05c4cd431fd"
+        }
+      }
+    },
+    "0559b018-1d67-4c84-b8ce-d826124c89f2": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793190284182,
+      "endedAt": 1793190284183,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\6e\\6e61a6c94738a0f11b51606286d3e9e18cea36fc681b960a922ce05c4cd431fd",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\3250381e-9b49-4237-baf1-dcd6e5e97d84\\blobs\\89\\89ec466cbfaead49adc6ed13e97f17c8db8b7cba2270df477beb4bda74f111c6"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "0559b018-1d67-4c84-b8ce-d826124c89f2",
+      "id": "6a5d67b3-69b7-45e6-894d-ef066d17466c"
+    },
+    "revisions": {
+      "e3f4d873-df09-4ed4-9a3c-c9890da4cf79": [
+        {
+          "id": "a960c03a-d9cf-4dde-8709-ab6735cbc2c2",
+          "scope": "project",
+          "metadata": {
+            "ok": false,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793190268069,
+          "contentHash": "ca45bc7d78de1dbd145ac7e8a685b3bf3ee5a80f5aea9a98b80e515f83cdeff1",
+          "revision": "e3f4d873-df09-4ed4-9a3c-c9890da4cf79",
+          "inputFingerprint": "c8c96aaabd4f7b5b3d3c6925529a23ae7aff9fc985e64560eee30ee3604b49b7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "a054189b-ff6a-431d-b7f1-b4c017e243dc"
+        }
+      ],
+      "0559b018-1d67-4c84-b8ce-d826124c89f2": [
+        {
+          "id": "6a5d67b3-69b7-45e6-894d-ef066d17466c",
+          "scope": "project",
+          "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\rulli\\.hyperframes\\artifacts\\checks\\6a5d67b3-69b7-45e6-894d-ef066d17466c.json",
+          "metadata": {
+            "ok": false,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793190288318,
+          "contentHash": "ed129cf929730451ef33e5424c9c61a3b500724523253d4287a077e02e9f013d",
+          "revision": "0559b018-1d67-4c84-b8ce-d826124c89f2",
+          "inputFingerprint": "aa246ed8c00fc12df6d0191704df118dcf8b92f9c00c6ee2d688e483e097baa0",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "0eec2967-ea0e-4051-bde9-0e9bf8862741",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\rulli\\.hyperframes\\artifacts\\checks\\0eec2967-ea0e-4051-bde9-0e9bf8862741.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793190246105,
+        "contentHash": "09587a719e62ae944023f39674d6a9f08607ca49f730cb88204aec18bfae8c54",
+        "revision": null,
+        "inputFingerprint": "0dcdec64cf510cd10df1b77f3aa16c58d0a6ae7681c5663dffd73d69f07f39be",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "0016b4ce-4703-4846-912e-f5fcce2968df-0"
+    },
+    "revisions": {
+      "e3f4d873-df09-4ed4-9a3c-c9890da4cf79": [
+        {
+          "scope": "full",
+          "id": "c15ba823-b033-4237-8c1c-e4b3b31d6b26-0",
+          "time": 4.2,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793190270870,
+          "contentHash": "66349dd47a113ffa9b89473a772c02e4a996130b6aa870d6db68cd7ed21082b7",
+          "revision": "e3f4d873-df09-4ed4-9a3c-c9890da4cf79",
+          "inputFingerprint": "c8c96aaabd4f7b5b3d3c6925529a23ae7aff9fc985e64560eee30ee3604b49b7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "a054189b-ff6a-431d-b7f1-b4c017e243dc"
+        },
+        {
+          "scope": "full",
+          "id": "c15ba823-b033-4237-8c1c-e4b3b31d6b26-1",
+          "time": 11.64,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793190270870,
+          "contentHash": "800c90459eb7d5fe30bd0d76c8550770e35622534c17bf7c935f58d38d664f27",
+          "revision": "e3f4d873-df09-4ed4-9a3c-c9890da4cf79",
+          "inputFingerprint": "c8c96aaabd4f7b5b3d3c6925529a23ae7aff9fc985e64560eee30ee3604b49b7",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "a054189b-ff6a-431d-b7f1-b4c017e243dc"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "0016b4ce-4703-4846-912e-f5fcce2968df-0",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\rulli\\.hyperframes\\artifacts\\snapshots\\adfd6227-4149-4f68-b931-618bc168cc99\\frame-00-at-4.2s.png",
+        "time": 4.2,
+        "metadata": {
+          "width": 822,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190248827,
+        "contentHash": "c083060ddc18f82e1ac34cbcf33230a3980ae366385110ea56e0b8511ab7d5cc",
+        "revision": null,
+        "inputFingerprint": "0dcdec64cf510cd10df1b77f3aa16c58d0a6ae7681c5663dffd73d69f07f39be",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "0016b4ce-4703-4846-912e-f5fcce2968df-1",
+        "image": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cruciverba-lab\\rulli\\.hyperframes\\artifacts\\snapshots\\adfd6227-4149-4f68-b931-618bc168cc99\\frame-01-at-11.64s.png",
+        "time": 11.64,
+        "metadata": {
+          "width": 822,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793190248827,
+        "contentHash": "6ec6a3932cd07fe3359f1cc734ad8d48d959bae94c85df043356a60d1793e09e",
+        "revision": null,
+        "inputFingerprint": "0dcdec64cf510cd10df1b77f3aa16c58d0a6ae7681c5663dffd73d69f07f39be",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "a054189b-ff6a-431d-b7f1-b4c017e243dc",
+      "completedAt": 1793190313690,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\08210ad3-03ac-478f-a51f-ad865a6661e6\\scratchpad\\cruciverba-lab\\out\\rulli.mp4",
+      "status": "completed",
+      "revision": "0559b018-1d67-4c84-b8ce-d826124c89f2"
+    },
+    "retainedRevisions": [
+      "0559b018-1d67-4c84-b8ce-d826124c89f2"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

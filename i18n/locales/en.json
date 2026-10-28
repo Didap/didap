@@ -41,8 +41,13 @@
       },
       "cruciverba_lab": {
         "category": "Games",
-        "desc": "The home of Italian crosswords online. Seven new word games every day, in the browser.",
+        "desc": "The home of Italian crosswords online. Ten new word games every day, in the browser.",
         "alt": "Cruciverba Lab: a crossword grid fills in with CRUCIVERBA and LAB, with the daily games around it like Chiave, Setaccio, Alveare and Nessi"
+      },
+      "helllo": {
+        "category": "Work",
+        "desc": "The job app where both sides choose each other. If you both say Helllo, the chat opens right away.",
+        "alt": "Helllo: two people on the phone joined by the three red l of the logo, drawn in a single stroke"
       }
     },
     "how_label": "How we work",
@@ -163,5 +168,8 @@
     "next": "Next product",
     "placeholder_image": "Image",
     "team": "The hands behind it"
+  },
+  "splash": {
+    "skip": "Skip"
   }
 }

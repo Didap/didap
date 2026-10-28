@@ -1,5 +1,6 @@
 import { defineCollection, defineContentConfig, z } from '@nuxt/content'
 import { PRODUCT_COLORS, PRODUCT_STATUSES } from './shared/product'
+import { TEAM_MEMBERS } from './shared/team'
 
 // Slot immagine della scheda prodotto: con `src` mostra l'immagine,
 // senza resta il segnaposto colorato del Figma. Un `src` .mp4/.webm
@@ -50,6 +51,8 @@ const projectSchema = z.object({
   model: z.string().optional(),
   next: z.string().optional(),
   logo: z.string().optional(),
+  // Ci hanno messo le mani: chiavi di shared/team.ts
+  team: z.array(z.enum(TEAM_MEMBERS)).default([]),
   media: z
     .object({
       pair: z.array(mediaSlot).optional(),

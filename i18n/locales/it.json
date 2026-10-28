@@ -161,6 +161,7 @@
     "open": "Apri {host}",
     "notify": "Avvisami quando esce",
     "next": "Prossimo prodotto",
-    "placeholder_image": "Immagine"
+    "placeholder_image": "Immagine",
+    "team": "Ci hanno messo le mani"
   }
 }

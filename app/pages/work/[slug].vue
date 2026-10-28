@@ -2,6 +2,7 @@
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
+import { TEAM, type TeamMember } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
 // Scheda prodotto - Figma "Scheda prodotto · Fanta Rainbow · Desktop 1440".
@@ -65,6 +66,23 @@ const hasStory = computed(
       project.value?.features ||
       project.value?.model
     ),
+)
+
+// Le immagini finiscono a filo: il blocco dopo stacca
+const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model)
+
+// Il riquadro di ognuno (le classi stanno qui perché Tailwind le veda).
+// width: larghezza dell'illustrazione sul riquadro (193.3 di base)
+const AVATARS: Record<TeamMember, { bg: string; width: string }> = {
+  barbara: { bg: 'bg-banana', width: 'w-[75%]' },
+  william: { bg: 'bg-green', width: 'w-[64.1%]' },
+  cristiano: { bg: 'bg-red', width: 'w-[66.7%]' },
+  alessandro: { bg: 'bg-blush', width: 'w-[64.7%]' },
+  vitantonio: { bg: 'bg-ink', width: 'w-[68.3%]' },
+}
+
+const team = computed(() =>
+  (project.value?.team ?? []).map((key) => ({ key, name: TEAM[key], ...AVATARS[key] })),
 )
 
 useSeoMeta({
@@ -362,12 +380,56 @@ useSeoMeta({
       </div>
     </section>
 
+    <!-- Ci hanno messo le mani -->
+    <section
+      v-if="team.length"
+      class="page-x"
+      :class="storyEndsOnImages ? `
+        mt-16
+        lg:mt-28
+      ` : ''"
+    >
+      <div class="
+        grid gap-8 border-t-[1.5px] border-ink pt-8 pb-24
+        lg:grid-cols-[302fr_954fr] lg:gap-6 lg:pb-30
+      ">
+        <h2 class="text-label text-green">
+          {{ t('product.team') }}
+        </h2>
+        <ul class="
+          grid grid-cols-3 gap-x-6 gap-y-8
+          sm:grid-cols-5
+        ">
+          <li
+            v-for="m in team"
+            :key="m.key"
+            class="flex min-w-0 flex-col gap-3"
+          >
+            <div
+              class="flex aspect-[193.3/250] w-full items-center justify-center"
+              :class="m.bg"
+            >
+              <img
+                :src="`/team/illustrations/${m.key}.svg`"
+                alt=""
+                class="h-auto"
+                :class="m.width"
+              >
+            </div>
+            <p class="text-body">
+              {{ m.name }}
+            </p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
     <!-- Prossimo prodotto (stacca dalle immagini se manca il Modello) -->
     <section
       data-preview-section="chiusura"
       v-if="nextProject"
       class="page-x"
-      :class="hasStory && !project.model ? `
+      :class="storyEndsOnImages && !team.length ? `
         mt-16
         lg:mt-28
       ` : ''"

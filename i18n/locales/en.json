@@ -161,6 +161,7 @@
     "open": "Open {host}",
     "notify": "Tell me when it launches",
     "next": "Next product",
-    "placeholder_image": "Image"
+    "placeholder_image": "Image",
+    "team": "The hands behind it"
   }
 }

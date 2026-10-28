@@ -158,6 +158,37 @@ const TEXT_EXTENSIONS = /\.(md|csv|json)$/i
 
 const asText = (text: string): ToolContent[] => [{ type: 'text', text }]
 
+// Pagine dei PDF già estratte: Claude legge un PDF lungo a parti, e ogni parte
+// non riscarica e rianalizza il file. Pochi file per pochi minuti; il file di
+// uno store_key non cambia mai
+const PDF_CACHE_MAX = 8
+const PDF_CACHE_MS = 10 * 60 * 1000
+const pdfCache = new Map<string, { pages: string[], at: number }>()
+
+async function cachedPdfPages(
+  store: FileStore,
+  storeKey: string,
+  name: string,
+  extract: (data: Buffer) => Promise<string[]>,
+): Promise<string[]> {
+  const now = Date.now()
+  const hit = pdfCache.get(storeKey)
+  if (hit && now - hit.at < PDF_CACHE_MS) return hit.pages
+  const data = await store.get(storeKey)
+  let pages: string[]
+  try {
+    pages = await extract(data)
+  }
+  catch (err) {
+    console.warn(`[mcp] PDF illeggibile: ${name}`, err)
+    return []
+  }
+  pdfCache.delete(storeKey)
+  if (pdfCache.size >= PDF_CACHE_MAX) pdfCache.delete(pdfCache.keys().next().value!)
+  pdfCache.set(storeKey, { pages, at: now })
+  return pages
+}
+
 // Un file della cartella in una forma che Claude legge: testo e PDF a pagine
 // (a parti come il bando), immagine; il resto solo descritto. 404 se il file
 // non è di quel bando. `part` vale solo per testo e PDF. Il file si scarica
@@ -183,16 +214,7 @@ export async function readGrantFile(
   }
 
   if (type === 'application/pdf' || /\.pdf$/i.test(name)) {
-    const data = await store.get(storeKey)
-    let pages: string[]
-    try {
-      pages = await extract(data)
-    }
-    catch (err) {
-      console.warn(`[mcp] PDF illeggibile: ${name}`, err)
-      pages = []
-    }
-    const text = pages
+    const text = (await cachedPdfPages(store, storeKey, name, extract))
       .map((page, i) => (page.trim() ? `${pageMarker(name, i + 1)}\n${page.trim()}` : ''))
       .filter(Boolean)
       .join('\n\n')

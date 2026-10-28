@@ -58,4 +58,10 @@ media:
       alt: "A Helllo post on the blue three-l supergraphic, in Italian: work starts with a hello."
     - src: /covers/helllo-store.webp
       alt: "Two Helllo store screenshots, in Italian: pick who you like and say Helllo, then chosen each other? Start talking."
+team:
+  - barbara
+  - william
+  - cristiano
+  - alessandro
+  - vitantonio
 ---

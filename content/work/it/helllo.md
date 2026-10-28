@@ -58,4 +58,10 @@ media:
       alt: "Un post di Helllo sulla supergrafica blu delle tre l: Il lavoro inizia con un ciao."
     - src: /covers/helllo-store.webp
       alt: "Due schermate di Helllo per lo store: Scegli chi ti piace. Di’ Helllo. e Vi scegliete in due? Parlate subito."
+team:
+  - barbara
+  - william
+  - cristiano
+  - alessandro
+  - vitantonio
 ---

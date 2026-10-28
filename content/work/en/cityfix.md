@@ -13,6 +13,12 @@ tags:
 featured: true
 order: 3
 status: pilot
+team:
+  - barbara
+  - william
+  - cristiano
+  - alessandro
+  - vitantonio
 ---
 
 ## The product

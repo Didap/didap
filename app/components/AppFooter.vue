@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CONTACT_EMAIL } from '#shared/contact'
 // Componente "Footer" del Figma: filetto ink 1.5 in alto, tagline Title
 // a sinistra, tre colonne (Sito, Legale, Contatto) a 80 di distanza.
 defineProps<{ cream?: boolean }>()
@@ -78,13 +79,13 @@ const legalLinks = computed(() => [
                 {{ t('footer.contact') }}
               </p>
               <a
-                href="mailto:amministrazione@didap.it"
+                :href="`mailto:${CONTACT_EMAIL}`"
                 class="
                   text-body transition-colors
                   hover:text-green
                 "
               >
-                amministrazione@didap.it
+                {{ CONTACT_EMAIL }}
               </a>
             </div>
           </div>

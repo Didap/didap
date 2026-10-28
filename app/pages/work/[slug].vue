@@ -2,6 +2,7 @@
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
+import { TEAM } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
 // Scheda prodotto - Figma "Scheda prodotto · Fanta Rainbow · Desktop 1440".
@@ -66,6 +67,11 @@ const hasStory = computed(
       project.value?.model
     ),
 )
+
+// Le immagini finiscono a filo: il blocco dopo stacca
+const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model)
+
+const team = computed(() => (project.value?.team ?? []).map((key) => ({ key, ...TEAM[key] })))
 
 useSeoMeta({
   title: () => `${project.value?.title} - Didap`,
@@ -362,38 +368,82 @@ useSeoMeta({
       </div>
     </section>
 
-    <!-- Prossimo prodotto (stacca dalle immagini se manca il Modello) -->
-    <section
-      data-preview-section="chiusura"
-      v-if="nextProject"
-      class="page-x"
-      :class="hasStory && !project.model ? `
-        mt-16
-        lg:mt-28
-      ` : ''"
-    >
-      <NuxtLink
-        :to="localePath(`/work/${slugOf(nextProject)}`)"
-        class="
-          group flex flex-col gap-12 border-t-[1.5px] border-ink pt-8 pb-24
-          lg:pb-30
-        "
+    <!-- Chiusura: stacca dalle immagini se manca il Modello -->
+    <div :class="storyEndsOnImages ? `
+      mt-16
+      lg:mt-28
+    ` : ''">
+      <!-- Ci hanno messo le mani -->
+      <section
+        v-if="team.length"
+        class="page-x"
       >
-        <span class="text-label text-green">
-          {{ t('product.next') }}
-        </span>
-        <span class="
-          text-display transition-colors
-          group-hover:text-green
+        <div class="
+          grid gap-8 border-t-[1.5px] border-ink pt-8 pb-24
+          lg:grid-cols-[302fr_954fr] lg:gap-6 lg:pb-30
         ">
-          {{ nextProject.title }}
-        </span>
-        <MediaSlot
-          :media="nextProject.hero ?? { color: 'ink' }"
-          class="aspect-1280/480 w-full"
-        />
-      </NuxtLink>
-    </section>
+          <h2 class="text-label text-green">
+            {{ t('product.team') }}
+          </h2>
+          <ul class="
+            grid grid-cols-3 gap-x-6 gap-y-8
+            sm:grid-cols-5
+          ">
+            <li
+              v-for="m in team"
+              :key="m.key"
+              class="flex min-w-0 flex-col gap-3"
+            >
+              <div
+                class="
+                  flex aspect-[193.3/250] w-full items-center justify-center
+                "
+                :class="m.bg"
+              >
+                <img
+                  :src="`/team/illustrations/${m.key}.svg`"
+                  alt=""
+                  class="h-auto"
+                  :class="m.width"
+                >
+              </div>
+              <p class="text-body">
+                {{ m.name }}
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Prossimo prodotto -->
+      <section
+        data-preview-section="chiusura"
+        v-if="nextProject"
+        class="page-x"
+      >
+        <NuxtLink
+          :to="localePath(`/work/${slugOf(nextProject)}`)"
+          class="
+            group flex flex-col gap-12 border-t-[1.5px] border-ink pt-8 pb-24
+            lg:pb-30
+          "
+        >
+          <span class="text-label text-green">
+            {{ t('product.next') }}
+          </span>
+          <span class="
+            text-display transition-colors
+            group-hover:text-green
+          ">
+            {{ nextProject.title }}
+          </span>
+          <MediaSlot
+            :media="nextProject.hero ?? { color: 'ink' }"
+            class="aspect-1280/480 w-full"
+          />
+        </NuxtLink>
+      </section>
+    </div>
   </article>
 </template>
 

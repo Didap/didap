@@ -11,6 +11,9 @@ tags:
 featured: true
 order: 2
 status: pending
+team:
+  - william
+  - alessandro
 ---
 
 ## The product

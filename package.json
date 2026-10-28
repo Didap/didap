@@ -22,7 +22,6 @@
     "@tailwindcss/vite": "^4.3.3",
     "@vueuse/core": "^14.4.0",
     "better-sqlite3": "^13.0.3",
-    "motion-v": "^2.8.0",
     "nuxt": "^4.6.2",
     "pdfjs-dist": "^6.4.299",
     "pdfmake": "^0.3.11",

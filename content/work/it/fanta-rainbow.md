@@ -74,6 +74,12 @@ media:
     - src: /covers/fanta-rainbow-mercato.mp4
       poster: /covers/fanta-rainbow-mercato-poster.webp
       alt: "Una notizia di mercato della Gazzetta Rainbow: l'anno del contratto rotola da 2026 a 2030, una firma si disegna e arriva il timbro Ufficiale sul rinnovo di Rabiot con il Milan"
+team:
+  - barbara
+  - william
+  - cristiano
+  - alessandro
+  - vitantonio
 ---
 
 ## Il prodotto

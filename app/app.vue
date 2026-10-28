@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const { locale } = useI18n()
+// Il modulo di contatto si carica alla prima apertura, non con ogni pagina
+const { mounted: contactMounted } = useContactDialog()
 
 useHead({
   htmlAttrs: { lang: locale.value },
@@ -14,4 +16,5 @@ watch(locale, (l) => {
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <LazyContactDialog v-if="contactMounted" />
 </template>

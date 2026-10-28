@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+/* La radice di Vite è app/: anche le classi scritte in shared/ */
+@source '../../../shared';
 
 /*
   ============================================================
@@ -61,6 +63,24 @@
     to {
       opacity: 0;
       transform: translateY(1rem);
+    }
+  }
+
+  /* Il modulo di contatto a tutto schermo sale dal basso */
+  --animate-sheet-in: sheet-in 400ms var(--ease-vintage);
+  --animate-sheet-out: sheet-out 200ms ease-in forwards;
+
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(2rem);
+    }
+  }
+
+  @keyframes sheet-out {
+    to {
+      opacity: 0;
+      transform: translateY(2rem);
     }
   }
 }

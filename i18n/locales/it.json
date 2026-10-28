@@ -168,5 +168,8 @@
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine",
     "team": "Ci hanno messo le mani"
+  },
+  "splash": {
+    "skip": "Salta"
   }
 }

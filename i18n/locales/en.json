@@ -168,5 +168,8 @@
     "next": "Next product",
     "placeholder_image": "Image",
     "team": "The hands behind it"
+  },
+  "splash": {
+    "skip": "Skip"
   }
 }

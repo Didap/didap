@@ -1,81 +1,44 @@
 {
   "nav": {
+    "home": "Home",
     "work": "Prodotti",
+    "projects": "Progetti",
     "clients": "Partner",
     "about": "About",
-    "contact": "Contatti",
+    "contact": "Lavora con noi",
     "cta": "Lavoriamo insieme",
     "main": "Navigazione principale",
     "open_menu": "Apri il menu",
     "close_menu": "Chiudi il menu",
-    "back": "Torna indietro",
     "open_product": "Apri {name}"
   },
   "home": {
     "seo_description": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
+    "index": "Schermate della home",
+    "scroll_cue": "Scorri per scoprire i progetti",
+    "more_products": "Prodotti",
+    "more_clients": "Clienti",
+    "outro_title": "Hai un’idea\nda liberare?",
     "hero_tagline": "Free the\nmonkey.",
-    "hero_sub": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
-    "products_title": "Prodotti vivi. Aprili.",
-    "products_intro": "Li progettiamo, li scriviamo e li teniamo in produzione noi. Il modo più rapido per capire come lavoriamo è usarli.",
-    "featured_more": "Leggi la scheda",
+    "featured_more": "Scopri di più",
     "status_live": "Live",
     "status_development": "In sviluppo",
     "status_pilot": "Pilot",
     "status_pending": "Stato da confermare",
-    "open_product": "Apri il prodotto",
     "products": {
       "fanta_rainbow": {
-        "category": "Fantacalcio",
-        "desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide.",
-        "alt": "Fanta Rainbow: un fulmine arcobaleno spacca il campo di notte e lascia il logo, con la frase Il fantacalcio come non l'hai mai giocato"
-      },
-      "bin_or_deal": {
-        "category": "Marketplace",
-        "desc": "Aggregatore di annunci dai marketplace europei per collezionisti, con punteggio automatico “bin vs deal”.",
-        "alt": "Bin or Deal: il logo su carta di giornale, gli annunci dei marketplace che scorrono e un timbro che giudica il prezzo, Deal, Fair o Bin"
+        "desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide."
       },
       "cityfix": {
-        "category": "Città",
-        "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città.",
-        "alt": "CityFix: il logo e la frase Nessuna città è mai finita sulla mappa di Brindisi, intorno le segnalazioni che passano da aperte a prese in carico a risolte"
+        "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città."
       },
       "cruciverba_lab": {
-        "category": "Giochi",
-        "desc": "La casa dei cruciverba italiani online. Dieci nuovi giochi di parole ogni giorno, nel browser.",
-        "alt": "Cruciverba Lab: una griglia si riempie con CRUCIVERBA e LAB, intorno i giochi del giorno come Chiave, Setaccio, Alveare e Nessi"
+        "desc": "La casa dei cruciverba italiani online. Dieci nuovi giochi di parole ogni giorno, nel browser."
       },
       "helllo": {
-        "category": "Lavoro",
-        "desc": "L’app di lavoro in cui ci si sceglie a vicenda. Se tutti e due dicono Helllo, la chat si apre subito.",
-        "alt": "Helllo: due persone al telefono unite dalle tre l rosse del marchio, scritte in un unico tratto"
+        "desc": "L’app di lavoro in cui ci si sceglie a vicenda. Se tutti e due dicono Helllo, la chat si apre subito."
       }
-    },
-    "how_label": "Come lavoriamo",
-    "how": {
-      "fullstack": {
-        "title": "Full-stack,\nper davvero.",
-        "body": "Backend, frontend, infrastruttura, mobile, integrazioni."
-      },
-      "outsourcing": {
-        "title": "Niente outsourcing\nsu ciò che conta.",
-        "body": "Il codice che rilasciamo lo scriviamo, lo testiamo e lo teniamo in piedi noi."
-      },
-      "design": {
-        "title": "Il design vive\nnel codice.",
-        "body": "Pensato per andare in produzione, non per stare bene nelle slide. I prodotti crescono con l’uso reale."
-      }
-    },
-    "partners_label": "Partner e clienti",
-    "partner_types": {
-      "institutional": "Partner istituzionale",
-      "saas": "SaaS",
-      "app": "App"
-    },
-    "contact_title": "Hai un’ idea da liberare?",
-    "contact_cta": "Lavoriamo insieme",
-    "qube_label": "Partner strategico · The Qube",
-    "qube_title": "Ti aiutiamo anche a finanziarlo.",
-    "qube_body": "Con The Qube, incubatore certificato MIMIT, ti accompagniamo verso finanza agevolata e bandi pubblici italiani ed europei."
+    }
   },
   "work": {
     "kicker": "Lo studio",
@@ -189,9 +152,48 @@
     "notify": "Avvisami quando esce",
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine",
-    "team": "Ci hanno messo le mani"
+    "team": "Ci hanno messo le mani",
+    "why": "Il motivo",
+    "made": "Cosa abbiamo fatto",
+    "offers": "Cosa offre",
+    "challenge": "La cosa difficile",
+    "model": "Il modello",
+    "all": "Tutti i prodotti",
+    "scroll": "Scorri per scoprire {name}",
+    "roles": {
+      "barbara": "Project manager",
+      "william": "Sviluppatore full-stack",
+      "cristiano": "Sviluppatore full-stack",
+      "alessandro": "Sviluppatore full-stack",
+      "vitantonio": "Designer"
+    }
   },
   "splash": {
     "skip": "Salta"
+  },
+  "chat": {
+    "title": "Chiedi a Didi!",
+    "questions": {
+      "q1": "Vuoi sapere cosa facciamo?",
+      "q2": "Vuoi capire se la tua idea si può fare?",
+      "q3": "Cerchi un bando per partire?"
+    },
+    "hello": "Ciao, sono Didi. Raccontami cosa hai in mente e ti dico come partire.",
+    "ask": "Hai un’idea da liberare? Raccontamela.",
+    "placeholder": "Es. un’app per il mio ristorante",
+    "input": "Il tuo messaggio per Didi",
+    "send": "Invia",
+    "thinking": "Didi ci sta pensando",
+    "you": "Hai scritto",
+    "reply": {
+      "product": "Un prodotto da zero: è quello che facciamo. Scrivici e lo pensiamo insieme.",
+      "app": "Un’app o un SaaS: la progettiamo e la costruiamo noi. Scrivici e partiamo.",
+      "site": "Un sito tutto tuo, si fa. Scrivici due righe e partiamo.",
+      "grant": "Per i bandi lavoriamo con The Qube: noi il progetto, loro i fondi. Scrivici da dove parti.",
+      "chat": "Ti ascolto. Scrivici come preferisci, rispondiamo entro 2 giorni lavorativi."
+    },
+    "form": "Compila il modulo",
+    "restart": "Ricomincia",
+    "back": "Torna da Didi"
   }
 }

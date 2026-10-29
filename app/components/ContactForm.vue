@@ -11,7 +11,8 @@ import { untypeset } from '#shared/typeset'
 // pagina, il titolo del dialog sopra le pagine), lo slot `done` è
 // l'azione dopo l'invio. `product`: arriva da "Avvisami quando esce", il
 // messaggio è già scritto. `projectType`: la voce già scelta con Didi.
-const props = defineProps<{ titleAs?: Component | string; product?: string; projectType?: ProjectType | '' }>()
+// `message`: quello che il cliente ha già scritto a Didi.
+const props = defineProps<{ titleAs?: Component | string; product?: string; projectType?: ProjectType | ''; message?: string }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -21,7 +22,7 @@ const form = reactive({
   name: '',
   contact: '',
   projectType: props.projectType ?? '',
-  message: props.product ? untypeset(t('contact.form.notify_message', { name: props.product })) : '',
+  message: props.message || (props.product ? untypeset(t('contact.form.notify_message', { name: props.product })) : ''),
   website: '', // honeypot
 })
 

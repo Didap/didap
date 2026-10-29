@@ -79,6 +79,47 @@ team:
   - cristiano
   - alessandro
   - vitantonio
+screens:
+  why:
+    title: Una buca in strada non si ripara da sola.
+    body: "Chi la vede spesso non sa a chi dirlo. Se lo dice, la segnalazione passa di mano in mano tra uffici e ditte, e nessuno gli fa più sapere niente. Così i problemi restano dove sono e la gente smette di segnalarli."
+  made:
+    title: Un'app che porta la tua segnalazione fino alla riparazione.
+    body: "CityFix l'abbiamo pensata e costruita noi, da zero. Funziona in tre passi:"
+    steps:
+      - Vedi un problema, apri l'app e scatti una foto. La posizione la mette il telefono.
+      - Il Comune riceve la segnalazione e la affida alla ditta giusta.
+      - La ditta ripara e chiude il lavoro con una foto. Tu ricevi un avviso a ogni passaggio.
+  challenge:
+    title: Pronta per tutti gli ottomila Comuni italiani.
+    body: "Ogni Comune vede solo le sue segnalazioni, i suoi uffici e le sue ditte, ma il sistema è uno solo per tutti: per partire in una nuova città non serve installare niente. I dati di ogni Comune restano separati da quelli degli altri."
+  backdrop: '#2a1ce7'
+  media:
+    - src: /covers/cityfix-segnala.mp4
+      poster: /covers/cityfix-segnala-poster.webp
+      ratio: 1256/1520
+      alt: "La segnalazione guidata nell'app CityFix: il bot chiede dove si trova il problema, arrivano la posizione, la foto e il tipo, poi Invia e la segnalazione parte verso il Comune"
+    - src: /covers/cityfix-mappa.mp4
+      poster: /covers/cityfix-mappa-poster.webp
+      ratio: 1696/1520
+      alt: "La mappa delle segnalazioni nell'app CityFix: i pin blu sulle strade di Brindisi, uno si alza e apre la sua scheda, e il bottone della barra passa da Segnala ora a Sostieni"
+    - src: /covers/cityfix-stato.mp4
+      poster: /covers/cityfix-stato-poster.webp
+      ratio: 816/1520
+      backdrop: '#efedfd'
+      alt: "Il dettaglio di una segnalazione: i quattro pixel dello stato si riempiono uno alla volta, da Inviata a Completata, mentre la cronologia si allunga"
+    - src: /covers/cityfix-backoffice.mp4
+      poster: /covers/cityfix-backoffice-poster.webp
+      ratio: 1920/1080
+      alt: "Il backoffice del Comune di Brindisi: arriva una nuova segnalazione in cima alle aperte, l'operatore la prende in carico, la assegna a un fornitore e il contatore In corso sale"
+    - src: /covers/cityfix-chiusura.mp4
+      poster: /covers/cityfix-chiusura-poster.webp
+      ratio: 822/1080
+      alt: "Il fornitore chiude l'intervento: la foto della buca scorre sulla foto dell'asfalto rifatto e arriva il timbro Completata"
+    - src: /covers/cityfix-avviso.mp4
+      poster: /covers/cityfix-avviso-poster.webp
+      ratio: 822/1080
+      alt: "Un avviso del Comune per il rione Centro: la zona si disegna sulla mappa di Brindisi e arriva l'avviso dei lavori sulla rete idrica, valido fino al 31 ottobre"
 ---
 
 ## Il prodotto

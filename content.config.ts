@@ -6,7 +6,9 @@ import { TEAM_MEMBERS } from './shared/team'
 // senza resta il segnaposto colorato del Figma. Un `src` .mp4/.webm
 // diventa un video in loop muto, con `poster` come fotogramma fermo.
 // `srcMobile` e `posterMobile` sono la versione da telefono del video,
-// in verticale, sotto il breakpoint sm.
+// in verticale, sotto il breakpoint sm. `ratio` ("larghezza/altezza")
+// è la proporzione del video, per chi lo mostra intero (le slide);
+// `backdrop` il colore del suo fondo, se diverso da quello delle slide.
 const mediaSlot = z.object({
   src: z.string().optional(),
   poster: z.string().optional(),
@@ -15,6 +17,8 @@ const mediaSlot = z.object({
   alt: z.string().optional(),
   color: z.enum(PRODUCT_COLORS).default('ink'),
   label: z.boolean().default(true),
+  ratio: z.string().optional(),
+  backdrop: z.string().optional(),
 })
 
 const projectSchema = z.object({
@@ -53,6 +57,21 @@ const projectSchema = z.object({
   logo: z.string().optional(),
   // Ci hanno messo le mani: chiavi di shared/team.ts
   team: z.array(z.enum(TEAM_MEMBERS)).default([]),
+  // Scheda a slide (components/ProductScreens.vue), scritta per chi non
+  // è del mestiere: il motivo, cosa abbiamo fatto (con i passi di come
+  // funziona), la cosa difficile detta semplice (se manca vale
+  // `challenge`) e un video per ogni voce di `features.items`, nello
+  // stesso ordine. Il resto viene dai campi della scheda
+  screens: z
+    .object({
+      why: z.object({ title: z.string(), body: z.string() }),
+      made: z.object({ title: z.string(), body: z.string(), steps: z.array(z.string()).default([]) }),
+      challenge: z.object({ title: z.string(), body: z.string() }).optional(),
+      media: z.array(mediaSlot).default([]),
+      // Il colore di fondo dei video, intorno a loro sulle slide
+      backdrop: z.string().optional(),
+    })
+    .optional(),
   media: z
     .object({
       pair: z.array(mediaSlot).optional(),

@@ -1,419 +1,323 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
-import MediaSlot from '~/components/MediaSlot.vue'
-import StatusPill from '~/components/StatusPill.vue'
-import { CONTACT_EMAIL } from '#shared/contact'
-import type { ProductStatus } from '#shared/product'
+import DidiTalk from '~/components/DidiTalk.vue'
+import HomeBar from '~/components/HomeBar.vue'
+import HomeLogo from '~/components/HomeLogo.vue'
+import ScreenLegal from '~/components/ScreenLegal.vue'
+import ScreenRail from '~/components/ScreenRail.vue'
+import ScreenHero from '~/components/ScreenHero.vue'
 
-// Home - Figma "Home · Desktop 1440 · v0.1".
-// Ogni sezione: filetto ink 1.5 in alto, 32 sopra, 136 sotto,
-// colonna etichetta 302 + colonna testo 954 su 1280 utili.
+// Home a schermate: una pila di schermate a tutto schermo, ognuna copre
+// la precedente salendo dal basso (scroll nativo con lo snap). Apertura
+// su carta, poi CityFix, Fanta Rainbow e Helllo con il loro video a
+// tutto schermo, poi Cruciverba Lab, poi le porte per le pagine dei
+// prodotti e dei clienti e la chiusura rossa con Didi che chiede cosa
+// serve. Niente nav né footer: la barra è HomeBar, i link legali stanno
+// nella chiusura.
+// La splash non serve: la stessa animazione gira nel logo dell'apertura
+definePageMeta({ layout: 'screens', splash: false })
+
 const { t } = useI18n()
 const localePath = useLocalePath()
-
-// I prodotti, ognuno con la sua splash animata (2:1, il centro regge
-// anche il taglio delle card) o un'immagine ferma (`image`). Il primo,
-// CityFix, è in evidenza. Senza `url` il prodotto non è ancora uscito:
-// la card porta a "Avvisami quando esce".
-type Product = {
-  key: string
-  slug: string
-  name: string
-  url?: string
-  image?: string
-  status: ProductStatus
-}
-const products: [Product, ...Product[]] = [
-  {
-    key: 'cityfix',
-    slug: 'cityfix',
-    name: 'CityFix',
-    url: 'https://cityfix.io',
-    status: 'pilot',
-  },
-  {
-    key: 'fanta_rainbow',
-    slug: 'fanta-rainbow',
-    name: 'Fanta Rainbow',
-    url: 'https://fantarainbow.com',
-    status: 'live',
-  },
-  {
-    key: 'bin_or_deal',
-    slug: 'bin-or-deal',
-    name: 'Bin or Deal',
-    url: 'https://www.binordeal.com',
-    status: 'pending',
-  },
-  {
-    key: 'cruciverba_lab',
-    slug: 'cruciverba-lab',
-    name: 'Cruciverba Lab',
-    url: 'https://cruciverba-lab.it',
-    status: 'pending',
-  },
-  {
-    key: 'helllo',
-    slug: 'helllo',
-    name: 'Helllo',
-    status: 'development',
-  },
-]
-
-const [featured, ...others] = products
-
-const splash = (p: Product) => ({
-  src: p.image ?? `/covers/splash-${p.slug}.mp4`,
-  poster: p.image ? undefined : `/covers/splash-${p.slug}-poster.webp`,
-  alt: t(`home.products.${p.key}.alt`),
-})
-
-const host = (url: string) => new URL(url).hostname.replace(/^www\./, '')
-
-const statusLabel = (s: ProductStatus) => t(`home.status_${s}`)
-
-const facts = ['fullstack', 'outsourcing', 'design']
-
-const partners = [
-  { slug: 'comune-di-brindisi', name: 'Comune di Brindisi', type: 'institutional' },
-  { slug: 'rotte-di-portolano', name: 'Le Rotte di Portolano', type: 'saas' },
-  { slug: 'sudel', name: 'Sudel', type: 'app' },
-  { slug: 'tmi', name: 'TMI', type: 'app' },
-]
+const { openContact } = useContactDialog()
 
 useSeoMeta({
   title: 'Didap',
   description: t('home.seo_description'),
 })
+
+// I prodotti a tutto schermo. `light`: il video in alto è chiaro, la
+// barra va in ink. L'unico invito porta alla scheda
+type Featured = {
+  key: string
+  slug: string
+  name: string
+  light: boolean
+}
+const featured: Featured[] = [
+  { key: 'cityfix', slug: 'cityfix', name: 'CityFix', light: true },
+  { key: 'fanta_rainbow', slug: 'fanta-rainbow', name: 'Fanta Rainbow', light: false },
+  { key: 'helllo', slug: 'helllo', name: 'Helllo', light: true },
+  { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', light: true },
+]
+
+const hero = (slug: string) => ({
+  src: `/covers/${slug}-hero.mp4`,
+  poster: `/covers/${slug}-hero-poster.webp`,
+  srcMobile: `/covers/${slug}-hero-mobile.mp4`,
+  posterMobile: `/covers/${slug}-hero-mobile-poster.webp`,
+})
+
+
+// L'ultima schermata porta alle pagine dei prodotti e dei clienti, con
+// i nomi di tutti presi dalle loro schede
+const workCollection = useProjectCollection('work')
+const clientsCollection = useProjectCollection('clients')
+const { data: names } = await useAsyncData(
+  () => `home-names-${workCollection.value}`,
+  async () => {
+    const [work, clients] = await Promise.all([
+      queryCollection(workCollection.value).order('order', 'ASC').select('title').all(),
+      queryCollection(clientsCollection.value).order('order', 'ASC').select('title').all(),
+    ])
+    return { work: work.map(p => p.title), clients: clients.map(p => p.title) }
+  },
+  { watch: [workCollection] },
+)
+const indexes = computed(() => [
+  { to: localePath('/work'), label: t('home.more_products'), names: names.value?.work ?? [], tone: 'bg-green text-paper-light hover:bg-ink' },
+  { to: localePath('/clients'), label: t('home.more_clients'), names: names.value?.clients ?? [], tone: 'bg-banana text-ink hover:bg-ink hover:text-paper-light' },
+])
+
+const root = ref<HTMLElement>()
+const clientsHover = ref(false)
+
+// Le schermate, per l'indice a destra e il colore della barra
+const screens = computed(() => [
+  { id: 'top', label: 'Didap', light: true },
+  ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light })),
+  // Didi sta sul verde dei prodotti (sempre con l'alone), "Lavoriamo
+  // insieme" e l'indice sul giallo dei clienti: testo ink, carta quando
+  // i clienti diventano neri sotto il puntatore
+  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: !clientsHover.value, glow: true },
+  { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
+])
+
+// La schermata in scena e, con mouse e trackpad, la corsa morbida da
+// una all'altra (composables/useScreens)
+const { active, motion } = useScreens(root)
+
+const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
 </script>
 
 <template>
-  <div>
-    <!-- Hero -->
-    <section class="page-x">
-      <div
-        class="
-          flex flex-col gap-12 py-16
-          lg:gap-24 lg:pt-[139px] lg:pb-[67px]
-        "
-      >
-        <h1 class="m-0">
-          <img
-            src="/brand/logo-esteso.svg"
-            alt="Didap"
-            width="1278"
-            height="367"
-            class="block aspect-[559.4/160] w-full"
-          >
-        </h1>
-        <div class="
-          grid gap-6
-          lg:grid-cols-2
-        ">
-          <p class="text-hero whitespace-pre-line">
-            {{ t('home.hero_tagline') }}
-          </p>
-          <p class="text-body-medium">
-            {{ t('home.hero_sub') }}
-          </p>
-        </div>
-      </div>
-    </section>
+  <div
+    ref="root"
+    :class="{ motion }"
+  >
+    <HomeBar
+      :shown="active > 0"
+      :light="screens[active]?.light ?? true"
+      :glow="screens[active]?.glow"
+      :cta="active !== screens.length - 1"
+    />
 
-    <!-- PROd -->
+    <ScreenRail
+      :label="t('home.index')"
+      :screens="screens"
+      :active="active"
+    />
+
+    <!-- Apertura -->
     <section
-      id="prodotti"
-      class="page-x"
+      id="top"
+      data-screen
+      class="screen bg-paper text-ink"
+      :class="{ 'is-active': active === 0 }"
     >
       <div
         class="
-          flex flex-col gap-16 border-t-[1.5px] border-ink pt-8 pb-24
-          lg:pb-[136px]
+          screen-inner page-x grid h-full grid-rows-[1fr_auto] pt-24
+          pb-[max(28px,env(safe-area-inset-bottom))]
         "
       >
-        <header class="flex flex-col gap-7">
-          <h2 class="text-title">
-            {{ t('home.products_title') }}
-          </h2>
-          <p class="text-body">
-            {{ t('home.products_intro') }}
-          </p>
-        </header>
-
-        <!-- In evidenza: CityFix. Video e titolo aprono la
-             scheda; il video è un doppione del titolo per il lettore di schermo. -->
-        <article class="group flex flex-col gap-6">
-          <NuxtLink
-            :to="localePath(`/work/${featured.slug}`)"
-            tabindex="-1"
-            aria-hidden="true"
-            class="block"
-          >
-            <MediaSlot
-              :media="splash(featured)"
-              class="
-                aspect-2/1 w-full transition-opacity
-                group-hover:opacity-90
-              "
-            />
-          </NuxtLink>
-          <div class="
-            grid gap-6
-            lg:grid-cols-[588fr_692fr] lg:gap-x-0
-          ">
-            <div class="flex flex-col gap-3.5">
-              <div class="flex items-center gap-3">
-                <span class="text-label opacity-60">
-                  {{ t(`home.products.${featured.key}.category`) }}
-                </span>
-                <StatusPill :status="featured.status">
-                  {{ statusLabel(featured.status) }}
-                </StatusPill>
-              </div>
-              <h3 class="text-title">
-                <NuxtLink
-                  :to="localePath(`/work/${featured.slug}`)"
-                  class="
-                    transition-colors
-                    hover:text-green
-                  "
-                >
-                  {{ featured.name }}
-                </NuxtLink>
-              </h3>
-            </div>
-            <div class="flex flex-col gap-6">
-              <p class="text-body">
-                {{ t(`home.products.${featured.key}.desc`) }}
-              </p>
-              <div class="flex flex-wrap items-center gap-6">
-                <DidapButton
-                  v-if="featured.url"
-                  :href="featured.url"
-                >
-                  {{ t('product.open', { host: host(featured.url) }) }}
-                </DidapButton>
-                <NuxtLink
-                  :to="localePath(`/work/${featured.slug}`)"
-                  class="
-                    text-label underline transition-colors
-                    hover:text-green
-                  "
-                >
-                  {{ t('home.featured_more') }}
-                </NuxtLink>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <!-- Card prodotto -->
         <div class="
-          grid gap-16
-          md:grid-cols-2 md:gap-6
+          grid place-items-center gap-[clamp(20px,3vw,40px)] self-center
+          text-center
         ">
-          <article
-            v-for="p in others"
-            :key="p.key"
-            class="group flex flex-col gap-5"
-          >
-            <NuxtLink
-              :to="localePath(`/work/${p.slug}`)"
-              tabindex="-1"
-              aria-hidden="true"
-              class="block"
-            >
-              <MediaSlot
-                :media="splash(p)"
-                class="
-                  aspect-[410.7/300] w-full transition-opacity
-                  group-hover:opacity-90
-                "
-              />
-            </NuxtLink>
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <span class="text-label opacity-60">
-                {{ t(`home.products.${p.key}.category`) }}
-              </span>
-              <StatusPill :status="p.status">
-                {{ statusLabel(p.status) }}
-              </StatusPill>
-            </div>
-            <h3 class="text-title">
-              <NuxtLink
-                :to="localePath(`/work/${p.slug}`)"
-                class="
-                  transition-colors
-                  hover:text-green
-                "
-              >
-                {{ p.name }}
-              </NuxtLink>
-            </h3>
-            <p class="text-body">
-              {{ t(`home.products.${p.key}.desc`) }}
-            </p>
-            <a
-              v-if="p.url"
-              :href="p.url"
-              target="_blank"
-              rel="noopener"
-              class="
-                self-start text-label underline transition-colors
-                hover:text-green
-              "
-            >
-              {{ t('home.open_product') }}
-            </a>
-            <NuxtLink
-              v-else
-              :to="localePath({ path: '/contact', query: { product: p.name } })"
-              class="
-                self-start text-label underline transition-colors
-                hover:text-green
-              "
-            >
-              {{ t('product.notify') }}
-            </NuxtLink>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Come lavoriamo -->
-    <section
-      id="come-lavoriamo"
-      class="page-x"
-    >
-      <div class="border-t-[1.5px] border-ink py-8">
-        <div class="
-          grid gap-6
-          lg:grid-cols-[302fr_954fr]
-        ">
-          <div>
-            <h2 class="text-label text-green">
-              {{ t('home.how_label') }}
-            </h2>
-            <img
-              src="/brand/didi-testa.svg"
-              alt=""
-              width="218"
-              height="200"
-              class="
-                mt-8 hidden w-[218px]
-                lg:mt-[52px] lg:ml-[42px] lg:block
-              "
-            >
-          </div>
-          <ul>
-            <li
-              v-for="(f, i) in facts"
-              :key="f"
-              class="
-                grid gap-3
-                md:grid-cols-[519fr_411fr] md:gap-6
-              "
-              :class="i === 0 ? 'pb-7' : 'border-t border-ink py-7'"
-            >
-              <h3 class="text-title whitespace-pre-line">
-                {{ t(`home.how.${f}.title`) }}
-              </h3>
-              <p class="text-body">
-                {{ t(`home.how.${f}.body`) }}
-              </p>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Partner -->
-    <section
-      id="partner"
-      class="page-x"
-    >
-      <div class="
-        border-t-[1.5px] border-ink pt-8 pb-24
-        lg:pb-[136px]
-      ">
-        <div class="
-          grid gap-6
-          lg:grid-cols-[302fr_954fr]
-        ">
-          <h2 class="text-label text-green">
-            {{ t('home.partners_label') }}
-          </h2>
-          <ul>
-            <li
-              v-for="(p, i) in partners"
-              :key="p.slug"
-              :class="i === 0 ? 'pb-6' : 'border-t border-ink py-6'"
-            >
-              <NuxtLink
-                :to="localePath(`/clients/${p.slug}`)"
-                class="group flex items-center justify-between gap-6"
-              >
-                <span class="
-                  text-title transition-colors
-                  group-hover:text-green
-                ">
-                  {{ p.name }}
-                </span>
-                <span class="shrink-0 text-right text-label opacity-60">
-                  {{ t(`home.partner_types.${p.type}`) }}
-                </span>
-              </NuxtLink>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contatto -->
-    <section
-      id="contatti"
-      class="page-x"
-    >
-      <div
-        class="
-          flex flex-col gap-12 border-t-[1.5px] border-ink pt-8 pb-24
-          lg:pb-[120px]
-        "
-      >
-        <h2 class="text-display">
-          {{ t('home.contact_title') }}
-        </h2>
-        <div class="flex flex-wrap items-center gap-6">
-          <DidapButton :to="localePath('/contact')">
-            {{ t('home.contact_cta') }}
-          </DidapButton>
-          <a
-            :href="`mailto:${CONTACT_EMAIL}`"
+          <HomeLogo
+            class="w-[min(100%,78vw,1100px)]"
+          />
+          <p
             class="
-              text-body transition-colors
-              hover:text-green
+              reveal font-wide text-[clamp(1.75rem,1rem+3vw,3.5rem)]
+              leading-none font-bold tracking-[-0.02em]
             "
+            style="--i: 1"
           >
-            {{ CONTACT_EMAIL }}
-          </a>
+            {{ taglineStart }} <span class="text-red">{{ taglineEnd }}</span>
+          </p>
         </div>
-        <div class="
-          grid gap-6
-          lg:grid-cols-[302fr_954fr]
-        ">
-          <h3 class="text-label text-green">
-            {{ t('home.qube_label') }}
-          </h3>
-          <div class="flex flex-col gap-7">
-            <p class="text-title">
-              {{ t('home.qube_title') }}
-            </p>
-            <p class="text-body">
-              {{ t('home.qube_body') }}
-            </p>
-          </div>
-        </div>
+        <a
+          :href="`#${HOME_SECTIONS.products}`"
+          class="
+            reveal grid justify-items-center gap-3.5 justify-self-center
+            rounded-lg px-3 py-2 text-button
+            focus-visible:outline-2 focus-visible:outline-offset-4
+            focus-visible:outline-ink
+          "
+          style="--i: 3"
+        >
+          <span
+            class="
+              scroll-cue relative h-[42px] w-[26px] rounded-full border-[1.5px]
+              border-current
+            "
+            aria-hidden="true"
+          />
+          {{ t('home.scroll_cue') }}
+        </a>
+      </div>
+    </section>
+
+    <!-- I prodotti a tutto schermo -->
+    <section
+      v-for="(p, i) in featured"
+      :id="screens[i + 1]!.id"
+      :key="p.key"
+      data-screen
+      class="screen screen-dims bg-ink text-paper-light"
+      :class="{ 'is-active': active === i + 1 }"
+      :aria-labelledby="`${p.slug}-name`"
+    >
+      <ScreenHero
+        :media="hero(p.slug)"
+        :title="p.name"
+        :text="t(`home.products.${p.key}.desc`)"
+        :title-id="`${p.slug}-name`"
+        :shade="!p.light"
+      >
+        <DidapButton
+          :to="localePath(`/work/${p.slug}`)"
+          paper
+        >
+          {{ t('home.featured_more') }}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          ><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5" /></svg>
+        </DidapButton>
+      </ScreenHero>
+    </section>
+
+    <!-- Le porte: tutti i prodotti, tutti i clienti -->
+    <section
+      :id="HOME_SECTIONS.projects"
+      data-screen
+      class="screen"
+      :class="{ 'is-active': active === featured.length + 1 }"
+      :aria-label="t('nav.projects')"
+    >
+      <div
+        class="
+          screen-inner grid h-full grid-rows-2
+          md:grid-cols-2 md:grid-rows-1
+        "
+      >
+        <NuxtLink
+          v-for="(d, i) in indexes"
+          :key="d.to"
+          :to="d.to"
+          class="
+            group flex min-h-0 flex-col justify-end gap-[clamp(16px,3vh,32px)]
+            px-5 pt-[72px] pb-[max(28px,env(safe-area-inset-bottom))]
+            transition-colors duration-500
+            md:px-10 md:pb-16
+            lg:pt-[97px]
+            xl:px-20
+          "
+          :class="d.tone"
+          @mouseenter="clientsHover = i === 1"
+          @mouseleave="clientsHover = false"
+        >
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.2"
+            aria-hidden="true"
+            class="
+              reveal transition-transform duration-300 ease-vintage
+              group-hover:translate-x-1.5 group-hover:-translate-y-1.5
+            "
+            :style="{ '--i': i * 2 }"
+          ><path d="M3 11 11 3M4.5 3H11v6.5" /></svg>
+          <h2
+            class="
+              reveal font-wide text-[clamp(2.75rem,1.4rem+5vw,7rem)]
+              leading-[0.9] font-bold tracking-[-0.035em]
+            "
+            :style="{ '--i': i * 2 }"
+          >
+            {{ d.label }}
+          </h2>
+          <ul
+            class="reveal flex flex-wrap gap-x-5 gap-y-1 text-body opacity-80"
+            :style="{ '--i': i * 2 + 1 }"
+          >
+            <li
+              v-for="n in d.names"
+              :key="n"
+            >
+              {{ n }}
+            </li>
+          </ul>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- Chiusura -->
+    <section
+      :id="HOME_SECTIONS.contact"
+      data-screen
+      class="screen bg-red text-paper-light"
+      :class="{ 'is-active': active === screens.length - 1 }"
+      aria-labelledby="contatti-title"
+    >
+      <div class="screen-inner page-x grid h-full content-center gap-10 py-24">
+        <h2
+          id="contatti-title"
+          class="sr-only"
+        >
+          {{ t('home.outro_title') }}
+        </h2>
+        <!-- Didi chiede cosa serve; il modulo si apre sopra, già compilato -->
+        <DidiTalk
+          class="reveal"
+          style="--i: 0"
+          tone="red"
+          :hello="t('chat.ask')"
+          @form="(type, message) => openContact('', type, message)"
+        />
+        <ScreenLegal />
       </div>
     </section>
   </div>
 </template>
+
+<style scoped>
+/* L'invito a scorrere: la rotella del mouse che scende */
+.scroll-cue::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 4px;
+  height: 8px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--color-red);
+  animation: wheel 1.8s var(--ease-vintage) infinite;
+}
+
+@keyframes wheel {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; }
+  70% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+</style>

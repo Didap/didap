@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { DialogClose, DialogContent, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
-import ContactForm from '~/components/ContactForm.vue'
+import DidiChat from '~/components/DidiChat.vue'
 import DidapButton from '~/components/DidapButton.vue'
 
-// Il modulo di contatto a tutto schermo, sopra qualunque pagina: la
-// barra in alto è alta come la nav, la ✕ sta dove c'era il bottone.
-// Ogni apertura è un modulo nuovo, anche se si riapre mentre l'uscita
-// è ancora in corso. Lo apre e lo chiude plugins/contact-dialog.client.ts.
+// "Lavora con noi" a tutto schermo, sopra qualunque pagina: Didi che
+// chiede cosa serve (DidiChat), e da lì il modulo. La barra in alto è
+// alta come la nav, la ✕ sta dove c'era il bottone. Ogni apertura è una
+// chat nuova, anche se si riapre mentre l'uscita è ancora in corso. Lo apre e lo chiude plugins/contact-dialog.client.ts.
 const { t } = useI18n()
-const { open, product, projectType } = useContactDialog()
+const { open, product, projectType, message } = useContactDialog()
 
 const session = ref(0)
 watch(open, (o) => {
@@ -62,18 +62,19 @@ watch(open, (o) => {
             border-t-[1.5px] border-ink pt-8 pb-24
             lg:pb-[136px]
           ">
-            <ContactForm
+            <DidiChat
               :key="session"
               :title-as="DialogTitle"
               :product="product"
               :project-type="projectType"
+              :message="message"
             >
               <template #done>
                 <DialogClose as-child>
                   <DidapButton>{{ t('contact.close') }}</DidapButton>
                 </DialogClose>
               </template>
-            </ContactForm>
+            </DidiChat>
           </div>
         </div>
       </DialogContent>

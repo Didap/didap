@@ -1,81 +1,44 @@
 {
   "nav": {
+    "home": "Home",
     "work": "Products",
+    "projects": "Projects",
     "clients": "Partners",
     "about": "About",
-    "contact": "Contact",
+    "contact": "Work with us",
     "cta": "Let’s work together",
     "main": "Main navigation",
     "open_menu": "Open menu",
     "close_menu": "Close menu",
-    "back": "Go back",
     "open_product": "Open {name}"
   },
   "home": {
     "seo_description": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
+    "index": "Home screens",
+    "scroll_cue": "Scroll to discover the projects",
+    "more_products": "Products",
+    "more_clients": "Clients",
+    "outro_title": "Got an idea\nto set free?",
     "hero_tagline": "Free the\nmonkey.",
-    "hero_sub": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
-    "products_title": "Living products. Open them.",
-    "products_intro": "We design them, write them and keep them in production ourselves. The fastest way to see how we work is to use them.",
-    "featured_more": "Read the case",
+    "featured_more": "Find out more",
     "status_live": "Live",
     "status_development": "In development",
     "status_pilot": "Pilot",
     "status_pending": "Status to be confirmed",
-    "open_product": "Open the product",
     "products": {
       "fanta_rainbow": {
-        "category": "Fantasy football",
-        "desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides.",
-        "alt": "Fanta Rainbow: a rainbow bolt splits the pitch at night and leaves the logo, with the line Il fantacalcio come non l'hai mai giocato"
-      },
-      "bin_or_deal": {
-        "category": "Marketplace",
-        "desc": "Listings aggregator across European marketplaces for collectors, with an automatic “bin vs deal” score.",
-        "alt": "Bin or Deal: the logo on newsprint, marketplace listings scrolling by and a stamp judging the price, Deal, Fair or Bin"
+        "desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides."
       },
       "cityfix": {
-        "category": "Cities",
-        "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city.",
-        "alt": "CityFix: the logo and the line Nessuna città è mai finita on a map of Brindisi, with reports around it going from open to taken on to solved"
+        "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city."
       },
       "cruciverba_lab": {
-        "category": "Games",
-        "desc": "The home of Italian crosswords online. Ten new word games every day, in the browser.",
-        "alt": "Cruciverba Lab: a crossword grid fills in with CRUCIVERBA and LAB, with the daily games around it like Chiave, Setaccio, Alveare and Nessi"
+        "desc": "The home of Italian crosswords online. Ten new word games every day, in the browser."
       },
       "helllo": {
-        "category": "Work",
-        "desc": "The job app where both sides choose each other. If you both say Helllo, the chat opens right away.",
-        "alt": "Helllo: two people on the phone joined by the three red l of the logo, drawn in a single stroke"
+        "desc": "The job app where both sides choose each other. If you both say Helllo, the chat opens right away."
       }
-    },
-    "how_label": "How we work",
-    "how": {
-      "fullstack": {
-        "title": "Full-stack,\nfor real.",
-        "body": "Backend, frontend, infrastructure, mobile, integrations."
-      },
-      "outsourcing": {
-        "title": "No outsourcing\non what matters.",
-        "body": "The code we ship, we write it, test it and keep it running ourselves."
-      },
-      "design": {
-        "title": "Design lives\nin the code.",
-        "body": "Built to go to production, not to look good on slides. Products grow with real use."
-      }
-    },
-    "partners_label": "Partners and clients",
-    "partner_types": {
-      "institutional": "Institutional partner",
-      "saas": "SaaS",
-      "app": "App"
-    },
-    "contact_title": "Got an idea to set free?",
-    "contact_cta": "Let’s work together",
-    "qube_label": "Strategic partner · The Qube",
-    "qube_title": "We help you fund it, too.",
-    "qube_body": "With The Qube, a MIMIT-certified incubator, we guide you towards subsidised finance and Italian and European public grants."
+    }
   },
   "work": {
     "kicker": "Studio",
@@ -189,9 +152,48 @@
     "notify": "Tell me when it launches",
     "next": "Next product",
     "placeholder_image": "Image",
-    "team": "The hands behind it"
+    "team": "The hands behind it",
+    "why": "Why",
+    "made": "What we did",
+    "offers": "What it offers",
+    "challenge": "The hard part",
+    "model": "The model",
+    "all": "All products",
+    "scroll": "Scroll to discover {name}",
+    "roles": {
+      "barbara": "Project manager",
+      "william": "Full-stack developer",
+      "cristiano": "Full-stack developer",
+      "alessandro": "Full-stack developer",
+      "vitantonio": "Designer"
+    }
   },
   "splash": {
     "skip": "Skip"
+  },
+  "chat": {
+    "title": "Ask Didi!",
+    "questions": {
+      "q1": "Want to know what we do?",
+      "q2": "Wondering whether your idea can be built?",
+      "q3": "Looking for a grant to get started?"
+    },
+    "hello": "Hi, I’m Didi. Tell me what you have in mind and I’ll tell you how to start.",
+    "ask": "Got an idea to set free? Tell me about it.",
+    "placeholder": "E.g. a booking app for my restaurant",
+    "input": "Your message for Didi",
+    "send": "Send",
+    "thinking": "Didi is thinking",
+    "you": "You wrote",
+    "reply": {
+      "product": "A product from scratch: that’s what we do. Write to us and we’ll think it through together.",
+      "app": "An app or a SaaS: we design it and build it ourselves. Write to us and let’s start.",
+      "site": "A website of your own, we can do that. Drop us a line and let’s start.",
+      "grant": "For grants we work with The Qube: we bring the project, they bring the funding. Tell us where you’re starting from.",
+      "chat": "I’m listening. Write to us however you like, we reply within 2 working days."
+    },
+    "form": "Fill in the form",
+    "restart": "Start over",
+    "back": "Back to Didi"
   }
 }

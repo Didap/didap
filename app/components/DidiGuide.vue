@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEventListener } from '@vueuse/core'
 import DidapButton from '~/components/DidapButton.vue'
-import { CONTACT_EMAIL, CONTACT_WHATSAPP, PROJECT_TYPES, mailtoHref, whatsappHref } from '#shared/contact'
+import { DIDI_TOPICS, type DidiTopic } from '#shared/didi'
 import { untypeset } from '#shared/typeset'
 
 // Didi lascia la nav: passato lo schermo e qualcosa di pagina salta in
@@ -17,17 +17,14 @@ const localePath = useLocalePath()
 const route = useRoute()
 const routeBaseName = useRouteBaseName()
 
-// Le voci del modulo e in più due chiacchiere
-const TOPICS = [...PROJECT_TYPES, 'chat'] as const
-type Topic = (typeof TOPICS)[number]
-const topicLabel = (k: Topic) => t(k === 'chat' ? 'didi.chat' : `contact.form.option_${k}`)
+const { label: topicLabel, mailto: mailtoFor, whatsapp: whatsappFor } = useDidiContact()
 
 const KEY = 'didap-didi'
 // Quanto si scorre prima che arrivi, in altezze di schermo
 const TRIGGER = 1.2
 
 const open = ref(false)
-const topic = ref<Topic | null>(null)
+const topic = ref<DidiTopic | null>(null)
 // Durante un volo i clic non contano
 let busy = false
 
@@ -42,10 +39,8 @@ const home = () => document.querySelector<HTMLElement>('[data-didi-home]')
 // Si leggono solo con una voce scelta. Il testo tradotto passa da
 // typeset(): nei link va con gli spazi normali
 const message = computed(() => untypeset(t(`didi.message.${topic.value}`)))
-const mailto = computed(() =>
-  mailtoHref(CONTACT_EMAIL, untypeset(t('didi.subject', { topic: topicLabel(topic.value!) })), message.value),
-)
-const whatsapp = computed(() => (CONTACT_WHATSAPP ? whatsappHref(CONTACT_WHATSAPP, message.value) : ''))
+const mailto = computed(() => mailtoFor(topic.value!, message.value))
+const whatsapp = computed(() => whatsappFor(message.value))
 
 async function arrive() {
   busy = true
@@ -214,7 +209,7 @@ onBeforeUnmount(() => {
             </p>
             <ul class="mt-4 flex flex-wrap gap-2">
               <li
-                v-for="k in TOPICS"
+                v-for="k in DIDI_TOPICS"
                 :key="k"
               >
                 <button

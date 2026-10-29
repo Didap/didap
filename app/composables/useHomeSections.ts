@@ -1,11 +1,11 @@
 /**
- * Voci della nav: ancore alle sezioni della home. Da qualsiasi pagina
- * portano alla home e scorrono alla sezione (vedi scroll-margin in main.css).
+ * Voci della nav: ancore alle schermate della home. Da qualsiasi pagina
+ * portano alla home e scorrono alla schermata: i prodotti partono da
+ * CityFix, i progetti sono le card, i contatti la chiusura rossa.
  */
 export const HOME_SECTIONS = {
   products: 'prodotti',
-  partners: 'partner',
-  about: 'come-lavoriamo',
+  projects: 'progetti',
   contact: 'contatti',
 } as const
 
@@ -14,8 +14,16 @@ export const useHomeSections = () => {
   const localePath = useLocalePath()
   return computed(() => [
     { id: HOME_SECTIONS.products, label: t('nav.work') },
-    { id: HOME_SECTIONS.partners, label: t('nav.clients') },
-    { id: HOME_SECTIONS.about, label: t('nav.about') },
+    { id: HOME_SECTIONS.projects, label: t('nav.projects') },
     { id: HOME_SECTIONS.contact, label: t('nav.contact') },
   ].map((s) => ({ ...s, to: { path: localePath('/'), hash: `#${s.id}` } })))
+}
+
+/**
+ * "Lavoriamo insieme" porta alla chiusura rossa della home, dove Didi
+ * chiede cosa serve
+ */
+export const useCtaPath = () => {
+  const localePath = useLocalePath()
+  return computed(() => localePath({ path: '/', hash: `#${HOME_SECTIONS.contact}` }))
 }

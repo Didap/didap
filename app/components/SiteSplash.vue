@@ -5,13 +5,16 @@ import type { AnimationItem } from 'lottie-web'
 // 6 s, fondo trasparente). Didi entra dall'alto, cade dentro la D e
 // forma il logotipo. Lo script in testa alla pagina decide prima del
 // primo disegno se mostrarla (classe `splash` su <html>): una volta
-// sola per browser, mai con meno movimento.
+// sola per browser, mai con meno movimento. Le pagine che non la
+// vogliono chiedono definePageMeta({ splash: false }): la home, dove la
+// stessa animazione gira nel logo dell'apertura (HomeLogo).
 
 const { t } = useI18n()
+const route = useRoute()
 
 const KEY = 'didap-splash'
 useHead({
-  script: [{
+  script: route.meta.splash === false ? [] : [{
     key: KEY,
     tagPosition: 'head',
     innerHTML: `try{if(!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
@@ -25,6 +28,7 @@ let anim: AnimationItem | null = null
 
 function finish() {
   if (leaving.value) return
+  window.removeEventListener('keydown', onKey)
   // Saltata a metà: sparisce dal logo finito, non da Didi a mezz'aria
   if (anim?.isLoaded) anim.goToAndStop(anim.totalFrames - 1, true)
   else anim?.pause()
@@ -45,11 +49,7 @@ function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape') finish()
 }
 
-onMounted(async () => {
-  if (!document.documentElement.classList.contains('splash')) {
-    visible.value = false
-    return
-  }
+async function play() {
   window.addEventListener('keydown', onKey)
   // Con una rete lenta il sito non resta nascosto: se in 4 s l'animazione
   // non è pronta, si passa alla pagina
@@ -82,6 +82,11 @@ onMounted(async () => {
   })
   // Il logo resta fermo un attimo prima che la pagina compaia
   anim.addEventListener('complete', () => setTimeout(finish, 600))
+}
+
+onMounted(() => {
+  if (document.documentElement.classList.contains('splash')) play()
+  else visible.value = false
 })
 
 onBeforeUnmount(() => {

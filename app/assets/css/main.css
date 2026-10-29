@@ -201,6 +201,11 @@
     scroll-snap-type: y mandatory;
   }
 
+  /* Durante la corsa tra due schermate (useScreenScroll) lo snap tace */
+  html.home-snap.home-gliding {
+    scroll-snap-type: none;
+  }
+
   [id] {
     scroll-margin-top: 72px;
 

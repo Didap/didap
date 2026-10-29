@@ -73,6 +73,8 @@ const clientCards = computed<Card[]>(() =>
   }),
 )
 
+const root = ref<HTMLElement>()
+
 // Le schermate, per l'indice a destra e il colore della barra
 const screens = computed(() => [
   { id: 'top', label: 'Didap', light: true },
@@ -81,11 +83,14 @@ const screens = computed(() => [
   { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
 ])
 
+// Con mouse e trackpad un gesto porta alla schermata dopo, con una corsa
+// morbida (composables/useScreenScroll)
+useScreenScroll(root)
+
 // La schermata in scena è quella che passa per la metà dello schermo,
 // anche quando è più alta (le card su telefono)
 const active = ref(0)
 const motion = ref(false)
-const root = ref<HTMLElement>()
 let observer: IntersectionObserver | null = null
 onMounted(() => {
   motion.value = !matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -231,7 +236,7 @@ const year = new Date().getFullYear()
       :id="screens[i + 1]!.id"
       :key="p.key"
       data-screen
-      class="screen bg-ink text-paper-light"
+      class="screen screen-dims bg-ink text-paper-light"
       :class="{ 'is-active': active === i + 1 }"
       :style="{ zIndex: i + 1 }"
       :aria-labelledby="`${p.slug}-name`"
@@ -681,8 +686,9 @@ const year = new Date().getFullYear()
   transform: none;
 }
 
-/* Legate allo scroll: chi esce sale più piano e si scurisce, così la
-   successiva la copre; il video che entra si posa da un leggero zoom */
+/* Legate allo scroll: chi esce sale più piano, così la successiva la
+   copre; i video si scuriscono mentre escono (carta e rosso no, verrebbero
+   grigi) e quello che entra si posa da un leggero zoom */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .screen-inner {
@@ -691,7 +697,7 @@ const year = new Date().getFullYear()
       animation-range: exit;
     }
 
-    .screen-inner::after {
+    .screen-dims .screen-inner::after {
       content: '';
       position: absolute;
       inset: 0;

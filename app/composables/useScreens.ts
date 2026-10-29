@@ -110,11 +110,16 @@ export function useScreens(root: Ref<HTMLElement | undefined>) {
   onMounted(() => {
     motion.value = !matchMedia('(prefers-reduced-motion: reduce)').matches
     const els = screens()
+    // A ogni passaggio sulla metà si ricontrolla chi la contiene: sul
+    // confine due schermate la toccano insieme e l'ultimo evento non basta
     observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) active.value = els.indexOf(e.target as HTMLElement)
-        }
+      () => {
+        const mid = window.innerHeight / 2
+        const i = els.findIndex((el) => {
+          const r = el.getBoundingClientRect()
+          return r.top <= mid && r.bottom > mid
+        })
+        if (i >= 0) active.value = i
       },
       { rootMargin: '-50% 0px -50% 0px' },
     )

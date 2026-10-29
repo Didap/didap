@@ -201,7 +201,7 @@ const { active, motion } = useScreens(root)
       <section
         v-for="(s, i) in [
           { id: 'why', kicker: t('product.why'), ...project.screens.why, tone: 'bg-paper text-ink' },
-          { id: 'made', kicker: t('product.made'), ...project.screens.made, tone: 'bg-ink text-paper-light' },
+          { id: 'made', kicker: t('product.made'), ...project.screens.made, tone: 'enter-wipe bg-ink text-paper-light' },
         ]"
         :id="s.id"
         :key="s.id"
@@ -267,7 +267,12 @@ const { active, motion } = useScreens(root)
       :key="f.name"
       data-screen
       class="screen offer bg-paper text-ink"
-      :class="{ 'is-active': active === at(`offer-${i + 1}`), 'offer-wide': f.wide, 'offer-flow': f.flow }"
+      :class="{
+        'is-active': active === at(`offer-${i + 1}`),
+        'offer-wide': f.wide,
+        'offer-flow': f.flow,
+        'offer-flow-in': offers[i - 1]?.flow,
+      }"
       :style="{ zIndex: at(`offer-${i + 1}`), '--backdrop': f.backdrop }"
       :aria-labelledby="`offer-${i + 1}-title`"
     >
@@ -335,7 +340,7 @@ const { active, motion } = useScreens(root)
       v-if="challenge"
       id="challenge"
       data-screen
-      class="screen bg-green text-paper-light"
+      class="enter-window screen bg-green text-paper-light"
       :class="{ 'is-active': active === at('challenge') }"
       :style="{ zIndex: at('challenge') }"
       aria-labelledby="challenge-title"
@@ -375,7 +380,7 @@ const { active, motion } = useScreens(root)
       v-if="project.model"
       id="model"
       data-screen
-      class="screen bg-banana text-ink"
+      class="enter-doors screen bg-banana text-ink"
       :class="{ 'is-active': active === at('model') }"
       :style="{ zIndex: at('model') }"
       :aria-label="t('product.model')"
@@ -407,7 +412,7 @@ const { active, motion } = useScreens(root)
       v-if="team.length"
       id="team"
       data-screen
-      class="screen bg-paper text-ink"
+      class="enter-cards screen bg-paper text-ink"
       :class="{ 'is-active': active === at('team') }"
       :style="{ zIndex: at('team') }"
       aria-labelledby="team-title"
@@ -433,8 +438,8 @@ const { active, motion } = useScreens(root)
           <li
             v-for="(m, n) in team"
             :key="m.key"
-            class="reveal flex min-w-0 flex-col gap-3"
-            :style="{ '--i': n + 1 }"
+            class="team-card reveal flex min-w-0 flex-col gap-3"
+            :style="{ '--i': n + 1, '--n': n }"
           >
             <div
               class="
@@ -466,7 +471,7 @@ const { active, motion } = useScreens(root)
     <section
       id="next"
       data-screen
-      class="screen bg-red text-paper-light"
+      class="enter-circle screen bg-red text-paper-light"
       :class="{ 'is-active': active === screens.length - 1 }"
       :style="{ zIndex: screens.length }"
       :aria-label="t('product.next')"
@@ -547,17 +552,24 @@ const { active, motion } = useScreens(root)
 }
 
 .offer-media {
-  display: grid;
+  position: relative;
   grid-column: 2;
   grid-row: 1;
-  place-items: center;
   overflow: hidden;
   background: var(--backdrop, var(--color-ink));
 }
 
+/* Alto quanto il riquadro: se è più largo esce dai lati, se è più
+   stretto i lati sfumano nel fondo */
 .offer-media :deep(.screen-video) {
-  width: min(100%, calc(var(--panel-h) * var(--ratio, 1)));
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: auto;
+  max-width: none;
   aspect-ratio: var(--ratio, 1);
+  translate: -50% 0;
   mask-image:
     linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
     linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
@@ -591,9 +603,11 @@ const { active, motion } = useScreens(root)
   }
 
   .offer-wide .offer-media :deep(.screen-video) {
+    left: 0;
     width: 100%;
     height: 100%;
     aspect-ratio: auto;
+    translate: none;
     mask-image: none;
   }
 
@@ -629,5 +643,83 @@ const { active, motion } = useScreens(root)
     align-content: start;
     padding-top: clamp(20px, 3.5vh, 36px);
   }
+}
+
+/* Ogni schermata entra a modo suo, legata allo scroll mentre sale: il
+   riquadro del video arriva da destra e il testo da sotto (non tra due
+   voci con lo stesso fondo, lì scorre solo il contenuto), il video largo
+   si apre come una finestra, "Cosa abbiamo fatto" si scopre da sinistra,
+   la cosa difficile cresce dal centro, il modello si apre come due
+   ante, la squadra arriva una carta alla volta, la chiusura sale in un
+   cerchio dal basso */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .offer:not(.offer-flow-in, .offer-wide) .offer-media,
+    .offer:not(.offer-flow-in, .offer-wide) .offer-text,
+    .enter-wipe,
+    .enter-window,
+    .enter-doors,
+    .enter-circle,
+    .team-card {
+      animation-timeline: --screen;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-range: entry 0% entry 100%;
+    }
+
+    .offer:not(.offer-flow-in, .offer-wide) .offer-media {
+      animation-name: from-right;
+    }
+
+    .offer:not(.offer-flow-in, .offer-wide) .offer-text {
+      animation-name: from-below;
+    }
+
+    .enter-wipe { animation-name: wipe-right; }
+    .enter-window { animation-name: window; }
+    .enter-doors { animation-name: doors; }
+    .enter-circle { animation-name: circle-up; }
+
+    .team-card {
+      animation-name: from-below;
+      animation-range: entry 0% entry calc(55% + var(--n, 0) * 10%);
+    }
+
+    @media (min-aspect-ratio: 1/1) {
+      .offer-wide {
+        animation: window linear both;
+        animation-timeline: --screen;
+        animation-range: entry 0% entry 100%;
+      }
+    }
+  }
+}
+
+@keyframes from-right {
+  from { transform: translateX(70%); }
+}
+
+@keyframes from-below {
+  from { transform: translateY(22vh); opacity: 0; }
+}
+
+@keyframes wipe-right {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes window {
+  from { clip-path: inset(18% 14% round 48px); }
+  to { clip-path: inset(0 round 0); }
+}
+
+@keyframes doors {
+  from { clip-path: inset(0 50%); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes circle-up {
+  from { clip-path: circle(0% at 50% 100%); }
+  to { clip-path: circle(150% at 50% 100%); }
 }
 </style>

@@ -15,7 +15,7 @@ const year = new Date().getFullYear()
       pb-[max(24px,env(safe-area-inset-bottom))] text-label opacity-75
     "
   >
-    <span>© {{ year }} Didap</span>
+    <span>© {{ year }} Didap srl</span>
     <a
       :href="`mailto:${CONTACT_EMAIL}`"
       class="

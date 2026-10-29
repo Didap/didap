@@ -8,12 +8,8 @@ import DidiGuide from '~/components/DidiGuide.vue'
 // con definePageMeta({ surface: 'cream' }): vale anche per nav e footer.
 const route = useRoute()
 const cream = computed(() => route.meta.surface === 'cream')
-// definePageMeta({ nav: 'product' }): nav della scheda prodotto.
-// { nav: 'screens' }: le pagine a schermate (la home, le schede a slide)
-// hanno la loro barra e chiudono da sé, senza nav né footer. Lì Didi
-// non scende in basso a destra: la nuvoletta coprirebbe le schermate
+// definePageMeta({ nav: 'product' }): nav della scheda prodotto
 const productNav = computed(() => route.meta.nav === 'product')
-const screens = computed(() => route.meta.nav === 'screens')
 </script>
 
 <template>
@@ -22,18 +18,14 @@ const screens = computed(() => route.meta.nav === 'screens')
     :class="cream ? 'bg-cream' : 'bg-paper'"
   >
     <AppHeader
-      v-if="!screens"
       :cream="cream"
       :product="productNav"
     />
     <main class="flex-1">
       <slot />
     </main>
-    <AppFooter
-      v-if="!screens"
-      :cream="cream"
-    />
-    <DidiGuide v-if="!screens" />
+    <AppFooter :cream="cream" />
+    <DidiGuide />
     <SiteSplash />
   </div>
 </template>

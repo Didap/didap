@@ -1,3 +1,5 @@
+import { useEventListener } from '@vueuse/core'
+
 /**
  * Le pagine a schermate (la home, le schede prodotto a slide): una pila
  * di schermate alte quanto lo schermo, `[data-screen]` dentro `root`,
@@ -60,19 +62,21 @@ export function useScreens(root: Ref<HTMLElement | undefined>) {
     if (next) glideTo(next)
   }
 
-  // Fuori dalla home a schermate: il modulo di contatto, la splash. E i
-  // campi di testo, che scorrono da soli (il campo di Didi)
-  const elsewhere = (target: EventTarget | null) =>
-    (target instanceof Element && !!target.closest('[role="dialog"], textarea'))
-    || document.documentElement.classList.contains('splash')
+  // Conta solo quello che succede nella pagina a schermate: il modulo di
+  // contatto sta fuori (portato nel body), la splash le sta sopra
+  const ours = (target: EventTarget | null) =>
+    !document.documentElement.classList.contains('splash')
+    && (target === document.body || (target instanceof Node && !!root.value?.contains(target)))
 
   // Rotella e trackpad: conta solo l'inizio di un gesto. L'inerzia del
   // trackpad manda colpi sempre più deboli e ravvicinati; un gesto nuovo
-  // arriva dopo una pausa o con un colpo più forte
+  // arriva dopo una pausa o con un colpo più forte. Il campo di Didi
+  // scorre da solo
   let lastT = 0
   let lastAbs = 0
   function onWheel(e: WheelEvent) {
-    if (e.ctrlKey || elsewhere(e.target) || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return
+    if (e.ctrlKey || !ours(e.target) || (e.target as Element).closest?.('textarea')) return
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return
     e.preventDefault()
     const now = performance.now()
     const abs = Math.abs(e.deltaY)
@@ -83,25 +87,32 @@ export function useScreens(root: Ref<HTMLElement | undefined>) {
     go(Math.sign(e.deltaY))
   }
 
-  const NEXT = ['ArrowDown', 'PageDown', ' ']
-  const PREV = ['ArrowUp', 'PageUp']
   function onKey(e: KeyboardEvent) {
-    if (e.altKey || e.ctrlKey || e.metaKey || elsewhere(e.target)) return
+    if (e.altKey || e.ctrlKey || e.metaKey || !ours(e.target)) return
     const el = e.target instanceof Element ? e.target : null
     if (el?.closest('input, textarea, select, [contenteditable]') || (e.key === ' ' && el?.closest('a, button'))) return
     // Maiuscolo e spazio torna indietro, come nel browser
-    const delta = e.key === ' ' && e.shiftKey ? -1 : NEXT.includes(e.key) ? 1 : PREV.includes(e.key) ? -1 : 0
-    if (delta || e.key === 'Home' || e.key === 'End') e.preventDefault()
-    if (gliding) return
-    if (delta) go(delta)
-    else if (e.key === 'Home') go(-Infinity)
-    else if (e.key === 'End') go(Infinity)
+    const delta = ({
+      'ArrowDown': 1,
+      'PageDown': 1,
+      ' ': e.shiftKey ? -1 : 1,
+      'ArrowUp': -1,
+      'PageUp': -1,
+      'Home': -Infinity,
+      'End': Infinity,
+    } as Record<string, number>)[e.key]
+    if (!delta) return
+    e.preventDefault()
+    if (!gliding) go(delta)
   }
 
-  // Ancore interne: stessa corsa, l'indirizzo non cambia
+  // Link a una schermata di questa pagina ("#contatti" o "/#contatti"):
+  // stessa corsa, l'indirizzo non cambia. In cattura, prima del router,
+  // che così lascia stare
   function onClick(e: MouseEvent) {
-    const a = (e.target as Element).closest<HTMLAnchorElement>('a[href^="#"]')
-    const target = a && document.getElementById(a.hash.slice(1))
+    const a = (e.target as Element).closest<HTMLAnchorElement>('a[href*="#"]')
+    if (!a || a.origin !== location.origin || a.pathname !== location.pathname) return
+    const target = document.getElementById(a.hash.slice(1))
     if (!target?.hasAttribute('data-screen')) return
     e.preventDefault()
     glideTo(target)
@@ -130,18 +141,15 @@ export function useScreens(root: Ref<HTMLElement | undefined>) {
     els.forEach(el => observer!.observe(el))
 
     if (!matchMedia('(pointer: fine)').matches || !motion.value) return
-    window.addEventListener('wheel', onWheel, { passive: false })
-    window.addEventListener('keydown', onKey)
-    root.value?.addEventListener('click', onClick)
+    useEventListener(window, 'wheel', onWheel, { passive: false })
+    useEventListener(window, 'keydown', onKey)
+    useEventListener(root, 'click', onClick, { capture: true })
   })
 
   onBeforeUnmount(() => {
     observer?.disconnect()
     cancelAnimationFrame(frame)
     document.documentElement.classList.remove('screen-gliding')
-    window.removeEventListener('wheel', onWheel)
-    window.removeEventListener('keydown', onKey)
-    root.value?.removeEventListener('click', onClick)
   })
 
   return { active, motion }

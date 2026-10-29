@@ -5,17 +5,19 @@ import type { AnimationItem } from 'lottie-web'
 // 6 s, fondo trasparente). Didi entra dall'alto, cade dentro la D e
 // forma il logotipo. Lo script in testa alla pagina decide prima del
 // primo disegno se mostrarla (classe `splash` su <html>): una volta
-// sola per browser, mai con meno movimento. Non sulla home: lì la stessa
-// animazione gira nel logo dell'apertura (HomeLogo).
+// sola per browser, mai con meno movimento. Le pagine che non la
+// vogliono chiedono definePageMeta({ splash: false }): la home, dove la
+// stessa animazione gira nel logo dell'apertura (HomeLogo).
 
 const { t } = useI18n()
+const route = useRoute()
 
 const KEY = 'didap-splash'
 useHead({
-  script: [{
+  script: route.meta.splash === false ? [] : [{
     key: KEY,
     tagPosition: 'head',
-    innerHTML: `try{if(!document.documentElement.hasAttribute('data-home-intro')&&!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
+    innerHTML: `try{if(!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
   }],
 })
 

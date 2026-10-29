@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
-import { CONTACT_EMAIL, CONTACT_WHATSAPP, PROJECT_TYPES, mailtoHref, whatsappHref, type ProjectType } from '#shared/contact'
-import type { DidiTopic } from '#shared/didi'
+import { projectTypeFromQuery, type ProjectType } from '#shared/contact'
+import { DIDI_TOPICS, type DidiTopic } from '#shared/didi'
 import { untypeset } from '#shared/typeset'
 
 // Didi che parla: la testa grande a sinistra, la nuvoletta in alto a
@@ -25,8 +25,7 @@ const draft = ref('')
 const input = ref<HTMLTextAreaElement>()
 const red = computed(() => props.tone === 'red')
 
-const TOPICS = [...PROJECT_TYPES, 'chat'] as const
-const topicLabel = (k: DidiTopic) => t(k === 'chat' ? 'didi.chat' : `contact.form.option_${k}`)
+const { label: topicLabel, mailto: mailtoFor, whatsapp: whatsappFor } = useDidiContact()
 
 const line = computed(() => (topic.value ? t(`chat.reply.${topic.value}`) : props.hello))
 // Più è lunga, più è piccola: deve stare nella nuvoletta
@@ -35,10 +34,8 @@ const size = computed(() => {
   return n < 40 ? 'text-[max(1.5rem,4.4cqw)]' : n < 80 ? 'text-[max(1.25rem,3.2cqw)]' : 'text-[max(1rem,2.4cqw)]'
 })
 
-const mailto = computed(() =>
-  topic.value ? mailtoHref(CONTACT_EMAIL, untypeset(t('didi.subject', { topic: topicLabel(topic.value) })), said.value) : '',
-)
-const whatsapp = computed(() => (CONTACT_WHATSAPP && said.value ? whatsappHref(CONTACT_WHATSAPP, said.value) : ''))
+const mailto = computed(() => (topic.value ? mailtoFor(topic.value, said.value) : ''))
+const whatsapp = computed(() => (said.value ? whatsappFor(said.value) : ''))
 
 function send() {
   const text = draft.value.trim()
@@ -49,8 +46,7 @@ function send() {
 
 // Le voci pronte: scrivono per il cliente la frase di DidiGuide
 function pick(k: DidiTopic) {
-  draft.value = untypeset(t(`didi.message.${k}`))
-  send()
+  ask(untypeset(t(`didi.message.${k}`)))
 }
 
 function restart() {
@@ -59,7 +55,7 @@ function restart() {
 }
 
 function openForm() {
-  emit('form', PROJECT_TYPES.find(p => p === topic.value) ?? '', said.value)
+  emit('form', projectTypeFromQuery(topic.value), said.value)
 }
 
 // Il campo cresce con il testo, fino a qualche riga
@@ -197,7 +193,7 @@ watch(draft, () => nextTick(() => {
         class="flex flex-wrap gap-2"
       >
         <li
-          v-for="k in TOPICS"
+          v-for="k in DIDI_TOPICS"
           :key="k"
         >
           <button

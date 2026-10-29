@@ -3,7 +3,7 @@ import ProductScreens from '~/components/ProductScreens.vue'
 
 // CityFix ha la scheda a slide (components/ProductScreens): questa pagina
 // vince su [slug].vue per il suo indirizzo
-definePageMeta({ nav: 'screens' })
+definePageMeta({ layout: 'screens' })
 </script>
 
 <template>

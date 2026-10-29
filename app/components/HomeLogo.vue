@@ -13,15 +13,15 @@ import type { AnimationItem } from 'lottie-web'
 const SRC = '/splash/didap-intro.json'
 const CLASS = 'home-intro'
 
+// Lo script decide prima del primo disegno, e solo se l'animazione
+// partirà chiede subito il Lottie: chi ha chiesto meno movimento non lo
+// scarica
 useHead({
-  // SiteSplash lo legge: sulla home niente splash, c'è già questa
-  htmlAttrs: { 'data-home-intro': '' },
   script: [{
     key: CLASS,
     tagPosition: 'head',
-    innerHTML: `try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('${CLASS}')}catch(e){}`,
+    innerHTML: `try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('${CLASS}');var l=document.createElement('link');l.rel='preload';l.as='fetch';l.crossOrigin='anonymous';l.href='${SRC}';document.head.appendChild(l)}}catch(e){}`,
   }],
-  link: [{ rel: 'preload', href: SRC, as: 'fetch', crossorigin: 'anonymous' }],
 })
 
 const player = ref<HTMLElement>()

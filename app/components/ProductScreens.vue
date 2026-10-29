@@ -2,7 +2,9 @@
 import DidapButton from '~/components/DidapButton.vue'
 import HomeBar from '~/components/HomeBar.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
+import ScreenHero from '~/components/ScreenHero.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
+import ScreenVeil from '~/components/ScreenVeil.vue'
 import { TEAM } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
@@ -14,7 +16,7 @@ import { typeset } from '#shared/typeset'
 // (`screens.media`, stesso ordine), la cosa difficile (`screens.challenge`,
 // se no `challenge`), il modello, chi ci ha lavorato e la chiusura rossa
 // col prodotto dopo. La pagina che la usa chiede
-// definePageMeta({ nav: 'screens' }): niente nav né footer.
+// definePageMeta({ layout: 'screens' }): niente nav né footer.
 //
 // Il video di una voce sta intero, alto quanto lo schermo, accanto al
 // testo (`ratio` del video). Se è largo (oltre 1.3) copre lo schermo e
@@ -119,81 +121,30 @@ const { active, motion } = useScreens(root)
       :class="{ 'is-active': active === 0 }"
       aria-labelledby="product-title"
     >
-      <div class="screen-inner h-full">
-        <template v-if="project.hero">
-          <img
-            :src="project.hero.posterMobile ?? project.hero.poster"
-            alt=""
-            class="screen-backdrop"
-          >
-          <MediaSlot
-            :media="{ alt: project.title, ...project.hero }"
-            class="screen-video screen-hero absolute inset-0 size-full"
-          />
-        </template>
-        <div
-          class="screen-veil"
-          aria-hidden="true"
+      <ScreenHero
+        :media="{ alt: project.title, ...project.hero }"
+        :title="project.title"
+        :text="typeset(project.lede || project.summary)"
+        title-id="product-title"
+        as="h1"
+      >
+        <!-- Alla schermata dopo, con la stessa corsa delle altre -->
+        <DidapButton
+          :href="`#${screens[1]?.id}`"
+          paper
         >
-          <i
-            v-for="n in 7"
-            :key="n"
-          />
-        </div>
-        <div
-          class="
-            absolute inset-x-0 bottom-0 z-2 page-x grid max-w-none items-end
-            gap-x-12 gap-y-6
-            pb-[max(clamp(28px,5vh,64px),env(safe-area-inset-bottom))]
-            min-[860px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]
-          "
-        >
-          <div class="
-            grid min-w-0 gap-[18px] [text-shadow:0_1px_18px_rgb(22_20_18/0.4)]
-          ">
-            <h1
-              id="product-title"
-              class="
-                reveal font-wide text-[clamp(2.25rem,1.4rem+2.6vw,4rem)]
-                leading-[0.92] font-bold tracking-[-0.03em]
-              "
-              style="--i: 0"
-            >
-              {{ project.title }}
-            </h1>
-            <p
-              class="reveal text-base/normal text-paper-light/88"
-              style="--i: 1"
-            >
-              {{ typeset(project.lede || project.summary) }}
-            </p>
-          </div>
-          <div
-            class="
-              reveal flex flex-wrap items-center gap-x-[22px] gap-y-3.5
-              min-[860px]:justify-end
-            "
-            style="--i: 2"
-          >
-            <!-- Alla schermata dopo, con la stessa corsa delle altre -->
-            <DidapButton
-              :href="`#${screens[1]?.id}`"
-              paper
-            >
-              {{ t('product.scroll', { name: project.title }) }}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                aria-hidden="true"
-              ><path d="M7 2v10M2.5 7.5 7 12l4.5-4.5" /></svg>
-            </DidapButton>
-          </div>
-        </div>
-      </div>
+          {{ t('product.scroll', { name: project.title }) }}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          ><path d="M7 2v10M2.5 7.5 7 12l4.5-4.5" /></svg>
+        </DidapButton>
+      </ScreenHero>
     </section>
 
     <!-- Il motivo, cosa abbiamo fatto -->
@@ -208,7 +159,6 @@ const { active, motion } = useScreens(root)
         data-screen
         class="screen"
         :class="[s.tone, { 'is-active': active === at(s.id) }]"
-        :style="{ zIndex: i + 1 }"
         :aria-labelledby="`${s.id}-title`"
       >
         <div class="
@@ -273,7 +223,7 @@ const { active, motion } = useScreens(root)
         'offer-flow': f.flow,
         'offer-flow-in': offers[i - 1]?.flow,
       }"
-      :style="{ zIndex: at(`offer-${i + 1}`), '--backdrop': f.backdrop }"
+      :style="{ '--backdrop': f.backdrop }"
       :aria-labelledby="`offer-${i + 1}-title`"
     >
       <div
@@ -289,16 +239,10 @@ const { active, motion } = useScreens(root)
             class="screen-video"
           />
         </div>
-        <div
+        <ScreenVeil
           v-if="f.wide"
-          class="screen-veil offer-veil"
-          aria-hidden="true"
-        >
-          <i
-            v-for="n in 7"
-            :key="n"
-          />
-        </div>
+          class="offer-veil"
+        />
         <div class="
           offer-text z-2 grid content-center gap-[clamp(14px,2.6vh,28px)] px-5
           py-6
@@ -342,7 +286,6 @@ const { active, motion } = useScreens(root)
       data-screen
       class="enter-window screen bg-green text-paper-light"
       :class="{ 'is-active': active === at('challenge') }"
-      :style="{ zIndex: at('challenge') }"
       aria-labelledby="challenge-title"
     >
       <div class="
@@ -382,7 +325,6 @@ const { active, motion } = useScreens(root)
       data-screen
       class="enter-doors screen bg-banana text-ink"
       :class="{ 'is-active': active === at('model') }"
-      :style="{ zIndex: at('model') }"
       :aria-label="t('product.model')"
     >
       <div class="
@@ -414,7 +356,6 @@ const { active, motion } = useScreens(root)
       data-screen
       class="enter-cards screen bg-paper text-ink"
       :class="{ 'is-active': active === at('team') }"
-      :style="{ zIndex: at('team') }"
       aria-labelledby="team-title"
     >
       <div class="
@@ -473,7 +414,6 @@ const { active, motion } = useScreens(root)
       data-screen
       class="screen bg-red text-paper-light"
       :class="{ 'is-active': active === screens.length - 1 }"
-      :style="{ zIndex: screens.length }"
       :aria-label="t('product.next')"
     >
       <div class="screen-inner page-x grid h-full content-center gap-10 py-24">
@@ -539,7 +479,6 @@ const { active, motion } = useScreens(root)
    contenuto */
 .offer {
   --panel-w: min(44vw, calc(100svh * 0.78));
-  --panel-h: 100svh;
 }
 
 .offer-grid {
@@ -621,13 +560,9 @@ const { active, motion } = useScreens(root)
 
 /* In verticale: il riquadro in alto per metà schermo, il testo sotto */
 @media (max-aspect-ratio: 1/1) {
-  .offer {
-    --panel-h: 50svh;
-  }
-
   .offer-grid {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--panel-h) minmax(0, 1fr);
+    grid-template-rows: 50svh minmax(0, 1fr);
   }
 
   .offer-media {

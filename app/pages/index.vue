@@ -5,7 +5,7 @@ import HomeBar from '~/components/HomeBar.vue'
 import HomeLogo from '~/components/HomeLogo.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
 import ScreenRail from '~/components/ScreenRail.vue'
-import MediaSlot from '~/components/MediaSlot.vue'
+import ScreenHero from '~/components/ScreenHero.vue'
 
 // Home a schermate: una pila di schermate a tutto schermo, ognuna copre
 // la precedente salendo dal basso (scroll nativo con lo snap). Apertura
@@ -14,7 +14,8 @@ import MediaSlot from '~/components/MediaSlot.vue'
 // prodotti e dei clienti e la chiusura rossa con Didi che chiede cosa
 // serve. Niente nav né footer: la barra è HomeBar, i link legali stanno
 // nella chiusura.
-definePageMeta({ nav: 'screens' })
+// La splash non serve: la stessa animazione gira nel logo dell'apertura
+definePageMeta({ layout: 'screens', splash: false })
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -111,7 +112,7 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
     <section
       id="top"
       data-screen
-      class="screen z-0 bg-paper text-ink"
+      class="screen bg-paper text-ink"
       :class="{ 'is-active': active === 0 }"
     >
       <div
@@ -167,88 +168,31 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
       data-screen
       class="screen screen-dims bg-ink text-paper-light"
       :class="{ 'is-active': active === i + 1 }"
-      :style="{ zIndex: i + 1 }"
       :aria-labelledby="`${p.slug}-name`"
     >
-      <div class="screen-inner h-full">
-        <img
-          :src="hero(p.slug).posterMobile"
-          alt=""
-          class="screen-backdrop"
+      <ScreenHero
+        :media="hero(p.slug)"
+        :title="p.name"
+        :text="t(`home.products.${p.key}.desc`)"
+        :title-id="`${p.slug}-name`"
+        :shade="!p.light"
+      >
+        <DidapButton
+          :to="localePath(`/work/${p.slug}`)"
+          paper
         >
-        <MediaSlot
-          :media="hero(p.slug)"
-          class="screen-video screen-hero absolute inset-0 size-full"
-        />
-        <div
-          v-if="!p.light"
-          class="
-            pointer-events-none absolute inset-x-0 top-0 h-40 bg-linear-to-b
-            from-ink/55 to-transparent
-          "
-        />
-        <div
-          class="screen-veil"
-          aria-hidden="true"
-        >
-          <i
-            v-for="n in 7"
-            :key="n"
-          />
-        </div>
-        <div
-          class="
-            absolute inset-x-0 bottom-0 z-2 page-x grid max-w-none items-end
-            gap-x-12 gap-y-6
-            pb-[max(clamp(28px,5vh,64px),env(safe-area-inset-bottom))]
-            min-[860px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]
-          "
-        >
-          <div class="
-            grid min-w-0 gap-[18px] [text-shadow:0_1px_18px_rgb(22_20_18/0.4)]
-          ">
-            <h2
-              :id="`${p.slug}-name`"
-              class="
-                reveal font-wide text-[clamp(2.25rem,1.4rem+2.6vw,4rem)]
-                leading-[0.92] font-bold tracking-[-0.03em]
-              "
-              style="--i: 0"
-            >
-              {{ p.name }}
-            </h2>
-            <p
-              class="reveal text-base/normal text-paper-light/88"
-              style="--i: 1"
-            >
-              {{ t(`home.products.${p.key}.desc`) }}
-            </p>
-          </div>
-          <div
-            class="
-              reveal flex flex-wrap items-center gap-x-[22px] gap-y-3.5
-              min-[860px]:justify-end
-            "
-            style="--i: 2"
-          >
-            <DidapButton
-              :to="localePath(`/work/${p.slug}`)"
-              paper
-            >
-              {{ t('home.featured_more') }}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                aria-hidden="true"
-              ><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5" /></svg>
-            </DidapButton>
-          </div>
-        </div>
-      </div>
+          {{ t('home.featured_more') }}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          ><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5" /></svg>
+        </DidapButton>
+      </ScreenHero>
     </section>
 
     <!-- Le porte: tutti i prodotti, tutti i clienti -->
@@ -257,7 +201,6 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
       data-screen
       class="screen"
       :class="{ 'is-active': active === featured.length + 1 }"
-      :style="{ zIndex: featured.length + 1 }"
       :aria-label="t('nav.projects')"
     >
       <div
@@ -326,7 +269,6 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
       data-screen
       class="screen bg-red text-paper-light"
       :class="{ 'is-active': active === screens.length - 1 }"
-      :style="{ zIndex: featured.length + 2 }"
       aria-labelledby="contatti-title"
     >
       <div class="screen-inner page-x grid h-full content-center gap-10 py-24">

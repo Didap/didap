@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { NuxtLink } from '#components'
 import SiteMenu from '~/components/SiteMenu.vue'
 
 // La barra della home a schermate: Didi a sinistra, "Lavoriamo insieme"
@@ -11,8 +10,8 @@ import SiteMenu from '~/components/SiteMenu.vue'
 // l'alone anche col testo ink, se Didi e il testo stanno su fondi diversi.
 // Con `menu` (le schede prodotto) al posto di Didi c'è SiteMenu, col
 // nome della pagina. "Lavoriamo insieme" porta alla chiusura rossa della
-// home: sulla home è un'ancora (stessa corsa delle altre schermate) e
-// sparisce quando la chiusura è in scena (`cta` falso).
+// home (sulla home con la corsa di useScreens) e sparisce quando la
+// chiusura è in scena (`cta` falso).
 const props = withDefaults(
   defineProps<{ shown: boolean, light: boolean, glow?: boolean, menu?: string, cta?: boolean }>(),
   { cta: true },
@@ -21,10 +20,7 @@ const halo = computed(() => props.glow ?? !props.light)
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const route = useRoute()
-const routeBaseName = useRouteBaseName()
 const ctaPath = useCtaPath()
-const onHome = computed(() => routeBaseName(route) === 'index')
 const didiAway = useDidiAway()
 </script>
 
@@ -77,10 +73,8 @@ const didiAway = useDidiAway()
     </NuxtLink>
 
     <!-- Col menu, su telefono basta la sua voce Lavora con noi -->
-    <component
-      :is="onHome ? 'a' : NuxtLink"
-      :href="onHome ? `#${HOME_SECTIONS.contact}` : undefined"
-      :to="onHome ? undefined : ctaPath"
+    <NuxtLink
+      :to="ctaPath"
       :class="[{ 'max-sm:hidden': menu }, cta ? '' : 'invisible opacity-0']"
       class="
         border-b-[1.5px] border-current py-2.5 text-button leading-none
@@ -90,6 +84,6 @@ const didiAway = useDidiAway()
       "
     >
       {{ t('nav.cta') }}
-    </component>
+    </NuxtLink>
   </header>
 </template>

@@ -84,7 +84,7 @@ export const useNextProduct = async (
   const collection = useProjectCollection('work')
   const { data: all } = await useAsyncData(
     () => `work-all-${locale.value}`,
-    () => queryCollection(collection.value).order('order', 'ASC').all(),
+    () => queryCollection(collection.value).order('order', 'ASC').select('stem', 'title', 'next', 'hero').all(),
     { watch: [collection] },
   )
   return computed(() => {

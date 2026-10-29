@@ -546,10 +546,11 @@ samp {
 /* Le schermate delle pagine a schermate (la home, le schede a slide,
    composables/useScreens). Fuori dai layer come gli stili scoped da cui
    vengono: vincono sulle utility. Ogni schermata è alta quanto lo
-   schermo e si posa con lo snap; le successive stanno sopra (z-index
-   nel template) */
+   schermo e si posa con lo snap. Ognuna ha il suo contesto di
+   sovrapposizione: la successiva, dopo nel DOM, sta sopra */
 .screen {
   position: relative;
+  isolation: isolate;
   height: 100svh;
   overflow: hidden;
   scroll-margin-top: 0;

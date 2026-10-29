@@ -4,8 +4,10 @@
 // (`shown` falso): sale via e torna con la prima schermata. `light` quando
 // sotto c'è carta o un video chiaro (testo ink), altrimenti testo carta
 // e un alone di carta che stacca Didi dal video scuro. Didi è quella
-// della nav: DidiGuide la porta via e la rimette qui.
-defineProps<{ shown: boolean, light: boolean }>()
+// della nav: DidiGuide la porta via e la rimette qui. `glow` tiene
+// l'alone anche col testo ink, se Didi e il testo stanno su fondi diversi.
+const props = defineProps<{ shown: boolean, light: boolean, glow?: boolean }>()
+const halo = computed(() => props.glow ?? !props.light)
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -43,9 +45,9 @@ const didiAway = useDidiAway()
           h-10 w-auto transition-[filter] duration-500
           lg:h-12
         "
-        :class="light ? '' : `
+        :class="halo ? `
           filter-[drop-shadow(0_0_10px_rgb(255_251_242/0.55))_drop-shadow(0_0_22px_rgb(255_251_242/0.35))]
-        `"
+        ` : ''"
       >
     </NuxtLink>
 

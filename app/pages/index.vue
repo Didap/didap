@@ -67,17 +67,21 @@ const { data: names } = await useAsyncData(
   { watch: [workCollection] },
 )
 const indexes = computed(() => [
-  { to: localePath('/work'), label: t('home.more_products'), names: names.value?.work ?? [], tone: 'bg-green hover:bg-ink' },
-  { to: localePath('/clients'), label: t('home.more_clients'), names: names.value?.clients ?? [], tone: 'bg-red hover:bg-ink' },
+  { to: localePath('/work'), label: t('home.more_products'), names: names.value?.work ?? [], tone: 'bg-green text-paper-light hover:bg-ink' },
+  { to: localePath('/clients'), label: t('home.more_clients'), names: names.value?.clients ?? [], tone: 'bg-banana text-ink hover:bg-ink hover:text-paper-light' },
 ])
 
 const root = ref<HTMLElement>()
+const clientsHover = ref(false)
 
 // Le schermate, per l'indice a destra e il colore della barra
 const screens = computed(() => [
   { id: 'top', label: 'Didap', light: true },
   ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light })),
-  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: false },
+  // Didi sta sul verde dei prodotti (sempre con l'alone), "Lavoriamo
+  // insieme" e l'indice sul giallo dei clienti: testo ink, carta quando
+  // i clienti diventano neri sotto il puntatore
+  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: !clientsHover.value, glow: true },
   { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
 ])
 
@@ -117,6 +121,7 @@ const year = new Date().getFullYear()
     <HomeBar
       :shown="active > 0"
       :light="screens[active]?.light ?? true"
+      :glow="screens[active]?.glow"
     />
 
     <nav
@@ -357,7 +362,7 @@ const year = new Date().getFullYear()
     <section
       :id="HOME_SECTIONS.projects"
       data-screen
-      class="screen text-paper-light"
+      class="screen"
       :class="{ 'is-active': active === featured.length + 1 }"
       :style="{ zIndex: featured.length + 1 }"
       :aria-label="t('nav.projects')"
@@ -381,6 +386,8 @@ const year = new Date().getFullYear()
             xl:px-20
           "
           :class="d.tone"
+          @mouseenter="clientsHover = i === 1"
+          @mouseleave="clientsHover = false"
         >
           <svg
             width="40"
@@ -406,10 +413,7 @@ const year = new Date().getFullYear()
             {{ d.label }}
           </h2>
           <ul
-            class="
-              reveal flex flex-wrap gap-x-5 gap-y-1 text-body
-              text-paper-light/80
-            "
+            class="reveal flex flex-wrap gap-x-5 gap-y-1 text-body opacity-80"
             :style="{ '--i': i * 2 + 1 }"
           >
             <li

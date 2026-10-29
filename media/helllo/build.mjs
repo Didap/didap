@@ -1,19 +1,21 @@
-// Builds hero/index.html (1920x1152) and splash/index.html (1920x960) from the key
-// illustration of the Helllo brand («Il logo è il cavo», Brand Guidelines 18).
+// Builds hero/index.html and splash/index.html from the key illustration of the Helllo
+// brand («Il logo è il cavo», Brand Guidelines 18), at twice the slot size (3840x2304,
+// 3840x1920): render at 24 fps and scale down to 1920 wide when encoding (media/README.md).
 // Run: node media/helllo/build.mjs
 //
 // figma/illustrazione-chiave.svg is the Figma SVG export of that illustration.
 // figma/linee-lll.json holds the centre lines of the filled lll of the cord, measured
-// inside the shapes: the glyphs write themselves along them. Its sticker lines are no
-// longer used: the sticker takes the cord's own line (see anchors and affine below).
+// inside the shapes: the glyphs write themselves along them. The sticker takes the
+// cord's own line (see anchors and affine below).
 //
 // Motion follows Brand Guidelines 20: the stroke writes itself (ease 55% out, 85% in,
 // lll in 1.4 s), the letters fall (30°, 20% higher, 5 frames at 24 fps, no bounce),
 // the cord is a spring (damped, 2.5 Hz, 8° at most, the ends stay put, once).
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const here = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
+const here = path.dirname(fileURLToPath(import.meta.url));
 const svg = fs.readFileSync(path.join(here, 'figma/illustrazione-chiave.svg'), 'utf8');
 const lines = JSON.parse(fs.readFileSync(path.join(here, 'figma/linee-lll.json'), 'utf8'));
 
@@ -25,16 +27,14 @@ if (P.length !== 78) throw new Error(`expected 78 paths, found ${P.length}`);
 const PANEL = [0];
 const CORD = [4, 1, 2, 3]; // tail from the left phone, then the three l
 const LEFT_HAND = [5, 6, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 39, 40];
-const LEFT_EYES = [17, 18];
 const LEFT_BODY = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20];
 const RIGHT_HAND = [41, 42, 43, 44, 45, 54, 55, 56];
-const RIGHT_EYES = [75, 76];
 const RIGHT_BODY = [31, 32, 33, 34, 35, 36, 37, 38, 46, 47, 48, 49, 50, 51, 52, 53, 67, 68, 69, 70, 71, 72, 73, 74, 77];
 const PILL = [65, 66]; // 64 is the pill's own mask
 const LETTERS = { h: 57, e: 58, l1: 59, l2: 60, l3: 61, o: 62, x: 63 };
-
-const BLUE = '#225AD6';
 const STICKER_L = [LETTERS.l1, LETTERS.l2, LETTERS.l3];
+// The four open eyes, with the centre of each one
+const EYES = { 17: [119, 330], 18: [176, 330.5], 75: [979, 326], 76: [918, 326] };
 
 // The three l of the sticker are the l of the cord, smaller and turned: the same outline
 // under an affine map. The map comes from the first 20 points of the two outlines, and
@@ -72,8 +72,8 @@ const affine = (from, to) => {
 
 // Where one l runs into the next, the measured lines end in the round end of the stroke
 // and start with a wobble at the bottom of the next l, both hidden in the drawing. The pen
-// leaves them out and goes from one to the other in a smooth curve.
-const joined = (centres, end, start, first = 0) => centres.map((c, i) => c.slice(i ? start : first, i < centres.length - 1 ? -end : undefined));
+// leaves them out (3 points each) and goes from one to the other in a smooth curve.
+const joined = (centres, first) => centres.map((c, i) => c.slice(i ? 3 : first, i < centres.length - 1 ? -3 : undefined));
 const path_ = (i, attrs = '') => `<path d="${P[i][0]}" fill="${P[i][1]}"${attrs}/>`;
 const group = (id, idx) => `<g id="${id}">${idx.map((i) => path_(i)).join('')}</g>`;
 
@@ -93,40 +93,40 @@ const curve = (pts) => {
 // below lays a pen along them (pen): short round strokes as wide as the glyph at that
 // point, each one showing when the writing gets there, all kept inside the glyphs. Once
 // written, the glyphs themselves (id) take over.
-const written = (id, glyphs, measured, end, start, first) => {
-  const centres = joined(measured, end, start, first);
+const written = (id, glyphs, measured, first = 0) => {
+  const centres = joined(measured, first);
   return `
-      ${centres.map((c, i) => `<path class="line" data-set="${id}" data-from="${c[0].join(' ')}" data-joint="${measured[i][0].join(' ')}" d="${curve(i ? [centres[i - 1].at(-1), ...c] : c)}"/>`).join('')}
+      ${centres.map((c, i) => `<path class="line" data-set="${id}" data-joint="${measured[i][0].join(' ')}" d="${curve(i ? [centres[i - 1].at(-1), ...c] : c)}"/>`).join('')}
       <clipPath id="in-${id}">${glyphs.map((g) => `<path d="${P[g][0]}"/>`).join('')}</clipPath>
       <g id="${id}-pen" clip-path="url(#in-${id})" stroke="${P[glyphs[0]][1]}" stroke-linecap="round"></g>
       <g id="${id}">${glyphs.map((g) => path_(g)).join('')}</g>`;
 };
 
 // Closed eyes at rest: a small smiling arc in place of each open eye
-const closed = (idx) => idx.map((i) => {
-  const [x, y] = eyeCentres[i];
-  return `<path d="M${x - 8} ${y - 1}Q${x} ${y + 7} ${x + 8} ${y - 1}" stroke="${BLUE}" stroke-width="6.4" stroke-linecap="round" fill="none"/>`;
-}).join('');
-const eyeCentres = { 17: [119, 330], 18: [176, 330.5], 75: [979, 326], 76: [918, 326] };
+const closed = Object.values(EYES).map(([x, y]) =>
+  `<path d="M${x - 8} ${y - 1}Q${x} ${y + 7} ${x + 8} ${y - 1}" stroke="#225AD6" stroke-width="6.4" stroke-linecap="round" fill="none"/>`).join('');
+// The sticker's l, each the cord's middle l carried over by its own affine map
+const cordL = anchors(P[2][0]);
+const stickerLines = STICKER_L.map((g) => lines.cord[2].map(affine(cordL, anchors(P[g][0]))));
 
 const illustration = `
     <svg id="ill" viewBox="0 0 1118 570" fill="none">
       <defs><clipPath id="frame"><rect width="1117.47" height="570"/></clipPath></defs>
       <g clip-path="url(#frame)">
         ${group('panel', PANEL)}
-        <g id="cord">${written('cw', CORD, lines.cord, 3, 3)}
+        <g id="cord">${written('cw', CORD, lines.cord)}
         </g>
         ${group('left-body', LEFT_BODY)}
         ${group('right-body', RIGHT_BODY)}
-        <g id="eyes-closed">${closed(LEFT_EYES)}${closed(RIGHT_EYES)}</g>
-        <g id="eyes-open">${[...LEFT_EYES, ...RIGHT_EYES].map((i) => `<g class="eye">${path_(i)}</g>`).join('')}</g>
+        <g id="eyes-closed">${closed}</g>
+        <g id="eyes-open">${Object.keys(EYES).map((i) => `<g class="eye">${path_(+i)}</g>`).join('')}</g>
         ${group('left-hand', LEFT_HAND)}
         ${group('right-hand', RIGHT_HAND)}
         <g id="sticker">
           ${group('pill', PILL)}
           <g class="fall" id="s-h">${path_(LETTERS.h)}</g>
           <g class="fall" id="s-e">${path_(LETTERS.e)}</g>
-          ${written('sw', STICKER_L, STICKER_L.map((g) => lines.cord[2].map(affine(anchors(P[2][0]), anchors(P[g][0])))), 3, 3, 3)}
+          ${written('sw', STICKER_L, stickerLines, 3)}
           <g class="fall" id="s-o">${path_(LETTERS.o)}</g>
           <g class="fall" id="s-x">${path_(LETTERS.x)}</g>
         </g>
@@ -145,11 +145,12 @@ const page = ({ id, width, height, scale }) => {
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { width: ${width}px; height: ${height}px; overflow: hidden; background: #F9F7F8; }
-      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #F9F7F8; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
       #ill { position: absolute; left: ${((width - w) / 2).toFixed(1)}px; top: ${((height - h) / 2).toFixed(1)}px; width: ${w.toFixed(1)}px; height: ${h.toFixed(1)}px; overflow: visible; }
       .line { display: none; }
       #eyes-open, #sticker > g, #cw { opacity: 0; }
-      #ill { --cw: 0; --sw: 0; }
+      #cw-pen { --cw: 0; }
+      #sw-pen { --sw: 0; }
     </style>
   </head>
   <body>
@@ -159,28 +160,21 @@ const page = ({ id, width, height, scale }) => {
     </div>
     <script>
       // The pen of each set of written glyphs (cw: the cord, sw: the lll of the sticker).
-      // One CSS variable of the same name, from 0 to 1, writes the whole set.
+      // One CSS variable of the same name on the pen, from 0 to 1, writes the whole set.
       const SETS = {
-        cw: { px: 4, step: 0.75, zone: 2, reach: 34, margin: 4 },
-        sw: { px: 8, step: 0.25, zone: 2, reach: 9, margin: 1 },
+        cw: { px: 4, step: 0.75, reach: 34, margin: 4 },
+        sw: { px: 8, step: 0.25, reach: 9, margin: 1 },
       };
       const NS = 'http://www.w3.org/2000/svg';
       for (const [id, o] of Object.entries(SETS)) {
-        // [x, y, arc length, line, part]: part 0 joins the previous line, 1 goes up to the
-        // top of the loop, 2 comes down and out
+        // [x, y, arc length, line], and where each l starts (joints)
         const pts = [];
-        const starts = [];
+        const joints = [];
         let total = 0;
         [...document.querySelectorAll('.line[data-set="' + id + '"]')].forEach((line, n) => {
           const L = line.getTotalLength();
-          const [fx, fy] = line.dataset.from.split(' ').map(Number);
-          const own = [];
-          for (let a = 0; a <= L; a += o.step) { const q = line.getPointAtLength(a); own.push([q.x, q.y, total + a, n, 0]); }
-          const from = own.findIndex((q) => Math.hypot(q[0] - fx, q[1] - fy) < 1);
-          const top = own.reduce((t, q, i) => (q[1] < own[t][1] ? i : t), 0);
-          own.forEach((q, i) => { q[4] = i < from ? 0 : i < top ? 1 : 2; });
-          starts.push(line.dataset.joint.split(' ').map(Number));
-          pts.push(...own);
+          for (let a = 0; a <= L; a += o.step) { const q = line.getPointAtLength(a); pts.push([q.x, q.y, total + a, n]); }
+          if (n) joints.push(line.dataset.joint.split(' ').map(Number));
           total += L;
         });
         // The glyphs, to measure them
@@ -209,15 +203,12 @@ const page = ({ id, width, height, scale }) => {
           return [l, r, nx, ny];
         });
         const near = Math.round(o.reach * 0.6 / o.step);
-        const nib = [0, 1].map((h) => side.map((_, i) => {
-          let m = Infinity;
-          for (let j = Math.max(0, i - near); j <= Math.min(pts.length - 1, i + near); j++) m = Math.min(m, side[j][h]);
-          return m;
-        }));
+        const around = (w, i) => w.slice(Math.max(0, i - near), i + near + 1);
+        const nib = [0, 1].map((h) => side.map((_, i) => Math.min(...around(side, i).map((q) => q[h]))));
         // Where one l runs into the next the strokes cross and the measure is wrong: there
         // the stroke arriving keeps the width it had up to the next line, which narrows
         // evenly, across the bottom of the l and up, to the width it has after the crossing
-        const joint = (q) => starts.some(([jx, jy], n) => n && Math.hypot(q[0] - jx, q[1] - jy) < o.reach * o.zone);
+        const joint = (q) => joints.some(([jx, jy]) => Math.hypot(q[0] - jx, q[1] - jy) < o.reach * 2);
         for (let i = 0; i < pts.length; i++) {
           if (!joint(pts[i])) continue;
           let j = i;
@@ -233,9 +224,8 @@ const page = ({ id, width, height, scale }) => {
         }
         // eased along the line, so the pen does not change size in steps
         const size = nib.map((w) => w.map((_, i) => {
-          let sum = 0, n = 0;
-          for (let j = Math.max(0, i - near); j <= Math.min(pts.length - 1, i + near); j++) { sum += w[j]; n++; }
-          return sum / n;
+          const span = around(w, i);
+          return span.reduce((t, v) => t + v, 0) / span.length;
         }));
         // The pen: from each point to the next, a round stroke centred between the two
         // edges, a little wider than the glyph (the glyphs clip it). It shows once the
@@ -244,7 +234,7 @@ const page = ({ id, width, height, scale }) => {
           const [x, y] = pts[i], [l, r] = [size[0][i], size[1][i]], [, , nx, ny] = side[i];
           return [x + nx * (r - l) / 2, y + ny * (r - l) / 2, (l + r) / 2];
         };
-        const group = document.getElementById(id + '-pen');
+        const penGroup = document.getElementById(id + '-pen');
         const T = (total + o.margin).toFixed(2);
         for (let i = 0; i < pts.length - 1; i++) {
           const [x1, y1, h1] = at(i), [x2, y2, h2] = at(i + 1);
@@ -253,7 +243,7 @@ const page = ({ id, width, height, scale }) => {
           seg.setAttribute('x2', x2.toFixed(2)); seg.setAttribute('y2', y2.toFixed(2));
           seg.setAttribute('stroke-width', (h1 + h2 + 2).toFixed(2));
           seg.style.opacity = 'clamp(0, var(--' + id + ') * ' + T + ' - ' + pts[i][2].toFixed(2) + ', 1)';
-          group.appendChild(seg);
+          penGroup.appendChild(seg);
         }
       }
 
@@ -271,7 +261,7 @@ const page = ({ id, width, height, scale }) => {
 
       // A set written from 0 to 1, or back
       const write = (id, at, duration, back = false) =>
-        tl.fromTo('#ill', { ['--' + id]: back ? 1 : 0 }, { ['--' + id]: back ? 0 : 1, duration, ease: pen, immediateRender: false }, at);
+        tl.fromTo('#' + id + '-pen', { ['--' + id]: back ? 1 : 0 }, { ['--' + id]: back ? 0 : 1, duration, ease: pen, immediateRender: false }, at);
 
       // 0.3: the phones come up, the people still have their eyes closed
       tl.fromTo('#left-hand', { y: 210, rotation: 14, svgOrigin: '250 570' }, { y: 0, rotation: 0, duration: 0.6, ease: 'power3.out' }, 0.3);
@@ -285,7 +275,7 @@ const page = ({ id, width, height, scale }) => {
 
       // 2.4: the cord is a spring, it swings once and stops; the baseline holds
       const swing = [-8, 4.2, -2.1, 1.1, -0.5, 0];
-      swing.forEach((a, i) => tl.to('#cord', { skewX: a, svgOrigin: '560 440', duration: i ? 0.2 : 0.1, ease: i ? 'sine.inOut' : 'sine.out' }, 2.4 + (i ? 0.1 + (i - 1) * 0.2 : 0)));
+      swing.forEach((a, i) => tl.to('#cord', { skewX: a, svgOrigin: '560 440', duration: i ? 0.2 : 0.1, ease: i ? 'sine.inOut' : 'sine.out' }, i ? '>' : 2.4));
 
       // 2.45: it's a match, eyes open
       tl.set('#eyes-closed', { opacity: 0 }, 2.45);

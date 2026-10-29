@@ -29,7 +29,8 @@ export default defineNuxtConfig({
 
   // Radar bandi: un giro ogni 15 minuti, poi decide lui cosa fare
   nitro: {
-    // Il Lottie della splash pesa 1 MB, compresso circa 230 KB
+    // I file in public partono già compressi (gzip e brotli): il Lottie della
+    // splash, per esempio, da 1 MB scende a circa 230 KB
     compressPublicAssets: true,
     experimental: { tasks: true },
     scheduledTasks: { '*/15 * * * *': ['radar:tick'] },

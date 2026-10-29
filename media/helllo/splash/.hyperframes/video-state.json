@@ -1,7 +1,7 @@
 {
   "version": 1,
   "historyId": "fb8a8ec9-2b26-4f3e-85a7-67d7543bea93",
-  "currentRevision": "198a326f-5fba-4e35-8dfe-85b193e4f918",
+  "currentRevision": "d417a4bf-b32c-4ff8-af42-29187e0def54",
   "pendingChanges": false,
   "files": {
     "hyperframes.json": {
@@ -9,8 +9,8 @@
       "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\c7\\c7a3009d23e471acfb1ca9ec252ea16a0ca4dfe55e3b3b9d7089c8f0764f4a43"
     },
     "index.html": {
-      "hash": "144915ec6dc77b8be314f621ac127d92d2314c9d1dcd340c645275e0956b5624",
-      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\14\\144915ec6dc77b8be314f621ac127d92d2314c9d1dcd340c645275e0956b5624"
+      "hash": "12b74d87a012abf51324830d80f6d6d2f16648ee55ee049343e3d2bcef0548cc",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\12\\12b74d87a012abf51324830d80f6d6d2f16648ee55ee049343e3d2bcef0548cc"
     },
     "meta.json": {
       "hash": "827b99713bfd1a3cb73796d5ffb8592a2283887425b35a760e0869b8eb0e0a64",
@@ -115,6 +115,21 @@
           "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\14\\144915ec6dc77b8be314f621ac127d92d2314c9d1dcd340c645275e0956b5624"
         }
       }
+    },
+    "d417a4bf-b32c-4ff8-af42-29187e0def54": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793271386590,
+      "endedAt": 1793271386591,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\14\\144915ec6dc77b8be314f621ac127d92d2314c9d1dcd340c645275e0956b5624",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\fb8a8ec9-2b26-4f3e-85a7-67d7543bea93\\blobs\\12\\12b74d87a012abf51324830d80f6d6d2f16648ee55ee049343e3d2bcef0548cc"
+        }
+      }
     }
   },
   "checks": {
@@ -194,15 +209,15 @@
   },
   "renders": {
     "latest": {
-      "id": "2f525378-7938-405b-91d6-e8c40fcea904",
-      "completedAt": 1793270204160,
-      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\9f74371f-9b50-4fe1-91f7-69bf60b66678\\scratchpad\\render\\splash2x.mp4",
+      "id": "f1b3be6c-a318-47ed-9ab0-5bee6efced68",
+      "completedAt": 1793271408927,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\9f74371f-9b50-4fe1-91f7-69bf60b66678\\scratchpad\\render\\splash2x_new.mp4",
       "status": "completed",
-      "revision": "198a326f-5fba-4e35-8dfe-85b193e4f918"
+      "revision": "d417a4bf-b32c-4ff8-af42-29187e0def54"
     },
     "retainedRevisions": [
-      "198a326f-5fba-4e35-8dfe-85b193e4f918",
-      "33f7f5bb-3496-43f1-832a-e5ae4c82a2bc"
+      "d417a4bf-b32c-4ff8-af42-29187e0def54",
+      "198a326f-5fba-4e35-8dfe-85b193e4f918"
     ]
   },
   "pendingArtifactCleanup": []

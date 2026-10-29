@@ -12,7 +12,7 @@ const { t } = useI18n()
 const KEY = 'didap-splash'
 useHead({
   script: [{
-    key: 'didap-splash',
+    key: KEY,
     tagPosition: 'head',
     innerHTML: `try{if(!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
   }],
@@ -22,12 +22,12 @@ const player = ref<HTMLElement>()
 const visible = ref(true)
 const leaving = ref(false)
 let anim: AnimationItem | null = null
-let finishing = false
 
 function finish() {
-  if (finishing) return
-  finishing = true
-  anim?.pause()
+  if (leaving.value) return
+  // Saltata a metà: sparisce dal logo finito, non da Didi a mezz'aria
+  if (anim?.isLoaded) anim.goToAndStop(anim.totalFrames - 1, true)
+  else anim?.pause()
   try {
     localStorage.setItem(KEY, '1')
   }
@@ -36,6 +36,8 @@ function finish() {
   setTimeout(() => {
     document.documentElement.classList.remove('splash')
     visible.value = false
+    anim?.destroy()
+    anim = null
   }, 450)
 }
 
@@ -49,21 +51,37 @@ onMounted(async () => {
     return
   }
   window.addEventListener('keydown', onKey)
-  // La build solo SVG, senza espressioni
-  const { default: lottie } = await import('lottie-web/build/player/lottie_light')
-  if (finishing || !player.value) return
+  // Con una rete lenta il sito non resta nascosto: se in 4 s l'animazione
+  // non è pronta, si passa alla pagina
+  setTimeout(() => {
+    if (!anim?.isLoaded) finish()
+  }, 4000)
+  // Il player (la build solo SVG, senza espressioni) e l'animazione si
+  // scaricano insieme
+  let lottie, animationData
+  try {
+    [{ default: lottie }, animationData] = await Promise.all([
+      import('lottie-web/build/player/lottie_light'),
+      fetch('/splash/didap-intro.json').then(r => r.json()),
+    ])
+  }
+  catch {
+    finish()
+    return
+  }
+  if (leaving.value || !player.value) return
 
   anim = lottie.loadAnimation({
     container: player.value,
     renderer: 'svg',
     loop: false,
     autoplay: true,
-    path: '/splash/didap-intro.json',
-    rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
+    animationData,
+    // Ogni fotogramma si costruisce quando serve, non tutti all'avvio
+    rendererSettings: { preserveAspectRatio: 'xMidYMid meet', progressiveLoad: true },
   })
   // Il logo resta fermo un attimo prima che la pagina compaia
   anim.addEventListener('complete', () => setTimeout(finish, 600))
-  anim.addEventListener('data_failed', finish)
 })
 
 onBeforeUnmount(() => {

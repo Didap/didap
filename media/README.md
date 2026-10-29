@@ -22,7 +22,8 @@ feature[1] 816x1520, triple 822x1080. Clip da 10 a 14 secondi, in loop, senza au
 
 Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
 `media/cruciverba-lab/scripts/`, `media/cityfix/build-*.mjs` (le strade di Brindisi in
-`media/cityfix/osm/roads.json`, dati OpenStreetMap con licenza ODbL).
+`media/cityfix/osm/roads.json`, dati OpenStreetMap con licenza ODbL),
+`media/helllo/build.mjs` (dall'illustrazione esportata dal Figma in `media/helllo/figma/`).
 
 ## Da fare (28 ottobre 2026)
 
@@ -33,7 +34,9 @@ Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
   il vecchio corpo markdown dice ancora Clerk, Neon e Upstash.
 - Cruciverba Lab: i testi dicono dieci giochi al giorno (il sito ne ha dieci) e che l'account
   gratuito dà solo il gioco di oggi; da confermare con William e Cristiano.
-- Helllo: splash della home e hero sono animati (`media/helllo/`) ma in bozza: il testo usa un
-  carattere di sistema al posto di Hanken Grotesk e Pacifico, e i due personaggi sono semplificati
-  rispetto all'illustrazione di Vitantonio. Gli altri slot della pagina sono ancora immagini ferme.
+- Helllo: splash della home e hero sono animati con l'illustrazione chiave del Figma del brand e
+  le regole di motion delle linee guida (`media/helllo/build.mjs`, a 24 fps). Le composizioni sono
+  a misura doppia (3840x2304 e 3840x1920): si renderizzano con `--fps 24` e nella codifica si
+  aggiunge `-vf scale=1920:-2:flags=area` (960 per l'hero da telefono), così i bordi delle lll
+  mentre si scrivono restano puliti. Gli altri slot della pagina sono ancora immagini ferme.
 - Rivedere ogni clip sulla pagina (http://localhost:3000/work/<slug>) prima del merge.

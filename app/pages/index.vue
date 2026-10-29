@@ -68,7 +68,7 @@ const { data: names } = await useAsyncData(
 )
 const indexes = computed(() => [
   { to: localePath('/work'), label: t('home.more_products'), names: names.value?.work ?? [], tone: 'bg-green hover:bg-ink' },
-  { to: localePath('/clients'), label: t('home.more_clients'), names: names.value?.clients ?? [], tone: 'bg-ink hover:bg-red' },
+  { to: localePath('/clients'), label: t('home.more_clients'), names: names.value?.clients ?? [], tone: 'bg-red hover:bg-ink' },
 ])
 
 const root = ref<HTMLElement>()

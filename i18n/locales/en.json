@@ -1,6 +1,7 @@
 {
   "nav": {
     "work": "Products",
+    "projects": "Projects",
     "clients": "Partners",
     "about": "About",
     "contact": "Contact",
@@ -13,69 +14,45 @@
   },
   "home": {
     "seo_description": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
+    "index": "Home screens",
+    "scroll_cue": "Scroll to discover the projects",
+    "more_label": "More projects",
+    "more_products": "Products",
+    "more_clients": "Clients",
+    "all_projects": "All projects",
+    "outro_title": "Got an idea\nto set free?",
+    "replay": "Replay the intro",
     "hero_tagline": "Free the\nmonkey.",
-    "hero_sub": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
-    "products_title": "Living products. Open them.",
-    "products_intro": "We design them, write them and keep them in production ourselves. The fastest way to see how we work is to use them.",
     "featured_more": "Read the case",
     "status_live": "Live",
     "status_development": "In development",
     "status_pilot": "Pilot",
     "status_pending": "Status to be confirmed",
-    "open_product": "Open the product",
     "products": {
       "fanta_rainbow": {
         "category": "Fantasy football",
-        "desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides.",
-        "alt": "Fanta Rainbow: a rainbow bolt splits the pitch at night and leaves the logo, with the line Il fantacalcio come non l'hai mai giocato"
+        "desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides."
       },
       "bin_or_deal": {
         "category": "Marketplace",
-        "desc": "Listings aggregator across European marketplaces for collectors, with an automatic “bin vs deal” score.",
-        "alt": "Bin or Deal: the logo on newsprint, marketplace listings scrolling by and a stamp judging the price, Deal, Fair or Bin"
+        "desc": "Listings aggregator across European marketplaces for collectors, with an automatic “bin vs deal” score."
       },
       "cityfix": {
         "category": "Cities",
-        "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city.",
-        "alt": "CityFix: the logo and the line Nessuna città è mai finita on a map of Brindisi, with reports around it going from open to taken on to solved"
+        "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city."
       },
       "cruciverba_lab": {
         "category": "Games",
-        "desc": "The home of Italian crosswords online. Ten new word games every day, in the browser.",
-        "alt": "Cruciverba Lab: a crossword grid fills in with CRUCIVERBA and LAB, with the daily games around it like Chiave, Setaccio, Alveare and Nessi"
+        "desc": "The home of Italian crosswords online. Ten new word games every day, in the browser."
       },
       "helllo": {
         "category": "Work",
-        "desc": "The job app where both sides choose each other. If you both say Helllo, the chat opens right away.",
-        "alt": "Helllo: two people on the phone joined by the three red l of the logo, drawn in a single stroke"
-      }
-    },
-    "how_label": "How we work",
-    "how": {
-      "fullstack": {
-        "title": "Full-stack,\nfor real.",
-        "body": "Backend, frontend, infrastructure, mobile, integrations."
+        "desc": "The job app where both sides choose each other. If you both say Helllo, the chat opens right away."
       },
-      "outsourcing": {
-        "title": "No outsourcing\non what matters.",
-        "body": "The code we ship, we write it, test it and keep it running ourselves."
-      },
-      "design": {
-        "title": "Design lives\nin the code.",
-        "body": "Built to go to production, not to look good on slides. Products grow with real use."
+      "nx_tab": {
+        "category": "Android app for Sudel"
       }
-    },
-    "partners_label": "Partners and clients",
-    "partner_types": {
-      "institutional": "Institutional partner",
-      "saas": "SaaS",
-      "app": "App"
-    },
-    "contact_title": "Got an idea to set free?",
-    "contact_cta": "Let’s work together",
-    "qube_label": "Strategic partner · The Qube",
-    "qube_title": "We help you fund it, too.",
-    "qube_body": "With The Qube, a MIMIT-certified incubator, we guide you towards subsidised finance and Italian and European public grants."
+    }
   },
   "work": {
     "kicker": "Studio",
@@ -85,7 +62,8 @@
     "filter_by": "Filter:",
     "clear_filters": "Clear filters",
     "results_count_one": "1 product",
-    "results_count_other": "{count} products"
+    "results_count_other": "{count} products",
+    "clients_title": "For our clients"
   },
   "clients": {
     "kicker": "Partners",

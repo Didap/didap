@@ -8,8 +8,11 @@ import DidiGuide from '~/components/DidiGuide.vue'
 // con definePageMeta({ surface: 'cream' }): vale anche per nav e footer.
 const route = useRoute()
 const cream = computed(() => route.meta.surface === 'cream')
-// definePageMeta({ nav: 'product' }): nav della scheda prodotto
+// definePageMeta({ nav: 'product' }): nav della scheda prodotto.
+// { nav: 'home' }: la home a schermate ha la sua barra e chiude da sé,
+// senza nav né footer
 const productNav = computed(() => route.meta.nav === 'product')
+const home = computed(() => route.meta.nav === 'home')
 </script>
 
 <template>
@@ -18,13 +21,17 @@ const productNav = computed(() => route.meta.nav === 'product')
     :class="cream ? 'bg-cream' : 'bg-paper'"
   >
     <AppHeader
+      v-if="!home"
       :cream="cream"
       :product="productNav"
     />
     <main class="flex-1">
       <slot />
     </main>
-    <AppFooter :cream="cream" />
+    <AppFooter
+      v-if="!home"
+      :cream="cream"
+    />
     <DidiGuide />
     <SiteSplash />
   </div>

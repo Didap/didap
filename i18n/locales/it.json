@@ -1,6 +1,7 @@
 {
   "nav": {
     "work": "Prodotti",
+    "projects": "Progetti",
     "clients": "Partner",
     "about": "About",
     "contact": "Contatti",
@@ -13,69 +14,45 @@
   },
   "home": {
     "seo_description": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
+    "index": "Schermate della home",
+    "scroll_cue": "Scorri per scoprire i progetti",
+    "more_label": "Altri progetti",
+    "more_products": "Prodotti",
+    "more_clients": "Clienti",
+    "all_projects": "Tutti i progetti",
+    "outro_title": "Hai un’idea\nda liberare?",
+    "replay": "Rivedi l’apertura",
     "hero_tagline": "Free the\nmonkey.",
-    "hero_sub": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
-    "products_title": "Prodotti vivi. Aprili.",
-    "products_intro": "Li progettiamo, li scriviamo e li teniamo in produzione noi. Il modo più rapido per capire come lavoriamo è usarli.",
     "featured_more": "Leggi la scheda",
     "status_live": "Live",
     "status_development": "In sviluppo",
     "status_pilot": "Pilot",
     "status_pending": "Stato da confermare",
-    "open_product": "Apri il prodotto",
     "products": {
       "fanta_rainbow": {
         "category": "Fantacalcio",
-        "desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide.",
-        "alt": "Fanta Rainbow: un fulmine arcobaleno spacca il campo di notte e lascia il logo, con la frase Il fantacalcio come non l'hai mai giocato"
+        "desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide."
       },
       "bin_or_deal": {
         "category": "Marketplace",
-        "desc": "Aggregatore di annunci dai marketplace europei per collezionisti, con punteggio automatico “bin vs deal”.",
-        "alt": "Bin or Deal: il logo su carta di giornale, gli annunci dei marketplace che scorrono e un timbro che giudica il prezzo, Deal, Fair o Bin"
+        "desc": "Aggregatore di annunci dai marketplace europei per collezionisti, con punteggio automatico “bin vs deal”."
       },
       "cityfix": {
         "category": "Città",
-        "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città.",
-        "alt": "CityFix: il logo e la frase Nessuna città è mai finita sulla mappa di Brindisi, intorno le segnalazioni che passano da aperte a prese in carico a risolte"
+        "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città."
       },
       "cruciverba_lab": {
         "category": "Giochi",
-        "desc": "La casa dei cruciverba italiani online. Dieci nuovi giochi di parole ogni giorno, nel browser.",
-        "alt": "Cruciverba Lab: una griglia si riempie con CRUCIVERBA e LAB, intorno i giochi del giorno come Chiave, Setaccio, Alveare e Nessi"
+        "desc": "La casa dei cruciverba italiani online. Dieci nuovi giochi di parole ogni giorno, nel browser."
       },
       "helllo": {
         "category": "Lavoro",
-        "desc": "L’app di lavoro in cui ci si sceglie a vicenda. Se tutti e due dicono Helllo, la chat si apre subito.",
-        "alt": "Helllo: due persone al telefono unite dalle tre l rosse del marchio, scritte in un unico tratto"
-      }
-    },
-    "how_label": "Come lavoriamo",
-    "how": {
-      "fullstack": {
-        "title": "Full-stack,\nper davvero.",
-        "body": "Backend, frontend, infrastruttura, mobile, integrazioni."
+        "desc": "L’app di lavoro in cui ci si sceglie a vicenda. Se tutti e due dicono Helllo, la chat si apre subito."
       },
-      "outsourcing": {
-        "title": "Niente outsourcing\nsu ciò che conta.",
-        "body": "Il codice che rilasciamo lo scriviamo, lo testiamo e lo teniamo in piedi noi."
-      },
-      "design": {
-        "title": "Il design vive\nnel codice.",
-        "body": "Pensato per andare in produzione, non per stare bene nelle slide. I prodotti crescono con l’uso reale."
+      "nx_tab": {
+        "category": "App Android per Sudel"
       }
-    },
-    "partners_label": "Partner e clienti",
-    "partner_types": {
-      "institutional": "Partner istituzionale",
-      "saas": "SaaS",
-      "app": "App"
-    },
-    "contact_title": "Hai un’ idea da liberare?",
-    "contact_cta": "Lavoriamo insieme",
-    "qube_label": "Partner strategico · The Qube",
-    "qube_title": "Ti aiutiamo anche a finanziarlo.",
-    "qube_body": "Con The Qube, incubatore certificato MIMIT, ti accompagniamo verso finanza agevolata e bandi pubblici italiani ed europei."
+    }
   },
   "work": {
     "kicker": "Lo studio",
@@ -85,7 +62,8 @@
     "filter_by": "Filtra:",
     "clear_filters": "Cancella filtri",
     "results_count_one": "1 prodotto",
-    "results_count_other": "{count} prodotti"
+    "results_count_other": "{count} prodotti",
+    "clients_title": "Per i clienti"
   },
   "clients": {
     "kicker": "Partner",

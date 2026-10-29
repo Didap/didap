@@ -196,6 +196,11 @@
     }
   }
 
+  /* La home a schermate: ogni schermata si posa intera (pages/index.vue) */
+  html.home-snap {
+    scroll-snap-type: y mandatory;
+  }
+
   [id] {
     scroll-margin-top: 72px;
 

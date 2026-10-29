@@ -471,7 +471,7 @@ const { active, motion } = useScreens(root)
     <section
       id="next"
       data-screen
-      class="enter-circle screen bg-red text-paper-light"
+      class="screen bg-red text-paper-light"
       :class="{ 'is-active': active === screens.length - 1 }"
       :style="{ zIndex: screens.length }"
       :aria-label="t('product.next')"
@@ -482,17 +482,13 @@ const { active, motion } = useScreens(root)
           :to="localePath(`/work/${productSlug(nextProject)}`)"
           class="group grid justify-items-start gap-5"
         >
-          <span
-            class="reveal text-label opacity-75"
-            style="--i: 0"
-          >{{ t('product.next') }}</span>
+          <span class="next-kicker text-label opacity-75">{{ t('product.next') }}</span>
           <span
             class="
-              reveal flex items-center gap-[0.25em] font-wide
+              next-title flex items-center gap-[0.25em] font-wide
               text-[clamp(2.75rem,1.4rem+6vw,8rem)] leading-[0.9] font-bold
               tracking-[-0.035em]
             "
-            style="--i: 1"
           >
             {{ nextProject.title }}
             <svg
@@ -650,8 +646,8 @@ const { active, motion } = useScreens(root)
    voci con lo stesso fondo, lì scorre solo il contenuto), il video largo
    si apre come una finestra, "Cosa abbiamo fatto" si scopre da sinistra,
    la cosa difficile cresce dal centro, il modello si apre come due
-   ante, la squadra arriva una carta alla volta, la chiusura sale in un
-   cerchio dal basso */
+   ante, la squadra arriva una carta alla volta. Nella chiusura il nome
+   del prodotto dopo arriva da destra, come chi entra in scena */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .offer:not(.offer-flow-in, .offer-wide) .offer-media,
@@ -659,7 +655,8 @@ const { active, motion } = useScreens(root)
     .enter-wipe,
     .enter-window,
     .enter-doors,
-    .enter-circle,
+    .next-kicker,
+    .next-title,
     .team-card {
       animation-timeline: --screen;
       animation-timing-function: linear;
@@ -678,7 +675,12 @@ const { active, motion } = useScreens(root)
     .enter-wipe { animation-name: wipe-right; }
     .enter-window { animation-name: window; }
     .enter-doors { animation-name: doors; }
-    .enter-circle { animation-name: circle-up; }
+    .next-kicker { animation-name: from-left; }
+
+    .next-title {
+      animation-name: from-far-right;
+      animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+    }
 
     .team-card {
       animation-name: from-below;
@@ -718,8 +720,11 @@ const { active, motion } = useScreens(root)
   to { clip-path: inset(0); }
 }
 
-@keyframes circle-up {
-  from { clip-path: circle(0% at 50% 100%); }
-  to { clip-path: circle(150% at 50% 100%); }
+@keyframes from-left {
+  from { transform: translateX(-12vw); opacity: 0; }
+}
+
+@keyframes from-far-right {
+  from { transform: translateX(75vw); }
 }
 </style>

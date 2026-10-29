@@ -178,7 +178,11 @@
   },
   "chat": {
     "title": "Ask Didi!",
-    "lines": "Want to know what we do?\nWondering whether your idea can be built?\nLooking for a grant to get started?",
+    "questions": {
+      "q1": "Want to know what we do?",
+      "q2": "Wondering whether your idea can be built?",
+      "q3": "Looking for a grant to get started?"
+    },
     "hello": "Hi! Tell me what you have in mind.",
     "placeholder": "Write to Didi, a few words are enough",
     "input": "Your message for Didi",

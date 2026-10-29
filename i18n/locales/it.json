@@ -178,7 +178,11 @@
   },
   "chat": {
     "title": "Chiedi a Didi!",
-    "lines": "Vuoi sapere cosa facciamo?\nVuoi capire se la tua idea si può fare?\nCerchi un bando per partire?",
+    "questions": {
+      "q1": "Vuoi sapere cosa facciamo?",
+      "q2": "Vuoi capire se la tua idea si può fare?",
+      "q3": "Cerchi un bando per partire?"
+    },
     "hello": "Ciao! Raccontami cosa hai in mente.",
     "placeholder": "Scrivi a Didi, bastano due parole",
     "input": "Il tuo messaggio per Didi",

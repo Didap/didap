@@ -74,9 +74,15 @@ watch(draft, () => nextTick(() => {
       >
         {{ t('chat.title') }}
       </component>
-      <p class="text-body whitespace-pre-line opacity-80">
-        {{ t('chat.lines') }}
-      </p>
+      <!-- Tre domande, una per riga -->
+      <ul class="text-body opacity-80">
+        <li
+          v-for="n in 3"
+          :key="n"
+        >
+          {{ t(`chat.questions.q${n}`) }}
+        </li>
+      </ul>
     </div>
 
     <!-- Il modulo, già compilato con quello che ha scritto a Didi -->

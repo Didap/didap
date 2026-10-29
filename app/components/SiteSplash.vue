@@ -5,8 +5,8 @@ import type { AnimationItem } from 'lottie-web'
 // 6 s, fondo trasparente). Didi entra dall'alto, cade dentro la D e
 // forma il logotipo. Lo script in testa alla pagina decide prima del
 // primo disegno se mostrarla (classe `splash` su <html>): una volta
-// sola per browser, mai con meno movimento. "Rivedi l'apertura" in fondo
-// alla home la rimette in scena (useSplashReplay).
+// sola per browser, mai con meno movimento. Non sulla home: lì la stessa
+// animazione gira nel logo dell'apertura (HomeLogo).
 
 const { t } = useI18n()
 
@@ -15,7 +15,7 @@ useHead({
   script: [{
     key: KEY,
     tagPosition: 'head',
-    innerHTML: `try{if(!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
+    innerHTML: `try{if(['/','/en','/en/'].indexOf(location.pathname)<0&&!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
   }],
 })
 
@@ -85,15 +85,6 @@ async function play() {
 onMounted(() => {
   if (document.documentElement.classList.contains('splash')) play()
   else visible.value = false
-})
-
-watch(useSplashReplay(), async () => {
-  if (visible.value) return
-  leaving.value = false
-  visible.value = true
-  document.documentElement.classList.add('splash')
-  await nextTick()
-  play()
 })
 
 onBeforeUnmount(() => {

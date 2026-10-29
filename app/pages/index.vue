@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
 import HomeBar from '~/components/HomeBar.vue'
+import HomeLogo from '~/components/HomeLogo.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import { CONTACT_EMAIL } from '#shared/contact'
@@ -16,7 +17,6 @@ definePageMeta({ nav: 'home' })
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const replaySplash = useSplashReplay()
 
 useHead({ htmlAttrs: { class: 'home-snap' } })
 useSeoMeta({
@@ -109,6 +109,13 @@ onMounted(() => {
 })
 onBeforeUnmount(() => observer?.disconnect())
 
+// "Rivedi l'apertura": di nuovo in cima, Didi ricade nel logo
+const logo = ref<InstanceType<typeof HomeLogo>>()
+function replay() {
+  window.scrollTo({ top: 0, behavior: 'instant' })
+  logo.value?.play()
+}
+
 const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
 const year = new Date().getFullYear()
 </script>
@@ -188,18 +195,10 @@ const year = new Date().getFullYear()
           grid place-items-center gap-[clamp(20px,3vw,40px)] self-center
           text-center
         ">
-          <h1
-            class="reveal w-[min(100%,78vw,1100px)]"
-            style="--i: 0"
-          >
-            <img
-              src="/brand/logo-esteso.svg"
-              alt="Didap"
-              width="1278"
-              height="367"
-              class="block h-auto w-full"
-            >
-          </h1>
+          <HomeLogo
+            ref="logo"
+            class="w-[min(100%,78vw,1100px)]"
+          />
           <p
             class="
               reveal font-wide text-[clamp(1.75rem,1rem+3vw,3.5rem)]
@@ -475,7 +474,7 @@ const year = new Date().getFullYear()
               focus-visible:outline-2 focus-visible:outline-offset-4
               focus-visible:outline-paper-light
             "
-            @click="replaySplash++"
+            @click="replay"
           >
             {{ t('home.replay') }}
           </button>

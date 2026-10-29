@@ -1,0 +1,109 @@
+<script setup lang="ts">
+import type { AnimationItem } from 'lottie-web'
+
+// Il logo dell'apertura della home: a ogni visita Didi ci cade dentro,
+// col Lottie della splash (public/splash, 1920x1080). Lì il logo finito
+// sta in 400.62, 380 e misura 1118.76 x 320: il player è steso intorno
+// all'immagine ferma in modo che quel riquadro coincida con lei, e a
+// fine corsa torna l'immagine. Fuori dal riquadro non si taglia nulla:
+// Didi cade dall'alto dello schermo. Lo script in testa nasconde
+// l'immagine prima del primo disegno; con meno movimento, o se il Lottie
+// non arriva in tempo, resta lei. play() la rimette in scena.
+
+const SRC = '/splash/didap-intro.json'
+const CLASS = 'home-intro'
+
+useHead({
+  script: [{
+    key: CLASS,
+    tagPosition: 'head',
+    innerHTML: `try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('${CLASS}')}catch(e){}`,
+  }],
+  link: [{ rel: 'preload', href: SRC, as: 'fetch', crossorigin: 'anonymous' }],
+})
+
+const player = ref<HTMLElement>()
+let anim: AnimationItem | null = null
+// Ogni corsa ha il suo numero: un caricamento in ritardo non riparte
+let run = 0
+
+function end() {
+  run++
+  anim?.destroy()
+  anim = null
+  document.documentElement.classList.remove(CLASS)
+}
+
+async function play() {
+  end()
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const id = run
+  document.documentElement.classList.add(CLASS)
+  // Con una rete lenta non si resta senza logo
+  setTimeout(() => id === run && !anim && end(), 3000)
+  try {
+    const [{ default: lottie }, animationData] = await Promise.all([
+      import('lottie-web/build/player/lottie_light'),
+      fetch(SRC).then(r => r.json()),
+    ])
+    if (id !== run || !player.value) return
+    anim = lottie.loadAnimation({
+      container: player.value,
+      renderer: 'svg',
+      loop: false,
+      autoplay: false,
+      animationData,
+      rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
+    })
+    // Il player taglia al riquadro del Lottie: Didi arriva da fuori
+    player.value.querySelector('[clip-path]')?.removeAttribute('clip-path')
+    anim.addEventListener('complete', end)
+    anim.play()
+  }
+  catch {
+    if (id === run) end()
+  }
+}
+
+onMounted(play)
+onBeforeUnmount(end)
+defineExpose({ play })
+</script>
+
+<template>
+  <h1 class="relative">
+    <img
+      src="/brand/logo-esteso.svg"
+      alt="Didap"
+      width="1278"
+      height="367"
+      class="logo-still block h-auto w-full"
+    >
+    <div
+      ref="player"
+      class="logo-player"
+      aria-hidden="true"
+    />
+  </h1>
+</template>
+
+<style scoped>
+html.home-intro .logo-still {
+  visibility: hidden;
+}
+
+/* Il fotogramma intero intorno al logo: 1920/1118.76 in larghezza,
+   1080/320 in altezza */
+.logo-player {
+  position: absolute;
+  top: -118.75%;
+  left: -35.809%;
+  width: 171.617%;
+  height: 337.5%;
+  pointer-events: none;
+}
+
+.logo-player :deep(svg) {
+  overflow: visible;
+}
+</style>

@@ -9,8 +9,8 @@ import type { ProductStatus } from '#shared/product'
 // Home a schermate: una pila di schermate a tutto schermo, ognuna copre
 // la precedente salendo dal basso (scroll nativo con lo snap). Apertura
 // su carta, poi CityFix, Fanta Rainbow e Helllo con il loro video a
-// tutto schermo, poi le card degli altri progetti (una riga di prodotti,
-// una di clienti, e "Tutti i progetti") e la chiusura rossa. Niente nav
+// tutto schermo, poi Cruciverba Lab, poi le porte per le pagine dei
+// prodotti e dei clienti e la chiusura rossa. Niente nav
 // né footer: la barra è HomeBar, i link legali stanno nella chiusura.
 definePageMeta({ nav: 'home' })
 
@@ -38,6 +38,7 @@ const featured: Featured[] = [
   { key: 'cityfix', slug: 'cityfix', name: 'CityFix', url: 'https://cityfix.io', status: 'pilot', light: true },
   { key: 'fanta_rainbow', slug: 'fanta-rainbow', name: 'Fanta Rainbow', url: 'https://fantarainbow.com', status: 'live', light: false },
   { key: 'helllo', slug: 'helllo', name: 'Helllo', status: 'development', light: true },
+  { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', url: 'https://cruciverba-lab.it', status: 'pending', light: true },
 ]
 
 const hero = (slug: string) => ({
@@ -50,28 +51,25 @@ const hero = (slug: string) => ({
 const host = (url: string) => new URL(url).hostname.replace(/^www\./, '')
 const pad = (n: number) => String(n).padStart(2, '0')
 
-// Le card: i due prodotti che non hanno la loro schermata più NX-TAB,
-// il prodotto fatto per Sudel; sotto due clienti presi dalle loro schede
-type Card = { to: string, name: string, kicker: string, image?: string }
-const productCards = computed<Card[]>(() => [
-  { to: localePath('/work/bin-or-deal'), name: 'Bin or Deal', kicker: t('home.products.bin_or_deal.category'), image: '/covers/splash-bin-or-deal-poster.webp' },
-  { to: localePath('/work/cruciverba-lab'), name: 'Cruciverba Lab', kicker: t('home.products.cruciverba_lab.category'), image: '/covers/splash-cruciverba-lab-poster.webp' },
-  { to: localePath('/clients/sudel'), name: 'NX-TAB', kicker: t('home.products.nx_tab.category'), image: '/covers/sudel.jpg' },
-])
-
-const CLIENTS = ['comune-di-brindisi', 'rotte-di-portolano']
+// L'ultima schermata porta alle pagine dei prodotti e dei clienti, con
+// i nomi di tutti presi dalle loro schede
+const workCollection = useProjectCollection('work')
 const clientsCollection = useProjectCollection('clients')
-const { data: clients } = await useAsyncData(
-  () => `home-clients-${clientsCollection.value}`,
-  () => queryCollection(clientsCollection.value).all(),
-  { watch: [clientsCollection] },
+const { data: names } = await useAsyncData(
+  () => `home-names-${workCollection.value}`,
+  async () => {
+    const [work, clients] = await Promise.all([
+      queryCollection(workCollection.value).order('order', 'ASC').select('title').all(),
+      queryCollection(clientsCollection.value).order('order', 'ASC').select('title').all(),
+    ])
+    return { work: work.map(p => p.title), clients: clients.map(p => p.title) }
+  },
+  { watch: [workCollection] },
 )
-const clientCards = computed<Card[]>(() =>
-  CLIENTS.flatMap((slug) => {
-    const c = clients.value?.find(p => p.stem.endsWith(`/${slug}`))
-    return c ? [{ to: localePath(`/clients/${slug}`), name: c.title, kicker: c.role ?? '', image: c.cover }] : []
-  }),
-)
+const indexes = computed(() => [
+  { to: localePath('/work'), label: t('home.more_products'), names: names.value?.work ?? [], tone: 'bg-green hover:bg-ink' },
+  { to: localePath('/clients'), label: t('home.more_clients'), names: names.value?.clients ?? [], tone: 'bg-ink hover:bg-red' },
+])
 
 const root = ref<HTMLElement>()
 
@@ -79,7 +77,7 @@ const root = ref<HTMLElement>()
 const screens = computed(() => [
   { id: 'top', label: 'Didap', light: true },
   ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light })),
-  { id: HOME_SECTIONS.projects, label: t('home.more_label'), light: true },
+  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: false },
   { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
 ])
 
@@ -119,7 +117,6 @@ const year = new Date().getFullYear()
     <HomeBar
       :shown="active > 0"
       :light="screens[active]?.light ?? true"
-      :solid="screens[active]?.id === HOME_SECTIONS.projects"
     />
 
     <nav
@@ -287,6 +284,7 @@ const year = new Date().getFullYear()
               <span class="font-mono tracking-[0.04em] opacity-70">{{ pad(i + 1) }} / {{ pad(featured.length) }}</span>
               <span>{{ t(`home.products.${p.key}.category`) }}</span>
               <StatusPill
+                v-if="p.status !== 'pending'"
                 :status="p.status"
                 inverse
               >
@@ -355,114 +353,73 @@ const year = new Date().getFullYear()
       </div>
     </section>
 
-    <!-- Gli altri progetti: una riga di prodotti, una di clienti -->
+    <!-- Le porte: tutti i prodotti, tutti i clienti -->
     <section
       :id="HOME_SECTIONS.projects"
       data-screen
-      class="screen screen-tall bg-paper text-ink"
+      class="screen text-paper-light"
       :class="{ 'is-active': active === featured.length + 1 }"
       :style="{ zIndex: featured.length + 1 }"
-      aria-labelledby="progetti-title"
+      :aria-label="t('nav.projects')"
     >
       <div
         class="
-          screen-inner page-x flex h-full flex-col gap-5 pt-[72px] pb-8
-          lg:pt-[97px]
+          screen-inner grid h-full grid-rows-2
+          md:grid-cols-2 md:grid-rows-1
         "
       >
-        <h2
-          id="progetti-title"
-          class="reveal text-label text-green"
-          style="--i: 0"
+        <NuxtLink
+          v-for="(d, i) in indexes"
+          :key="d.to"
+          :to="d.to"
+          class="
+            group flex min-h-0 flex-col justify-end gap-[clamp(16px,3vh,32px)]
+            px-5 pt-[72px] pb-[max(28px,env(safe-area-inset-bottom))]
+            transition-colors duration-500
+            md:px-10 md:pb-16
+            lg:pt-[97px]
+            xl:px-20
+          "
+          :class="d.tone"
         >
-          {{ t('home.more_label') }}
-        </h2>
-        <div
-          v-for="(row, r) in [
-            { label: t('home.more_products'), cards: productCards },
-            { label: t('home.more_clients'), cards: clientCards },
-          ]"
-          :key="r"
-          class="reveal flex min-h-0 flex-1 flex-col gap-3"
-          :style="{ '--i': r + 1 }"
-        >
-          <h3 class="text-label opacity-60">
-            {{ row.label }}
-          </h3>
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.2"
+            aria-hidden="true"
+            class="
+              reveal transition-transform duration-300 ease-vintage
+              group-hover:translate-x-1.5 group-hover:-translate-y-1.5
+            "
+            :style="{ '--i': i * 2 }"
+          ><path d="M3 11 11 3M4.5 3H11v6.5" /></svg>
+          <h2
+            class="
+              reveal font-wide text-[clamp(2.75rem,1.4rem+5vw,7rem)]
+              leading-[0.9] font-bold tracking-[-0.035em]
+            "
+            :style="{ '--i': i * 2 }"
+          >
+            {{ d.label }}
+          </h2>
           <ul
             class="
-              grid min-h-0 flex-1 gap-6
-              sm:grid-cols-2
-              md:grid-cols-3
+              reveal flex flex-wrap gap-x-5 gap-y-1 text-body
+              text-paper-light/80
             "
+            :style="{ '--i': i * 2 + 1 }"
           >
             <li
-              v-for="c in row.cards"
-              :key="c.to"
-              class="min-h-0"
+              v-for="n in d.names"
+              :key="n"
             >
-              <NuxtLink
-                :to="c.to"
-                class="group flex h-full flex-col gap-3"
-              >
-                <span class="
-                  block aspect-16/10 overflow-hidden bg-ink
-                  md:aspect-auto md:min-h-0 md:flex-1
-                ">
-                  <img
-                    v-if="c.image"
-                    :src="c.image"
-                    alt=""
-                    loading="lazy"
-                    class="
-                      size-full object-cover transition-transform duration-500
-                      ease-vintage
-                      group-hover:scale-[1.03]
-                    "
-                  >
-                </span>
-                <span class="flex flex-col gap-1">
-                  <span class="text-label opacity-60">{{ c.kicker }}</span>
-                  <span
-                    class="
-                      text-[clamp(1.25rem,1rem+0.8vw,1.75rem)] leading-[1.1]
-                      font-bold transition-colors
-                      group-hover:text-green
-                    "
-                  >{{ c.name }}</span>
-                </span>
-              </NuxtLink>
-            </li>
-            <li
-              v-if="r === 1"
-              class="min-h-0"
-            >
-              <NuxtLink
-                :to="localePath('/work')"
-                class="
-                  group flex h-full min-h-40 flex-col justify-end gap-4 bg-green
-                  p-6 text-paper-light transition-colors
-                  hover:bg-ink
-                "
-              >
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  aria-hidden="true"
-                  class="
-                    transition-transform duration-300 ease-vintage
-                    group-hover:translate-x-1 group-hover:-translate-y-1
-                  "
-                ><path d="M3 11 11 3M4.5 3H11v6.5" /></svg>
-                <span class="text-title">{{ t('home.all_projects') }}</span>
-              </NuxtLink>
+              {{ n }}
             </li>
           </ul>
-        </div>
+        </NuxtLink>
       </div>
     </section>
 
@@ -567,14 +524,6 @@ const year = new Date().getFullYear()
 
 .screen-inner {
   position: relative;
-}
-
-/* Le card su telefono non stanno in uno schermo: la schermata si allunga */
-@media (width < 48rem) {
-  .screen-tall {
-    height: auto;
-    min-height: 100svh;
-  }
 }
 
 /* Il velo sotto il testo: sfocatura progressiva a strati, ognuno in

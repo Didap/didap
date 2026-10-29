@@ -4,9 +4,8 @@
 // (`shown` falso): sale via e torna con la prima schermata. `light` quando
 // sotto c'è carta o un video chiaro (testo ink), altrimenti testo carta
 // e un alone di carta che stacca Didi dal video scuro. Didi è quella
-// della nav: DidiGuide la porta via e la rimette qui. `solid` sopra le
-// card, che su telefono scorrono sotto la barra: fondo carta.
-defineProps<{ shown: boolean, light: boolean, solid?: boolean }>()
+// della nav: DidiGuide la porta via e la rimette qui.
+defineProps<{ shown: boolean, light: boolean }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -24,7 +23,6 @@ const didiAway = useDidiAway()
     "
     :class="[
       light ? 'text-ink' : 'text-paper-light',
-      { 'bg-paper-light/92 backdrop-blur-sm': solid },
       shown ? '' : 'invisible -translate-y-full opacity-0',
     ]"
   >

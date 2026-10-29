@@ -16,10 +16,8 @@
     "seo_description": "We design, write and ship bespoke digital products. From the foundations to the final polish.",
     "index": "Home screens",
     "scroll_cue": "Scroll to discover the projects",
-    "more_label": "More projects",
     "more_products": "Products",
     "more_clients": "Clients",
-    "all_projects": "All projects",
     "outro_title": "Got an idea\nto set free?",
     "replay": "Replay the intro",
     "hero_tagline": "Free the\nmonkey.",
@@ -48,9 +46,6 @@
       "helllo": {
         "category": "Work",
         "desc": "The job app where both sides choose each other. If you both say Helllo, the chat opens right away."
-      },
-      "nx_tab": {
-        "category": "Android app for Sudel"
       }
     }
   },
@@ -62,8 +57,7 @@
     "filter_by": "Filter:",
     "clear_filters": "Clear filters",
     "results_count_one": "1 product",
-    "results_count_other": "{count} products",
-    "clients_title": "For our clients"
+    "results_count_other": "{count} products"
   },
   "clients": {
     "kicker": "Partners",

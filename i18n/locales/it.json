@@ -16,10 +16,8 @@
     "seo_description": "Progettiamo, scriviamo e rilasciamo prodotti digitali su misura. Dalle fondamenta all’ultima rifinitura.",
     "index": "Schermate della home",
     "scroll_cue": "Scorri per scoprire i progetti",
-    "more_label": "Altri progetti",
     "more_products": "Prodotti",
     "more_clients": "Clienti",
-    "all_projects": "Tutti i progetti",
     "outro_title": "Hai un’idea\nda liberare?",
     "replay": "Rivedi l’apertura",
     "hero_tagline": "Free the\nmonkey.",
@@ -48,9 +46,6 @@
       "helllo": {
         "category": "Lavoro",
         "desc": "L’app di lavoro in cui ci si sceglie a vicenda. Se tutti e due dicono Helllo, la chat si apre subito."
-      },
-      "nx_tab": {
-        "category": "App Android per Sudel"
       }
     }
   },
@@ -62,8 +57,7 @@
     "filter_by": "Filtra:",
     "clear_filters": "Cancella filtri",
     "results_count_one": "1 prodotto",
-    "results_count_other": "{count} prodotti",
-    "clients_title": "Per i clienti"
+    "results_count_other": "{count} prodotti"
   },
   "clients": {
     "kicker": "Partner",

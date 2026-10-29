@@ -15,14 +15,6 @@ const { data: items } = await useAsyncData(
   { watch: [collection] },
 )
 
-// "Tutti i progetti" dalla home: sotto i prodotti, i lavori per i clienti
-const clientsCollection = useProjectCollection('clients')
-const { data: clients } = await useAsyncData(
-  () => `work-clients-${clientsCollection.value}`,
-  () => queryCollection(clientsCollection.value).order('order', 'ASC').all(),
-  { watch: [clientsCollection] },
-)
-
 const search = ref('')
 const activeTags = ref<Set<string>>(new Set())
 
@@ -156,22 +148,5 @@ useSeoMeta({
       {{ t('common.no_results') }}
     </p>
     <p v-else class="text-ink-soft">{{ t('common.no_items') }}</p>
-
-    <template v-if="clients?.length">
-      <h2 class="mt-20 mb-8 font-display text-3xl">{{ t('work.clients_title') }}</h2>
-      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        <ProjectCard
-          v-for="c in clients"
-          :key="c.path"
-          :to="localePath(`/clients/${c.stem.split('/').pop()}`)"
-          :title="c.title"
-          :summary="c.summary"
-          :cover="c.cover"
-          :role="c.role"
-          :year="c.year"
-          :tags="c.tags"
-        />
-      </div>
-    </template>
   </section>
 </template>

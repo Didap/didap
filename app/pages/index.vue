@@ -270,7 +270,9 @@ const year = new Date().getFullYear()
             min-[860px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]
           "
         >
-          <div class="grid min-w-0 gap-[18px]">
+          <div class="
+            grid min-w-0 gap-[18px] [text-shadow:0_1px_18px_rgb(22_20_18/0.4)]
+          ">
             <div
               class="
                 reveal flex flex-wrap items-center gap-x-4 gap-y-2.5 text-label
@@ -570,14 +572,14 @@ const year = new Date().getFullYear()
   }
 }
 
-/* Il velo sotto il testo: sfocatura progressiva a strati, ognuno con
-   il doppio del raggio del precedente in una fascia che si sovrappone
-   alle vicine, così cresce verso il basso senza un bordo. Sopra, uno
-   scurimento con molte fermate */
+/* Il velo sotto il testo: sfocatura progressiva a strati, ognuno in
+   una fascia che si sovrappone alle vicine, così cresce verso il basso
+   senza un bordo. Leggera (al massimo 6px) e bassa: regge il testo
+   senza spegnere il video. Sopra, uno scurimento con molte fermate */
 .screen-veil {
   position: absolute;
   inset: auto 0 0;
-  height: 72%;
+  height: 56%;
   pointer-events: none;
 }
 
@@ -588,13 +590,13 @@ const year = new Date().getFullYear()
   mask-image: linear-gradient(to bottom, transparent var(--a), #000 var(--c), #000 var(--d), transparent var(--e));
 }
 
-.screen-veil i:nth-child(1) { --b: 0.5px; --a: 0%; --c: 12.5%; --d: 25%; --e: 37.5%; }
-.screen-veil i:nth-child(2) { --b: 1px; --a: 12.5%; --c: 25%; --d: 37.5%; --e: 50%; }
-.screen-veil i:nth-child(3) { --b: 2px; --a: 25%; --c: 37.5%; --d: 50%; --e: 62.5%; }
-.screen-veil i:nth-child(4) { --b: 4px; --a: 37.5%; --c: 50%; --d: 62.5%; --e: 75%; }
-.screen-veil i:nth-child(5) { --b: 8px; --a: 50%; --c: 62.5%; --d: 75%; --e: 87.5%; }
-.screen-veil i:nth-child(6) { --b: 16px; --a: 62.5%; --c: 75%; --d: 87.5%; --e: 100%; }
-.screen-veil i:nth-child(7) { --b: 32px; --a: 75%; --c: 87.5%; --d: 100%; --e: 100.1%; }
+.screen-veil i:nth-child(1) { --b: 0.25px; --a: 0%; --c: 12.5%; --d: 25%; --e: 37.5%; }
+.screen-veil i:nth-child(2) { --b: 0.5px; --a: 12.5%; --c: 25%; --d: 37.5%; --e: 50%; }
+.screen-veil i:nth-child(3) { --b: 1px; --a: 25%; --c: 37.5%; --d: 50%; --e: 62.5%; }
+.screen-veil i:nth-child(4) { --b: 2px; --a: 37.5%; --c: 50%; --d: 62.5%; --e: 75%; }
+.screen-veil i:nth-child(5) { --b: 3px; --a: 50%; --c: 62.5%; --d: 75%; --e: 87.5%; }
+.screen-veil i:nth-child(6) { --b: 4.5px; --a: 62.5%; --c: 75%; --d: 87.5%; --e: 100%; }
+.screen-veil i:nth-child(7) { --b: 6px; --a: 75%; --c: 87.5%; --d: 100%; --e: 100.1%; }
 
 .screen-veil::after {
   content: '';
@@ -602,14 +604,13 @@ const year = new Date().getFullYear()
   inset: 0;
   background: linear-gradient(
     to top,
-    rgb(22 20 18 / 0.86) 0%,
-    rgb(22 20 18 / 0.8) 16%,
-    rgb(22 20 18 / 0.68) 30%,
-    rgb(22 20 18 / 0.52) 43%,
-    rgb(22 20 18 / 0.36) 55%,
-    rgb(22 20 18 / 0.22) 66%,
-    rgb(22 20 18 / 0.11) 77%,
-    rgb(22 20 18 / 0.04) 88%,
+    rgb(22 20 18 / 0.74) 0%,
+    rgb(22 20 18 / 0.68) 15%,
+    rgb(22 20 18 / 0.57) 30%,
+    rgb(22 20 18 / 0.43) 45%,
+    rgb(22 20 18 / 0.28) 60%,
+    rgb(22 20 18 / 0.14) 75%,
+    rgb(22 20 18 / 0.05) 88%,
     rgb(22 20 18 / 0) 100%
   );
 }
@@ -639,7 +640,7 @@ const year = new Date().getFullYear()
   }
 
   .screen-veil {
-    height: 76%;
+    height: 64%;
   }
 }
 

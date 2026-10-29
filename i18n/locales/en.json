@@ -10,7 +10,6 @@
     "main": "Main navigation",
     "open_menu": "Open menu",
     "close_menu": "Close menu",
-    "back": "Go back",
     "open_product": "Open {name}"
   },
   "home": {
@@ -196,7 +195,6 @@
       "grant": "For grants we work with The Qube: we bring the project, they bring the funding. Tell us where you’re starting from.",
       "chat": "I’m listening. Write to us however you like, we reply within 2 working days."
     },
-    "note": "We reply to everyone within 2 working days.",
     "form": "Fill in the form",
     "restart": "Start over",
     "back": "Back to Didi"

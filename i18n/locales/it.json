@@ -10,7 +10,6 @@
     "main": "Navigazione principale",
     "open_menu": "Apri il menu",
     "close_menu": "Chiudi il menu",
-    "back": "Torna indietro",
     "open_product": "Apri {name}"
   },
   "home": {
@@ -196,7 +195,6 @@
       "grant": "Per i bandi lavoriamo con The Qube: noi il progetto, loro i fondi. Scrivici da dove parti.",
       "chat": "Ti ascolto. Scrivici come preferisci, rispondiamo entro 2 giorni lavorativi."
     },
-    "note": "Rispondiamo a tutti entro 2 giorni lavorativi.",
     "form": "Compila il modulo",
     "restart": "Ricomincia",
     "back": "Torna da Didi"

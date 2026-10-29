@@ -36,6 +36,8 @@ export function useScreens(root: Ref<HTMLElement | undefined>) {
     const from = window.scrollY
     const to = Math.min(el.offsetTop, document.documentElement.scrollHeight - window.innerHeight)
     if (Math.abs(to - from) < 2) return
+    // Una corsa nuova ferma quella in corso: mai due che tirano lo scroll
+    cancelAnimationFrame(frame)
     gliding = true
     document.documentElement.classList.add('screen-gliding')
     const start = performance.now()
@@ -58,9 +60,10 @@ export function useScreens(root: Ref<HTMLElement | undefined>) {
     if (next) glideTo(next)
   }
 
-  // Fuori dalla home a schermate: il modulo di contatto, la splash
+  // Fuori dalla home a schermate: il modulo di contatto, la splash. E i
+  // campi di testo, che scorrono da soli (il campo di Didi)
   const elsewhere = (target: EventTarget | null) =>
-    (target instanceof Element && !!target.closest('[role="dialog"]'))
+    (target instanceof Element && !!target.closest('[role="dialog"], textarea'))
     || document.documentElement.classList.contains('splash')
 
   // Rotella e trackpad: conta solo l'inizio di un gesto. L'inerzia del
@@ -86,7 +89,8 @@ export function useScreens(root: Ref<HTMLElement | undefined>) {
     if (e.altKey || e.ctrlKey || e.metaKey || elsewhere(e.target)) return
     const el = e.target instanceof Element ? e.target : null
     if (el?.closest('input, textarea, select, [contenteditable]') || (e.key === ' ' && el?.closest('a, button'))) return
-    const delta = NEXT.includes(e.key) ? 1 : PREV.includes(e.key) ? -1 : 0
+    // Maiuscolo e spazio torna indietro, come nel browser
+    const delta = e.key === ' ' && e.shiftKey ? -1 : NEXT.includes(e.key) ? 1 : PREV.includes(e.key) ? -1 : 0
     if (delta || e.key === 'Home' || e.key === 'End') e.preventDefault()
     if (gliding) return
     if (delta) go(delta)

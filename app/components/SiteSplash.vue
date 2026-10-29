@@ -15,7 +15,7 @@ useHead({
   script: [{
     key: KEY,
     tagPosition: 'head',
-    innerHTML: `try{if(['/','/en','/en/'].indexOf(location.pathname)<0&&!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
+    innerHTML: `try{if(!document.documentElement.hasAttribute('data-home-intro')&&!localStorage.getItem('${KEY}')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('splash')}catch(e){}`,
   }],
 })
 

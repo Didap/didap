@@ -24,7 +24,13 @@ const root = ref<HTMLElement>()
 
 watch(() => route.fullPath, () => (open.value = false))
 
-// Il puntatore che esce chiude; il fuoco che esce anche
+// Solo il mouse apre e chiude passando: col dito il tocco simula anche il
+// passaggio, e aprire e richiudere nello stesso tocco non mostrerebbe nulla
+function onHover(e: PointerEvent, over: boolean) {
+  if (e.pointerType === 'mouse') open.value = over
+}
+
+// Il fuoco che esce chiude
 function onFocusOut(e: FocusEvent) {
   if (!root.value?.contains(e.relatedTarget as Node | null)) open.value = false
 }
@@ -37,8 +43,8 @@ function onFocusOut(e: FocusEvent) {
       w-[228px] overflow-hidden rounded-md bg-paper-light text-ink
       shadow-[0_10px_28px_-14px_rgb(22_20_18/0.45)]
     "
-    @mouseenter="open = true"
-    @mouseleave="open = false"
+    @pointerenter="onHover($event, true)"
+    @pointerleave="onHover($event, false)"
     @focusout="onFocusOut"
     @keydown.esc="open = false"
   >

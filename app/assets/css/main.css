@@ -562,6 +562,20 @@ samp {
   position: relative;
 }
 
+/* Su telefono una schermata può servire più alta dello schermo (testi
+   lunghi, la risposta di Didi): cresce invece di tagliare, e lo snap
+   lascia scorrere al suo interno */
+@media (max-width: 859px) {
+  .screen {
+    height: auto;
+    min-height: 100svh;
+  }
+
+  .screen-inner {
+    min-height: 100svh;
+  }
+}
+
 /* Il velo sotto il testo sui video: sfocatura progressiva a strati
    (sette <i>), ognuno in una fascia che si sovrappone alle vicine, così
    cresce verso il basso senza un bordo. Leggera (al massimo 6px) e

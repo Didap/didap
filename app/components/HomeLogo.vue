@@ -14,6 +14,8 @@ const SRC = '/splash/didap-intro.json'
 const CLASS = 'home-intro'
 
 useHead({
+  // SiteSplash lo legge: sulla home niente splash, c'è già questa
+  htmlAttrs: { 'data-home-intro': '' },
   script: [{
     key: CLASS,
     tagPosition: 'head',

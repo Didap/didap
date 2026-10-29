@@ -8,7 +8,7 @@ import DidapButton from '~/components/DidapButton.vue'
 // alta come la nav, la ✕ sta dove c'era il bottone. Ogni apertura è una
 // chat nuova, anche se si riapre mentre l'uscita è ancora in corso. Lo apre e lo chiude plugins/contact-dialog.client.ts.
 const { t } = useI18n()
-const { open, product, projectType } = useContactDialog()
+const { open, product, projectType, message } = useContactDialog()
 
 const session = ref(0)
 watch(open, (o) => {
@@ -67,6 +67,7 @@ watch(open, (o) => {
               :title-as="DialogTitle"
               :product="product"
               :project-type="projectType"
+              :message="message"
             >
               <template #done>
                 <DialogClose as-child>

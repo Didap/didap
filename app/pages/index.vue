@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
+import DidiTalk from '~/components/DidiTalk.vue'
 import HomeBar from '~/components/HomeBar.vue'
 import HomeLogo from '~/components/HomeLogo.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
@@ -10,12 +11,14 @@ import MediaSlot from '~/components/MediaSlot.vue'
 // la precedente salendo dal basso (scroll nativo con lo snap). Apertura
 // su carta, poi CityFix, Fanta Rainbow e Helllo con il loro video a
 // tutto schermo, poi Cruciverba Lab, poi le porte per le pagine dei
-// prodotti e dei clienti e la chiusura rossa. Niente nav
-// né footer: la barra è HomeBar, i link legali stanno nella chiusura.
+// prodotti e dei clienti e la chiusura rossa con Didi che chiede cosa
+// serve. Niente nav né footer: la barra è HomeBar, i link legali stanno
+// nella chiusura.
 definePageMeta({ nav: 'screens' })
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const { openContact } = useContactDialog()
 
 useSeoMeta({
   title: 'Didap',
@@ -83,13 +86,6 @@ const screens = computed(() => [
 // una all'altra (composables/useScreens)
 const { active, motion } = useScreens(root)
 
-// "Rivedi l'apertura": di nuovo in cima, Didi ricade nel logo
-const logo = ref<InstanceType<typeof HomeLogo>>()
-function replay() {
-  window.scrollTo({ top: 0, behavior: 'instant' })
-  logo.value?.play()
-}
-
 const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
 </script>
 
@@ -128,7 +124,6 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
           text-center
         ">
           <HomeLogo
-            ref="logo"
             class="w-[min(100%,78vw,1100px)]"
           />
           <p
@@ -336,47 +331,18 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
       <div class="screen-inner page-x grid h-full content-center gap-10 py-24">
         <h2
           id="contatti-title"
-          class="
-            reveal font-wide text-[clamp(2.75rem,1.4rem+6vw,8rem)] leading-[0.9]
-            font-bold tracking-[-0.035em] whitespace-pre-line
-          "
-          style="--i: 0"
+          class="sr-only"
         >
           {{ t('home.outro_title') }}
         </h2>
-        <div
-          class="reveal flex flex-wrap items-center gap-x-7 gap-y-[18px]"
-          style="--i: 1"
-        >
-          <DidapButton
-            :to="localePath('/contact')"
-            paper
-          >
-            {{ t('nav.cta') }}
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              aria-hidden="true"
-            ><path d="M3 11 11 3M4.5 3H11v6.5" /></svg>
-          </DidapButton>
-          <button
-            type="button"
-            class="
-              border-b border-current py-1 font-mono text-xs tracking-[0.04em]
-              uppercase opacity-75 transition-opacity
-              hover:opacity-100
-              focus-visible:outline-2 focus-visible:outline-offset-4
-              focus-visible:outline-paper-light
-            "
-            @click="replay"
-          >
-            {{ t('home.replay') }}
-          </button>
-        </div>
+        <!-- Didi chiede cosa serve; il modulo si apre sopra, già compilato -->
+        <DidiTalk
+          class="reveal"
+          style="--i: 0"
+          tone="red"
+          :hello="t('chat.ask')"
+          @form="(type, message) => openContact('', type, message)"
+        />
         <ScreenLegal />
       </div>
     </section>

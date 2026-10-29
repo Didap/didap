@@ -8,7 +8,7 @@ import type { AnimationItem } from 'lottie-web'
 // fine corsa torna l'immagine. Fuori dal riquadro non si taglia nulla:
 // Didi cade dall'alto dello schermo. Lo script in testa nasconde
 // l'immagine prima del primo disegno; con meno movimento, o se il Lottie
-// non arriva in tempo, resta lei. play() la rimette in scena.
+// non arriva in tempo, resta lei.
 
 const SRC = '/splash/didap-intro.json'
 const CLASS = 'home-intro'
@@ -75,7 +75,6 @@ async function play() {
 
 onMounted(play)
 onBeforeUnmount(end)
-defineExpose({ play })
 </script>
 
 <template>

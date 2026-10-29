@@ -20,7 +20,6 @@
     "more_products": "Products",
     "more_clients": "Clients",
     "outro_title": "Got an idea\nto set free?",
-    "replay": "Replay the intro",
     "hero_tagline": "Free the\nmonkey.",
     "featured_more": "Find out more",
     "status_live": "Live",
@@ -184,6 +183,7 @@
       "q3": "Looking for a grant to get started?"
     },
     "hello": "Hi! Tell me what you have in mind.",
+    "ask": "Ask Didi for more info.",
     "placeholder": "Write to Didi, a few words are enough",
     "input": "Your message for Didi",
     "send": "Send",

@@ -20,7 +20,6 @@
     "more_products": "Prodotti",
     "more_clients": "Clienti",
     "outro_title": "Hai un’idea\nda liberare?",
-    "replay": "Rivedi l’apertura",
     "hero_tagline": "Free the\nmonkey.",
     "featured_more": "Scopri di più",
     "status_live": "Live",
@@ -184,6 +183,7 @@
       "q3": "Cerchi un bando per partire?"
     },
     "hello": "Ciao! Raccontami cosa hai in mente.",
+    "ask": "Chiedi a Didi più info.",
     "placeholder": "Scrivi a Didi, bastano due parole",
     "input": "Il tuo messaggio per Didi",
     "send": "Invia",

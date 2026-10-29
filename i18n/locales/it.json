@@ -182,19 +182,19 @@
       "q2": "Vuoi capire se la tua idea si può fare?",
       "q3": "Cerchi un bando per partire?"
     },
-    "hello": "Ciao! Raccontami cosa hai in mente.",
-    "ask": "Chiedi a Didi più info.",
-    "placeholder": "Scrivi a Didi, bastano due parole",
+    "hello": "Ciao, sono Didi. Raccontami cosa hai in mente e ti dico come partire.",
+    "ask": "Hai un’idea da liberare? Raccontamela.",
+    "placeholder": "Es. un’app per il mio ristorante",
     "input": "Il tuo messaggio per Didi",
     "send": "Invia",
     "thinking": "Didi ci sta pensando",
     "you": "Hai scritto",
     "reply": {
-      "product": "Un prodotto nuovo: lo pensiamo e lo costruiamo con te. Scegli come parlarne.",
-      "app": "Un’app o un SaaS: è il nostro pane. Scegli come raccontarcelo.",
-      "site": "Un sito: si fa. Scegli come preferisci sentirci.",
-      "grant": "Per i bandi lavoriamo con The Qube: noi pensiamo al progetto, loro a come finanziarlo. Scegli come scriverci.",
-      "chat": "Facciamo due chiacchiere. Scegli come preferisci sentirci."
+      "product": "Un prodotto da zero: è quello che facciamo. Scrivici e lo pensiamo insieme.",
+      "app": "Un’app o un SaaS: la progettiamo e la costruiamo noi. Scrivici e partiamo.",
+      "site": "Un sito tutto tuo, si fa. Scrivici due righe e partiamo.",
+      "grant": "Per i bandi lavoriamo con The Qube: noi il progetto, loro i fondi. Scrivici da dove parti.",
+      "chat": "Ti ascolto. Scrivici come preferisci, rispondiamo entro 2 giorni lavorativi."
     },
     "note": "Rispondiamo a tutti entro 2 giorni lavorativi.",
     "form": "Compila il modulo",

@@ -182,19 +182,19 @@
       "q2": "Wondering whether your idea can be built?",
       "q3": "Looking for a grant to get started?"
     },
-    "hello": "Hi! Tell me what you have in mind.",
-    "ask": "Ask Didi for more info.",
-    "placeholder": "Write to Didi, a few words are enough",
+    "hello": "Hi, I’m Didi. Tell me what you have in mind and I’ll tell you how to start.",
+    "ask": "Got an idea to set free? Tell me about it.",
+    "placeholder": "E.g. a booking app for my restaurant",
     "input": "Your message for Didi",
     "send": "Send",
     "thinking": "Didi is thinking",
     "you": "You wrote",
     "reply": {
-      "product": "A new product: we think it through and build it with you. Pick how to talk about it.",
-      "app": "An app or a SaaS: that’s our bread and butter. Pick how to tell us about it.",
-      "site": "A website: we can do that. Pick how you’d like to hear from us.",
-      "grant": "For grants we work with The Qube: we design the project, they work out how to fund it. Pick how to write to us.",
-      "chat": "Let’s have a chat. Pick how you’d like to hear from us."
+      "product": "A product from scratch: that’s what we do. Write to us and we’ll think it through together.",
+      "app": "An app or a SaaS: we design it and build it ourselves. Write to us and let’s start.",
+      "site": "A website of your own, we can do that. Drop us a line and let’s start.",
+      "grant": "For grants we work with The Qube: we bring the project, they bring the funding. Tell us where you’re starting from.",
+      "chat": "I’m listening. Write to us however you like, we reply within 2 working days."
     },
     "note": "We reply to everyone within 2 working days.",
     "form": "Fill in the form",

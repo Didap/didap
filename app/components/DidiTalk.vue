@@ -68,6 +68,7 @@ watch(draft, () => nextTick(() => {
   if (!el) return
   el.style.height = 'auto'
   el.style.height = `${Math.min(el.scrollHeight, 180)}px`
+  el.style.overflowY = el.scrollHeight > 180 ? 'auto' : 'hidden'
 }))
 </script>
 
@@ -81,7 +82,7 @@ watch(draft, () => nextTick(() => {
     <div
       class="
         relative col-span-full row-1 mb-[8%] grid aspect-1010/410
-        place-items-center rounded-[50%] bg-ink px-[13%] py-[12%]
+        place-items-center rounded-[20%/50%] bg-ink px-[11%] py-[9%]
         text-paper-light
         md:col-2 md:mb-0
       "
@@ -160,8 +161,8 @@ watch(draft, () => nextTick(() => {
           :aria-label="t('chat.input')"
           :placeholder="t('chat.placeholder')"
           class="
-            min-h-11 min-w-0 flex-1 resize-none bg-transparent py-[7px]
-            text-body outline-none
+            min-h-11 min-w-0 flex-1 resize-none overflow-hidden bg-transparent
+            py-[7px] text-body outline-none
             placeholder:text-ink/40
           "
           @keydown.enter.exact.prevent="send"

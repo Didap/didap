@@ -1,5 +1,6 @@
 {
   "nav": {
+    "home": "Home",
     "work": "Products",
     "projects": "Projects",
     "clients": "Partners",
@@ -161,7 +162,14 @@
     "notify": "Tell me when it launches",
     "next": "Next product",
     "placeholder_image": "Image",
-    "team": "The hands behind it"
+    "team": "The hands behind it",
+    "why": "Why",
+    "made": "What we did",
+    "offers": "What it offers",
+    "challenge": "The hard part",
+    "model": "The model",
+    "all": "All products",
+    "scroll": "Scroll to discover {name}"
   },
   "splash": {
     "skip": "Skip"

@@ -1,30 +1,23 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
+import SiteMenu from '~/components/SiteMenu.vue'
 
 // Componente "Nav" del Figma: Didi (la testa tonda, senza la D) a
 // sinistra, link Semibold 13 maiuscoli a 45 di distanza, CTA a destra.
 // Niente selettore di lingua: la sceglie il browser. Alto 97. Variante
-// `product` (scheda prodotto): indietro + Didi a sinistra, niente voci,
-// logo del prodotto al posto della CTA.
+// `product` (scheda prodotto): SiteMenu a sinistra, niente voci, logo
+// del prodotto al posto della CTA.
 // Didi lascia la nav per DidiGuide e ci ricade dall'alto quando torna.
 const props = defineProps<{ cream?: boolean; product?: boolean }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
-const router = useRouter()
 
 const links = useHomeSections()
 
 // Via con DidiGuide, il link sparisce con lei
 const didiAway = useDidiAway()
-
-// Indietro: torna alla pagina precedente se si arriva dal sito,
-// altrimenti alla sezione prodotti della home
-function goBack() {
-  if (import.meta.client && window.history.state?.back) router.back()
-  else navigateTo({ path: localePath('/'), hash: `#${HOME_SECTIONS.products}` })
-}
 
 // Prodotto aperto (stessi dati della scheda, condivisi per chiave)
 const productSlug = computed(() =>
@@ -57,54 +50,36 @@ function closeMenuOnLink(e: MouseEvent) {
         lg:h-[97px] lg:grid-cols-[1fr_auto_1fr]
       "
     >
-      <div class="flex items-center gap-4">
-        <button
-          v-if="product"
-          type="button"
-          class="
-            -ml-2.5 flex size-10 items-center justify-center rounded-full
-            transition-colors
-            hover:bg-ink hover:text-paper-light
-          "
-          :aria-label="t('nav.back')"
-          @click="goBack"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M16 10H4m0 0 5-5m-5 5 5 5"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-        <NuxtLink
-          :to="localePath('/')"
-          class="block"
-          :class="{ invisible: didiAway }"
-          aria-label="Didap - home"
-          data-didi-link
-        >
-          <img
-            src="/brand/didi-testa.svg"
-            alt=""
-            width="218"
-            height="200"
-            data-didi-home
-            class="
-              h-10 w-auto
-              lg:h-12
-            "
-          >
-        </NuxtLink>
+      <!-- Scheda prodotto: il menu, che si allunga sopra la pagina -->
+      <div
+        v-if="product"
+        class="relative h-[52px] w-[228px]"
+      >
+        <SiteMenu
+          :label="productNav?.title ?? t('nav.work')"
+          class="absolute top-0 left-0"
+        />
       </div>
+      <NuxtLink
+        v-else
+        :to="localePath('/')"
+        class="block"
+        :class="{ invisible: didiAway }"
+        aria-label="Didap - home"
+        data-didi-link
+      >
+        <img
+          src="/brand/didi-testa.svg"
+          alt=""
+          width="218"
+          height="200"
+          data-didi-home
+          class="
+            h-10 w-auto
+            lg:h-12
+          "
+        >
+      </NuxtLink>
 
       <span
         v-if="product"

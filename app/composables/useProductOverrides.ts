@@ -71,3 +71,33 @@ export const useProductPage = async (slug: MaybeRefOrGetter<string>) => {
 
   return { base, overrides, project }
 }
+
+/**
+ * Il prodotto dopo: `next` dal frontmatter, altrimenti il successivo per
+ * `order`, con le modifiche admin. Per la chiusura delle schede.
+ */
+export const useNextProduct = async (
+  project: Ref<{ stem: string; next?: string } | null>,
+  overrides: Ref<Record<string, ProductOverride> | undefined>,
+) => {
+  const { locale } = useI18n()
+  const collection = useProjectCollection('work')
+  const { data: all } = await useAsyncData(
+    () => `work-all-${locale.value}`,
+    () => queryCollection(collection.value).order('order', 'ASC').all(),
+    { watch: [collection] },
+  )
+  return computed(() => {
+    const list = all.value ?? []
+    if (!project.value || list.length < 2) return null
+    const wanted = project.value.next
+    let found = wanted ? list.find((p) => productSlug(p) === wanted) : undefined
+    if (!found) {
+      const i = list.findIndex((p) => p.stem === project.value?.stem)
+      found = list[(i + 1) % list.length]
+    }
+    return found ? mergeProduct(found, overrides.value?.[productSlug(found)]) : null
+  })
+}
+
+export const productSlug = (p: { stem: string }) => p.stem.split('/').pop() ?? ''

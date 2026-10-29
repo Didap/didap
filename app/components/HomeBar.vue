@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import SiteMenu from '~/components/SiteMenu.vue'
+
 // La barra della home a schermate: Didi a sinistra, "Lavoriamo insieme"
 // a destra, senza fondo sopra le schermate. Sull'apertura non c'è
 // (`shown` falso): sale via e torna con la prima schermata. `light` quando
@@ -6,7 +8,9 @@
 // e un alone di carta che stacca Didi dal video scuro. Didi è quella
 // della nav: DidiGuide la porta via e la rimette qui. `glow` tiene
 // l'alone anche col testo ink, se Didi e il testo stanno su fondi diversi.
-const props = defineProps<{ shown: boolean, light: boolean, glow?: boolean }>()
+// Con `menu` (le schede prodotto) al posto di Didi c'è SiteMenu, col
+// nome della pagina.
+const props = defineProps<{ shown: boolean, light: boolean, glow?: boolean, menu?: string }>()
 const halo = computed(() => props.glow ?? !props.light)
 
 const { t } = useI18n()
@@ -28,7 +32,18 @@ const didiAway = useDidiAway()
       shown ? '' : 'invisible -translate-y-full opacity-0',
     ]"
   >
+    <!-- Il menu si allunga verso il basso sopra la pagina, dall'alto fermo -->
+    <div
+      v-if="menu"
+      class="relative h-[52px] w-[228px]"
+    >
+      <SiteMenu
+        :label="menu"
+        class="absolute top-0 left-0"
+      />
+    </div>
     <NuxtLink
+      v-else
       :to="localePath('/')"
       class="block"
       :class="{ invisible: didiAway }"
@@ -51,8 +66,10 @@ const didiAway = useDidiAway()
       >
     </NuxtLink>
 
+    <!-- Col menu, su telefono basta la sua voce Contatti -->
     <NuxtLink
         :to="localePath('/contact')"
+        :class="{ 'max-sm:hidden': menu }"
         class="
           border-b-[1.5px] border-current py-2.5 text-button leading-none
           focus-visible:outline-2 focus-visible:outline-offset-4

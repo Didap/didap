@@ -79,6 +79,38 @@ team:
   - cristiano
   - alessandro
   - vitantonio
+screens:
+  why:
+    title: A report goes through three pairs of hands.
+    body: "The citizen sees the pothole, the municipality decides who should fix it, the supplier repairs it. Without a shared tool the report bounces between emails, forms and spreadsheets, and whoever made it loses track of what happened to it. CityFix puts all three on the same path, tracked from start to finish."
+  made:
+    title: We thought it up, designed it and built it.
+    body: "CityFix is a Didap product. On a single platform we built three tools: the app for citizens, the back office for municipalities and the space for suppliers. The backend is ready for every Italian municipality, the back office is up and running and the app is at MVP stage, ahead of the pilot with the first partner municipality."
+  media:
+    - src: /covers/cityfix-segnala.mp4
+      poster: /covers/cityfix-segnala-poster.webp
+      ratio: 1256/1520
+      alt: "Guided reporting in the CityFix app: the bot asks where the problem is, the location, the photo and the type come in, then Invia sends the report to the municipality"
+    - src: /covers/cityfix-mappa.mp4
+      poster: /covers/cityfix-mappa-poster.webp
+      ratio: 1696/1520
+      alt: "The report map in the CityFix app: blue pins on the streets of Brindisi, one lifts and opens its card, and the bar button turns from Segnala ora to Sostieni"
+    - src: /covers/cityfix-stato.mp4
+      poster: /covers/cityfix-stato-poster.webp
+      ratio: 816/1520
+      alt: "A report in detail: the four status pixels fill one at a time, from Inviata to Completata, while the history grows"
+    - src: /covers/cityfix-backoffice.mp4
+      poster: /covers/cityfix-backoffice-poster.webp
+      ratio: 1920/1080
+      alt: "The back office of the Comune di Brindisi: a new report lands at the top of the open list, the operator acknowledges it, assigns it to a supplier and the In corso count goes up"
+    - src: /covers/cityfix-chiusura.mp4
+      poster: /covers/cityfix-chiusura-poster.webp
+      ratio: 822/1080
+      alt: "The supplier closes the job: the photo of the pothole wipes into the photo of the new asphalt and a Completata stamp lands"
+    - src: /covers/cityfix-avviso.mp4
+      poster: /covers/cityfix-avviso-poster.webp
+      ratio: 822/1080
+      alt: "A notice from the municipality for the Centro neighbourhood: the zone draws itself on the map of Brindisi and the notice about water main works comes in, valid until 31 October"
 ---
 
 ## The product

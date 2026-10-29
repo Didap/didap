@@ -2,9 +2,10 @@
 import DidapButton from '~/components/DidapButton.vue'
 import HomeBar from '~/components/HomeBar.vue'
 import HomeLogo from '~/components/HomeLogo.vue'
+import ScreenLegal from '~/components/ScreenLegal.vue'
+import ScreenRail from '~/components/ScreenRail.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
-import { CONTACT_EMAIL } from '#shared/contact'
 import type { ProductStatus } from '#shared/product'
 
 // Home a schermate: una pila di schermate a tutto schermo, ognuna copre
@@ -13,12 +14,11 @@ import type { ProductStatus } from '#shared/product'
 // tutto schermo, poi Cruciverba Lab, poi le porte per le pagine dei
 // prodotti e dei clienti e la chiusura rossa. Niente nav
 // né footer: la barra è HomeBar, i link legali stanno nella chiusura.
-definePageMeta({ nav: 'home' })
+definePageMeta({ nav: 'screens' })
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-useHead({ htmlAttrs: { class: 'home-snap' } })
 useSeoMeta({
   title: 'Didap',
   description: t('home.seo_description'),
@@ -85,29 +85,9 @@ const screens = computed(() => [
   { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
 ])
 
-// Con mouse e trackpad un gesto porta alla schermata dopo, con una corsa
-// morbida (composables/useScreenScroll)
-useScreenScroll(root)
-
-// La schermata in scena è quella che passa per la metà dello schermo,
-// anche quando è più alta (le card su telefono)
-const active = ref(0)
-const motion = ref(false)
-let observer: IntersectionObserver | null = null
-onMounted(() => {
-  motion.value = !matchMedia('(prefers-reduced-motion: reduce)').matches
-  const els = [...(root.value?.querySelectorAll<HTMLElement>('[data-screen]') ?? [])]
-  observer = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) active.value = els.indexOf(e.target as HTMLElement)
-      }
-    },
-    { rootMargin: '-50% 0px -50% 0px' },
-  )
-  els.forEach(el => observer!.observe(el))
-})
-onBeforeUnmount(() => observer?.disconnect())
+// La schermata in scena e, con mouse e trackpad, la corsa morbida da
+// una all'altra (composables/useScreens)
+const { active, motion } = useScreens(root)
 
 // "Rivedi l'apertura": di nuovo in cima, Didi ricade nel logo
 const logo = ref<InstanceType<typeof HomeLogo>>()
@@ -117,7 +97,6 @@ function replay() {
 }
 
 const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
-const year = new Date().getFullYear()
 </script>
 
 <template>
@@ -131,52 +110,11 @@ const year = new Date().getFullYear()
       :glow="screens[active]?.glow"
     />
 
-    <nav
-      :aria-label="t('home.index')"
-      class="
-        fixed top-1/2 right-5 z-30 hidden -translate-y-1/2 transition-colors
-        duration-500
-        min-[860px]:block
-        md:right-10
-        xl:right-20
-      "
-      :class="screens[active]?.light ? 'text-ink' : 'text-paper-light'"
-    >
-      <ol class="flex flex-col gap-1">
-        <li
-          v-for="(s, i) in screens"
-          :key="s.id"
-        >
-          <a
-            :href="`#${s.id}`"
-            class="
-              group flex items-center justify-end gap-3 py-1.5 font-mono
-              text-[11px] tracking-[0.06em] uppercase
-            "
-            :aria-current="i === active ? 'true' : undefined"
-          >
-            <span
-              class="
-                translate-x-1.5 whitespace-nowrap opacity-0 transition
-                duration-300
-                group-hover:translate-x-0 group-hover:opacity-100
-                group-focus-visible:translate-x-0
-                group-focus-visible:opacity-100
-                group-aria-current:translate-x-0 group-aria-current:opacity-100
-              "
-            >{{ s.label }}</span>
-            <span
-              class="
-                h-[1.5px] w-3.5 bg-current opacity-45 transition-all
-                duration-400
-                group-aria-current:w-8 group-aria-current:opacity-100
-              "
-              aria-hidden="true"
-            />
-          </a>
-        </li>
-      </ol>
-    </nav>
+    <ScreenRail
+      :label="t('home.index')"
+      :screens="screens"
+      :active="active"
+    />
 
     <!-- Apertura -->
     <section
@@ -250,7 +188,7 @@ const year = new Date().getFullYear()
         >
         <MediaSlot
           :media="hero(p.slug)"
-          class="screen-video absolute inset-0 size-full"
+          class="screen-video screen-hero absolute inset-0 size-full"
         />
         <div
           v-if="!p.light"
@@ -479,128 +417,13 @@ const year = new Date().getFullYear()
             {{ t('home.replay') }}
           </button>
         </div>
-        <div
-          class="
-            absolute inset-x-0 bottom-0 page-x flex flex-wrap gap-x-6 gap-y-2
-            pb-[max(24px,env(safe-area-inset-bottom))] text-label opacity-75
-          "
-        >
-          <span>© {{ year }} Didap</span>
-          <a
-            :href="`mailto:${CONTACT_EMAIL}`"
-            class="
-              normal-case
-              hover:underline
-            "
-          >{{ CONTACT_EMAIL }}</a>
-          <NuxtLink
-            :to="localePath('/privacy')"
-            class="hover:underline"
-          >
-            {{ t('footer.privacy') }}
-          </NuxtLink>
-          <NuxtLink
-            :to="localePath('/cookies')"
-            class="hover:underline"
-          >
-            {{ t('footer.cookies') }}
-          </NuxtLink>
-        </div>
+        <ScreenLegal />
       </div>
     </section>
   </div>
 </template>
 
 <style scoped>
-/* Ogni schermata alta quanto lo schermo, si posa con lo snap. Le
-   successive stanno sopra (z-index nel template) */
-.screen {
-  position: relative;
-  height: 100svh;
-  overflow: hidden;
-  scroll-margin-top: 0;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  view-timeline: --screen block;
-}
-
-
-.screen-inner {
-  position: relative;
-}
-
-/* Il velo sotto il testo: sfocatura progressiva a strati, ognuno in
-   una fascia che si sovrappone alle vicine, così cresce verso il basso
-   senza un bordo. Leggera (al massimo 6px) e bassa: regge il testo
-   senza spegnere il video. Sopra, uno scurimento con molte fermate */
-.screen-veil {
-  position: absolute;
-  inset: auto 0 0;
-  height: 56%;
-  pointer-events: none;
-}
-
-.screen-veil i {
-  position: absolute;
-  inset: 0;
-  backdrop-filter: blur(var(--b));
-  mask-image: linear-gradient(to bottom, transparent var(--a), #000 var(--c), #000 var(--d), transparent var(--e));
-}
-
-.screen-veil i:nth-child(1) { --b: 0.25px; --a: 0%; --c: 12.5%; --d: 25%; --e: 37.5%; }
-.screen-veil i:nth-child(2) { --b: 0.5px; --a: 12.5%; --c: 25%; --d: 37.5%; --e: 50%; }
-.screen-veil i:nth-child(3) { --b: 1px; --a: 25%; --c: 37.5%; --d: 50%; --e: 62.5%; }
-.screen-veil i:nth-child(4) { --b: 2px; --a: 37.5%; --c: 50%; --d: 62.5%; --e: 75%; }
-.screen-veil i:nth-child(5) { --b: 3px; --a: 50%; --c: 62.5%; --d: 75%; --e: 87.5%; }
-.screen-veil i:nth-child(6) { --b: 4.5px; --a: 62.5%; --c: 75%; --d: 87.5%; --e: 100%; }
-.screen-veil i:nth-child(7) { --b: 6px; --a: 75%; --c: 87.5%; --d: 100%; --e: 100.1%; }
-
-.screen-veil::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgb(22 20 18 / 0.74) 0%,
-    rgb(22 20 18 / 0.68) 15%,
-    rgb(22 20 18 / 0.57) 30%,
-    rgb(22 20 18 / 0.43) 45%,
-    rgb(22 20 18 / 0.28) 60%,
-    rgb(22 20 18 / 0.14) 75%,
-    rgb(22 20 18 / 0.05) 88%,
-    rgb(22 20 18 / 0) 100%
-  );
-}
-
-/* In verticale il video sta in alto intero, dietro il suo poster sfocato */
-.screen-backdrop {
-  display: none;
-}
-
-@media (max-aspect-ratio: 1/1) {
-  .screen-backdrop {
-    position: absolute;
-    inset: -10%;
-    display: block;
-    width: 120%;
-    height: 120%;
-    object-fit: cover;
-    filter: blur(40px) brightness(0.55) saturate(1.2);
-  }
-
-  .screen :deep(.screen-video) {
-    inset: 14% auto auto 50%;
-    width: 150%;
-    height: auto;
-    aspect-ratio: 5 / 3;
-    translate: -50% 0;
-  }
-
-  .screen-veil {
-    height: 64%;
-  }
-}
-
 /* L'invito a scorrere: la rotella del mouse che scende */
 .scroll-cue::after {
   content: '';
@@ -620,66 +443,6 @@ const year = new Date().getFullYear()
   20% { opacity: 1; }
   70% { opacity: 0; transform: translateY(14px); }
   100% { opacity: 0; }
-}
-
-/* Il testo entra quando la schermata è in scena. Senza JavaScript, o
-   con meno movimento, resta fermo e visibile */
-.motion .reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.9s var(--ease-vintage),
-    transform 0.9s var(--ease-vintage);
-  transition-delay: calc(var(--i, 0) * 90ms + 420ms);
-}
-
-.motion .is-active .reveal {
-  opacity: 1;
-  transform: none;
-}
-
-/* Legate allo scroll: chi esce sale più piano, così la successiva la
-   copre; i video si scuriscono mentre escono (carta e rosso no, verrebbero
-   grigi) e quello che entra si posa da un leggero zoom */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .screen-inner {
-      animation: screen-leave linear both;
-      animation-timeline: --screen;
-      animation-range: exit;
-    }
-
-    .screen-dims .screen-inner::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      background: var(--color-ink);
-      pointer-events: none;
-      animation: screen-dim linear both;
-      animation-timeline: --screen;
-      animation-range: exit;
-    }
-
-    .screen :deep(.screen-video) {
-      animation: screen-settle linear both;
-      animation-timeline: --screen;
-      animation-range: entry;
-    }
-  }
-}
-
-@keyframes screen-leave {
-  to { transform: translateY(70%); }
-}
-
-@keyframes screen-dim {
-  from { opacity: 0; }
-  to { opacity: 0.7; }
-}
-
-@keyframes screen-settle {
-  from { transform: scale(1.06); }
 }
 
 @media (prefers-reduced-motion: reduce) {

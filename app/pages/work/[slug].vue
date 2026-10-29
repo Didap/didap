@@ -12,9 +12,8 @@ import { typeset } from '#shared/typeset'
 definePageMeta({ surface: 'cream', nav: 'product' })
 
 const route = useRoute()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const localePath = useLocalePath()
-const collection = useProjectCollection('work')
 const slug = computed(() => String(route.params.slug))
 
 const { base: baseProject, overrides, project } = await useProductPage(slug)
@@ -27,26 +26,7 @@ if (!baseProject.value) {
   })
 }
 
-// Prossimo prodotto: `next` dal frontmatter, altrimenti il successivo per `order`
-const { data: allProjects } = await useAsyncData(
-  () => `work-all-${locale.value}`,
-  () => queryCollection(collection.value).order('order', 'ASC').all(),
-  { watch: [collection] },
-)
-
-const slugOf = (p: { stem: string }) => p.stem.split('/').pop() ?? ''
-
-const nextProject = computed(() => {
-  const list = allProjects.value ?? []
-  if (!project.value || list.length < 2) return null
-  const wanted = project.value.next
-  let found = wanted ? list.find((p) => slugOf(p) === wanted) : undefined
-  if (!found) {
-    const i = list.findIndex((p) => p.stem === project.value?.stem)
-    found = list[(i + 1) % list.length]
-  }
-  return found ? mergeProduct(found, overrides.value?.[slugOf(found)]) : null
-})
+const nextProject = await useNextProduct(project, overrides)
 
 const host = computed(() => {
   if (!project.value?.url) return ''
@@ -422,7 +402,7 @@ useSeoMeta({
         class="page-x"
       >
         <NuxtLink
-          :to="localePath(`/work/${slugOf(nextProject)}`)"
+          :to="localePath(`/work/${productSlug(nextProject)}`)"
           class="
             group flex flex-col gap-12 border-t-[1.5px] border-ink pt-8 pb-24
             lg:pb-30

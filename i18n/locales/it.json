@@ -1,5 +1,6 @@
 {
   "nav": {
+    "home": "Home",
     "work": "Prodotti",
     "projects": "Progetti",
     "clients": "Partner",
@@ -161,7 +162,14 @@
     "notify": "Avvisami quando esce",
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine",
-    "team": "Ci hanno messo le mani"
+    "team": "Ci hanno messo le mani",
+    "why": "Il motivo",
+    "made": "Cosa abbiamo fatto",
+    "offers": "Cosa offre",
+    "challenge": "La cosa difficile",
+    "model": "Il modello",
+    "all": "Tutti i prodotti",
+    "scroll": "Scorri per scoprire {name}"
   },
   "splash": {
     "skip": "Salta"

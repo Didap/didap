@@ -3,7 +3,7 @@ import { NuxtLink } from '#components'
 
 // Button/Primary del Figma: pillola verde, label Semibold 13 maiuscola.
 // `to` per le rotte interne, `href` per i link esterni (in una scheda
-// nuova, tranne mailto: e tel:), senza nessuno dei due è un <button>
+// nuova, tranne mailto:, tel: e le ancore #), senza nessuno dei due è un <button>
 // (type e disabled passano come attributi).
 // `medium`: variante della Nav, label Medium invece che Semibold.
 // `paper`: pillola carta con testo ink, sopra i video e il rosso della
@@ -23,7 +23,7 @@ const link = computed(() => props.href ?? props.to)
     :is="link ? NuxtLink : 'button'"
     :to="link"
     :external="link ? !!href : undefined"
-    :target="href && !/^(mailto|tel):/.test(href) ? '_blank' : undefined"
+    :target="href && !/^(mailto:|tel:|#)/.test(href) ? '_blank' : undefined"
     :class="[
       medium ? 'text-label' : 'text-button',
       paper ? `

@@ -164,7 +164,14 @@
     "challenge": "La cosa difficile",
     "model": "Il modello",
     "all": "Tutti i prodotti",
-    "scroll": "Scorri per scoprire {name}"
+    "scroll": "Scorri per scoprire {name}",
+    "roles": {
+      "barbara": "Project manager",
+      "william": "Sviluppatore full-stack",
+      "cristiano": "Sviluppatore full-stack",
+      "alessandro": "Sviluppatore full-stack",
+      "vitantonio": "Designer"
+    }
   },
   "splash": {
     "skip": "Salta"

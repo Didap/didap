@@ -164,7 +164,14 @@
     "challenge": "The hard part",
     "model": "The model",
     "all": "All products",
-    "scroll": "Scroll to discover {name}"
+    "scroll": "Scroll to discover {name}",
+    "roles": {
+      "barbara": "Project manager",
+      "william": "Full-stack developer",
+      "cristiano": "Full-stack developer",
+      "alessandro": "Full-stack developer",
+      "vitantonio": "Designer"
+    }
   },
   "splash": {
     "skip": "Skip"

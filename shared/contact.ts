@@ -32,9 +32,10 @@ export function contactKind(value: string): ContactKind | null {
 // Il numero come link tel: solo cifre e il + davanti
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`
 
-// La chat WhatsApp con il messaggio già scritto: wa.me vuole solo cifre
+// La chat WhatsApp con il messaggio già scritto: wa.me vuole solo cifre,
+// con il prefisso e senza il + o lo 00 davanti
 export const whatsappHref = (phone: string, text: string) =>
-  `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`
+  `https://wa.me/${phone.replace(/\D/g, '').replace(/^00/, '')}?text=${encodeURIComponent(text)}`
 
 // Una mail già scritta, oggetto e testo
 export const mailtoHref = (email: string, subject: string, body: string) =>

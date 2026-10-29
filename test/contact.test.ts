@@ -31,6 +31,7 @@ describe('link e query', () => {
 
   it('WhatsApp e mail con il testo già scritto', () => {
     expect(whatsappHref('+39 333 123 4567', 'Ciao, un sito?')).toBe('https://wa.me/393331234567?text=Ciao%2C%20un%20sito%3F')
+    expect(whatsappHref('0039 333 123 4567', 'x')).toBe('https://wa.me/393331234567?text=x')
     expect(mailtoHref('a@b.it', 'Dal sito', 'Ciao & grazie')).toBe('mailto:a@b.it?subject=Dal%20sito&body=Ciao%20%26%20grazie')
   })
 

@@ -23,10 +23,12 @@ const allLocales = computed(
 const links = useHomeSections()
 
 const didi = useDidi()
-const didiClass = computed(() => ({
-  'invisible': didi.value === 'away',
-  'motion-safe:animate-didi-drop': didi.value === 'back',
-}))
+// Via con DidiGuide il link sparisce con lei; al ritorno cade e basta
+const didiAway = computed(() => ({ invisible: didi.value === 'away' }))
+const didiDrop = computed(() => (didi.value === 'back' ? 'motion-safe:animate-didi-drop' : ''))
+function landed() {
+  didi.value = 'home'
+}
 
 // Indietro: torna alla pagina precedente se si arriva dal sito,
 // altrimenti alla sezione prodotti della home
@@ -99,7 +101,9 @@ function closeMenuOnLink(e: MouseEvent) {
         <NuxtLink
           :to="localePath('/')"
           class="block"
+          :class="didiAway"
           aria-label="Didap - home"
+          data-didi-link
         >
           <img
             src="/brand/didi-testa.svg"
@@ -108,7 +112,8 @@ function closeMenuOnLink(e: MouseEvent) {
             height="200"
             data-didi-home
             class="h-10 w-auto"
-            :class="didiClass"
+            :class="didiDrop"
+            @animationend="landed"
           >
         </NuxtLink>
       </div>
@@ -116,7 +121,9 @@ function closeMenuOnLink(e: MouseEvent) {
         v-else
         :to="localePath('/')"
         class="block justify-self-start"
+        :class="didiAway"
         aria-label="Didap - home"
+        data-didi-link
       >
         <img
           src="/brand/didi-testa.svg"
@@ -128,7 +135,8 @@ function closeMenuOnLink(e: MouseEvent) {
             h-10 w-auto
             lg:h-12
           "
-          :class="didiClass"
+          :class="didiDrop"
+          @animationend="landed"
         >
       </NuxtLink>
 

@@ -136,13 +136,7 @@
     "close": "Close Didi's bubble",
     "dismiss": "Back to your spot",
     "hello": "Hi, I'm Didi. What do you need?",
-    "topics": {
-      "product": "A new product",
-      "app": "App or SaaS",
-      "site": "A website",
-      "grant": "A grant",
-      "chat": "Just a chat"
-    },
+    "chat": "Just a chat",
     "reply": "Drop us a couple of lines, draft is fine. We reply to everyone within 2 working days.",
     "reply_grant": "For grants we work with The Qube: we take care of the project, they take care of funding it. Tell us where you're starting from.",
     "whatsapp": "Message us on WhatsApp",

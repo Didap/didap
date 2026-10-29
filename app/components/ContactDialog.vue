@@ -8,7 +8,7 @@ import DidapButton from '~/components/DidapButton.vue'
 // Ogni apertura è un modulo nuovo, anche se si riapre mentre l'uscita
 // è ancora in corso. Lo apre e lo chiude plugins/contact-dialog.client.ts.
 const { t } = useI18n()
-const { open, product } = useContactDialog()
+const { open, product, projectType } = useContactDialog()
 
 const session = ref(0)
 watch(open, (o) => {
@@ -66,6 +66,7 @@ watch(open, (o) => {
               :key="session"
               :title-as="DialogTitle"
               :product="product"
+              :project-type="projectType"
             >
               <template #done>
                 <DialogClose as-child>

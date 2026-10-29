@@ -23,6 +23,8 @@ useHead({
 })
 
 const player = ref<HTMLElement>()
+// Il player entra con una dissolvenza: la D non scatta al primo fotogramma
+const shown = ref(false)
 let anim: AnimationItem | null = null
 // Ogni corsa ha il suo numero: un caricamento in ritardo non riparte
 let run = 0
@@ -31,6 +33,7 @@ function end() {
   run++
   anim?.destroy()
   anim = null
+  shown.value = false
   document.documentElement.classList.remove(CLASS)
 }
 
@@ -58,6 +61,11 @@ async function play() {
     // Il player taglia al riquadro del Lottie: Didi arriva da fuori
     player.value.querySelector('[clip-path]')?.removeAttribute('clip-path')
     anim.addEventListener('complete', end)
+    // Parte a pagina ferma, dopo il primo disegno: così i primi
+    // fotogrammi non si perdono nel caricamento
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+    if (id !== run) return
+    shown.value = true
     anim.play()
   }
   catch {
@@ -82,6 +90,7 @@ defineExpose({ play })
     <div
       ref="player"
       class="logo-player"
+      :class="{ 'is-shown': shown }"
       aria-hidden="true"
     />
   </h1>
@@ -101,6 +110,16 @@ html.home-intro .logo-still {
   width: 137.462%;
   height: 270%;
   pointer-events: none;
+  opacity: 0;
+  transform: translateY(14px) scale(0.97);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.7s var(--ease-vintage);
+}
+
+.logo-player.is-shown {
+  opacity: 1;
+  transform: none;
 }
 
 .logo-player :deep(svg) {

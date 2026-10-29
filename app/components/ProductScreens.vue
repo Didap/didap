@@ -42,12 +42,24 @@ const wide = (ratio?: string) => {
   return !!w && !!h && w / h > 1.3
 }
 
-const offers = computed(() =>
-  (project.value?.features?.items ?? []).map((f, i) => {
+// Fondo chiaro: la barra sopra va in ink
+const light = (hex?: string) => {
+  const [r = 0, g = 0, b = 0] = (hex?.match(/[\da-f]{2}/gi) ?? []).map(h => parseInt(h, 16))
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6
+}
+
+// Ogni voce col suo video e il fondo intorno. `flow`: la voce dopo ha lo
+// stesso fondo, quindi tra le due scorre solo il contenuto
+const offers = computed(() => {
+  const list = (project.value?.features?.items ?? []).map((f, i) => {
     const media = project.value?.screens?.media?.[i]
-    return { ...f, media, wide: wide(media?.ratio) }
-  }),
-)
+    return { ...f, media, wide: wide(media?.ratio), backdrop: media?.backdrop ?? project.value?.screens?.backdrop }
+  })
+  return list.map((f, i) => {
+    const next = list[i + 1]
+    return { ...f, flow: !!f.media && !f.wide && !!next?.media && !next.wide && next.backdrop === f.backdrop }
+  })
+})
 
 const challenge = computed(() => project.value?.screens?.challenge ?? project.value?.challenge)
 
@@ -72,7 +84,7 @@ const screens = computed(() => {
     ] : []),
     ...offers.value.map((f, i) => ({
       id: `offer-${i + 1}`,
-      light: !f.media || f.wide,
+      light: !f.media || f.wide || light(f.backdrop),
     })),
     ...(challenge.value ? [{ id: 'challenge', light: false }] : []),
     ...(p.model ? [{ id: 'model', light: true }] : []),
@@ -254,8 +266,8 @@ const { active, motion } = useScreens(root)
       :key="f.name"
       data-screen
       class="screen offer bg-paper text-ink"
-      :class="{ 'is-active': active === at(`offer-${i + 1}`), 'offer-wide': f.wide }"
-      :style="{ zIndex: at(`offer-${i + 1}`) }"
+      :class="{ 'is-active': active === at(`offer-${i + 1}`), 'offer-wide': f.wide, 'offer-flow': f.flow }"
+      :style="{ zIndex: at(`offer-${i + 1}`), '--backdrop': f.backdrop }"
       :aria-labelledby="`offer-${i + 1}-title`"
     >
       <div
@@ -268,7 +280,7 @@ const { active, motion } = useScreens(root)
         >
           <MediaSlot
             :media="f.media"
-            class="screen-video size-full"
+            class="screen-video"
           />
         </div>
         <div
@@ -518,20 +530,37 @@ const { active, motion } = useScreens(root)
 </template>
 
 <style scoped>
-/* La voce: testo a sinistra, il video intero alto quanto lo schermo a
-   destra, largo al massimo il 58% */
+/* La voce: testo a sinistra, a destra un riquadro largo uguale per
+   tutte, del colore di fondo del video (`backdrop`), col video intero al
+   centro e i bordi che sfumano nel fondo. Due voci di fila con lo stesso
+   fondo (`offer-flow` sulla prima) non si coprono: scorre solo il
+   contenuto */
+.offer {
+  --panel-w: min(44vw, calc(100svh * 0.78));
+  --panel-h: 100svh;
+}
+
 .offer-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) var(--panel-w);
 }
 
 .offer-media {
+  display: grid;
   grid-column: 2;
   grid-row: 1;
-  height: 100%;
-  max-width: 58vw;
-  aspect-ratio: var(--ratio, 1);
+  place-items: center;
   overflow: hidden;
+  background: var(--backdrop, var(--color-ink));
+}
+
+.offer-media :deep(.screen-video) {
+  width: min(100%, calc(var(--panel-h) * var(--ratio, 1)));
+  aspect-ratio: var(--ratio, 1);
+  mask-image:
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+    linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+  mask-composite: intersect;
 }
 
 .offer-text {
@@ -543,8 +572,12 @@ const { active, motion } = useScreens(root)
   display: none;
 }
 
-/* Video largo: copre lo schermo, il testo in basso sul velo */
+.offer-flow .screen-inner {
+  animation: none;
+}
+
 @media (min-aspect-ratio: 1/1) {
+  /* Video largo: copre lo schermo, il testo in basso sul velo */
   .offer-wide .offer-grid {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
@@ -554,9 +587,13 @@ const { active, motion } = useScreens(root)
     position: absolute;
     inset: 0;
     grid-column: 1 / -1;
+  }
+
+  .offer-wide .offer-media :deep(.screen-video) {
     width: 100%;
-    max-width: none;
+    height: 100%;
     aspect-ratio: auto;
+    mask-image: none;
   }
 
   .offer-wide .offer-veil {
@@ -571,19 +608,19 @@ const { active, motion } = useScreens(root)
   }
 }
 
-/* In verticale: il video in alto, intero, il testo sotto */
+/* In verticale: il riquadro in alto per metà schermo, il testo sotto */
 @media (max-aspect-ratio: 1/1) {
+  .offer {
+    --panel-h: 50svh;
+  }
+
   .offer-grid {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: var(--panel-h) minmax(0, 1fr);
   }
 
   .offer-media {
     grid-column: 1;
-    justify-self: center;
-    width: min(100%, calc(50svh * var(--ratio, 1)));
-    height: auto;
-    max-width: none;
   }
 
   .offer-text {

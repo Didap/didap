@@ -93,6 +93,7 @@ screens:
   challenge:
     title: Pronta per tutti gli ottomila Comuni italiani.
     body: "Ogni Comune vede solo le sue segnalazioni, i suoi uffici e le sue ditte, ma il sistema è uno solo per tutti: per partire in una nuova città non serve installare niente. I dati di ogni Comune restano separati da quelli degli altri."
+  backdrop: '#2a1ce7'
   media:
     - src: /covers/cityfix-segnala.mp4
       poster: /covers/cityfix-segnala-poster.webp
@@ -105,6 +106,7 @@ screens:
     - src: /covers/cityfix-stato.mp4
       poster: /covers/cityfix-stato-poster.webp
       ratio: 816/1520
+      backdrop: '#efedfd'
       alt: "Il dettaglio di una segnalazione: i quattro pixel dello stato si riempiono uno alla volta, da Inviata a Completata, mentre la cronologia si allunga"
     - src: /covers/cityfix-backoffice.mp4
       poster: /covers/cityfix-backoffice-poster.webp

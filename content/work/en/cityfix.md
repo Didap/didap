@@ -93,6 +93,7 @@ screens:
   challenge:
     title: Ready for all eight thousand Italian municipalities.
     body: "Each municipality sees only its own reports, offices and contractors, but there is a single system for everyone: starting in a new city needs no new installation. Each municipality's data stays separate from everyone else's."
+  backdrop: '#2a1ce7'
   media:
     - src: /covers/cityfix-segnala.mp4
       poster: /covers/cityfix-segnala-poster.webp
@@ -105,6 +106,7 @@ screens:
     - src: /covers/cityfix-stato.mp4
       poster: /covers/cityfix-stato-poster.webp
       ratio: 816/1520
+      backdrop: '#efedfd'
       alt: "A report in detail: the four status pixels fill one at a time, from Inviata to Completata, while the history grows"
     - src: /covers/cityfix-backoffice.mp4
       poster: /covers/cityfix-backoffice-poster.webp

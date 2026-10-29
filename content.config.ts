@@ -7,7 +7,8 @@ import { TEAM_MEMBERS } from './shared/team'
 // diventa un video in loop muto, con `poster` come fotogramma fermo.
 // `srcMobile` e `posterMobile` sono la versione da telefono del video,
 // in verticale, sotto il breakpoint sm. `ratio` ("larghezza/altezza")
-// è la proporzione del video, per chi lo mostra intero (le slide).
+// è la proporzione del video, per chi lo mostra intero (le slide);
+// `backdrop` il colore del suo fondo, se diverso da quello delle slide.
 const mediaSlot = z.object({
   src: z.string().optional(),
   poster: z.string().optional(),
@@ -17,6 +18,7 @@ const mediaSlot = z.object({
   color: z.enum(PRODUCT_COLORS).default('ink'),
   label: z.boolean().default(true),
   ratio: z.string().optional(),
+  backdrop: z.string().optional(),
 })
 
 const projectSchema = z.object({
@@ -66,6 +68,8 @@ const projectSchema = z.object({
       made: z.object({ title: z.string(), body: z.string(), steps: z.array(z.string()).default([]) }),
       challenge: z.object({ title: z.string(), body: z.string() }).optional(),
       media: z.array(mediaSlot).default([]),
+      // Il colore di fondo dei video, intorno a loro sulle slide
+      backdrop: z.string().optional(),
     })
     .optional(),
   media: z

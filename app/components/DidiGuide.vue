@@ -64,23 +64,46 @@ async function arrive() {
       [{ transform: `translateX(${dx}px)` }, { transform: 'none' }],
       { duration, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' },
     )
+    // Qui in basso è specchiata, girata verso la nuvoletta: in volo e
+    // all'atterraggio guarda ancora a destra come nella nav (scale x
+    // negativo), poi fa un saltello e si gira. Stesse funzioni in ogni
+    // fotogramma, così la x passa da -1 a 1 invece di ruotare
     await flyY.value.animate(
       [
-        { transform: `translateY(${dy}px) scale(${s})`, easing: 'cubic-bezier(0.25, 0.6, 0.45, 1)' },
-        { transform: `translateY(${dy - 20}px) scale(${s * 1.1}) rotate(-12deg)`, offset: 0.25, easing: 'cubic-bezier(0.55, 0, 0.85, 0.45)' },
-        { transform: 'rotate(8deg)' },
+        { transform: `translateY(${dy}px) scale(${-s}, ${s}) rotate(0deg)`, easing: 'cubic-bezier(0.25, 0.6, 0.45, 1)' },
+        { transform: `translateY(${dy - 20}px) scale(${-s * 1.1}, ${s * 1.1}) rotate(12deg)`, offset: 0.25, easing: 'cubic-bezier(0.55, 0, 0.85, 0.45)' },
+        { transform: 'translateY(0px) scale(-1, 1) rotate(-8deg)' },
       ],
       { duration },
     ).finished
     // L'atterraggio: si schiaccia e si raddrizza
     await flyY.value.animate(
       [
-        { transform: 'rotate(8deg) scale(1.12, 0.86)' },
-        { transform: 'scale(0.96, 1.04)', offset: 0.5 },
-        { transform: 'none' },
+        { transform: 'translateY(0px) scale(-1.12, 0.86) rotate(-8deg)' },
+        { transform: 'translateY(0px) scale(-0.96, 1.04) rotate(0deg)', offset: 0.5 },
+        { transform: 'translateY(0px) scale(-1, 1) rotate(0deg)' },
       ],
-      { duration: 380, easing: 'ease-out' },
+      { duration: 320, easing: 'ease-out' },
     ).finished
+    // Il saltello: in cima è girata e compare la nuvoletta, poi ricade
+    await flyY.value.animate(
+      [
+        { transform: 'translateY(0px) scale(-1, 1)' },
+        { transform: 'translateY(-22px) scale(1, 1)' },
+      ],
+      { duration: 220, easing: 'cubic-bezier(0.2, 0.7, 0.4, 1)', fill: 'forwards' },
+    ).finished
+    open.value = true
+    await flyY.value.animate(
+      [
+        { transform: 'translateY(-22px) scale(1, 1)', easing: 'cubic-bezier(0.6, 0, 0.8, 0.4)' },
+        { transform: 'translateY(0px) scale(1.06, 0.94)', offset: 0.75 },
+        { transform: 'translateY(0px) scale(1, 1)' },
+      ],
+      { duration: 260 },
+    ).finished
+    // Il saltello in cima resta fermo con fill: si toglie, ora è a riposo
+    flyY.value.getAnimations().forEach(a => a.cancel())
   }
   open.value = true
   busy = false
@@ -337,9 +360,9 @@ onBeforeUnmount(() => {
             width="218"
             height="200"
             class="
-              w-full drop-shadow-[0_6px_10px_rgb(22_20_18/0.22)]
+              w-full -scale-x-100 drop-shadow-[0_6px_10px_rgb(22_20_18/0.22)]
               transition-transform duration-300 ease-vintage
-              group-hover:-rotate-8
+              group-hover:rotate-8
             "
           >
         </span>

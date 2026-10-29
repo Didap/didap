@@ -52,37 +52,50 @@ async function arrive() {
   const from = home()?.getBoundingClientRect()
   away.value = true
   await nextTick()
-  if (from?.width && flyX.value && flyY.value && !still()) {
-    // Il salto: in orizzontale va quasi costante, in verticale prima
-    // sale un poco e poi cade, così disegna un arco
-    const to = flyY.value.getBoundingClientRect()
-    const dx = from.left + from.width / 2 - (to.left + to.width / 2)
-    const dy = from.top + from.height / 2 - (to.top + to.height / 2)
-    const s = from.width / to.width
-    const duration = 1050
-    flyX.value.animate(
-      [{ transform: `translateX(${dx}px)` }, { transform: 'none' }],
-      { duration, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' },
-    )
-    await flyY.value.animate(
-      [
-        { transform: `translateY(${dy}px) scale(${s})`, easing: 'cubic-bezier(0.25, 0.6, 0.45, 1)' },
-        { transform: `translateY(${dy - 20}px) scale(${s * 1.1}) rotate(-12deg)`, offset: 0.25, easing: 'cubic-bezier(0.55, 0, 0.85, 0.45)' },
-        { transform: 'rotate(8deg)' },
-      ],
-      { duration },
-    ).finished
-    // L'atterraggio: si schiaccia e si raddrizza
-    await flyY.value.animate(
-      [
-        { transform: 'rotate(8deg) scale(1.12, 0.86)' },
-        { transform: 'scale(0.96, 1.04)', offset: 0.5 },
-        { transform: 'none' },
-      ],
-      { duration: 380, easing: 'ease-out' },
-    ).finished
+  if (!from?.width || !flyX.value || !flyY.value || still()) {
+    open.value = true
+    busy = false
+    return
   }
-  open.value = true
+  // Il salto: in orizzontale va quasi costante, in verticale prima sale
+  // un poco e poi cade, così disegna un arco
+  const to = flyY.value.getBoundingClientRect()
+  const dx = from.left + from.width / 2 - (to.left + to.width / 2)
+  const dy = from.top + from.height / 2 - (to.top + to.height / 2)
+  const s = from.width / to.width
+  const flight = 1050
+  flyX.value.animate(
+    [{ transform: `translateX(${dx}px)` }, { transform: 'none' }],
+    { duration: flight, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' },
+  )
+  // Poi atterra, si schiaccia e fa un saltello: in cima si gira verso la
+  // nuvoletta. Stesse funzioni in ogni fotogramma, così la x passa da -1
+  // a 1 invece di ruotare
+  const peak = 1590
+  const steps: [ms: number, y: number, sx: number, sy: number, deg: number, easing?: string][] = [
+    [0, dy, -s, s, 0, 'cubic-bezier(0.25, 0.6, 0.45, 1)'],
+    [flight / 4, dy - 20, -s * 1.1, s * 1.1, 12, 'cubic-bezier(0.55, 0, 0.85, 0.45)'],
+    [flight, 0, -1, 1, -8, 'ease-out'],
+    [1110, 0, -1.12, 0.86, -6, 'ease-out'],
+    [1250, 0, -0.96, 1.04, 0, 'ease-out'],
+    [1370, 0, -1, 1, 0, 'cubic-bezier(0.2, 0.7, 0.4, 1)'],
+    [peak, -22, 1, 1, 0, 'cubic-bezier(0.6, 0, 0.8, 0.4)'],
+    [1785, 0, 1.06, 0.94, 0],
+    [1850, 0, 1, 1, 0],
+  ]
+  const total = steps.at(-1)![0]
+  const jump = flyY.value.animate(
+    steps.map(([ms, y, sx, sy, deg, easing]) => ({
+      offset: ms / total,
+      transform: `translateY(${y}px) scale(${sx}, ${sy}) rotate(${deg}deg)`,
+      easing,
+    })),
+    { duration: total },
+  )
+  // La nuvoletta sullo stesso orologio: compare in cima al saltello
+  // anche se il primo fotogramma tarda
+  flyY.value.animate([], { duration: peak }).finished.then(() => (open.value = true))
+  await jump.finished
   busy = false
 }
 
@@ -337,9 +350,9 @@ onBeforeUnmount(() => {
             width="218"
             height="200"
             class="
-              w-full drop-shadow-[0_6px_10px_rgb(22_20_18/0.22)]
+              w-full -scale-x-100 drop-shadow-[0_6px_10px_rgb(22_20_18/0.22)]
               transition-transform duration-300 ease-vintage
-              group-hover:-rotate-8
+              group-hover:rotate-8
             "
           >
         </span>

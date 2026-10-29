@@ -24,6 +24,7 @@ const props = defineProps<{ slug: string }>()
 
 const { t, te } = useI18n()
 const localePath = useLocalePath()
+const ctaPath = useCtaPath()
 
 const { base, overrides, project } = await useProductPage(() => props.slug)
 if (!base.value) {
@@ -507,7 +508,7 @@ const { active, motion } = useScreens(root)
           style="--i: 2"
         >
           <DidapButton
-            :to="localePath('/contact')"
+            :to="ctaPath"
             paper
           >
             {{ t('nav.cta') }}

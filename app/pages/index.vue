@@ -98,6 +98,7 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
       :shown="active > 0"
       :light="screens[active]?.light ?? true"
       :glow="screens[active]?.glow"
+      :cta="active !== screens.length - 1"
     />
 
     <ScreenRail

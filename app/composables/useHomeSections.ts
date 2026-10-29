@@ -18,3 +18,12 @@ export const useHomeSections = () => {
     { id: HOME_SECTIONS.contact, label: t('nav.contact') },
   ].map((s) => ({ ...s, to: { path: localePath('/'), hash: `#${s.id}` } })))
 }
+
+/**
+ * "Lavoriamo insieme" porta alla chiusura rossa della home, dove Didi
+ * chiede cosa serve
+ */
+export const useCtaPath = () => {
+  const localePath = useLocalePath()
+  return computed(() => localePath({ path: '/', hash: `#${HOME_SECTIONS.contact}` }))
+}

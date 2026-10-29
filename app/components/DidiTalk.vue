@@ -147,7 +147,7 @@ watch(draft, () => nextTick(() => {
       <div
         class="
           flex items-end gap-3 rounded-[30px] border-[1.5px] bg-paper-light
-          p-1.5 pl-6 text-ink transition-colors
+          py-1.5 pr-1.5 pl-6 text-ink transition-colors
           focus-within:border-green
         "
         :class="red ? 'border-transparent' : 'border-ink'"
@@ -160,8 +160,8 @@ watch(draft, () => nextTick(() => {
           :aria-label="t('chat.input')"
           :placeholder="t('chat.placeholder')"
           class="
-            min-w-0 flex-1 resize-none bg-transparent py-3 text-body
-            outline-none
+            min-h-11 min-w-0 flex-1 resize-none bg-transparent py-[7px]
+            text-body outline-none
             placeholder:text-ink/40
           "
           @keydown.enter.exact.prevent="send"
@@ -170,11 +170,11 @@ watch(draft, () => nextTick(() => {
           type="submit"
           class="
             flex size-11 shrink-0 items-center justify-center rounded-full
-            bg-ink text-paper-light transition-colors
-            hover:bg-green
+            border-[1.5px] border-ink bg-ink text-paper-light transition-colors
+            hover:border-green hover:bg-green
             focus-visible:outline-2 focus-visible:outline-offset-2
             focus-visible:outline-ink
-            disabled:opacity-30
+            disabled:border-ink/20 disabled:bg-transparent disabled:text-ink/35
           "
           :disabled="!draft.trim() || thinking"
           :aria-label="t('chat.send')"

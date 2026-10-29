@@ -15,6 +15,7 @@ const localePath = useLocalePath()
 const route = useRoute()
 
 const links = useHomeSections()
+const ctaPath = useCtaPath()
 
 // Via con DidiGuide, il link sparisce con lei
 const didiAway = useDidiAway()
@@ -144,7 +145,7 @@ function closeMenuOnLink(e: MouseEvent) {
           "
         >
           <DidapButton
-            :to="localePath('/contact')"
+            :to="ctaPath"
             medium
           >
             {{ t('nav.cta') }}
@@ -205,7 +206,7 @@ function closeMenuOnLink(e: MouseEvent) {
           {{ l.label }}
         </NuxtLink>
         <div class="flex items-center gap-6 pt-4">
-          <DidapButton :to="localePath('/contact')">
+          <DidapButton :to="ctaPath">
             {{ t('nav.cta') }}
           </DidapButton>
         </div>

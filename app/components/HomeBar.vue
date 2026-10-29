@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { NuxtLink } from '#components'
 import SiteMenu from '~/components/SiteMenu.vue'
 
 // La barra della home a schermate: Didi a sinistra, "Lavoriamo insieme"
@@ -9,12 +10,21 @@ import SiteMenu from '~/components/SiteMenu.vue'
 // della nav: DidiGuide la porta via e la rimette qui. `glow` tiene
 // l'alone anche col testo ink, se Didi e il testo stanno su fondi diversi.
 // Con `menu` (le schede prodotto) al posto di Didi c'è SiteMenu, col
-// nome della pagina.
-const props = defineProps<{ shown: boolean, light: boolean, glow?: boolean, menu?: string }>()
+// nome della pagina. "Lavoriamo insieme" porta alla chiusura rossa della
+// home: sulla home è un'ancora (stessa corsa delle altre schermate) e
+// sparisce quando la chiusura è in scena (`cta` falso).
+const props = withDefaults(
+  defineProps<{ shown: boolean, light: boolean, glow?: boolean, menu?: string, cta?: boolean }>(),
+  { cta: true },
+)
 const halo = computed(() => props.glow ?? !props.light)
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const route = useRoute()
+const routeBaseName = useRouteBaseName()
+const ctaPath = useCtaPath()
+const onHome = computed(() => routeBaseName(route) === 'index')
 const didiAway = useDidiAway()
 </script>
 
@@ -66,17 +76,20 @@ const didiAway = useDidiAway()
       >
     </NuxtLink>
 
-    <!-- Col menu, su telefono basta la sua voce Contatti -->
-    <NuxtLink
-        :to="localePath('/contact')"
-        :class="{ 'max-sm:hidden': menu }"
-        class="
-          border-b-[1.5px] border-current py-2.5 text-button leading-none
-          focus-visible:outline-2 focus-visible:outline-offset-4
-          focus-visible:outline-current
-        "
-      >
-        {{ t('nav.cta') }}
-      </NuxtLink>
+    <!-- Col menu, su telefono basta la sua voce Lavora con noi -->
+    <component
+      :is="onHome ? 'a' : NuxtLink"
+      :href="onHome ? `#${HOME_SECTIONS.contact}` : undefined"
+      :to="onHome ? undefined : ctaPath"
+      :class="[{ 'max-sm:hidden': menu }, cta ? '' : 'invisible opacity-0']"
+      class="
+        border-b-[1.5px] border-current py-2.5 text-button leading-none
+        transition-[opacity,visibility] duration-300
+        focus-visible:outline-2 focus-visible:outline-offset-4
+        focus-visible:outline-current
+      "
+    >
+      {{ t('nav.cta') }}
+    </component>
   </header>
 </template>

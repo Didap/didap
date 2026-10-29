@@ -112,6 +112,7 @@ const year = new Date().getFullYear()
     :class="{ motion }"
   >
     <HomeBar
+      :shown="active > 0"
       :light="screens[active]?.light ?? true"
       :solid="screens[active]?.id === HOME_SECTIONS.projects"
     />

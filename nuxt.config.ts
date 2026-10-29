@@ -20,10 +20,12 @@ export default defineNuxtConfig({
       { code: 'it', language: 'it-IT', name: 'Italiano', file: 'it.json' },
       { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
     ],
+    // Niente selettore: la lingua la sceglie il browser alla prima visita,
+    // su qualsiasi pagina, e il cookie la ricorda
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'didap_lang',
-      redirectOn: 'root',
+      redirectOn: 'all',
     },
   },
 

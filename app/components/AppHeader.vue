@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
 
-// Componente "Nav" del Figma: logo esteso 105x30, link Semibold 13
-// maiuscoli a 45 di distanza, lingua + CTA a destra. Alto 97.
-// Variante `product` (scheda prodotto): indietro + logo contratto a
-// sinistra, niente voci, logo del prodotto al posto della CTA.
+// Componente "Nav" del Figma: Didi (la testa tonda, senza la D) a
+// sinistra, link Semibold 13 maiuscoli a 45 di distanza, lingua + CTA a
+// destra. Alto 97. Variante `product` (scheda prodotto): indietro + Didi
+// a sinistra, niente voci, logo del prodotto al posto della CTA.
+// Didi lascia la nav per DidiGuide e ci ricade dall'alto quando torna.
 const props = defineProps<{ cream?: boolean; product?: boolean }>()
 
 const { t, locale, locales } = useI18n()
@@ -20,6 +21,12 @@ const allLocales = computed(
 )
 
 const links = useHomeSections()
+
+const didi = useDidi()
+const didiClass = computed(() => ({
+  'invisible': didi.value === 'away',
+  'motion-safe:animate-didi-drop': didi.value === 'back',
+}))
 
 // Indietro: torna alla pagina precedente se si arriva dal sito,
 // altrimenti alla sezione prodotti della home
@@ -95,26 +102,33 @@ function closeMenuOnLink(e: MouseEvent) {
           aria-label="Didap - home"
         >
           <img
-            src="/brand/logo-contratto.svg"
+            src="/brand/didi-testa.svg"
             alt=""
-            width="33"
-            height="36"
-            class="h-9 w-auto"
+            width="218"
+            height="200"
+            data-didi-home
+            class="h-10 w-auto"
+            :class="didiClass"
           >
         </NuxtLink>
       </div>
       <NuxtLink
         v-else
         :to="localePath('/')"
-        class="block w-[105px]"
+        class="block justify-self-start"
         aria-label="Didap - home"
       >
         <img
-          src="/brand/logo-esteso.svg"
+          src="/brand/didi-testa.svg"
           alt=""
-          width="105"
-          height="30"
-          class="h-[30px] w-[105px]"
+          width="218"
+          height="200"
+          data-didi-home
+          class="
+            h-10 w-auto
+            lg:h-12
+          "
+          :class="didiClass"
         >
       </NuxtLink>
 

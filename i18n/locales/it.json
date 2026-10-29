@@ -130,6 +130,34 @@
       "error": "Qualcosa è andato storto. Scrivici a {email}."
     }
   },
+  "didi": {
+    "label": "Didi, la scimmia di Didap",
+    "open": "Chiedi a Didi",
+    "close": "Chiudi la nuvoletta di Didi",
+    "dismiss": "Torna al tuo posto",
+    "hello": "Ciao, sono Didi. Cosa ti serve?",
+    "topics": {
+      "product": "Un prodotto nuovo",
+      "app": "App o SaaS",
+      "site": "Un sito",
+      "grant": "Un bando",
+      "chat": "Due chiacchiere"
+    },
+    "reply": "Scrivici due righe, anche in bozza. Rispondiamo a tutti entro 2 giorni lavorativi.",
+    "reply_grant": "Per i bandi lavoriamo con The Qube: noi pensiamo al progetto, loro a come finanziarlo. Scrivici da dove parti.",
+    "whatsapp": "Scrivici su WhatsApp",
+    "email": "Scrivici una mail",
+    "form": "Oppure usa il modulo",
+    "change": "Cambia risposta",
+    "subject": "Dal sito: {topic}",
+    "message": {
+      "product": "Ciao Didap, ho in mente un prodotto nuovo e vorrei parlarne con voi.",
+      "app": "Ciao Didap, vorrei costruire un'app o un SaaS.",
+      "site": "Ciao Didap, mi serve un sito.",
+      "grant": "Ciao Didap, cerco un bando per finanziare un progetto.",
+      "chat": "Ciao Didap, facciamo due chiacchiere?"
+    }
+  },
   "footer": {
     "tagline": "Free the monkey.",
     "site": "Sito",

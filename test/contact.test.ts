@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contactKind, productFromQuery, telHref } from '#shared/contact'
+import { contactKind, mailtoHref, productFromQuery, telHref, whatsappHref } from '#shared/contact'
 
 describe('email o telefono', () => {
   it('riconosce un\'email', () => {
@@ -27,6 +27,11 @@ describe('email o telefono', () => {
 describe('link e query', () => {
   it('tel: con solo cifre e il +', () => {
     expect(telHref('+39 080-123.45.67')).toBe('tel:+390801234567')
+  })
+
+  it('WhatsApp e mail con il testo già scritto', () => {
+    expect(whatsappHref('+39 333 123 4567', 'Ciao, un sito?')).toBe('https://wa.me/393331234567?text=Ciao%2C%20un%20sito%3F')
+    expect(mailtoHref('a@b.it', 'Dal sito', 'Ciao & grazie')).toBe('mailto:a@b.it?subject=Dal%20sito&body=Ciao%20%26%20grazie')
   })
 
   it('il prodotto dalla query, ripulito', () => {

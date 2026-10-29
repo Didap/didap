@@ -83,6 +83,25 @@
       transform: translateY(2rem);
     }
   }
+
+  /* Didi rientra nella nav cadendo dall'alto (DidiGuide) */
+  --animate-didi-drop: didi-drop 700ms var(--ease-vintage) both;
+
+  @keyframes didi-drop {
+    0% {
+      opacity: 0;
+      transform: translateY(-180%) rotate(-14deg);
+    }
+
+    55% {
+      opacity: 1;
+      transform: translateY(10%) rotate(4deg);
+    }
+
+    80% {
+      transform: translateY(-4%) rotate(-1deg);
+    }
+  }
 }
 
 /*

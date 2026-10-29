@@ -130,6 +130,34 @@
       "error": "Something went wrong. Write to us at {email}."
     }
   },
+  "didi": {
+    "label": "Didi, the Didap monkey",
+    "open": "Ask Didi",
+    "close": "Close Didi's bubble",
+    "dismiss": "Back to your spot",
+    "hello": "Hi, I'm Didi. What do you need?",
+    "topics": {
+      "product": "A new product",
+      "app": "App or SaaS",
+      "site": "A website",
+      "grant": "A grant",
+      "chat": "Just a chat"
+    },
+    "reply": "Drop us a couple of lines, draft is fine. We reply to everyone within 2 working days.",
+    "reply_grant": "For grants we work with The Qube: we take care of the project, they take care of funding it. Tell us where you're starting from.",
+    "whatsapp": "Message us on WhatsApp",
+    "email": "Send us an email",
+    "form": "Or use the form",
+    "change": "Change answer",
+    "subject": "From the website: {topic}",
+    "message": {
+      "product": "Hi Didap, I have a new product in mind and I'd like to talk it through with you.",
+      "app": "Hi Didap, I'd like to build an app or a SaaS.",
+      "site": "Hi Didap, I need a website.",
+      "grant": "Hi Didap, I'm looking for a grant to fund a project.",
+      "chat": "Hi Didap, shall we have a chat?"
+    }
+  },
   "footer": {
     "tagline": "Free the monkey.",
     "site": "Site",

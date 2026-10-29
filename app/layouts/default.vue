@@ -2,6 +2,7 @@
 import AppHeader from '~/components/AppHeader.vue'
 import AppFooter from '~/components/AppFooter.vue'
 import SiteSplash from '~/components/SiteSplash.vue'
+import DidiGuide from '~/components/DidiGuide.vue'
 
 // Le pagine possono chiedere il fondo "cream" del Figma (scheda prodotto)
 // con definePageMeta({ surface: 'cream' }): vale anche per nav e footer.
@@ -24,6 +25,7 @@ const productNav = computed(() => route.meta.nav === 'product')
       <slot />
     </main>
     <AppFooter :cream="cream" />
+    <DidiGuide />
     <SiteSplash />
   </div>
 </template>

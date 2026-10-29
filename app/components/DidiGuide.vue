@@ -68,15 +68,13 @@ async function arrive() {
     [{ transform: `translateX(${dx}px)` }, { transform: 'none' }],
     { duration: flight, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' },
   )
-  // Poi atterra, si schiaccia e fa un saltello. Qui in basso è
-  // specchiata, girata verso la nuvoletta: fino al saltello guarda
-  // ancora a destra come nella nav (scale x negativo), in cima si è
-  // girata e compare la nuvoletta. Un'animazione sola, con le stesse
-  // funzioni in ogni fotogramma: la x passa da -1 a 1 invece di ruotare
+  // Poi atterra, si schiaccia e fa un saltello: in cima si gira verso la
+  // nuvoletta. Stesse funzioni in ogni fotogramma, così la x passa da -1
+  // a 1 invece di ruotare
   const peak = 1590
   const steps: [ms: number, y: number, sx: number, sy: number, deg: number, easing?: string][] = [
     [0, dy, -s, s, 0, 'cubic-bezier(0.25, 0.6, 0.45, 1)'],
-    [262, dy - 20, -s * 1.1, s * 1.1, 12, 'cubic-bezier(0.55, 0, 0.85, 0.45)'],
+    [flight / 4, dy - 20, -s * 1.1, s * 1.1, 12, 'cubic-bezier(0.55, 0, 0.85, 0.45)'],
     [flight, 0, -1, 1, -8, 'ease-out'],
     [1110, 0, -1.12, 0.86, -6, 'ease-out'],
     [1250, 0, -0.96, 1.04, 0, 'ease-out'],
@@ -90,14 +88,13 @@ async function arrive() {
     steps.map(([ms, y, sx, sy, deg, easing]) => ({
       offset: ms / total,
       transform: `translateY(${y}px) scale(${sx}, ${sy}) rotate(${deg}deg)`,
-      ...(easing && { easing }),
+      easing,
     })),
     { duration: total },
   )
-  // La nuvoletta segue l'orologio dell'animazione, non quello della
-  // pagina: se il primo fotogramma tarda, tarda anche lei
-  await jump.ready
-  setTimeout(() => (open.value = true), peak - Number(jump.currentTime ?? 0))
+  // La nuvoletta sullo stesso orologio: compare in cima al saltello
+  // anche se il primo fotogramma tarda
+  flyY.value.animate([], { duration: peak }).finished.then(() => (open.value = true))
   await jump.finished
   busy = false
 }

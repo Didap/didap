@@ -29,6 +29,9 @@ export default defineNuxtConfig({
 
   // Radar bandi: un giro ogni 15 minuti, poi decide lui cosa fare
   nitro: {
+    // I file in public partono già compressi (gzip e brotli): il Lottie della
+    // splash, per esempio, da 1 MB scende a circa 230 KB
+    compressPublicAssets: true,
     experimental: { tasks: true },
     scheduledTasks: { '*/15 * * * *': ['radar:tick'] },
   },

@@ -18,7 +18,7 @@ hero:
   poster: /covers/helllo-hero-poster.webp
   srcMobile: /covers/helllo-hero-mobile.mp4
   posterMobile: /covers/helllo-hero-mobile-poster.webp
-  alt: "A red line draws three l letters in one stroke, like an old phone cord, between two people talking on the phone, and the words È un helllo! appear"
+  alt: "Two people pick up their phones and the three red l of the logo write themselves in one stroke from one phone to the other, like an old phone cord: they open their eyes and the words È un helllo! appear"
 intro: "Helllo connects people looking for work with the companies that are hiring. Job seekers browse the openings, companies browse the people: if both say Helllo, it’s a match and the chat opens straight away, with icebreaker questions ready to go. No applications sent into the void, no “we’ll let you know”."
 challenge:
   title: Three l’s, one single thread.

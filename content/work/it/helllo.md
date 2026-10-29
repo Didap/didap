@@ -18,7 +18,7 @@ hero:
   poster: /covers/helllo-hero-poster.webp
   srcMobile: /covers/helllo-hero-mobile.mp4
   posterMobile: /covers/helllo-hero-mobile-poster.webp
-  alt: "Una linea rossa disegna tre l in un solo tratto, come il filo di un vecchio telefono, tra due persone che si parlano al telefono, e compare la scritta È un helllo!"
+  alt: "Due persone alzano il telefono e le tre l rosse del marchio si scrivono in un solo tratto da un telefono all’altro, come il filo di un vecchio telefono: i due aprono gli occhi e compare la scritta È un helllo!"
 intro: "Helllo mette in contatto chi cerca lavoro e le aziende che assumono. Chi cerca lavoro scorre le offerte, l’azienda scorre le persone: se tutti e due dicono Helllo, è un match e la chat si apre subito, con le domande rompighiaccio già pronte. Niente candidature nel vuoto, niente «le faremo sapere»."
 challenge:
   title: Tre l, un solo filo.

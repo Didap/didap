@@ -41,6 +41,11 @@ export const whatsappHref = (phone: string, text: string) =>
 export const mailtoHref = (email: string, subject: string, body: string) =>
   `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
+// ?type= della voce già scelta (Didi): solo una di PROJECT_TYPES
+export function projectTypeFromQuery(type: unknown): ProjectType | '' {
+  return PROJECT_TYPES.find(p => p === type) ?? ''
+}
+
 // ?product= di "Avvisami quando esce": il nome del prodotto, ripulito
 export function productFromQuery(product: unknown) {
   return typeof product === 'string' ? product.trim().slice(0, 80) : ''

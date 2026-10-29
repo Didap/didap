@@ -22,13 +22,8 @@ const allLocales = computed(
 
 const links = useHomeSections()
 
-const didi = useDidi()
-// Via con DidiGuide il link sparisce con lei; al ritorno cade e basta
-const didiAway = computed(() => ({ invisible: didi.value === 'away' }))
-const didiDrop = computed(() => (didi.value === 'back' ? 'motion-safe:animate-didi-drop' : ''))
-function landed() {
-  didi.value = 'home'
-}
+// Via con DidiGuide, il link sparisce con lei
+const didiAway = useDidiAway()
 
 // Indietro: torna alla pagina precedente se si arriva dal sito,
 // altrimenti alla sezione prodotti della home
@@ -68,11 +63,9 @@ function closeMenuOnLink(e: MouseEvent) {
         lg:h-[97px] lg:grid-cols-[1fr_auto_1fr]
       "
     >
-      <div
-        v-if="product"
-        class="flex items-center gap-4"
-      >
+      <div class="flex items-center gap-4">
         <button
+          v-if="product"
           type="button"
           class="
             -ml-2.5 flex size-10 items-center justify-center rounded-full
@@ -101,7 +94,7 @@ function closeMenuOnLink(e: MouseEvent) {
         <NuxtLink
           :to="localePath('/')"
           class="block"
-          :class="didiAway"
+          :class="{ invisible: didiAway }"
           aria-label="Didap - home"
           data-didi-link
         >
@@ -111,34 +104,13 @@ function closeMenuOnLink(e: MouseEvent) {
             width="218"
             height="200"
             data-didi-home
-            class="h-10 w-auto"
-            :class="didiDrop"
-            @animationend="landed"
+            class="
+              h-10 w-auto
+              lg:h-12
+            "
           >
         </NuxtLink>
       </div>
-      <NuxtLink
-        v-else
-        :to="localePath('/')"
-        class="block justify-self-start"
-        :class="didiAway"
-        aria-label="Didap - home"
-        data-didi-link
-      >
-        <img
-          src="/brand/didi-testa.svg"
-          alt=""
-          width="218"
-          height="200"
-          data-didi-home
-          class="
-            h-10 w-auto
-            lg:h-12
-          "
-          :class="didiDrop"
-          @animationend="landed"
-        >
-      </NuxtLink>
 
       <span
         v-if="product"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useEventListener } from '@vueuse/core'
 import DidapButton from '~/components/DidapButton.vue'
 import { CONTACT_EMAIL, CONTACT_WHATSAPP, PROJECT_TYPES, mailtoHref, whatsappHref } from '#shared/contact'
 import { untypeset } from '#shared/typeset'
@@ -7,28 +8,28 @@ import { untypeset } from '#shared/typeset'
 // basso a destra con un arco, chiede cosa serve e porta al contatto
 // diretto, WhatsApp se c'è il numero e sempre la mail già scritta.
 // "Torna al tuo posto" la fa rotolare fuori a destra e ricadere nella
-// nav dall'alto (AppHeader). Congedata, non torna fino alla prossima
-// visita. Con meno movimento compare e se ne va senza volare.
+// nav dall'alto. Congedata, non torna fino alla prossima visita. Con
+// meno movimento compare e se ne va senza volare.
+
+const { t } = useI18n()
+const away = useDidiAway()
+const localePath = useLocalePath()
+const route = useRoute()
+const routeBaseName = useRouteBaseName()
 
 // Le voci del modulo e in più due chiacchiere
 const TOPICS = [...PROJECT_TYPES, 'chat'] as const
 type Topic = (typeof TOPICS)[number]
 const topicLabel = (k: Topic) => t(k === 'chat' ? 'didi.chat' : `contact.form.option_${k}`)
 
-const { t } = useI18n()
-const didi = useDidi()
-const { openContact } = useContactDialog()
-const route = useRoute()
-const routeBaseName = useRouteBaseName()
-
 const KEY = 'didap-didi'
 // Quanto si scorre prima che arrivi, in altezze di schermo
 const TRIGGER = 1.2
 
-const shown = ref(false)
 const open = ref(false)
 const topic = ref<Topic | null>(null)
-const busy = ref(false)
+// Durante un volo i clic non contano
+let busy = false
 
 const dock = ref<HTMLElement>()
 const flyX = ref<HTMLElement>()
@@ -36,19 +37,20 @@ const flyY = ref<HTMLElement>()
 const toggler = ref<HTMLButtonElement>()
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+const home = () => document.querySelector<HTMLElement>('[data-didi-home]')
 
-// Il testo tradotto passa da typeset(): nei link va con gli spazi normali
-const message = computed(() => (topic.value ? untypeset(t(`didi.message.${topic.value}`)) : ''))
+// Si leggono solo con una voce scelta. Il testo tradotto passa da
+// typeset(): nei link va con gli spazi normali
+const message = computed(() => untypeset(t(`didi.message.${topic.value}`)))
 const mailto = computed(() =>
   mailtoHref(CONTACT_EMAIL, untypeset(t('didi.subject', { topic: topicLabel(topic.value!) })), message.value),
 )
 const whatsapp = computed(() => (CONTACT_WHATSAPP ? whatsappHref(CONTACT_WHATSAPP, message.value) : ''))
 
 async function arrive() {
-  busy.value = true
-  const from = document.querySelector('[data-didi-home]')?.getBoundingClientRect()
-  shown.value = true
-  didi.value = 'away'
+  busy = true
+  const from = home()?.getBoundingClientRect()
+  away.value = true
   await nextTick()
   if (from?.width && flyX.value && flyY.value && !still()) {
     // Il salto: in orizzontale va quasi costante, in verticale prima
@@ -81,12 +83,12 @@ async function arrive() {
     ).finished
   }
   open.value = true
-  busy.value = false
+  busy = false
 }
 
 async function goHome() {
-  if (busy.value) return
-  busy.value = true
+  if (busy) return
+  busy = true
   try {
     sessionStorage.setItem(KEY, '1')
   }
@@ -98,36 +100,41 @@ async function goHome() {
     // È tonda, quindi gira quanto strada fa
     const distance = window.innerWidth - dock.value.getBoundingClientRect().left + 24
     const size = flyY.value.offsetWidth
-    const turn = (px: number) => `rotate(${(px / (Math.PI * size)) * 360}deg)`
-    const step = { offset: 0.2, easing: 'cubic-bezier(0.5, 0, 0.8, 0.4)' }
+    const roll = (move: (px: number) => string) => [
+      { transform: 'none', easing: 'ease-out' },
+      { transform: move(-12), offset: 0.2, easing: 'cubic-bezier(0.5, 0, 0.8, 0.4)' },
+      { transform: move(distance) },
+    ]
     const opts: KeyframeAnimationOptions = { duration: 650, fill: 'forwards' }
-    flyY.value.animate(
-      [{ transform: 'none', easing: 'ease-out' }, { ...step, transform: turn(-12) }, { transform: turn(distance) }],
-      opts,
-    )
-    await dock.value.animate(
-      [{ transform: 'none', easing: 'ease-out' }, { ...step, transform: 'translateX(-12px)' }, { transform: `translateX(${distance}px)` }],
-      opts,
-    ).finished
+    flyY.value.animate(roll(px => `rotate(${(px / (Math.PI * size)) * 360}deg)`), opts)
+    await dock.value.animate(roll(px => `translateX(${px}px)`), opts).finished
   }
-  shown.value = false
-  open.value = false
-  topic.value = null
-  didi.value = 'back'
-  busy.value = false
-  if (!focused) return
+  away.value = false
   await nextTick()
-  document.querySelector<HTMLElement>('[data-didi-link]')?.focus()
+  // Ricade nella nav dall'alto, con un rimbalzo
+  if (!still()) {
+    home()?.animate(
+      [
+        { opacity: 0, transform: 'translateY(-180%) rotate(-14deg)' },
+        { opacity: 1, transform: 'translateY(10%) rotate(4deg)', offset: 0.55 },
+        { transform: 'translateY(-4%) rotate(-1deg)', offset: 0.8 },
+        { transform: 'none' },
+      ],
+      { duration: 700, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+    )
+  }
+  if (focused) document.querySelector<HTMLElement>('[data-didi-link]')?.focus()
 }
 
 function toggle() {
-  if (!busy.value) open.value = !open.value
+  if (!busy) open.value = !open.value
 }
 
-// Il modulo parte con la voce già scelta
+// Il modulo parte con la voce già scelta (?type=, vedi
+// plugins/contact-dialog.client.ts): due chiacchiere non è una voce
 function openForm() {
   open.value = false
-  openContact('', topic.value === 'chat' ? '' : topic.value ?? '')
+  navigateTo({ path: localePath('/contact'), query: { type: topic.value } })
 }
 
 function fold() {
@@ -136,11 +143,13 @@ function fold() {
   toggler.value?.focus()
 }
 
+let stopScroll = () => {}
+
 function onScroll() {
   if (window.scrollY < window.innerHeight * TRIGGER) return
   // Non sopra la splash e non sulla pagina del modulo, che è già il contatto
   if (document.documentElement.classList.contains('splash') || routeBaseName(route) === 'contact') return
-  window.removeEventListener('scroll', onScroll)
+  stopScroll()
   arrive()
 }
 
@@ -149,19 +158,18 @@ onMounted(() => {
     if (sessionStorage.getItem(KEY)) return
   }
   catch {}
-  window.addEventListener('scroll', onScroll, { passive: true })
+  stopScroll = useEventListener('scroll', onScroll, { passive: true })
 })
 
+// Uscendo dal layout (verso /admin) Didi torna al suo posto
 onBeforeUnmount(() => {
-  window.removeEventListener('scroll', onScroll)
-  // Uscendo dal layout (verso /admin) Didi torna al suo posto
-  if (didi.value === 'away') didi.value = 'home'
+  away.value = false
 })
 </script>
 
 <template>
   <aside
-    v-if="shown"
+    v-if="away"
     ref="dock"
     class="
       fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-45 flex
@@ -217,20 +225,18 @@ onBeforeUnmount(() => {
               {{ t(topic === 'grant' ? 'didi.reply_grant' : 'didi.reply') }}
             </p>
             <div class="mt-4 flex flex-col items-start gap-3">
-              <DidapButton
-                v-if="whatsapp"
-                :href="whatsapp"
-              >
-                {{ t('didi.whatsapp') }}
-              </DidapButton>
-              <a
-                v-if="whatsapp"
-                :href="mailto"
-                class="
-                  text-body underline underline-offset-4 transition-colors
-                  hover:text-green
-                "
-              >{{ t('didi.email') }}</a>
+              <template v-if="whatsapp">
+                <DidapButton :href="whatsapp">
+                  {{ t('didi.whatsapp') }}
+                </DidapButton>
+                <a
+                  :href="mailto"
+                  class="
+                    text-body underline underline-offset-4 transition-colors
+                    hover:text-green
+                  "
+                >{{ t('didi.email') }}</a>
+              </template>
               <DidapButton
                 v-else
                 :href="mailto"

@@ -1,6 +1,5 @@
 /**
- * Dov'è Didi, la scimmia della nav: 'home' al suo posto, 'away' in
- * basso a destra con le domande (DidiGuide), 'back' appena rimandata
- * nella nav, dove rientra cadendo dall'alto.
+ * Didi, la scimmia della nav, è via con DidiGuide in basso a destra:
+ * intanto nella nav il suo posto resta vuoto.
  */
-export const useDidi = () => useState<'home' | 'away' | 'back'>('didi', () => 'home')
+export const useDidiAway = () => useState('didi-away', () => false)

@@ -1,4 +1,4 @@
-import { productFromQuery } from '#shared/contact'
+import { productFromQuery, projectTypeFromQuery } from '#shared/contact'
 
 // Andare verso /contact da una pagina del sito apre il modulo sopra la
 // pagina invece di cambiarla: bottoni, link nei testi, navigateTo. Con
@@ -15,7 +15,7 @@ export default defineNuxtPlugin(() => {
   router.beforeEach((to, from) => {
     // Al primo caricamento (stessa pagina) e su /contact il modulo c'è già
     if (to.path === from.path || !isContact(to) || isContact(from)) return
-    openContact(productFromQuery(to.query.product))
+    openContact(productFromQuery(to.query.product), projectTypeFromQuery(to.query.type))
     return false
   })
 

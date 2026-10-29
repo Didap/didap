@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ContactForm from '~/components/ContactForm.vue'
-import { productFromQuery } from '#shared/contact'
+import { productFromQuery, projectTypeFromQuery } from '#shared/contact'
 
 // Lo stesso modulo che si apre sopra le pagine, qui da solo: per i link
 // condivisi e per chi apre /contact in una nuova scheda.
@@ -14,6 +14,8 @@ useSeoMeta({
 
 // Da "Avvisami quando esce" di una scheda prodotto: ?product=Nome
 const product = computed(() => productFromQuery(route.query.product))
+// Dalla voce già scelta con Didi: ?type=grant
+const projectType = computed(() => projectTypeFromQuery(route.query.type))
 </script>
 
 <template>
@@ -23,8 +25,9 @@ const product = computed(() => productFromQuery(route.query.product))
       lg:pb-[136px]
     ">
       <ContactForm
-        :key="product"
+        :key="`${product}${projectType}`"
         :product="product"
+        :project-type="projectType"
       />
     </div>
   </section>

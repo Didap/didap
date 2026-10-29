@@ -5,8 +5,6 @@ import HomeLogo from '~/components/HomeLogo.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
 import ScreenRail from '~/components/ScreenRail.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
-import StatusPill from '~/components/StatusPill.vue'
-import type { ProductStatus } from '#shared/product'
 
 // Home a schermate: una pila di schermate a tutto schermo, ognuna copre
 // la precedente salendo dal basso (scroll nativo con lo snap). Apertura
@@ -25,20 +23,18 @@ useSeoMeta({
 })
 
 // I prodotti a tutto schermo. `light`: il video in alto è chiaro, la
-// barra va in ink. Senza `url` il prodotto non è ancora uscito
+// barra va in ink. L'unico invito porta alla scheda
 type Featured = {
   key: string
   slug: string
   name: string
-  url?: string
-  status: ProductStatus
   light: boolean
 }
 const featured: Featured[] = [
-  { key: 'cityfix', slug: 'cityfix', name: 'CityFix', url: 'https://cityfix.io', status: 'pilot', light: true },
-  { key: 'fanta_rainbow', slug: 'fanta-rainbow', name: 'Fanta Rainbow', url: 'https://fantarainbow.com', status: 'live', light: false },
-  { key: 'helllo', slug: 'helllo', name: 'Helllo', status: 'development', light: true },
-  { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', url: 'https://cruciverba-lab.it', status: 'pending', light: true },
+  { key: 'cityfix', slug: 'cityfix', name: 'CityFix', light: true },
+  { key: 'fanta_rainbow', slug: 'fanta-rainbow', name: 'Fanta Rainbow', light: false },
+  { key: 'helllo', slug: 'helllo', name: 'Helllo', light: true },
+  { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', light: true },
 ]
 
 const hero = (slug: string) => ({
@@ -48,8 +44,6 @@ const hero = (slug: string) => ({
   posterMobile: `/covers/${slug}-hero-mobile-poster.webp`,
 })
 
-const host = (url: string) => new URL(url).hostname.replace(/^www\./, '')
-const pad = (n: number) => String(n).padStart(2, '0')
 
 // L'ultima schermata porta alle pagine dei prodotti e dei clienti, con
 // i nomi di tutti presi dalle loro schede
@@ -217,35 +211,19 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
           <div class="
             grid min-w-0 gap-[18px] [text-shadow:0_1px_18px_rgb(22_20_18/0.4)]
           ">
-            <div
-              class="
-                reveal flex flex-wrap items-center gap-x-4 gap-y-2.5 text-label
-              "
-              style="--i: 0"
-            >
-              <span class="font-mono tracking-[0.04em] opacity-70">{{ pad(i + 1) }} / {{ pad(featured.length) }}</span>
-              <span>{{ t(`home.products.${p.key}.category`) }}</span>
-              <StatusPill
-                v-if="p.status !== 'pending'"
-                :status="p.status"
-                inverse
-              >
-                {{ t(`home.status_${p.status}`) }}
-              </StatusPill>
-            </div>
             <h2
               :id="`${p.slug}-name`"
               class="
-                reveal font-wide text-[clamp(3rem,1.6rem+6.4vw,8.5rem)]
-                leading-[0.88] font-bold tracking-[-0.035em]
+                reveal font-wide text-[clamp(2.25rem,1.4rem+2.6vw,4rem)]
+                leading-[0.92] font-bold tracking-[-0.03em]
               "
-              style="--i: 1"
+              style="--i: 0"
             >
               {{ p.name }}
             </h2>
             <p
-              class="reveal text-body text-paper-light/88"
-              style="--i: 2"
+              class="reveal text-base/normal text-paper-light/88"
+              style="--i: 1"
             >
               {{ t(`home.products.${p.key}.desc`) }}
             </p>
@@ -255,24 +233,13 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
               reveal flex flex-wrap items-center gap-x-[22px] gap-y-3.5
               min-[860px]:justify-end
             "
-            style="--i: 3"
+            style="--i: 2"
           >
-            <NuxtLink
-              :to="localePath(`/work/${p.slug}`)"
-              class="
-                border-b-[1.5px] border-paper-light/45 py-2.5 text-button
-                transition-colors
-                hover:border-paper-light
-              "
-            >
-              {{ t('home.featured_more') }}
-            </NuxtLink>
             <DidapButton
-              v-if="p.url"
-              :href="p.url"
+              :to="localePath(`/work/${p.slug}`)"
               paper
             >
-              {{ t('product.open', { host: host(p.url) }) }}
+              {{ t('home.featured_more') }}
               <svg
                 width="14"
                 height="14"
@@ -281,14 +248,7 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
                 stroke="currentColor"
                 stroke-width="1.8"
                 aria-hidden="true"
-              ><path d="M3 11 11 3M4.5 3H11v6.5" /></svg>
-            </DidapButton>
-            <DidapButton
-              v-else
-              :to="localePath({ path: '/contact', query: { product: p.name } })"
-              paper
-            >
-              {{ t('product.notify') }}
+              ><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5" /></svg>
             </DidapButton>
           </div>
         </div>

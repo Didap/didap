@@ -22,30 +22,25 @@
     "outro_title": "Hai un’idea\nda liberare?",
     "replay": "Rivedi l’apertura",
     "hero_tagline": "Free the\nmonkey.",
-    "featured_more": "Leggi la scheda",
+    "featured_more": "Scopri di più",
     "status_live": "Live",
     "status_development": "In sviluppo",
     "status_pilot": "Pilot",
     "status_pending": "Stato da confermare",
     "products": {
       "fanta_rainbow": {
-        "category": "Fantacalcio",
         "desc": "Aste live di fantacalcio. Il banco tiene i conti, i giocatori aprono un link e rilanciano dal telefono, il countdown decide."
       },
       "bin_or_deal": {
-        "category": "Marketplace",
         "desc": "Aggregatore di annunci dai marketplace europei per collezionisti, con punteggio automatico “bin vs deal”."
       },
       "cityfix": {
-        "category": "Città",
         "desc": "Rigenerazione urbana: cittadini, Comuni e fornitori segnalano, gestiscono e risolvono gli interventi in città."
       },
       "cruciverba_lab": {
-        "category": "Giochi",
         "desc": "La casa dei cruciverba italiani online. Dieci nuovi giochi di parole ogni giorno, nel browser."
       },
       "helllo": {
-        "category": "Lavoro",
         "desc": "L’app di lavoro in cui ci si sceglie a vicenda. Se tutti e due dicono Helllo, la chat si apre subito."
       }
     }

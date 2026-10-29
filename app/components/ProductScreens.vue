@@ -6,12 +6,14 @@ import ScreenLegal from '~/components/ScreenLegal.vue'
 import { TEAM } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
-// La scheda prodotto a slide, come la home: schermate a tutto schermo.
-// Apertura sul video di testata (nome, frase e l'invito a scorrere), poi il motivo (`screens.why`), cosa
-// abbiamo fatto (`screens.made`, con ruolo, stack e squadra), una
+// La scheda prodotto a slide, come la home: schermate a tutto schermo,
+// scritte per chi non è del mestiere. Apertura sul video di testata
+// (nome, frase e l'invito a scorrere), poi il motivo (`screens.why`),
+// cosa abbiamo fatto con i passi di come funziona (`screens.made`), una
 // schermata per ogni voce di `features.items` con il suo video
-// (`screens.media`, stesso ordine), la cosa difficile, il modello e la
-// chiusura rossa col prodotto dopo. La pagina che la usa chiede
+// (`screens.media`, stesso ordine), la cosa difficile (`screens.challenge`,
+// se no `challenge`), il modello, chi ci ha lavorato e la chiusura rossa
+// col prodotto dopo. La pagina che la usa chiede
 // definePageMeta({ nav: 'screens' }): niente nav né footer.
 //
 // Il video di una voce sta intero, alto quanto lo schermo, accanto al
@@ -20,7 +22,7 @@ import { typeset } from '#shared/typeset'
 // il testo sotto.
 const props = defineProps<{ slug: string }>()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const localePath = useLocalePath()
 
 const { base, overrides, project } = await useProductPage(() => props.slug)
@@ -47,12 +49,14 @@ const offers = computed(() =>
   }),
 )
 
-const team = computed(() => (project.value?.team ?? []).map(key => TEAM[key].name).join(', '))
-const facts = computed(() => [
-  { label: t('product.scope'), value: project.value?.scope },
-  { label: t('product.stack'), value: project.value?.stack },
-  { label: t('product.team'), value: team.value },
-].filter(f => f.value))
+const challenge = computed(() => project.value?.screens?.challenge ?? project.value?.challenge)
+
+// Chi ci ha lavorato: illustrazione, nome e ruolo (product.roles.<chiave>)
+const team = computed(() => (project.value?.team ?? []).map(key => ({
+  key,
+  ...TEAM[key],
+  role: te(`product.roles.${key}`) ? t(`product.roles.${key}`) : '',
+})))
 
 // Le schermate, per il colore della barra. Sulle voci col video
 // accanto "Lavoriamo insieme" sta sul video: testo carta. Niente indice
@@ -70,8 +74,9 @@ const screens = computed(() => {
       id: `offer-${i + 1}`,
       light: !f.media || f.wide,
     })),
-    ...(p.challenge ? [{ id: 'challenge', light: false }] : []),
+    ...(challenge.value ? [{ id: 'challenge', light: false }] : []),
     ...(p.model ? [{ id: 'model', light: true }] : []),
+    ...(team.value.length ? [{ id: 'team', light: true }] : []),
     { id: 'next', light: false },
   ]
 })
@@ -220,27 +225,23 @@ const { active, motion } = useScreens(root)
             >
               {{ typeset(s.body) }}
             </p>
-            <dl
-              v-if="s.id === 'made' && facts.length"
+            <ol
+              v-if="'steps' in s && s.steps?.length"
               class="
-                reveal grid gap-x-6 gap-y-4 border-t border-current/30 pt-6
+                reveal grid gap-x-6 gap-y-5
                 sm:grid-cols-3
               "
               style="--i: 3"
             >
-              <div
-                v-for="f in facts"
-                :key="f.label"
-                class="flex flex-col gap-1"
+              <li
+                v-for="(step, n) in s.steps"
+                :key="n"
+                class="grid content-start gap-2 border-t border-current/30 pt-4"
               >
-                <dt class="text-label opacity-60">
-                  {{ f.label }}
-                </dt>
-                <dd class="text-base/normal">
-                  {{ typeset(f.value!) }}
-                </dd>
-              </div>
-            </dl>
+                <span class="font-mono text-xs tracking-[0.04em] opacity-60">{{ pad(n + 1) }}</span>
+                <span class="text-base/normal">{{ typeset(step) }}</span>
+              </li>
+            </ol>
           </div>
         </div>
       </section>
@@ -318,7 +319,7 @@ const { active, motion } = useScreens(root)
 
     <!-- La cosa difficile, il modello -->
     <section
-      v-if="project.challenge"
+      v-if="challenge"
       id="challenge"
       data-screen
       class="screen bg-green text-paper-light"
@@ -345,13 +346,13 @@ const { active, motion } = useScreens(root)
             "
             style="--i: 1"
           >
-            {{ typeset(project.challenge.title) }}
+            {{ typeset(challenge.title) }}
           </h2>
           <p
             class="reveal text-body-medium"
             style="--i: 2"
           >
-            {{ typeset(project.challenge.body) }}
+            {{ typeset(challenge.body) }}
           </p>
         </div>
       </div>
@@ -385,6 +386,66 @@ const { active, motion } = useScreens(root)
         >
           {{ typeset(project.model) }}
         </p>
+      </div>
+    </section>
+
+    <!-- Chi ci ha lavorato -->
+    <section
+      v-if="team.length"
+      id="team"
+      data-screen
+      class="screen bg-paper text-ink"
+      :class="{ 'is-active': active === at('team') }"
+      :style="{ zIndex: at('team') }"
+      aria-labelledby="team-title"
+    >
+      <div class="
+        screen-inner page-x grid h-full content-center
+        gap-[clamp(24px,5vh,56px)] py-24
+      ">
+        <h2
+          id="team-title"
+          class="
+            reveal font-wide text-[clamp(1.875rem,1rem+3.2vw,4.5rem)]
+            leading-[0.95] font-bold tracking-[-0.03em]
+          "
+          style="--i: 0"
+        >
+          {{ t('product.team') }}
+        </h2>
+        <ul class="
+          grid grid-cols-3 gap-x-4 gap-y-6
+          sm:grid-cols-5 sm:gap-x-6
+        ">
+          <li
+            v-for="(m, n) in team"
+            :key="m.key"
+            class="reveal flex min-w-0 flex-col gap-3"
+            :style="{ '--i': n + 1 }"
+          >
+            <div
+              class="
+                flex aspect-[193.3/250] max-h-[42svh] w-full items-center
+                justify-center
+              "
+              :class="m.bg"
+            >
+              <img
+                :src="`/team/illustrations/${m.key}.svg`"
+                alt=""
+                class="h-auto"
+                :class="m.width"
+              >
+            </div>
+            <p class="grid gap-0.5">
+              <span class="text-body-medium">{{ m.name }}</span>
+              <span
+                v-if="m.role"
+                class="text-label opacity-60"
+              >{{ m.role }}</span>
+            </p>
+          </li>
+        </ul>
       </div>
     </section>
 

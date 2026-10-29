@@ -22,30 +22,25 @@
     "outro_title": "Got an idea\nto set free?",
     "replay": "Replay the intro",
     "hero_tagline": "Free the\nmonkey.",
-    "featured_more": "Read the case",
+    "featured_more": "Find out more",
     "status_live": "Live",
     "status_development": "In development",
     "status_pilot": "Pilot",
     "status_pending": "Status to be confirmed",
     "products": {
       "fanta_rainbow": {
-        "category": "Fantasy football",
         "desc": "Live fantasy football auctions. The bank keeps the score, players open a link and bid from their phone, the countdown decides."
       },
       "bin_or_deal": {
-        "category": "Marketplace",
         "desc": "Listings aggregator across European marketplaces for collectors, with an automatic “bin vs deal” score."
       },
       "cityfix": {
-        "category": "Cities",
         "desc": "Urban regeneration: citizens, councils and suppliers report, manage and resolve interventions across the city."
       },
       "cruciverba_lab": {
-        "category": "Games",
         "desc": "The home of Italian crosswords online. Ten new word games every day, in the browser."
       },
       "helllo": {
-        "category": "Work",
         "desc": "The job app where both sides choose each other. If you both say Helllo, the chat opens right away."
       }
     }

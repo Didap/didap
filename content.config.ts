@@ -55,13 +55,16 @@ const projectSchema = z.object({
   logo: z.string().optional(),
   // Ci hanno messo le mani: chiavi di shared/team.ts
   team: z.array(z.enum(TEAM_MEMBERS)).default([]),
-  // Scheda a slide (components/ProductScreens.vue): il motivo, cosa
-  // abbiamo fatto e un video per ogni voce di `features.items`, nello
+  // Scheda a slide (components/ProductScreens.vue), scritta per chi non
+  // è del mestiere: il motivo, cosa abbiamo fatto (con i passi di come
+  // funziona), la cosa difficile detta semplice (se manca vale
+  // `challenge`) e un video per ogni voce di `features.items`, nello
   // stesso ordine. Il resto viene dai campi della scheda
   screens: z
     .object({
       why: z.object({ title: z.string(), body: z.string() }),
-      made: z.object({ title: z.string(), body: z.string() }),
+      made: z.object({ title: z.string(), body: z.string(), steps: z.array(z.string()).default([]) }),
+      challenge: z.object({ title: z.string(), body: z.string() }).optional(),
       media: z.array(mediaSlot).default([]),
     })
     .optional(),

@@ -81,11 +81,18 @@ team:
   - vitantonio
 screens:
   why:
-    title: Una segnalazione passa da tre mani.
-    body: "Il cittadino vede la buca, il Comune decide chi deve intervenire, il fornitore la ripara. Senza uno strumento comune la segnalazione rimbalza tra email, moduli e fogli di calcolo, e chi l'ha fatta non sa più che fine abbia fatto. CityFix mette tutti e tre sullo stesso percorso, tracciato dall'inizio alla fine."
+    title: Una buca in strada non si ripara da sola.
+    body: "Chi la vede spesso non sa a chi dirlo. Se lo dice, la segnalazione passa di mano in mano tra uffici e ditte, e nessuno gli fa più sapere niente. Così i problemi restano dove sono e la gente smette di segnalarli."
   made:
-    title: L'abbiamo pensata, disegnata e costruita noi.
-    body: "CityFix è un prodotto Didap. Sopra una sola piattaforma abbiamo costruito tre strumenti: l'app per i cittadini, il backoffice per i Comuni e lo spazio dei fornitori. Il backend è pronto per tutti i Comuni italiani, il backoffice è operativo e l'app è in fase MVP, in vista del pilota con il primo Comune partner."
+    title: Un'app che porta la tua segnalazione fino alla riparazione.
+    body: "CityFix l'abbiamo pensata e costruita noi, da zero. Funziona in tre passi:"
+    steps:
+      - Vedi un problema, apri l'app e scatti una foto. La posizione la mette il telefono.
+      - Il Comune riceve la segnalazione e la affida alla ditta giusta.
+      - La ditta ripara e chiude il lavoro con una foto. Tu ricevi un avviso a ogni passaggio.
+  challenge:
+    title: Pronta per tutti gli ottomila Comuni italiani.
+    body: "Ogni Comune vede solo le sue segnalazioni, i suoi uffici e le sue ditte, ma il sistema è uno solo per tutti: per partire in una nuova città non serve installare niente. I dati di ogni Comune restano separati da quelli degli altri."
   media:
     - src: /covers/cityfix-segnala.mp4
       poster: /covers/cityfix-segnala-poster.webp

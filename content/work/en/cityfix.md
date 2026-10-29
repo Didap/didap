@@ -81,11 +81,18 @@ team:
   - vitantonio
 screens:
   why:
-    title: A report goes through three pairs of hands.
-    body: "The citizen sees the pothole, the municipality decides who should fix it, the supplier repairs it. Without a shared tool the report bounces between emails, forms and spreadsheets, and whoever made it loses track of what happened to it. CityFix puts all three on the same path, tracked from start to finish."
+    title: A pothole doesn't fix itself.
+    body: "Whoever spots it often doesn't know who to tell. If they do, the report passes from hand to hand between offices and contractors, and nobody gets back to them. So problems stay where they are and people stop reporting them."
   made:
-    title: We thought it up, designed it and built it.
-    body: "CityFix is a Didap product. On a single platform we built three tools: the app for citizens, the back office for municipalities and the space for suppliers. The backend is ready for every Italian municipality, the back office is up and running and the app is at MVP stage, ahead of the pilot with the first partner municipality."
+    title: An app that takes your report all the way to the repair.
+    body: "We designed and built CityFix ourselves, from scratch. It works in three steps:"
+    steps:
+      - You see a problem, open the app and take a photo. Your phone adds the location.
+      - The municipality gets the report and hands it to the right contractor.
+      - The contractor fixes it and closes the job with a photo. You get a notice at every step.
+  challenge:
+    title: Ready for all eight thousand Italian municipalities.
+    body: "Each municipality sees only its own reports, offices and contractors, but there is a single system for everyone: starting in a new city needs no new installation. Each municipality's data stays separate from everyone else's."
   media:
     - src: /covers/cityfix-segnala.mp4
       poster: /covers/cityfix-segnala-poster.webp

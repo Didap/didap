@@ -5,7 +5,7 @@
     "projects": "Progetti",
     "clients": "Partner",
     "about": "About",
-    "contact": "Contatti",
+    "contact": "Lavora con noi",
     "cta": "Lavoriamo insieme",
     "main": "Navigazione principale",
     "open_menu": "Apri il menu",
@@ -175,5 +175,26 @@
   },
   "splash": {
     "skip": "Salta"
+  },
+  "chat": {
+    "title": "Chiedi a Didi!",
+    "lines": "Vuoi sapere cosa facciamo?\nVuoi capire se la tua idea si può fare?\nCerchi un bando per partire?",
+    "hello": "Ciao! Raccontami cosa hai in mente.",
+    "placeholder": "Scrivi a Didi, bastano due parole",
+    "input": "Il tuo messaggio per Didi",
+    "send": "Invia",
+    "thinking": "Didi ci sta pensando",
+    "you": "Hai scritto",
+    "reply": {
+      "product": "Un prodotto nuovo: lo pensiamo e lo costruiamo con te. Scegli come parlarne.",
+      "app": "Un’app o un SaaS: è il nostro pane. Scegli come raccontarcelo.",
+      "site": "Un sito: si fa. Scegli come preferisci sentirci.",
+      "grant": "Per i bandi lavoriamo con The Qube: noi pensiamo al progetto, loro a come finanziarlo. Scegli come scriverci.",
+      "chat": "Facciamo due chiacchiere. Scegli come preferisci sentirci."
+    },
+    "note": "Rispondiamo a tutti entro 2 giorni lavorativi.",
+    "form": "Compila il modulo",
+    "restart": "Ricomincia",
+    "back": "Torna da Didi"
   }
 }

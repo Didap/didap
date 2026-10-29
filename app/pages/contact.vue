@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import ContactForm from '~/components/ContactForm.vue'
+import DidiChat from '~/components/DidiChat.vue'
 import { productFromQuery, projectTypeFromQuery } from '#shared/contact'
 
-// Lo stesso modulo che si apre sopra le pagine, qui da solo: per i link
-// condivisi e per chi apre /contact in una nuova scheda.
+// "Lavora con noi": la stessa chat con Didi che si apre sopra le pagine,
+// qui da sola, per i link condivisi e per chi apre /contact in una
+// nuova scheda.
 const { t } = useI18n()
 const route = useRoute()
 
@@ -24,7 +25,7 @@ const projectType = computed(() => projectTypeFromQuery(route.query.type))
       border-t-[1.5px] border-ink pt-8 pb-24
       lg:pb-[136px]
     ">
-      <ContactForm
+      <DidiChat
         :key="`${product}${projectType}`"
         :product="product"
         :project-type="projectType"

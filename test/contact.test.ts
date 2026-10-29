@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { contactKind, mailtoHref, productFromQuery, projectTypeFromQuery, telHref, whatsappHref } from '#shared/contact'
+import { guessTopic } from '#shared/didi'
 
 describe('email o telefono', () => {
   it('riconosce un\'email', () => {
@@ -45,5 +46,20 @@ describe('link e query', () => {
     expect(productFromQuery('  Bin or Deal ')).toBe('Bin or Deal')
     expect(productFromQuery(['a', 'b'])).toBe('')
     expect(productFromQuery('x'.repeat(100))).toHaveLength(80)
+  })
+})
+
+describe('guessTopic', () => {
+  it('capisce di cosa si tratta dalle parole', () => {
+    expect(guessTopic('Cerco un bando a fondo perduto per la mia azienda')).toBe('grant')
+    expect(guessTopic('Vorrei una web app per gestire i turni')).toBe('app')
+    expect(guessTopic('Ci serve un sito web nuovo')).toBe('site')
+    expect(guessTopic('Ho un\'idea per una startup')).toBe('product')
+    expect(guessTopic('We need a SaaS platform')).toBe('app')
+  })
+
+  it('senza indizi propone due chiacchiere', () => {
+    expect(guessTopic('Ciao, possiamo sentirci?')).toBe('chat')
+    expect(guessTopic('Ho un appuntamento con voi')).toBe('chat')
   })
 })

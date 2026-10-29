@@ -5,7 +5,7 @@
     "projects": "Projects",
     "clients": "Partners",
     "about": "About",
-    "contact": "Contact",
+    "contact": "Work with us",
     "cta": "Let’s work together",
     "main": "Main navigation",
     "open_menu": "Open menu",
@@ -175,5 +175,26 @@
   },
   "splash": {
     "skip": "Skip"
+  },
+  "chat": {
+    "title": "Ask Didi!",
+    "lines": "Want to know what we do?\nWondering whether your idea can be built?\nLooking for a grant to get started?",
+    "hello": "Hi! Tell me what you have in mind.",
+    "placeholder": "Write to Didi, a few words are enough",
+    "input": "Your message for Didi",
+    "send": "Send",
+    "thinking": "Didi is thinking",
+    "you": "You wrote",
+    "reply": {
+      "product": "A new product: we think it through and build it with you. Pick how to talk about it.",
+      "app": "An app or a SaaS: that’s our bread and butter. Pick how to tell us about it.",
+      "site": "A website: we can do that. Pick how you’d like to hear from us.",
+      "grant": "For grants we work with The Qube: we design the project, they work out how to fund it. Pick how to write to us.",
+      "chat": "Let’s have a chat. Pick how you’d like to hear from us."
+    },
+    "note": "We reply to everyone within 2 working days.",
+    "form": "Fill in the form",
+    "restart": "Start over",
+    "back": "Back to Didi"
   }
 }

@@ -3,7 +3,7 @@ import type { AnimationItem } from 'lottie-web'
 
 // Il logo dell'apertura della home: a ogni visita Didi ci cade dentro,
 // col Lottie della splash (public/splash, 1920x1080). Lì il logo finito
-// sta in 400.62, 380 e misura 1118.76 x 320: il player è steso intorno
+// sta in 265.05, 364.76 e misura 1396.75 x 400: il player è steso intorno
 // all'immagine ferma in modo che quel riquadro coincida con lei, e a
 // fine corsa torna l'immagine. Fuori dal riquadro non si taglia nulla:
 // Didi cade dall'alto dello schermo. Lo script in testa nasconde
@@ -92,14 +92,14 @@ html.home-intro .logo-still {
   visibility: hidden;
 }
 
-/* Il fotogramma intero intorno al logo: 1920/1118.76 in larghezza,
-   1080/320 in altezza */
+/* Il fotogramma intero intorno al logo: 1920/1396.75 in larghezza,
+   1080/400 in altezza */
 .logo-player {
   position: absolute;
-  top: -118.75%;
-  left: -35.809%;
-  width: 171.617%;
-  height: 337.5%;
+  top: -91.19%;
+  left: -18.976%;
+  width: 137.462%;
+  height: 270%;
   pointer-events: none;
 }
 

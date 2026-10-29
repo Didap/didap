@@ -2,7 +2,7 @@
 import type { Component } from 'vue'
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
 import DidapButton from '~/components/DidapButton.vue'
-import { CONTACT_EMAIL, CONTACT_PHONE, PROJECT_TYPES, contactKind, telHref } from '#shared/contact'
+import { CONTACT_EMAIL, CONTACT_PHONE, PROJECT_TYPES, contactKind, telHref, type ProjectType } from '#shared/contact'
 import { untypeset } from '#shared/typeset'
 
 // Il modulo di contatto, come una sezione della home: titolo grande, poi colonna
@@ -10,8 +10,8 @@ import { untypeset } from '#shared/typeset'
 // Chi lo usa decide il resto: `titleAs` è il tag del titolo (h1 sulla
 // pagina, il titolo del dialog sopra le pagine), lo slot `done` è
 // l'azione dopo l'invio. `product`: arriva da "Avvisami quando esce", il
-// messaggio è già scritto.
-const props = defineProps<{ titleAs?: Component | string; product?: string }>()
+// messaggio è già scritto. `projectType`: la voce già scelta con Didi.
+const props = defineProps<{ titleAs?: Component | string; product?: string; projectType?: ProjectType | '' }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -20,7 +20,7 @@ const localePath = useLocalePath()
 const form = reactive({
   name: '',
   contact: '',
-  projectType: '',
+  projectType: props.projectType ?? '',
   message: props.product ? untypeset(t('contact.form.notify_message', { name: props.product })) : '',
   website: '', // honeypot
 })

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
 
-// Componente "Nav" del Figma: logo esteso 105x30, link Semibold 13
-// maiuscoli a 45 di distanza, lingua + CTA a destra. Alto 97.
-// Variante `product` (scheda prodotto): indietro + logo contratto a
-// sinistra, niente voci, logo del prodotto al posto della CTA.
+// Componente "Nav" del Figma: Didi (la testa tonda, senza la D) a
+// sinistra, link Semibold 13 maiuscoli a 45 di distanza, lingua + CTA a
+// destra. Alto 97. Variante `product` (scheda prodotto): indietro + Didi
+// a sinistra, niente voci, logo del prodotto al posto della CTA.
+// Didi lascia la nav per DidiGuide e ci ricade dall'alto quando torna.
 const props = defineProps<{ cream?: boolean; product?: boolean }>()
 
 const { t, locale, locales } = useI18n()
@@ -20,6 +21,9 @@ const allLocales = computed(
 )
 
 const links = useHomeSections()
+
+// Via con DidiGuide, il link sparisce con lei
+const didiAway = useDidiAway()
 
 // Indietro: torna alla pagina precedente se si arriva dal sito,
 // altrimenti alla sezione prodotti della home
@@ -59,11 +63,9 @@ function closeMenuOnLink(e: MouseEvent) {
         lg:h-[97px] lg:grid-cols-[1fr_auto_1fr]
       "
     >
-      <div
-        v-if="product"
-        class="flex items-center gap-4"
-      >
+      <div class="flex items-center gap-4">
         <button
+          v-if="product"
           type="button"
           class="
             -ml-2.5 flex size-10 items-center justify-center rounded-full
@@ -92,31 +94,23 @@ function closeMenuOnLink(e: MouseEvent) {
         <NuxtLink
           :to="localePath('/')"
           class="block"
+          :class="{ invisible: didiAway }"
           aria-label="Didap - home"
+          data-didi-link
         >
           <img
-            src="/brand/logo-contratto.svg"
+            src="/brand/didi-testa.svg"
             alt=""
-            width="33"
-            height="36"
-            class="h-9 w-auto"
+            width="218"
+            height="200"
+            data-didi-home
+            class="
+              h-10 w-auto
+              lg:h-12
+            "
           >
         </NuxtLink>
       </div>
-      <NuxtLink
-        v-else
-        :to="localePath('/')"
-        class="block w-[105px]"
-        aria-label="Didap - home"
-      >
-        <img
-          src="/brand/logo-esteso.svg"
-          alt=""
-          width="105"
-          height="30"
-          class="h-[30px] w-[105px]"
-        >
-      </NuxtLink>
 
       <span
         v-if="product"

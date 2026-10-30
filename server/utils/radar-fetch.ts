@@ -8,10 +8,61 @@ const MAX_REDIRECTS = 5
 
 type FetchOptions = { origin: string, maxBytes: number, timeoutMs: number }
 
-// Errore che può sparire riprovando: niente risposta in tempo, rete, 5xx, 429
-class TransientError extends Error {}
+// Un sito che per questo scan non c'è: non accetta connessioni, non risponde
+// in tempo, dà 5xx anche al secondo tentativo. Non è un errore da segnalare:
+// la fonte si riprova al prossimo scan (radar.ts la mette in pausa se non
+// risponde per più scan di fila)
+export class SourceUnreachable extends Error {}
+
+// Errore che può sparire riprovando una volta: 5xx, 429, download
+// interrotto. `connect`: la connessione stessa non è riuscita (tempo di
+// connessione scaduto, rifiutata, DNS); se succede due volte l'host è giù
+class TransientError extends Error {
+  constructor(message: string, readonly connect = false) {
+    super(message)
+  }
+}
 
 const RETRY_AFTER_MS = 3_000
+
+// Host giù: le altre pagine dello stesso sito falliscono subito invece di
+// aspettare ognuna il suo timeout. Si azzera a ogni scan; la scadenza
+// copre chi scarica fuori da uno scan (cartella del bando)
+const DOWN_FOR_MS = 30 * 60_000
+const downHosts = new Map<string, number>()
+
+export const resetDownHosts = () => downHosts.clear()
+
+const markDown = (url: string) => downHosts.set(new URL(url).host, Date.now() + DOWN_FOR_MS)
+
+function assertUp(url: string) {
+  const host = new URL(url).host
+  const until = downHosts.get(host)
+  if (until && until > Date.now()) throw new SourceUnreachable(`${host} non risponde`)
+}
+
+// Un errore passeggero si riprova una volta dopo una pausa. Se torna, il
+// sito per questo scan non c'è; se non ha accettato la connessione, l'host
+// si segna giù. Nessuna risposta in tempo non si riprova: costerebbe un
+// altro timeout intero (arriva già come SourceUnreachable)
+async function withRetry<T>(url: string, attempt: () => Promise<T>): Promise<T> {
+  assertUp(url)
+  try {
+    return await attempt()
+  }
+  catch (err) {
+    if (!(err instanceof TransientError)) throw err
+    await sleep(RETRY_AFTER_MS)
+  }
+  try {
+    return await attempt()
+  }
+  catch (err) {
+    if (!(err instanceof TransientError)) throw err
+    if (err.connect) markDown(url)
+    throw new SourceUnreachable(err.message)
+  }
+}
 
 // Siti di enti col certificato HTTPS rotto: il radar non li legge (non si
 // spegne la verifica), ma l'errore dice perché
@@ -26,34 +77,30 @@ const CERT_ERRORS: Record<string, string> = {
 
 const certificateProblem = (err: unknown) => CERT_ERRORS[errorCode(err)]
 
-// Perché una richiesta non è arrivata: tempo scaduto, certificato (che non
-// si aggiusta riprovando) o rete, col codice (ENOTFOUND, ECONNRESET...) che
-// dice più di "fetch failed"
-function requestError(err: unknown, url: string, timeoutMs: number, signal: AbortSignal) {
-  if (signal.aborted) return { message: `Nessuna risposta in ${timeoutMs / 1000} s da ${url}`, transient: true }
+// Perché una richiesta non è arrivata: tempo scaduto (l'host si segna giù
+// subito), certificato (che non si aggiusta riprovando) o connessione, col
+// codice (UND_ERR_CONNECT_TIMEOUT, ENOTFOUND...) che dice più di "fetch failed"
+function requestError(err: unknown, url: string, timeoutMs: number, signal: AbortSignal): Error {
+  if (signal.aborted) {
+    markDown(url)
+    return new SourceUnreachable(`Nessuna risposta in ${timeoutMs / 1000} s da ${url}`)
+  }
   const cert = certificateProblem(err)
-  if (cert) return { message: `${url}: ${cert}`, transient: false }
-  return { message: `Rete non raggiungibile per ${url}: ${errorCode(err) || (err as Error).message}`, transient: true }
+  if (cert) return new Error(`${url}: ${cert}`)
+  return new TransientError(`Sito non raggiungibile: ${url} (${errorCode(err) || (err as Error).message})`, true)
 }
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // Con `optional` un file che non c'è (più) o troppo grande dà null invece di
-// un errore: un link rotto si salta. Un errore passeggero si riprova una
-// volta; se torna, fa riprovare il bando al giro successivo.
+// un errore: un link rotto si salta. Un sito che non risponde dà
+// SourceUnreachable e il bando si riprova allo scan successivo.
 export async function fetchFromSource(url: string, options: FetchOptions & { optional: true }): Promise<Buffer | null>
 export async function fetchFromSource(url: string, options: FetchOptions): Promise<Buffer>
 export async function fetchFromSource(
   url: string,
   options: FetchOptions & { optional?: boolean },
 ): Promise<Buffer | null> {
-  try {
-    return await fetchOnce(url, options)
-  }
-  catch (err) {
-    if (!(err instanceof TransientError)) throw err
-    await sleep(RETRY_AFTER_MS)
-    return fetchOnce(url, options)
-  }
+  return withRetry(url, () => fetchOnce(url, options))
 }
 
 async function fetchOnce(url: string, options: FetchOptions & { optional?: boolean }): Promise<Buffer | null> {
@@ -75,8 +122,7 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
       res = await webRequest(target, signal)
     }
     catch (err) {
-      const { message, transient } = requestError(err, url, timeoutMs, signal)
-      throw transient ? new TransientError(message) : new Error(message)
+      throw requestError(err, url, timeoutMs, signal)
     }
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) break
@@ -168,23 +214,56 @@ export function decodeHtml(body: Buffer): string {
 // Dove porta davvero un indirizzo (http -> https, senza o con www): i siti
 // dei comuni si leggono poi solo dentro questa origine. Conta l'origine,
 // non la risposta: una home che dà 404 si gestisce dopo.
-export async function resolveOrigin(url: string): Promise<string> {
-  const signal = AbortSignal.timeout(SOURCE_TIMEOUT_MS)
-  let target = url
-  for (let hops = 0; hops <= MAX_REDIRECTS; hops++) {
+export function resolveOrigin(url: string): Promise<string> {
+  return withRetry(url, async () => {
+    const signal = AbortSignal.timeout(SOURCE_TIMEOUT_MS)
+    let target = url
+    for (let hops = 0; hops <= MAX_REDIRECTS; hops++) {
+      let res: Response
+      try {
+        res = await webRequest(target, signal)
+      }
+      catch (err) {
+        throw requestError(err, url, SOURCE_TIMEOUT_MS, signal)
+      }
+      await res.body?.cancel()
+      const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
+      if (!location) return new URL(target).origin
+      target = new URL(location, target).toString()
+    }
+    throw new Error(`Troppi redirect per ${url}`)
+  })
+}
+
+// Le API dei cataloghi (incentivi.gov.it, TED): indirizzi fissi, scelti da
+// noi, con la stessa logica dei siti per i tentativi e i siti giù
+export function fetchApi<T>(url: string, init: RequestInit, timeoutMs: number): Promise<T> {
+  return withRetry(url, async () => {
+    const signal = AbortSignal.timeout(timeoutMs)
     let res: Response
     try {
-      res = await webRequest(target, signal)
+      res = await fetch(url, { ...init, signal })
     }
     catch (err) {
-      throw new Error(requestError(err, url, SOURCE_TIMEOUT_MS, signal).message)
+      throw requestError(err, url, timeoutMs, signal)
     }
-    await res.body?.cancel()
-    const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
-    if (!location) return new URL(target).origin
-    target = new URL(location, target).toString()
-  }
-  throw new Error(`Troppi redirect per ${url}`)
+    const host = new URL(url).host
+    if (res.status >= 500 || res.status === 429) {
+      await res.body?.cancel()
+      throw new TransientError(`${host} ha risposto ${res.status}`)
+    }
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      throw new Error(`${host} ha risposto ${res.status}: ${body.slice(0, 200)}`)
+    }
+    try {
+      return await res.json() as T
+    }
+    catch {
+      // Tempo scaduto a metà della risposta, o corpo non JSON
+      throw new TransientError(`Risposta interrotta da ${host}`)
+    }
+  })
 }
 
 // decodeURIComponent senza eccezioni: un "%" a caso nei link altrui resta com'è

@@ -29,7 +29,7 @@ export async function openTestDb() {
 
 export async function resetTestDb(sql: postgres.Sql) {
   await sql`truncate quote_revisions, quote_counters, quotes, clients, settings`
-  await sql`truncate grant_drafts, grant_files, grant_folders, radar_grants, radar_documents, radar_state, radar_settings, radar_runs`
+  await sql`truncate grant_drafts, grant_files, grant_folders, radar_grants, radar_documents, radar_state, radar_settings, radar_runs, radar_sources`
   // oauth_clients non dipende da admin_users: il cascade non lo svuota
   await sql`truncate oauth_tokens, oauth_links, oauth_codes, oauth_clients`
   await sql`truncate admin_sessions, admin_user_tokens, admin_users cascade`

@@ -1,8 +1,8 @@
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { crawlSource } from '../server/utils/radar-crawl'
-import { fetchFromSource, resolveOrigin } from '../server/utils/radar-fetch'
+import { fetchFromSource, resetDownHosts, resolveOrigin, SourceUnreachable } from '../server/utils/radar-fetch'
 
 // Un sito finto: ogni percorso decide come risponde alla richiesta n
 const hits: Record<string, number> = {}
@@ -54,17 +54,43 @@ const get = (path: string, optional = false) =>
     ? fetchFromSource(`${origin}${path}`, { origin, maxBytes: 1000, timeoutMs: 300, optional: true })
     : fetchFromSource(`${origin}${path}`, { origin, maxBytes: 1000, timeoutMs: 300 })
 
+// Una porta su cui non ascolta nessuno: la connessione viene rifiutata
+async function closedPort() {
+  const s = createServer()
+  await new Promise<void>(resolve => s.listen(0, '127.0.0.1', resolve))
+  const { port } = s.address() as AddressInfo
+  await new Promise(resolve => s.close(resolve))
+  return port
+}
+
 describe('download dalle fonti', () => {
-  it('riprova una volta se il sito non risponde in tempo', async () => {
+  beforeEach(resetDownHosts)
+
+  it('nessuna risposta in tempo: non si riprova e il sito resta giù per lo scan', async () => {
+    await expect(get('/lento-poi-ok')).rejects.toBeInstanceOf(SourceUnreachable)
+    expect(hits['/lento-poi-ok']).toBe(1)
+    await expect(get('/')).rejects.toThrow('non risponde')
+    // Scan nuovo: si riprova
+    resetDownHosts()
     expect((await get('/lento-poi-ok'))?.toString()).toBe('ok')
-    expect(hits['/lento-poi-ok']).toBe(2)
   }, 10_000)
 
-  it('riprova una volta un errore del server, poi si arrende', async () => {
+  it('connessione rifiutata: un secondo tentativo, poi il sito è giù senza altre attese', async () => {
+    const dead = `http://127.0.0.1:${await closedPort()}`
+    const fetchDead = (path: string) => fetchFromSource(`${dead}${path}`, { origin: dead, maxBytes: 1000, timeoutMs: 300 })
+    await expect(fetchDead('/a')).rejects.toBeInstanceOf(SourceUnreachable)
+    const start = Date.now()
+    await expect(fetchDead('/b')).rejects.toThrow('non risponde')
+    expect(Date.now() - start).toBeLessThan(100)
+  }, 10_000)
+
+  it('riprova una volta un errore del server, poi lascia perdere senza fermare il sito', async () => {
     expect((await get('/503-poi-ok'))?.toString()).toBe('ok')
+    await expect(get('/sempre-503')).rejects.toThrow(SourceUnreachable)
     await expect(get('/sempre-503')).rejects.toThrow('ha risposto 503')
-    expect(hits['/sempre-503']).toBe(2)
-  }, 15_000)
+    expect(hits['/sempre-503']).toBe(4)
+    expect((await get('/'))?.toString()).toContain('Avvisi')
+  }, 20_000)
 
   it('un file che non c\'è non si riprova', async () => {
     expect(await get('/manca', true)).toBeNull()

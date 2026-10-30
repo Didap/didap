@@ -2,41 +2,60 @@ import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { ISO_DATE, romeLocalToDate, romeYear } from '#shared/dates'
 import {
+  GRANT_KINDS,
   LEGAL_FORMS,
   PROVINCES,
   REQUIREMENT_KINDS,
   type Application,
+  type GrantKind,
   type RadarProfile,
   type Requirement,
   type RequirementParams,
   type TokenUsage,
   type Verdict,
 } from '#shared/radar'
+import DIDAP from '../radar/didap.md'
 
 // Lettura dei bandi con Claude (Haiku di default, RADAR_LLM_MODEL per
 // cambiarlo). Il prompt nasce da quello del Radar Bandi di cityfix, girato
-// sulle imprese.
+// sulle imprese e sulle gare per servizi digitali.
+
+// Cosa fa l'azienda (server/radar/didap.md), senza l'introduzione per chi
+// modifica il file. Sta nei prompt in cache: costa poco a ogni chiamata
+export const COMPANY_PROFILE = DIDAP.slice(DIDAP.indexOf('\n## ') + 1).trim()
 
 // Il filtro sul tema, deciso alla lettura del bando
 const DIGITAL_RULE = `"digital" is for a software house that builds websites, apps, software and AI solutions: true only if the call funds IT or digital work as its purpose or as one of its main, explicitly named activities: software, web or app development, artificial intelligence, data, cloud, cybersecurity, e-commerce, digital transformation of business processes, digital services or ICT consulting, research and innovation projects in the digital field, calls for innovative or high-tech startups (startup innovative), which usually fund digital products. It is false when the call funds something else, such as machinery, vehicles, tractors or farm equipment, buildings, energy plants, agriculture, tourism facilities, film or audiovisual production, hiring, training, liquidity, guarantees, trade fairs or exports, even if software or digital costs appear as one eligible expense among many.`
 
-const SYSTEM_PROMPT = `You read Italian calls for funding ("bandi", "avvisi", "incentivi") and extract structured data for a private company based in Puglia, Italy. Answer with one JSON object and nothing else.
+const SYSTEM_PROMPT = `You read Italian calls ("bandi", "avvisi", "incentivi", "gare") for the company described below, a software house based in Puglia, Italy, and extract structured data. Answer with one JSON object and nothing else.
 
-First decide "admitsCompanies": true only if the text says that private businesses can apply as beneficiaries: imprese, PMI, micro/piccole/medie imprese, startup, liberi professionisti, lavoratori autonomi, or people who will start a new business (imprese da costituire, aspiranti imprenditori). Calls reserved to public bodies, comuni, schools, universities, associations, private citizens, farmers only, or job applicants (concorsi, selezioni di personale, mobilita) are false. Procurement notices where the public body buys services (gare d'appalto, manifestazioni di interesse per fornitori, short list di professionisti) are false. The company must receive something (a grant, a subsidised loan, a voucher, a tax credit, free services): calls where companies give something, such as sponsors, donors or suppliers of goods for events, are false. A text that does not say who can apply is false: never assume it. If false, set "digital" to false, leave every other field empty (empty strings, null, empty arrays) and stop.
+${COMPANY_PROFILE}
 
-Then decide ${DIGITAL_RULE}
+First decide "kind":
+- "grant": private businesses apply as beneficiaries and receive something: a grant, a subsidised loan, a voucher, a tax credit, free services.
+- "tender": a public body or a public company buys work and companies take part as suppliers: gare d'appalto, procedure aperte o negoziate, affidamenti, avvisi di manifestazione di interesse o indagini di mercato per operatori economici, short list, albi fornitori.
+
+Then decide "admitsCompanies": true only if a private company can take part. For a grant, the text must say that private businesses can apply as beneficiaries: imprese, PMI, micro/piccole/medie imprese, startup, liberi professionisti, lavoratori autonomi, or people who will start a new business (imprese da costituire, aspiranti imprenditori). For a tender, what is bought must be IT or digital work: software, websites, apps, platforms, artificial intelligence, data, cloud, cybersecurity, digital services, ICT consulting or digital training. It is false for calls reserved to public bodies, comuni, schools, universities, associations, private citizens or farmers only; for job contests (concorsi, selezioni di personale, mobilita); for calls where companies give something (sponsors, donors, suppliers of goods for events); for tenders that buy anything else (works, buildings, hardware only, vehicles, cleaning, catering, insurance, services that are not digital). A text that does not say who can take part is false: never assume it. If false, set "digital" and "ai" to false, leave every other field empty (empty strings, null, empty arrays) and stop.
+
+Then decide ${DIGITAL_RULE} A tender with "admitsCompanies" true is always digital.
+
+Then decide "ai": true only if artificial intelligence is an explicit object or one of the main activities of the call: machine learning, generative AI, language models, chatbots or virtual assistants, computer vision, predictive analytics, intelligent automation.
+
+If "digital" is false, leave "requirements" empty and the "application" fields empty: the company will not apply, the rest is enough.
 
 Then return:
 {
+  "kind": "grant" | "tender",
   "admitsCompanies": true,
   "digital": boolean,
+  "ai": boolean,
   "title": string,
   "issuer": string (the body that publishes the call),
-  "summary": string (2-4 sentences in Italian: what is funded, for whom, how much a single company can get; the total budget of the measure is its "dotazione", never present it as the amount a company receives),
+  "summary": string (a short summary in Italian, one or two sentences and at most 300 characters: first what the call funds or buys, then who can take part. The total budget of a measure is its "dotazione", never present it as the amount a single company receives),
   "opensAt": string | null (ISO 8601; date only if the call gives no time),
-  "deadline": string | null (ISO 8601; date only if the call gives no time; null for calls open until funds run out),
-  "maxAmount": number | null (maximum grant a single company can obtain, in euro),
-  "funding": string (in Italian, short: form and intensity of the aid, e.g. "Fondo perduto fino al 50% delle spese"),
+  "deadline": string | null (ISO 8601; date only if the call gives no time; for a tender, the deadline for bids or expressions of interest; null for calls open until funds run out),
+  "maxAmount": number | null (in euro: for a grant the maximum a single company can obtain, for a tender the base amount of the contract without VAT),
+  "funding": string (in Italian, short: for a grant the form and intensity of the aid, e.g. "Fondo perduto fino al 50% delle spese"; for a tender the procedure and the award criterion, e.g. "Procedura negoziata, offerta economicamente più vantaggiosa"),
   "application": {
     "platform": string (in Italian, short: where and how the application is submitted, e.g. "Procedura telematica su Sistema Puglia", "PEC al Comune", "Piattaforma Invitalia"; empty if the text does not say),
     "documents": [{
@@ -54,7 +73,7 @@ Then return:
   }]
 }
 
-Requirements are the conditions a company must satisfy to be admitted, one per item. Leave out generic conditions every regular company meets (being registered, having a VAT number, DURC, no bankruptcy, de minimis declarations) and never emit a requirement that only says companies may apply (e.g. "Soggetti ammessi: Impresa"). Kinds and params:
+Requirements are the conditions a company must satisfy to be admitted (for a tender, the participation requirements: turnover, similar services already delivered, certifications, registration on MePA), one per item. Leave out generic conditions every regular company meets (being registered, having a VAT number, DURC, no bankruptcy, de minimis declarations) and never emit a requirement that only says companies may apply (e.g. "Soggetti ammessi: Impresa"). Kinds and params:
 - "region": the call is limited to some territories. params: {"regions": [Italian region names], "provinces": [two-letter province codes]}. Puglia provinces are ${PROVINCES.map(p => `${p.value} ${p.label}`).join(', ')}. Never emit it for a call open to all of Italy.
 - "revenue": annual turnover limits. params: {"min": euro, "max": euro}, either may be missing. Bounds are inclusive.
 - "employees": headcount limits. params: {"min": number, "max": number}. "micro impresa" means max 9, "piccola" max 49, "PMI" max 249.
@@ -99,9 +118,13 @@ const requirementSchema = z.object({
   page: z.number().int().positive().nullish().catch(null),
 })
 
+const KIND_VALUES = GRANT_KINDS.map(k => k.value) as [GrantKind, ...GrantKind[]]
+
 const grantSchema = z.object({
+  kind: z.enum(KIND_VALUES).catch('grant'),
   // Senza risposta resta da capire: il bando si mostra
   digital: z.boolean().nullish().catch(null).transform(v => v ?? null),
+  ai: z.boolean().nullish().catch(null).transform(v => v ?? null),
   title: z.string().trim().min(1),
   issuer: str,
   summary: str,
@@ -188,8 +211,10 @@ export type GrantReading =
   | { admitsCompanies: false }
   | {
     admitsCompanies: true
+    kind: GrantKind
     // Sviluppo IT, IA o servizi digitali; null se il modello non lo dice
     digital: boolean | null
+    ai: boolean | null
     title: string
     issuer: string
     summary: string
@@ -222,7 +247,9 @@ export function parseGrantReading(raw: unknown): GrantReading {
   }
   return {
     admitsCompanies: true,
+    kind: g.kind,
     digital: g.digital,
+    ai: g.ai,
     title: g.title.slice(0, 500),
     issuer: g.issuer.slice(0, 300),
     summary: g.summary.slice(0, 3000),
@@ -256,8 +283,10 @@ const object = (properties: Record<string, unknown>) =>
   ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
 
 const GRANT_SCHEMA = object({
+  kind: { type: 'string', enum: KIND_VALUES },
   admitsCompanies: { type: 'boolean' },
   digital: { type: 'boolean' },
+  ai: { type: 'boolean' },
   title: STRING,
   issuer: STRING,
   summary: STRING,
@@ -363,12 +392,14 @@ export function llmReader(usage?: TokenUsage): GrantReader {
 
 // ---------- giudizio col profilo ----------
 
-const JUDGE_PROMPT = `You decide whether a company can apply to an Italian call for funding. You get the company profile, then what is known about the call: title, issuer, funding, summary and the admission requirements with the sentences of the call.
+const JUDGE_PROMPT = `You decide whether the company described below can take part in an Italian call: a call for funding (grant) or a tender where a public body buys digital work (tender). You get the company data used by the requirements, then what is known about the call: kind, title, issuer, funding or procedure, summary and the admission requirements with the sentences of the call.
+
+${COMPANY_PROFILE}
 
 Decide "verdict":
-- "yes" when the company meets every stated condition, or the conditions the profile cannot check would not plausibly exclude it, and the call funds a project this company could carry out;
-- "no" when a condition clearly excludes the company: territory, size, age, legal form, sector or ATECO code, reserved beneficiaries (farmers, companies not yet established, female-led or youth companies when the company is not one), or a call that funds something this company does not do;
-- "maybe" when the answer depends on facts the profile does not give.
+- "yes" when the company meets every stated condition, or the conditions the data cannot check would not plausibly exclude it, and the call funds a project or buys work this company could carry out;
+- "no" when a condition clearly excludes the company: territory, size, age, legal form, sector or ATECO code, reserved beneficiaries (farmers, companies not yet established, female-led or youth companies when the company is not one), participation requirements far beyond a small software house, or a call that funds or buys something this company does not do;
+- "maybe" when the answer depends on facts the data does not give.
 "reason" is one short sentence in Italian that names the deciding condition, addressed to the company ("Siete...", "Il bando chiede...").
 
 Answer with one JSON object.`
@@ -379,6 +410,7 @@ const JUDGE_SCHEMA = object({
 })
 
 export type GrantSummary = {
+  kind: GrantKind
   title: string
   issuer: string
   summary: string
@@ -395,12 +427,12 @@ const PROVINCE_LABELS: Record<string, string> = Object.fromEntries(PROVINCES.map
 const orUnknown = (v: number | string | null, show: (v: string) => string) =>
   v === null || v === '' ? 'non indicato' : show(String(v))
 
-export function profileText(p: RadarProfile, now = new Date()): string {
+// I dati del pannello, quelli che usano i requisiti
+export function profileFields(p: RadarProfile, now = new Date()): string {
   const founded = p.legalForm === 'da_costituire'
     ? 'da costituire'
     : orUnknown(p.foundedYear, v => `${v} (oggi siamo nel ${romeYear(now)})`)
   return [
-    `Attività: ${p.description || 'non indicata'}`,
     `Forma giuridica: ${LEGAL_FORM_LABELS[p.legalForm]}`,
     `Sede: provincia di ${PROVINCE_LABELS[p.province]} (Puglia)`,
     `Codice ATECO: ${orUnknown(p.ateco, v => v)}`,
@@ -414,7 +446,12 @@ export function profileText(p: RadarProfile, now = new Date()): string {
   ].join('\n')
 }
 
+// Il profilo intero, per chi legge il bando fuori dal radar (esportazione)
+export const profileText = (p: RadarProfile, now = new Date()) =>
+  `${COMPANY_PROFILE}\n\n## Dati\n\n${profileFields(p, now)}`
+
 export const summaryText = (g: GrantSummary) => [
+  `Tipo: ${g.kind === 'tender' ? 'gara, l\'ente compra un servizio' : 'finanziamento'}`,
   `Titolo: ${g.title}`,
   `Ente: ${g.issuer}`,
   `Agevolazione: ${g.funding}`,
@@ -435,7 +472,7 @@ export function llmJudge(usage?: TokenUsage): GrantJudge {
   return async (grant, profile) => {
     const j = parseJudgement(await askLlm({
       system: cached(JUDGE_PROMPT),
-      content: `Profilo dell'azienda:\n${profileText(profile)}\n\nBando:\n${summaryText(grant)}`,
+      content: `Dati dell'azienda:\n${profileFields(profile)}\n\nBando:\n${summaryText(grant)}`,
       schema: JUDGE_SCHEMA,
       effort: 'low',
       maxTokens: 4_000,
@@ -447,12 +484,12 @@ export function llmJudge(usage?: TokenUsage): GrantJudge {
 
 // ---------- scelta dei link (siti senza un elenco strutturato) ----------
 
-const PICKER_PROMPT = `You see the links of one page of an Italian public website (a comune, a regional agency). Pick the ones worth opening to find calls that give money or benefits to private businesses.
+const PICKER_PROMPT = `You see the links of one page of an Italian public website (a comune, a regional agency, a chamber of commerce). Pick the ones worth opening to find opportunities for a software house: calls that give money or benefits to private businesses, and notices where the body buys IT or digital work.
 
-- "call": the page of one call or notice that offers funding, grants, vouchers, subsidised loans, tax relief or free services to businesses, professionals or people starting a business (bando, avviso, contributi, agevolazioni, voucher, bonus per imprese o attività commerciali). Skip calls that are clearly closed or older than two years.
-- "list": a page that lists such calls or notices (bandi, avvisi, contributi, agevolazioni, finanziamenti, notizie del comune). Only lists, never single items.
+- "call": the page of one call or notice that either offers funding, grants, vouchers, subsidised loans, tax relief or free services to businesses, professionals or people starting a business (bando, avviso, contributi, agevolazioni, voucher, bonus per imprese o attività commerciali), or buys IT or digital work from companies (gara, affidamento, procedura negoziata, avviso di manifestazione di interesse o indagine di mercato per software, siti web, app, piattaforme, intelligenza artificiale, servizi digitali, transizione digitale). Skip calls that are clearly closed or published more than two years ago.
+- "list": a page that lists such calls or notices (bandi, avvisi, contributi, agevolazioni, finanziamenti, bandi di gara e contratti, notizie del comune). Only lists, never single items.
 
-Skip procurement (gare d'appalto, affidamenti, manifestazioni di interesse per fornitori), job contests (concorsi), events, services for citizens, documents of the council, contacts and generic pages. Pick at most 20 calls and 3 lists, the most promising first. Answer with one JSON object; an empty list is a fine answer.`
+Skip procurement of anything that is not IT or digital work (lavori, forniture, servizi sociali, pulizie, mense), job contests (concorsi), events, services for citizens, documents of the council, contacts and generic pages. Pick at most 20 calls and 3 lists, the most promising first. Answer with one JSON object; an empty list is a fine answer.`
 
 const PICKER_SCHEMA = object({
   picks: { type: 'array', items: object({ index: { type: 'integer' }, kind: { type: 'string', enum: ['call', 'list'] } }) },

@@ -15,20 +15,11 @@ export const romeYear = (now: Date) => Number(romeDate(now).slice(0, 4))
 
 const romeTime = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Europe/Rome',
-  weekday: 'short',
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
   hourCycle: 'h23',
 })
-const WEEKDAY: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 }
-
-// Giorno, giorno della settimana (1 = lunedì) e minuti dalla mezzanotte, a Roma
-export function romeClock(now: Date) {
-  const p = Object.fromEntries(romeTime.formatToParts(now).map(x => [x.type, x.value]))
-  return { date: romeDate(now), weekday: WEEKDAY[p.weekday!]!, minutes: Number(p.hour) * 60 + Number(p.minute) }
-}
-
 // L'istante in cui Roma segna quel giorno e quell'ora ("HH:MM:SS"); null se
 // il giorno non esiste. L'Italia è a UTC+1 o UTC+2: vale l'offset giusto.
 export function romeLocalToDate(day: string, time: string): Date | null {

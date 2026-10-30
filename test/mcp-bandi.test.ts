@@ -22,6 +22,8 @@ const reader: GrantReader = async ({ content }) => {
   const s = JSON.parse(content) as Spec
   return {
     admitsCompanies: true,
+    kind: 'grant',
+    ai: null,
     digital: true,
     title: s.title,
     issuer: s.issuer ?? 'Regione Puglia',

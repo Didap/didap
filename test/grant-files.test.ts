@@ -81,6 +81,8 @@ function oneGrantSource(id: string): RadarSource {
 
 const reader: GrantReader = async ({ content }) => ({
   admitsCompanies: true,
+  kind: 'grant',
+  ai: null,
   digital: true,
   title: content,
   issuer: 'Regione Puglia',

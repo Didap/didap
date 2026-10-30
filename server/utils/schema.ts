@@ -237,6 +237,21 @@ export const DB_SCHEMA = `
   );
   -- Tabelle create quando i comuni si spuntavano uno a uno
   alter table radar_runs add column if not exists provinces text[] not null default '{}';
+  -- Finanziamento o gara per servizi digitali, IA esplicita, scan che ha
+  -- trovato il bando (i "nuovi"); prompt con cui è stato letto il testo
+  alter table radar_grants add column if not exists kind text not null default 'grant'
+    check (kind in ('grant', 'tender'));
+  alter table radar_grants add column if not exists ai boolean;
+  alter table radar_grants add column if not exists run_id uuid references radar_runs (id) on delete set null;
+  create index if not exists radar_grants_run_id on radar_grants (run_id);
+  alter table radar_documents add column if not exists reader_version int not null default 1;
+  -- Fonti che non rispondono: scan di fila senza risposta, pausa fino a
+  create table if not exists radar_sources (
+    slug text primary key,
+    unreachable_streak int not null default 0,
+    paused_until timestamptz,
+    checked_at timestamptz
+  );
 
   -- Connettore MCP: client OAuth registrati da Claude, codici d'autorizzazione,
   -- collegamenti persona e client, token. Di codici e token solo l'hash

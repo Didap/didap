@@ -1,9 +1,10 @@
 import { formatWholeEuro } from '#shared/money'
-import { ELIGIBILITY_LABELS, sourceLabel, type EvaluatedGrant } from '#shared/radar'
+import { ELIGIBILITY_LABELS, grantKindLabel, sourceLabel, type EvaluatedGrant } from '#shared/radar'
 import { BRAND_HEADER, brandFooter, C, escapeHtml, FONT_BODY, FONT_DISPLAY, HEAD, SITE_URL } from './contact-templates'
 
-// Mail di riepilogo del radar: bandi nuovi candidabili, poi quelli con
-// requisiti da verificare. Stesso guscio delle mail del form contatti.
+// Mail di fine scan del radar: i bandi nuovi candidabili, poi quelli con
+// requisiti da verificare, con in evidenza quando il radar li ha trovati e
+// quando scadono. Stesso guscio delle mail del form contatti.
 
 const SETTINGS_URL = `${SITE_URL}/admin/bandi`
 
@@ -11,16 +12,26 @@ const headline = (n: number) => (n === 1 ? '1 bando nuovo per te' : `${n} bandi 
 
 export const digestSubject = (grants: EvaluatedGrant[]) => `Radar bandi: ${headline(grants.length)}`
 
-// Scadenza, importo e agevolazione: le stesse righe in HTML e in testo
+const longDay = (iso: string) =>
+  new Date(iso).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long', year: 'numeric' })
+
+// Le due date in evidenza, in HTML e in testo
+const dates = (g: EvaluatedGrant): [string, string][] => [
+  ['Trovato il', longDay(g.createdAt)],
+  ['Scade il', g.deadline ? longDay(g.deadline) : 'a sportello / non indicata'],
+]
+
+// Importo e agevolazione (per una gara: base d'asta e procedura)
 function facts(g: EvaluatedGrant): [string, string][] {
-  const deadline = g.deadline
-    ? new Date(g.deadline).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long', year: 'numeric' })
-    : 'a sportello / non indicata'
-  const rows: [string, string][] = [['Scadenza', deadline]]
-  if (g.maxAmount) rows.push(['Fino a', formatWholeEuro(g.maxAmount)])
-  if (g.funding) rows.push(['Agevolazione', g.funding])
+  const tender = g.kind === 'tender'
+  const rows: [string, string][] = []
+  if (g.maxAmount) rows.push([tender ? 'Importo a base di gara' : 'Fino a', formatWholeEuro(g.maxAmount)])
+  if (g.funding) rows.push([tender ? 'Procedura' : 'Agevolazione', g.funding])
   return rows
 }
+
+const tag = (g: EvaluatedGrant) =>
+  [ELIGIBILITY_LABELS[g.eligibility], grantKindLabel(g.kind), g.ai && 'IA', sourceLabel(g.source)].filter(Boolean).join(' · ')
 
 const toVerify = (g: EvaluatedGrant) => g.requirements.filter((_, i) => g.evaluations[i]!.outcome === 'to_verify')
 
@@ -29,15 +40,18 @@ function grantHtml(g: EvaluatedGrant) {
   const row = ([label, value]: [string, string]) =>
     `<p style="margin:0 0 4px;font-family:${FONT_BODY};font-size:14px;color:${C.ink};"><strong>${label}:</strong> ${escapeHtml(value)}</p>`
   const toCheck = toVerify(g).map(r => `<li style="margin:0 0 4px;">${escapeHtml(r.label)}</li>`).join('')
+  const date = ([label, value]: [string, string]) =>
+    `<td style="padding:10px 14px;background:${C.paper};border-radius:8px;" width="50%"><p style="margin:0 0 2px;font-family:${FONT_BODY};font-size:11px;font-weight:700;color:${C.inkSoft};text-transform:uppercase;letter-spacing:1px;">${label}</p><p style="margin:0;font-family:${FONT_BODY};font-size:16px;font-weight:700;color:${C.ink};">${escapeHtml(value)}</p></td>`
   return `
 <tr>
   <td style="background:${C.white};padding:0 40px 20px;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border:1px solid #e8e1cc;border-radius:12px;">
       <tr>
         <td style="padding:20px 22px;">
-          <p style="margin:0 0 8px;font-family:${FONT_BODY};font-size:11px;font-weight:700;color:${pill};text-transform:uppercase;letter-spacing:2px;">${ELIGIBILITY_LABELS[g.eligibility]} · ${escapeHtml(sourceLabel(g.source))}</p>
+          <p style="margin:0 0 8px;font-family:${FONT_BODY};font-size:11px;font-weight:700;color:${pill};text-transform:uppercase;letter-spacing:2px;">${escapeHtml(tag(g))}</p>
           <p style="margin:0 0 6px;font-family:${FONT_DISPLAY};font-size:19px;font-weight:800;line-height:1.25;color:${C.ink};">${escapeHtml(g.title)}</p>
-          <p style="margin:0 0 10px;font-family:${FONT_BODY};font-size:13px;color:${C.inkSoft};">${escapeHtml(g.issuer)}</p>
+          <p style="margin:0 0 12px;font-family:${FONT_BODY};font-size:13px;color:${C.inkSoft};">${escapeHtml(g.issuer)}</p>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0 0;margin:0 0 12px;"><tr>${dates(g).map(date).join('<td width="8"></td>')}</tr></table>
           <p style="margin:0 0 12px;font-family:${FONT_BODY};font-size:15px;line-height:1.5;color:${C.ink};">${escapeHtml(g.summary)}</p>
           ${g.verdictReason ? `<p style="margin:0 0 12px;font-family:${FONT_BODY};font-size:14px;line-height:1.5;color:${C.ink};"><strong>Per voi:</strong> ${escapeHtml(g.verdictReason)}</p>` : ''}
           ${facts(g).map(row).join('')}
@@ -86,8 +100,10 @@ export function digestHtml(grants: EvaluatedGrant[]) {
 
 export function digestText(grants: EvaluatedGrant[]) {
   const blocks = grants.map(g => [
-    `${ELIGIBILITY_LABELS[g.eligibility].toUpperCase()} - ${g.title}`,
+    `${tag(g).toUpperCase()}`,
+    g.title,
     g.issuer,
+    ...dates(g).map(([label, value]) => `${label.toUpperCase()}: ${value}`),
     g.summary,
     g.verdictReason && `Per voi: ${g.verdictReason}`,
     ...facts(g).map(([label, value]) => `${label}: ${value}`),

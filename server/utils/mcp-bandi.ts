@@ -5,6 +5,7 @@ import { romeDate } from '#shared/dates'
 import {
   ELIGIBILITY_LABELS,
   evaluateRadarGrant,
+  grantKindLabel,
   isInScope,
   sourceLabel,
   type Eligibility,
@@ -39,6 +40,9 @@ export type GrantHit = {
   titolo: string
   ente: string
   fonte: string
+  // Finanziamento o gara
+  tipo: string
+  ia: boolean | null
   esito: string
   motivo: string
   sintesi: string
@@ -46,6 +50,8 @@ export type GrantHit = {
   agevolazione: string
   apertura: string | null
   scadenza: string | null
+  // Quando è entrato nel radar
+  trovatoIl: string | null
   interessante: boolean
   cartella: boolean
   chiuso: boolean
@@ -84,6 +90,8 @@ export async function searchGrants(
     titolo: g.title,
     ente: g.issuer,
     fonte: sourceLabel(g.source),
+    tipo: grantKindLabel(g.kind),
+    ia: g.ai,
     esito: ELIGIBILITY_LABELS[eligibility],
     motivo: g.verdictReason,
     sintesi: g.summary,
@@ -91,6 +99,7 @@ export async function searchGrants(
     agevolazione: g.funding,
     apertura: day(g.opensAt),
     scadenza: day(g.deadline),
+    trovatoIl: day(g.createdAt),
     interessante: g.liked,
     cartella: g.hasFolder,
     chiuso: g.closed,

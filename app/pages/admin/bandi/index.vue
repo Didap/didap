@@ -33,20 +33,18 @@ import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { GRANT_DRAFT, useGrantDraft } from '~/composables/useGrantDraft'
 import { holdsDraft, refreshesDraft, shownGrant } from '~/utils/grantDraftEditor'
 import { adminErrorText } from '~/utils/adminErrors'
-import { formatDateTime } from '~/utils/format'
+import { formatDateTime, formatDay } from '~/utils/format'
 import { romeDate } from '#shared/dates'
 import { formatWholeEuro } from '#shared/money'
 import {
   ELIGIBILITY_OUTCOME,
   ELIGIBILITY_PLURALS,
   evaluateRadarGrant,
-  isDigestCandidate,
   isInScope,
   LEGAL_FORMS,
   PROVINCES,
   radarSettingsSchema,
   SOURCE_GROUPS,
-  WEEKDAYS,
   type Eligibility,
   type EvaluatedGrant,
   type FolderStart,
@@ -56,10 +54,11 @@ import {
   type RadarStatus,
 } from '#shared/radar'
 
-// Radar bandi in una schermata: a sinistra la ricerca (fonti, import) e,
+// Radar bandi in una schermata: a sinistra la ricerca (fonti, scan) e,
 // più sotto, i filtri aggiuntivi (parametri dell'azienda) e la mail; al
-// centro i bandi divisi per esito o il registro degli import, a destra la
-// scheda del bando scelto. L'elenco si rivaluta mentre si cambiano i filtri.
+// centro i bandi (nuovi dell'ultimo scan, per esito, interessanti) o il
+// registro degli scan, a destra la scheda del bando scelto. L'elenco si
+// rivaluta mentre si cambiano i filtri. Gli scan partono solo da qui.
 definePageMeta({ layout: 'admin' })
 defineI18nRoute(false)
 useSeoMeta({ title: 'Bandi - Admin Didap' })
@@ -105,6 +104,7 @@ onAdminReady(async () => {
   try {
     const [settings] = await Promise.all([$fetch<RadarSettings>('/api/admin/radar/settings'), loadGrants()])
     fill(settings)
+    if (counts.value.new) tab.value = 'new'
   }
   catch (err) {
     notify('error', adminErrorText(err))
@@ -155,11 +155,11 @@ async function act(action: () => Promise<string>) {
   }
 }
 
-// Al centro: i bandi o il registro degli import
+// Al centro: i bandi o il registro degli scan
 const view = ref<'grants' | 'runs'>('grants')
 const runLog = ref<InstanceType<typeof RadarRunLog> | null>(null)
 
-// "Importa": i moduli e le province spuntati, anche se non ancora salvati
+// "Avvia scan": i moduli e le province spuntati, anche se non ancora salvati
 const importScope = computed(() => {
   const s = form.value?.search
   if (!s) return null
@@ -172,8 +172,20 @@ const runNow = () => act(async () => {
   view.value = 'runs'
   await nextTick()
   await runLog.value?.load()
-  return 'Import partito: lo segui nel registro'
+  return 'Scan partito: lo segui nel registro'
 })
+
+// Un bando del registro: si apre nell'elenco
+function openFromLog(id: string) {
+  const g = grants.value.find(x => x.id === id)
+  if (!g) {
+    notify('error', 'Bando non più nell\'elenco: chiuso, scaduto o fuori dalla ricerca')
+    return
+  }
+  view.value = 'grants'
+  tab.value = isNew(g) ? 'new' : g.closed ? 'liked' : g.eligibility
+  pick(id)
+}
 
 // Svuota con conferma in due passi, senza finestre del browser
 const confirmWipe = ref(false)
@@ -198,30 +210,45 @@ const grants = computed<EvaluatedGrant[]>(() => {
   return list.filter(g => g.hasFolder || isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
 })
 
-// Le schede per esito, più quella dei bandi segnati col cuore. I bandi
-// chiusi stanno solo negli interessanti, anche senza cuore: lì si apre la
-// loro cartella. Arrivano solo quelli con la cartella (withFolders), quindi
-// basta closed.
+// Le schede: i bandi nuovi dell'ultimo scan, poi per esito, poi quelli
+// segnati col cuore. I bandi chiusi stanno solo negli interessanti, anche
+// senza cuore: lì si apre la loro cartella. Arrivano solo quelli con la
+// cartella (withFolders), quindi basta closed.
 const isInteresting = (g: EvaluatedGrant) => g.liked || g.closed
-type Tab = Eligibility | 'liked'
-const TABS: Record<Tab, string> = { ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
+const isNew = (g: Pick<RadarGrant, 'closed' | 'runId'>) =>
+  !g.closed && !!g.runId && g.runId === data.value?.status.lastRunId
+type Tab = 'new' | Eligibility | 'liked'
+const TABS: Record<Tab, string> = { new: 'Nuovi', ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
 const tab = ref<Tab>('eligible')
 const query = ref('')
 
 const counts = computed(() => {
-  const out: Record<Tab, number> = { eligible: 0, to_verify: 0, excluded: 0, liked: 0 }
+  const out: Record<Tab, number> = { new: 0, eligible: 0, to_verify: 0, excluded: 0, liked: 0 }
   for (const g of grants.value) {
     if (!g.closed) out[g.eligibility]++
+    if (isNew(g)) out.new++
     if (isInteresting(g)) out.liked++
   }
   return out
 })
 
+const inTab = (g: EvaluatedGrant) => {
+  if (tab.value === 'liked') return isInteresting(g)
+  if (tab.value === 'new') return isNew(g)
+  return !g.closed && g.eligibility === tab.value
+}
+
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
-  return grants.value.filter(g =>
-    (tab.value === 'liked' ? isInteresting(g) : !g.closed && g.eligibility === tab.value)
-    && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
+  return grants.value.filter(g => inTab(g) && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
+})
+
+// Scan finito: si dice quanti bandi nuovi ha trovato e si apre la loro scheda
+watch(() => data.value?.status.running, (running, was) => {
+  if (!was || running) return
+  const n = counts.value.new
+  notify('ok', n === 1 ? 'Scan finito: 1 bando nuovo' : `Scan finito: ${n} bandi nuovi`)
+  if (n) tab.value = 'new'
 })
 
 // Il cuore cambia subito; se il salvataggio non va, torna com'era
@@ -367,6 +394,7 @@ function timeLeft(g: EvaluatedGrant) {
 }
 
 const EMPTY: Record<Tab, string> = {
+  new: 'Nessun bando nuovo nell\'ultimo scan.',
   eligible: 'Nessun bando candidabile.',
   to_verify: 'Nessun bando da verificare.',
   excluded: 'Nessun bando escluso.',
@@ -382,14 +410,6 @@ const SHORT_FORMS: Record<LegalForm, string> = {
   cooperativa: 'Cooperativa',
   da_costituire: 'Da costituire',
 }
-
-// Giorni sempre in ordine, lunedì per primo
-const weekdays = computed({
-  get: () => form.value?.notify.weekdays.map(String) ?? [],
-  set: (v: string[]) => {
-    if (form.value) form.value.notify.weekdays = v.map(Number).sort((a, b) => a - b)
-  },
-})
 
 const sourceErrors = computed(() => data.value?.status.lastIngestError?.split('\n').filter(Boolean) ?? [])
 
@@ -512,6 +532,18 @@ function toggleGroup(group: string, on: boolean) {
                       <SwitchThumb />
                     </SwitchRoot>
                   </label>
+                  <label class="param-row">
+                    <span>
+                      Anche gare
+                      <span class="block text-xs whitespace-normal opacity-60">Enti che comprano software, app, IA</span>
+                    </span>
+                    <SwitchRoot
+                      v-model="form.search.tenders"
+                      class="param-switch"
+                    >
+                      <SwitchThumb />
+                    </SwitchRoot>
+                  </label>
                 </div>
                 <button
                   type="button"
@@ -525,7 +557,7 @@ function toggleGroup(group: string, on: boolean) {
                   :title="data && !data.status.llmConfigured ? 'Manca ANTHROPIC_API_KEY' : undefined"
                   @click="runNow"
                 >
-                  {{ data?.status.running ? 'Import in corso…' : 'Importa' }}
+                  {{ data?.status.running ? 'Scan in corso…' : 'Avvia scan' }}
                 </button>
                 <p
                   v-if="!confirmWipe"
@@ -595,15 +627,9 @@ function toggleGroup(group: string, on: boolean) {
                 <legend class="contents">
                   <span class="mb-2 block text-sm font-bold">Azienda</span>
                 </legend>
-                <label class="mb-2 flex flex-col gap-1.5 text-sm">
-                  Cosa fa
-                  <textarea
-                    v-model="form.profile.description"
-                    rows="3"
-                    maxlength="500"
-                    class="resize-none panel-input"
-                  />
-                </label>
+                <p class="mb-2 text-xs opacity-60">
+                  Cosa fa l'azienda sta in server/radar/didap.md: il radar lo usa per leggere e giudicare i bandi.
+                </p>
                 <label class="param-row">
                   Fatturato
                   <OptionalNumber
@@ -748,7 +774,7 @@ function toggleGroup(group: string, on: boolean) {
                   text-sm font-bold
                   hover:bg-ink/3
                 ">
-                  Mail di riepilogo
+                  Mail di fine scan
                   <AdminIcon
                     name="down"
                     class="size-3.5 opacity-50 transition-transform"
@@ -777,41 +803,6 @@ function toggleGroup(group: string, on: boolean) {
                     placeholder="nome@didap.it"
                     class="resize-none panel-input"
                   />
-                </label>
-                <div
-                  class="mt-3 flex flex-col gap-1.5 text-sm"
-                  role="group"
-                  aria-label="Giorni"
-                >
-                  Giorni
-                  <ToggleGroupRoot
-                    v-model="weekdays"
-                    type="multiple"
-                    class="grid grid-cols-7 gap-1"
-                  >
-                    <ToggleGroupItem
-                      v-for="d in WEEKDAYS"
-                      :key="d.value"
-                      :value="String(d.value)"
-                      :aria-label="d.label"
-                      class="
-                        rounded-md bg-ink/5 py-1.5 text-xs transition
-                        hover:bg-ink/10
-                        data-[state=on]:bg-ink data-[state=on]:text-paper-light
-                      "
-                    >
-                      {{ d.label.charAt(0) }}
-                    </ToggleGroupItem>
-                  </ToggleGroupRoot>
-                </div>
-                <label class="mt-2 param-row">
-                  Ora
-                  <input
-                    v-model="form.notify.time"
-                    type="time"
-                    required
-                    class="w-32 panel-input text-right tabular-nums"
-                  >
                 </label>
               </fieldset>
                 </CollapsibleContent>
@@ -873,7 +864,7 @@ function toggleGroup(group: string, on: boolean) {
                 Elenco
               </ToggleGroupItem>
               <ToggleGroupItem value="runs">
-                Import
+                Scan
               </ToggleGroupItem>
             </ToggleGroupRoot>
             <p
@@ -881,10 +872,10 @@ function toggleGroup(group: string, on: boolean) {
               class="text-sm opacity-60"
             >
               <template v-if="data.status.running">
-                Import in corso…
+                Scan in corso…
               </template>
               <template v-else>
-                Aggiornato {{ data.status.lastIngestAt ? formatDateTime(data.status.lastIngestAt) : 'mai' }}
+                Ultimo scan {{ data.status.lastIngestAt ? formatDateTime(data.status.lastIngestAt) : 'mai' }}
               </template>
               <template v-if="data.status.pending">
                 · {{ data.status.pending }} in lettura
@@ -935,7 +926,7 @@ function toggleGroup(group: string, on: boolean) {
                   "
                 >
                   <p class="opacity-60">
-                    Pagine che non si sono scaricate all'ultimo aggiornamento. Si riprovano da sole al prossimo.
+                    Fonti con un problema all'ultimo scan (i siti che non rispondono non sono qui: si riprovano da soli).
                   </p>
                   <ul class="flex flex-col gap-1.5">
                     <li
@@ -995,6 +986,7 @@ function toggleGroup(group: string, on: boolean) {
             min-h-0 flex-1 scrollbar-none
             lg:overflow-y-auto
           "
+          @open="openFromLog"
         />
         <div
           v-else
@@ -1049,18 +1041,32 @@ function toggleGroup(group: string, on: boolean) {
                   class="mt-0.5"
                 />
                 <span class="flex min-w-0 flex-col gap-1">
-                  <span class="line-clamp-2 font-medium">
-                    {{ g.title }}
+                  <span
+                    v-if="isNew(g) || g.kind === 'tender' || g.ai"
+                    class="flex flex-wrap gap-1.5 text-xs"
+                  >
                     <span
-                      v-if="isDigestCandidate(g)"
+                      v-if="isNew(g)"
                       class="
-                        ml-1 inline-block size-2 rounded-full bg-green
-                        align-middle
+                        rounded-full bg-green px-2 py-0.5 font-medium
+                        text-paper-light
                       "
-                      title="Nuovo, va nella prossima mail"
-                    />
+                    >Nuovo</span>
+                    <span
+                      v-if="g.kind === 'tender'"
+                      class="rounded-full bg-ink/8 px-2 py-0.5"
+                    >Gara</span>
+                    <span
+                      v-if="g.ai"
+                      class="rounded-full bg-gold/25 px-2 py-0.5"
+                    >IA</span>
                   </span>
+                  <span class="line-clamp-2 font-medium">{{ g.title }}</span>
                   <span class="truncate text-sm opacity-60">{{ g.issuer }}</span>
+                  <span
+                    v-if="g.summary"
+                    class="line-clamp-2 text-sm text-ink/75"
+                  >{{ g.summary }}</span>
                 </span>
                 <span class="
                   flex flex-col items-end gap-1 text-right text-sm
@@ -1070,10 +1076,17 @@ function toggleGroup(group: string, on: boolean) {
                     v-if="g.closed"
                     :deadline="g.deadline"
                   />
-                  <span
-                    v-else
-                    :class="timeLeft(g).urgent ? 'font-medium text-red' : ''"
-                  >{{ timeLeft(g).text }}</span>
+                  <template v-else>
+                    <span
+                      class="font-medium"
+                      :class="timeLeft(g).urgent ? 'text-red' : ''"
+                    >{{ timeLeft(g).text }}</span>
+                    <span
+                      v-if="g.deadline"
+                      class="text-xs tabular-nums opacity-60"
+                    >Scade {{ formatDay(g.deadline) }}</span>
+                  </template>
+                  <span class="text-xs tabular-nums opacity-60">Trovato {{ formatDay(g.createdAt) }}</span>
                   <span
                     v-if="g.maxAmount"
                     class="tabular-nums opacity-60"

@@ -485,8 +485,6 @@ export type RunStats = {
   // Testi letti dal modello, di cui bandi per imprese
   read: number
   grants: number
-  // Bandi entrati nel radar con questo scan
-  added: number
   // Bandi giudicati col profilo
   judged: number
   errors: string[]
@@ -501,7 +499,6 @@ export const emptyStats = (): RunStats => ({
   queued: 0,
   read: 0,
   grants: 0,
-  added: 0,
   judged: 0,
   errors: [],
   unreachable: [],

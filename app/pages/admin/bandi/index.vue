@@ -159,23 +159,29 @@ async function act(action: () => Promise<string>) {
 const view = ref<'grants' | 'runs'>('grants')
 const runLog = ref<InstanceType<typeof RadarRunLog> | null>(null)
 
-// "Avvia scan": i moduli e le province spuntati, anche se non ancora salvati
+// "Avvia scan": i moduli e le province spuntati, anche se non ancora salvati.
+// Senza gare, le gare europee non si scaricano nemmeno
 const importScope = computed(() => {
   const s = form.value?.search
   if (!s) return null
-  const groups = s.groups.filter(g => g !== 'comuni' || s.provinces.length)
+  const groups = s.groups.filter(g => (g !== 'comuni' || s.provinces.length) && (g !== 'gare' || s.tenders))
   return { groups, provinces: groups.includes('comuni') ? s.provinces : [] }
 })
 
+// Lo scan partito da qui: alla fine si dice cosa ha trovato
+const scanStarted = ref(false)
+
 const runNow = () => act(async () => {
   await $fetch('/api/admin/radar/run', { method: 'POST', body: importScope.value })
+  scanStarted.value = true
   view.value = 'runs'
   await nextTick()
   await runLog.value?.load()
   return 'Scan partito: lo segui nel registro'
 })
 
-// Un bando del registro: si apre nell'elenco
+// Un bando del registro: si apre nell'elenco, senza la ricerca testuale che
+// potrebbe nasconderlo
 function openFromLog(id: string) {
   const g = grants.value.find(x => x.id === id)
   if (!g) {
@@ -183,8 +189,9 @@ function openFromLog(id: string) {
     return
   }
   view.value = 'grants'
+  query.value = ''
   tab.value = isNew(g) ? 'new' : g.closed ? 'liked' : g.eligibility
-  pick(id)
+  guardDraft(() => (selectedId.value = id))
 }
 
 // Svuota con conferma in due passi, senza finestre del browser
@@ -215,8 +222,9 @@ const grants = computed<EvaluatedGrant[]>(() => {
 // senza cuore: lì si apre la loro cartella. Arrivano solo quelli con la
 // cartella (withFolders), quindi basta closed.
 const isInteresting = (g: EvaluatedGrant) => g.liked || g.closed
-const isNew = (g: Pick<RadarGrant, 'closed' | 'runId'>) =>
-  !g.closed && !!g.runId && g.runId === data.value?.status.lastRunId
+// Nuovo: trovato dall'ultimo scan e non escluso, come li conta la mail
+const isNew = (g: EvaluatedGrant) =>
+  !g.closed && g.eligibility !== 'excluded' && !!g.runId && g.runId === data.value?.status.lastRunId
 type Tab = 'new' | Eligibility | 'liked'
 const TABS: Record<Tab, string> = { new: 'Nuovi', ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
 const tab = ref<Tab>('eligible')
@@ -243,9 +251,11 @@ const visible = computed(() => {
   return grants.value.filter(g => inTab(g) && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
 })
 
-// Scan finito: si dice quanti bandi nuovi ha trovato e si apre la loro scheda
+// Scan partito da qui e finito: si dice quanti bandi nuovi ha trovato e si
+// apre la loro scheda (il radar è occupato anche quando rigiudica)
 watch(() => data.value?.status.running, (running, was) => {
-  if (!was || running) return
+  if (!was || running || !scanStarted.value) return
+  scanStarted.value = false
   const n = counts.value.new
   notify('ok', n === 1 ? 'Scan finito: 1 bando nuovo' : `Scan finito: ${n} bandi nuovi`)
   if (n) tab.value = 'new'

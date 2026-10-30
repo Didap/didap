@@ -349,6 +349,7 @@ const TED_FIELDS = [
   'description-lot',
 ] as const
 const TED_LIMIT = 100
+const TED_MAX_PAGES = 10
 
 type TedValue = string | number | string[] | Record<string, string | string[]>
 export type TedNotice = Partial<Record<(typeof TED_FIELDS)[number], TedValue>>
@@ -384,21 +385,26 @@ function tedPuglia(): RadarSource {
     complete: true,
     async fetchListing() {
       const today = romeDate(new Date()).replaceAll('-', '')
-      const body = await fetchApi<{ notices?: TedNotice[] }>(TED_SEARCH, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `classification-cpv IN (${TED_CPV.join(' ')}) AND place-of-performance IN (ITF4) AND deadline-receipt-tender-date-lot >= ${today}`,
-          fields: TED_FIELDS,
-          limit: TED_LIMIT,
-          scope: 'ACTIVE',
-        }),
-      }, 60_000)
-      if (!body.notices) throw new Error('TED non ha restituito gare')
-      return body.notices.flatMap((n) => {
-        const id = tedText(n['publication-number'])[0]
-        return id ? [{ externalId: id, url: `https://ted.europa.eu/it/notice/-/detail/${id}`, content: tedNoticeText(n) }] : []
-      })
+      const query = `classification-cpv IN (${TED_CPV.join(' ')}) AND place-of-performance IN (ITF4) AND deadline-receipt-tender-date-lot >= ${today}`
+      const notices: TedNotice[] = []
+      // A pagine fino in fondo: l'elenco è completo, e chi manca si chiude
+      for (let page = 1; page <= TED_MAX_PAGES; page++) {
+        const body = await fetchApi<{ notices?: TedNotice[], totalNoticeCount?: number }>(TED_SEARCH, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, fields: TED_FIELDS, limit: TED_LIMIT, page, scope: 'ACTIVE' }),
+        }, 60_000)
+        if (!body.notices) throw new Error('TED non ha restituito gare')
+        notices.push(...body.notices)
+        if (body.notices.length < TED_LIMIT || notices.length >= (body.totalNoticeCount ?? 0)) {
+          return notices.flatMap((n) => {
+            const id = tedText(n['publication-number'])[0]
+            return id ? [{ externalId: id, url: `https://ted.europa.eu/it/notice/-/detail/${id}`, content: tedNoticeText(n) }] : []
+          })
+        }
+      }
+      // Un elenco tagliato chiuderebbe gare aperte: meglio dirlo
+      throw new Error(`TED: più di ${TED_LIMIT * TED_MAX_PAGES} gare, l'elenco non è completo`)
     },
   }
 }

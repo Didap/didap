@@ -326,15 +326,46 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
         throw new SourceUnreachable('www.comune.bari.it non risponde')
       },
     }
-    for (let i = 0; i < 3; i++) {
-      expect(await ingestSources(sql, [down], NOW)).toMatchObject({ errors: [], unreachable: ['Comune di Bari'], paused: [] })
+    const hours = (h: number) => new Date(NOW.getTime() + h * 3_600_000)
+    // Due scan nella stessa ora contano una volta
+    await ingestSources(sql, [down], hours(0))
+    await ingestSources(sql, [down], hours(1))
+    const [first] = await sql`select unreachable_streak from radar_sources`
+    expect(first!.unreachable_streak).toBe(1)
+    for (const h of [13, 26]) {
+      expect(await ingestSources(sql, [down], hours(h))).toMatchObject({ errors: [], unreachable: ['Comune di Bari'], paused: [] })
     }
-    expect(await ingestSources(sql, [down], NOW)).toMatchObject({ errors: [], unreachable: [], paused: ['Comune di Bari'] })
-    expect(calls).toBe(3)
+    expect(await ingestSources(sql, [down], hours(27))).toMatchObject({ errors: [], unreachable: [], paused: ['Comune di Bari'] })
+    expect(calls).toBe(4)
     // Passata la pausa si riprova; se risponde, riparte da zero
-    const later = new Date(NOW.getTime() + 15 * 86_400_000)
-    await ingestSources(sql, [{ ...down, fetchListing: async () => [] }], later)
+    await ingestSources(sql, [{ ...down, fetchListing: async () => [] }], hours(26 + 15 * 24))
     expect(await sql`select * from radar_sources`).toHaveLength(0)
+  })
+
+  it('un testo letto col prompt vecchio si rilegge, e intanto il bando resta in elenco col cuore', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A' })], NOW)
+    await readPending(sql, fakeReader)
+    const [grant] = await listGrants(sql, NOW)
+    await setGrantLiked(sql, grant!.id, true)
+    await sql`update radar_documents set reader_version = 1`
+    expect(await listGrants(sql, NOW)).toHaveLength(1)
+    // Rilegge e ora dice che non è per le imprese: col cuore il bando resta
+    const notForUs: GrantReader = async () => ({ admitsCompanies: false })
+    expect((await readPending(sql, notForUs)).read).toBe(1)
+    expect((await listGrants(sql, NOW)).map(g => g.liked)).toEqual([true])
+    expect((await readPending(sql, fakeReader)).tried).toEqual([])
+  })
+
+  it('a fine scan la mail recupera i bandi di uno scan la cui mail non è partita', async () => {
+    await writeRadarSettings(sql, settings(null))
+    const broken = async () => {
+      throw new Error('Resend giù')
+    }
+    await runScan(sql, deps([fakeSource({ a: 'bando A' })], broken), scope, NOW)
+    expect((await listRuns(sql))[0]!.stats.errors).toEqual(['Mail non inviata: Resend giù'])
+    await runScan(sql, deps([fakeSource({ a: 'bando A', b: 'bando B' })], mailer), scope, new Date('2026-10-21T08:00:00Z'))
+    expect(sent).toHaveLength(1)
+    expect(sent[0]!.subject).toContain('2 bandi nuovi')
   })
 
   it('i comuni delle province non scelte restano fuori dalla mail', async () => {

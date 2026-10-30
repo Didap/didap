@@ -77,9 +77,24 @@ const CERT_ERRORS: Record<string, string> = {
 
 const certificateProblem = (err: unknown) => CERT_ERRORS[errorCode(err)]
 
+// Il sito non ha accettato la connessione: tempo di connessione scaduto,
+// rifiutata, chiusa dall'altra parte, DNS. Gli altri errori di rete (TLS,
+// protocollo) non passano riprovando e si dicono col loro codice
+const CONNECT_ERRORS = new Set([
+  'UND_ERR_CONNECT_TIMEOUT',
+  'UND_ERR_SOCKET',
+  'ETIMEDOUT',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+])
+
 // Perché una richiesta non è arrivata: tempo scaduto (l'host si segna giù
-// subito), certificato (che non si aggiusta riprovando) o connessione, col
-// codice (UND_ERR_CONNECT_TIMEOUT, ENOTFOUND...) che dice più di "fetch failed"
+// subito), certificato, connessione o altro, col codice
+// (UND_ERR_CONNECT_TIMEOUT, ENOTFOUND...) che dice più di "fetch failed"
 function requestError(err: unknown, url: string, timeoutMs: number, signal: AbortSignal): Error {
   if (signal.aborted) {
     markDown(url)
@@ -87,7 +102,9 @@ function requestError(err: unknown, url: string, timeoutMs: number, signal: Abor
   }
   const cert = certificateProblem(err)
   if (cert) return new Error(`${url}: ${cert}`)
-  return new TransientError(`Sito non raggiungibile: ${url} (${errorCode(err) || (err as Error).message})`, true)
+  const code = errorCode(err)
+  if (CONNECT_ERRORS.has(code)) return new TransientError(`Sito non raggiungibile: ${url} (${code})`, true)
+  return new Error(`Rete non raggiungibile per ${url}: ${code || (err as Error).message}`)
 }
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -156,7 +173,10 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
         chunk = await reader.read()
       }
       catch {
-        // Tempo scaduto o connessione caduta a metà del download (file grandi, sito lento)
+        // Tempo scaduto a metà del download (file grande, sito lento): non si
+        // riprova, ma il sito ha risposto e non si segna giù. Connessione
+        // caduta: si riprova una volta
+        if (signal.aborted) throw new SourceUnreachable(`Download troppo lento per ${url}`)
         throw new TransientError(`Download interrotto per ${url}`)
       }
       const { done, value } = chunk
@@ -260,7 +280,9 @@ export function fetchApi<T>(url: string, init: RequestInit, timeoutMs: number): 
       return await res.json() as T
     }
     catch {
-      // Tempo scaduto a metà della risposta, o corpo non JSON
+      // Tempo scaduto a metà della risposta (non si riprova), o corpo
+      // interrotto o non JSON
+      if (signal.aborted) throw new SourceUnreachable(`Risposta troppo lenta da ${host}`)
       throw new TransientError(`Risposta interrotta da ${host}`)
     }
   })
@@ -295,11 +317,15 @@ const MAX_ATTACHMENTS = 5
 const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024
 
 // Il testo di una pagina più quello dei PDF che collega (i primi 5, fino a
-// 15 MB). Un file troppo grande o un link rotto si salta; gli errori
-// passeggeri fanno riprovare tutto il bando.
+// 15 MB). Un file troppo grande, un link rotto o un file che non arriva
+// (5xx, troppo lento) si salta: il bando si legge col resto.
 export async function withAttachments(content: string, urls: string[], origin: string): Promise<string> {
   const files = await Promise.all(urls.slice(0, MAX_ATTACHMENTS).map(async (href) => {
     const data = await fetchFromSource(href, { origin, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
+      .catch((err) => {
+        if (err instanceof SourceUnreachable) return null
+        throw err
+      })
     return data && { name: attachmentName(href), data }
   }))
   const pdf = await attachmentsText(files.filter(f => f !== null))

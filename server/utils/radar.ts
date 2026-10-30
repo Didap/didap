@@ -96,14 +96,18 @@ const closedGrant = (sql: Sql, now: Date) => sql`
   (d.closed_at is not null or (g.deadline is not null and g.deadline < ${now}))
 `
 
-// Bandi ancora da leggere: la stessa condizione per la coda e per il contatore
-const queued = (sql: Sql) => sql`
-  closed_at is null and (status = 'pending' or (status = 'failed' and attempts < ${MAX_ATTEMPTS}))
-`
-
 // Da aumentare quando il prompt di lettura cambia: i testi letti col prompt
 // vecchio si rileggono al prossimo scan (2: gare e flag IA)
 const READER_VERSION = 2
+
+// Bandi ancora da leggere: la stessa condizione per la coda e per il
+// contatore. Un testo letto col prompt vecchio torna in coda ma resta
+// "read": il suo bando non sparisce finché non si rilegge
+const queued = (sql: Sql) => sql`
+  closed_at is null and (
+    status = 'pending' or (status = 'failed' and attempts < ${MAX_ATTEMPTS}) or reader_version < ${READER_VERSION}
+  )
+`
 
 // La riga id = 1 esiste sempre: la crea lo schema
 async function readState(sql: Sql) {
@@ -184,10 +188,13 @@ const SOURCE_CONCURRENCY = 6
 // perché non rispondono da troppi scan. Non sono errori.
 export type IngestResult = { errors: string[], unreachable: string[], paused: string[], listed: number, queued: number }
 
-// Tre scan di fila senza risposta: la fonte resta ferma due settimane, poi
-// si riprova da sola. Una fonte che risponde esce dalla tabella.
+// Tre scan di fila senza risposta, ad almeno 12 ore l'uno dall'altro (tre
+// scan ravvicinati su un sito lento per un'ora non contano tre volte): la
+// fonte resta ferma due settimane, poi si riprova da sola. Una fonte che
+// risponde esce dalla tabella; "Svuota" la azzera.
 const PAUSE_AFTER = 3
 const PAUSE_DAYS = 14
+const FAILURE_SPACING_HOURS = 12
 
 async function recordReach(sql: Sql, slug: string, reached: boolean, now: Date) {
   if (reached) {
@@ -195,12 +202,14 @@ async function recordReach(sql: Sql, slug: string, reached: boolean, now: Date) 
     return
   }
   const pauseUntil = new Date(now.getTime() + PAUSE_DAYS * 86_400_000)
+  const spaced = new Date(now.getTime() - FAILURE_SPACING_HOURS * 3_600_000)
   await sql`
     insert into radar_sources (slug, unreachable_streak, checked_at) values (${slug}, 1, ${now})
     on conflict (slug) do update set
       unreachable_streak = radar_sources.unreachable_streak + 1,
       checked_at = excluded.checked_at,
       paused_until = case when radar_sources.unreachable_streak + 1 >= ${PAUSE_AFTER} then ${pauseUntil}::timestamptz end
+    where radar_sources.checked_at <= ${spaced}
   `
 }
 
@@ -390,12 +399,12 @@ export async function readPending(
             verdict = null, verdict_reason = '', judged_profile = null, updated_at = now()
         `
       }
-      // Un bando con cartella non si cancella: resta coi dati di prima.
-      // La condizione sta nella delete: una cartella creata nel frattempo
-      // blocca la riga e Postgres la ricontrolla dopo.
+      // Un bando con cartella o col cuore non si cancella: resta coi dati di
+      // prima. La condizione sta nella delete: una cartella creata nel
+      // frattempo blocca la riga e Postgres la ricontrolla dopo.
       let kept = false
       if (!reading.admitsCompanies) {
-        await tx`delete from radar_grants where document_id = ${doc.id} and folder_at is null`
+        await tx`delete from radar_grants where document_id = ${doc.id} and folder_at is null and liked_at is null`
         kept = (await tx`select 1 from radar_grants where document_id = ${doc.id}`).length > 0
       }
       const status = reading.admitsCompanies || kept ? 'read' : 'skipped'
@@ -495,29 +504,15 @@ async function saveRun(sql: Sql, id: string, stats: RunStats, usage: TokenUsage,
   `
 }
 
-// I bandi entrati con gli scan, dentro la ricerca salvata e non esclusi dal
-// giudizio: quelli che contano per chi guarda il registro
-async function runGrants(sql: Sql, runIds: string[], search: RadarSearch): Promise<Map<string, RunGrant[]>> {
-  const rows = await sql`
-    select g.id, g.run_id, g.title, d.source, g.kind, g.digital, g.ai, g.deadline, g.created_at
-    from radar_grants g join radar_documents d on d.id = g.document_id
-    where g.run_id = any(${runIds}::uuid[]) and g.verdict is distinct from 'no'
-    order by g.deadline asc nulls last, g.created_at
-  `
+// I bandi aperti entrati con gli scan, contati come nella scheda "Nuovi" e
+// nella mail: dentro la ricerca salvata e non esclusi
+async function runGrants(sql: Sql, now: Date): Promise<Map<string, RunGrant[]>> {
+  const [{ profile, search }, grants] = await Promise.all([readRadarSettings(sql), listGrants(sql, now)])
   const out = new Map<string, RunGrant[]>()
-  for (const r of rows) {
-    if (!isInScope({ source: r.source, digital: r.digital, kind: r.kind }, search)) continue
-    const list = out.get(r.run_id) ?? []
-    list.push({
-      id: r.id,
-      title: r.title,
-      source: r.source,
-      kind: r.kind,
-      ai: r.ai,
-      deadline: r.deadline?.toISOString() ?? null,
-      createdAt: r.created_at.toISOString(),
-    })
-    out.set(r.run_id, list)
+  for (const g of evaluate(grants, profile, now)) {
+    if (!g.runId || !isInScope(g, search) || g.eligibility === 'excluded') continue
+    const { id, title, source, kind, ai, deadline, createdAt } = g
+    out.set(g.runId, [...(out.get(g.runId) ?? []), { id, title, source, kind, ai, deadline, createdAt }])
   }
   return out
 }
@@ -527,8 +522,7 @@ export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
     select id, trigger, groups, provinces, status, started_at, finished_at, model, stats, usage, error
     from radar_runs order by started_at desc limit ${limit}
   `
-  const { search } = await readRadarSettings(sql)
-  const added = await runGrants(sql, rows.map(r => r.id), search)
+  const added = await runGrants(sql, new Date())
   return rows.map(r => ({
     id: r.id,
     trigger: r.trigger,
@@ -547,15 +541,14 @@ export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
 
 // ---------- elenco e valutazione ----------
 
-// Bandi aperti, dalla scadenza più vicina; `id`: solo quel bando; `runId`:
-// solo quelli trovati da quello scan. Il pannello li valuta da sé coi
-// parametri del modulo, anche non salvati.
+// Bandi aperti, dalla scadenza più vicina; `id`: solo quel bando. Il
+// pannello li valuta da sé coi parametri del modulo, anche non salvati.
 // `withFolders`: anche i bandi con cartella chiusi o scaduti (pannello,
 // esportazione); la mail e il resto del radar vedono solo quelli aperti.
 export async function listGrants(
   sql: Sql,
   now: Date,
-  { unnotified = false, id = '', runId = '', withFolders = false } = {},
+  { unnotified = false, id = '', withFolders = false } = {},
 ): Promise<RadarGrant[]> {
   const rows = await sql`
     select g.id, d.source, d.url, g.kind, g.digital, g.ai, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
@@ -569,7 +562,6 @@ export async function listGrants(
     where (${openGrant(sql, now)} ${withFolders ? sql`or g.folder_at is not null` : sql``})
       ${unnotified ? sql`and g.notified_at is null` : sql``}
       ${id ? sql`and g.id = ${id}` : sql``}
-      ${runId ? sql`and g.run_id = ${runId}` : sql``}
     order by g.deadline asc nulls last, g.created_at desc
   `
   const iso = (d: Date | null) => d?.toISOString() ?? null
@@ -642,17 +634,11 @@ export async function setGrantLiked(sql: Sql, id: string, liked: boolean) {
 const DIGEST_ORDER = { eligible: 0, to_verify: 1, excluded: 2 }
 
 // Manda il riepilogo se c'è almeno un bando mai mandato nella ricerca
-// scelta (`runId`: solo quelli trovati da quello scan); restituisce quanti
-export async function sendDigest(
-  sql: Sql,
-  mailer: Mailer,
-  now = new Date(),
-  settings?: RadarSettings,
-  runId = '',
-): Promise<number> {
+// scelta; restituisce quanti
+export async function sendDigest(sql: Sql, mailer: Mailer, now = new Date(), settings?: RadarSettings): Promise<number> {
   const { notify, profile, search } = settings ?? await readRadarSettings(sql)
   if (!notify.emails.length) throw createError({ statusCode: 422, statusMessage: 'Nessun indirizzo a cui mandare la mail' })
-  const candidates = evaluate(await listGrants(sql, now, { unnotified: true, runId }), profile, now)
+  const candidates = evaluate(await listGrants(sql, now, { unnotified: true }), profile, now)
     .filter(g => isInScope(g, search) && isDigestCandidate(g))
     .sort((a, b) => DIGEST_ORDER[a.eligibility] - DIGEST_ORDER[b.eligibility])
   if (!candidates.length) return 0
@@ -735,11 +721,6 @@ export async function runScan(sql: Sql, deps: RadarDeps, scope: Scope, now = new
   const id = await startRun(sql, scope, deps.model)
   const progress = () => saveRun(sql, id, stats, deps.usage)
   try {
-    // I testi letti con un prompt vecchio si rileggono, una volta sola
-    await sql`
-      update radar_documents set status = 'pending', attempts = 0, error = null
-      where reader_version < ${READER_VERSION} and status <> 'pending' and closed_at is null
-    `
     if (scope.groups.length) {
       // I siti giù allo scan prima si riprovano
       resetDownHosts()
@@ -757,7 +738,7 @@ export async function runScan(sql: Sql, deps: RadarDeps, scope: Scope, now = new
       await progress()
     }
     await readAndJudge(sql, deps, id, stats, progress, now)
-    await mailNewGrants(sql, deps, id, stats, now)
+    await mailNewGrants(sql, deps, stats, now)
     await saveRun(sql, id, stats, deps.usage, { status: 'done' })
   }
   catch (err) {
@@ -766,13 +747,14 @@ export async function runScan(sql: Sql, deps: RadarDeps, scope: Scope, now = new
   }
 }
 
-// A fine scan, se la mail è accesa: i bandi trovati da questo scan. Una
+// A fine scan, se la mail è accesa: i bandi mai mandati, cioè quelli di
+// questo scan più quelli di uno scan prima la cui mail non è partita. Una
 // mail che non parte non fa fallire lo scan, finisce tra gli errori
-async function mailNewGrants(sql: Sql, deps: RadarDeps, runId: string, stats: RunStats, now: Date) {
+async function mailNewGrants(sql: Sql, deps: RadarDeps, stats: RunStats, now: Date) {
   const settings = await readRadarSettings(sql)
   if (!deps.mailer || !settings.notify.enabled || !settings.notify.emails.length) return
   try {
-    await sendDigest(sql, deps.mailer, now, settings, runId)
+    await sendDigest(sql, deps.mailer, now, settings)
   }
   catch (err) {
     stats.errors.push(`Mail non inviata: ${(err as Error).message}`)
@@ -821,8 +803,8 @@ export async function radarRunNow(sql: Sql, deps: RadarDeps, scope: Scope) {
   inBackground(lease, () => runScan(sql, deps, scope))
 }
 
-// Profilo salvato e cambiato: si rigiudicano i bandi, se il radar è libero
-// (altrimenti lo fa il prossimo giro)
+// Profilo o ricerca salvati e cambiati: si giudicano i bandi, se il radar è
+// libero (altrimenti lo fa lo scan in corso o il prossimo)
 export async function radarJudgeNow(sql: Sql, deps: RadarDeps) {
   if (!deps.reader || !deps.judge) return
   const lease = await holdLease(sql)
@@ -844,6 +826,7 @@ export async function radarWipe(sql: Sql): Promise<{ deleted: number, kept: numb
     // documenti rimasti senza bando.
     const result = await sql.begin(async (tx) => {
       await tx`delete from radar_grants where folder_at is null`
+      await tx`delete from radar_sources`
       const gone = await tx`
         delete from radar_documents d where not exists (select 1 from radar_grants g where g.document_id = d.id)
       `

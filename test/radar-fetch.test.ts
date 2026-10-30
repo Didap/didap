@@ -2,7 +2,7 @@ import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { crawlSource } from '../server/utils/radar-crawl'
-import { fetchFromSource, resetDownHosts, resolveOrigin, SourceUnreachable } from '../server/utils/radar-fetch'
+import { fetchFromSource, resetDownHosts, resolveOrigin, SourceUnreachable, withAttachments } from '../server/utils/radar-fetch'
 
 // Un sito finto: ogni percorso decide come risponde alla richiesta n
 const hits: Record<string, number> = {}
@@ -91,6 +91,10 @@ describe('download dalle fonti', () => {
     expect(hits['/sempre-503']).toBe(4)
     expect((await get('/'))?.toString()).toContain('Avvisi')
   }, 20_000)
+
+  it('un allegato che non arriva si salta: il bando si legge col resto', async () => {
+    expect(await withAttachments('Testo del bando', [`${origin}/sempre-503`], origin)).toBe('Testo del bando')
+  }, 15_000)
 
   it('un file che non c\'è non si riprova', async () => {
     expect(await get('/manca', true)).toBeNull()

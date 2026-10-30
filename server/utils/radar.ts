@@ -99,15 +99,23 @@ const closedGrant = (sql: Sql, now: Date) => sql`
 // Bandi ancora da leggere: la stessa condizione per la coda e per il
 // contatore. Quando il prompt di lettura cambia (READER_KEY) si rileggono i
 // bandi digitali, che restano "read" e in elenco finché non si rileggono;
-// i testi scartati e i bandi su altro si rileggono solo se il testo cambia
+// i testi scartati e i bandi su altro si rileggono solo se il testo cambia.
+// I testi scartati o falliti col prompt di prima dell'impronta (senza
+// chiave: non riconosceva le gare) si rileggono una volta
 const queued = (sql: Sql) => sql`
   closed_at is null and (
     status = 'pending' or (status = 'failed' and attempts < ${MAX_ATTEMPTS})
+    or (status in ('skipped', 'failed') and reader_key is null)
     or (status = 'read' and reader_key is distinct from ${READER_KEY} and exists (
       select 1 from radar_grants g where g.document_id = radar_documents.id and g.digital is not false
     ))
   )
 `
+
+// Uno scan "in corso" senza più il turno è morto col processo (riavvio,
+// deploy): si mostra fallito, e lo scan dopo lo segna così (startRun)
+const INTERRUPTED = 'Interrotto (il server si è riavviato)'
+const staleRun = (sql: Sql) => sql`(r.status = 'running' and (s.lease_until is null or s.lease_until <= now()))`
 
 // La riga id = 1 esiste sempre: la crea lo schema. L'ultimo scan viene dal
 // registro (anche quelli del vecchio giro automatico)
@@ -115,7 +123,8 @@ async function readState(sql: Sql) {
   const [row] = await sql`
     select s.last_ingest_error, s.last_digest_at, s.lease_until,
       (select count(*)::int from radar_documents where ${queued(sql)}) as pending,
-      r.id as scan_id, r.status as scan_status, r.started_at as scan_started_at
+      r.id as scan_id, case when ${staleRun(sql)} then 'failed' else r.status end as scan_status,
+      r.started_at as scan_started_at
     from radar_state s
     left join lateral (
       select id, status, started_at from radar_runs where trigger in ('manuale', 'automatico')
@@ -387,9 +396,11 @@ export async function readPending(
         result.unavailable = true
         return
       }
+      // Un bando già letto che non si rilegge resta coi dati di prima, in
+      // elenco; un testo nuovo si riprova allo scan dopo
       await sql`
-        update radar_documents set status = 'failed', attempts = attempts + 1, error = ${(err as Error).message.slice(0, 1000)},
-          reader_key = ${READER_KEY}
+        update radar_documents set status = case when status = 'read' then 'read' else 'failed' end,
+          attempts = attempts + 1, error = ${(err as Error).message.slice(0, 1000)}, reader_key = ${READER_KEY}
         where id = ${doc.id}
       `
       result.failed.push(doc.id)
@@ -491,9 +502,9 @@ export async function judgeGrants(
 // ---------- registro degli scan ----------
 
 async function startRun(sql: Sql, scope: Scope, model: string): Promise<string> {
-  // Un giro alla volta: uno ancora "in corso" è morto a metà (riavvio)
+  // Uno scan alla volta: uno ancora "in corso" è morto a metà (riavvio)
   await sql`
-    update radar_runs set status = 'failed', finished_at = now(), error = 'Interrotto (il server si è riavviato)'
+    update radar_runs set status = 'failed', finished_at = now(), error = ${INTERRUPTED}
     where status = 'running'
   `
   const [row] = await sql<{ id: string }[]>`
@@ -514,8 +525,12 @@ async function saveRun(sql: Sql, id: string, stats: RunStats, usage: TokenUsage,
 
 export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
   const rows = await sql`
-    select id, trigger, groups, provinces, status, started_at, finished_at, model, stats, usage, error
-    from radar_runs order by started_at desc limit ${limit}
+    select r.id, r.trigger, r.groups, r.provinces, r.started_at, r.finished_at, r.model, r.stats, r.usage,
+      case when ${staleRun(sql)} then 'failed' else r.status end as status,
+      case when ${staleRun(sql)} then ${INTERRUPTED} else r.error end as error
+    from radar_runs r cross join radar_state s
+    where s.id = 1
+    order by r.started_at desc limit ${limit}
   `
   return rows.map(r => ({
     id: r.id,

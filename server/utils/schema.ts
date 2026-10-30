@@ -115,9 +115,13 @@ export const DB_SCHEMA = `
     data jsonb not null,
     updated_at timestamptz not null default now()
   );
+  -- last_ingest_at e last_digest_on servivano al giro automatico, tolto:
+  -- restano perché il codice di prima, se si torna indietro, le legge
   create table if not exists radar_state (
     id int primary key check (id = 1),
+    last_ingest_at timestamptz,
     last_ingest_error text,
+    last_digest_on date,
     last_digest_at timestamptz,
     lease_until timestamptz
   );
@@ -245,9 +249,6 @@ export const DB_SCHEMA = `
   alter table radar_documents add column if not exists reader_key text;
   -- L'ultimo scan e il registro si leggono dal più recente
   create index if not exists radar_runs_started_at on radar_runs (started_at desc);
-  -- Ultimo scan e mail a orario venivano dal giro automatico, tolto
-  alter table radar_state drop column if exists last_ingest_at;
-  alter table radar_state drop column if exists last_digest_on;
   -- Fonti che non rispondono: da quando, e in pausa fino a quando
   create table if not exists radar_sources (
     slug text primary key,

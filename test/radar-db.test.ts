@@ -354,6 +354,40 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     expect((await readPending(sql, fakeReader)).tried).toEqual([])
   })
 
+  it('una rilettura che fallisce lascia il bando com\'era, in elenco', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A' })], NOW)
+    await readPending(sql, fakeReader)
+    await sql`update radar_documents set reader_key = 'prompt vecchio'`
+    const broken: GrantReader = async () => {
+      throw new Error('Risposta del modello troncata')
+    }
+    expect((await readPending(sql, broken)).failed).toHaveLength(1)
+    expect((await listGrants(sql, NOW)).map(g => g.title)).toEqual(['bando A'])
+    expect((await readPending(sql, fakeReader)).tried).toEqual([])
+  })
+
+  it('i testi scartati col prompt di prima dell\'impronta si rileggono una volta', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'enti locali', b: 'bando B' })], NOW)
+    await readPending(sql, fakeReader)
+    await sql`update radar_documents set reader_key = null`
+    // Il bando B (digitale) e il testo scartato tornano in coda; poi più nessuno
+    expect((await readPending(sql, fakeReader)).tried).toHaveLength(2)
+    expect((await readPending(sql, fakeReader)).tried).toEqual([])
+  })
+
+  it('uno scan rimasto "in corso" senza il turno si mostra fallito', async () => {
+    const [run] = await sql<{ id: string }[]>`
+      insert into radar_runs (trigger, groups, status) values ('manuale', ${['governo']}, 'running') returning id
+    `
+    const d = deps([])
+    expect((await radarStatus(sql, d)).lastScan).toMatchObject({ id: run!.id, status: 'failed' })
+    expect((await listRuns(sql))[0]).toMatchObject({ status: 'failed', error: 'Interrotto (il server si è riavviato)' })
+    // Col turno preso è davvero in corso
+    const lease = await acquireLease(sql)
+    expect((await radarStatus(sql, d)).lastScan?.status).toBe('running')
+    await releaseLease(sql, lease!)
+  })
+
   it('a fine scan la mail recupera i bandi di uno scan la cui mail non è partita', async () => {
     await writeRadarSettings(sql, settings(null))
     const broken = async () => {

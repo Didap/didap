@@ -20,7 +20,7 @@ import {
 // quanti token ha consumato. Mentre uno scan gira si aggiorna da solo.
 // I bandi sono quelli che il pannello ha già valutato coi suoi filtri.
 const props = defineProps<{ grants: EvaluatedGrant[] }>()
-defineEmits<{ open: [id: string] }>()
+const emit = defineEmits<{ open: [id: string], finished: [] }>()
 const { notify } = useAdminToast()
 
 const runs = ref<RadarRun[] | null>(null)
@@ -51,7 +51,13 @@ const rows = computed(() => {
   return (runs.value ?? []).map(r => ({ ...r, added: added.get(r.id) ?? [] }))
 })
 const { pause, resume } = useIntervalFn(load, 5_000, { immediate: false })
-watch(running, r => (r ? resume() : pause()))
+// Uno scan finito, anche partito da un'altra scheda: il pannello ricarica i
+// bandi, che danno i nuovi di ogni scan
+watch(running, (r, was) => {
+  if (r) resume()
+  else pause()
+  if (was && !r) emit('finished')
+})
 
 const TRIGGERS: Record<RadarRun['trigger'], string> = {
   manuale: 'Scan',

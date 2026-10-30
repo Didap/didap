@@ -86,11 +86,13 @@ describe('download dalle fonti', () => {
   }, 10_000)
 
   it('riprova una volta un errore del server, poi lascia perdere senza fermare il sito', async () => {
-    expect((await get('/503-poi-ok'))?.toString()).toBe('ok')
-    await expect(get('/sempre-503')).rejects.toThrow(SourceUnreachable)
-    await expect(get('/sempre-503')).rejects.toThrow('ha risposto 503')
-    expect(hits['/sempre-503']).toBe(4)
-    expect((await get('/'))?.toString()).toContain('Avvisi')
+    await withDownHosts(async () => {
+      expect((await get('/503-poi-ok'))?.toString()).toBe('ok')
+      await expect(get('/sempre-503')).rejects.toThrow(SourceUnreachable)
+      await expect(get('/sempre-503')).rejects.toThrow('ha risposto 503')
+      expect(hits['/sempre-503']).toBe(4)
+      expect((await get('/'))?.toString()).toContain('Avvisi')
+    })
   }, 20_000)
 
   it('un allegato che non arriva si salta: il bando si legge col resto', async () => {

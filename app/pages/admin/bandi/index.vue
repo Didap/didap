@@ -985,6 +985,7 @@ function toggleGroup(group: string, on: boolean) {
           "
           :grants="grants"
           @open="openFromLog"
+          @finished="loadGrants"
         />
         <div
           v-else

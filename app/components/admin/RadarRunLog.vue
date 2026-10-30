@@ -3,11 +3,23 @@ import { useIntervalFn } from '@vueuse/core'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime, formatDay } from '~/utils/format'
 import { formatDecimal } from '#shared/money'
-import { comuniOf, PROVINCES, sourceLabel, SOURCE_GROUPS, usageCost, type RadarRun } from '#shared/radar'
+import {
+  comuniOf,
+  grantTags,
+  isNewIn,
+  PROVINCES,
+  sourceLabel,
+  SOURCE_GROUPS,
+  usageCost,
+  type EvaluatedGrant,
+  type RadarRun,
+} from '#shared/radar'
 
 // Registro degli scan: quando, cosa, quanto è durato, quali bandi nuovi ha
 // trovato (un clic li apre nell'elenco), quali siti non hanno risposto e
 // quanti token ha consumato. Mentre uno scan gira si aggiorna da solo.
+// I bandi sono quelli che il pannello ha già valutato coi suoi filtri.
+const props = defineProps<{ grants: EvaluatedGrant[] }>()
 defineEmits<{ open: [id: string] }>()
 const { notify } = useAdminToast()
 
@@ -26,6 +38,18 @@ onMounted(load)
 defineExpose({ load })
 
 const running = computed(() => runs.value?.some(r => r.status === 'running') ?? false)
+
+// I bandi nuovi di ogni scan: gli stessi che la scheda "Nuovi" mostra per l'ultimo
+const rows = computed(() => {
+  const added = new Map<string, EvaluatedGrant[]>()
+  for (const g of props.grants) {
+    if (!g.runId || !isNewIn(g, g.runId)) continue
+    const list = added.get(g.runId)
+    if (list) list.push(g)
+    else added.set(g.runId, [g])
+  }
+  return (runs.value ?? []).map(r => ({ ...r, added: added.get(r.id) ?? [] }))
+})
 const { pause, resume } = useIntervalFn(load, 5_000, { immediate: false })
 watch(running, r => (r ? resume() : pause()))
 
@@ -101,7 +125,7 @@ const totals = computed(() => {
       </p>
       <ul>
         <li
-          v-for="r in runs"
+          v-for="r in rows"
           :key="r.id"
           class="
             flex flex-col gap-2 border-b border-ink/10 px-5 py-4
@@ -189,14 +213,13 @@ const totals = computed(() => {
                       {{ g.title }}
                     </span>
                     <span class="truncate text-xs opacity-60">
-                      {{ [g.kind === 'tender' ? 'Gara' : '', g.ai ? 'IA' : '', sourceLabel(g.source)].filter(Boolean).join(' · ') }}
+                      {{ [...grantTags(g), sourceLabel(g.source)].join(' · ') }}
                     </span>
                   </span>
                   <span class="
                     text-right text-xs whitespace-nowrap tabular-nums
                   ">
-                    <span class="block font-medium">{{ g.deadline ? `Scade ${formatDay(g.deadline)}` : 'A sportello' }}</span>
-                    <span class="block opacity-60">Trovato {{ formatDay(g.createdAt) }}</span>
+                    {{ g.deadline ? `Scade ${formatDay(g.deadline)}` : 'A sportello' }}
                   </span>
                 </button>
               </li>
@@ -210,7 +233,7 @@ const totals = computed(() => {
               Non hanno risposto, si riprovano al prossimo scan: {{ names(r.stats.unreachable) }}.
             </template>
             <template v-if="r.stats.paused.length">
-              In pausa dopo tre scan senza risposta: {{ names(r.stats.paused) }}.
+              In pausa, non rispondono da più di un giorno: {{ names(r.stats.paused) }}.
             </template>
           </p>
           <p

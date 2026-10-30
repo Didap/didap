@@ -9,6 +9,7 @@ import {
   listGrants,
   listRuns,
   radarRunNow,
+  radarStatus,
   radarWipe,
   readPending,
   readRadarSettings,
@@ -248,17 +249,16 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     const settings = await readRadarSettings(sql)
     const { profile } = settings
-    // I trattori (non digitali) sono fuori dalla ricerca: non si giudicano
-    expect(await judgeGrants(sql, fakeJudge, settings, NOW)).toEqual({ judged: 3, unavailable: false })
+    // Si giudicano tutti, anche quelli fuori dalla ricerca (i trattori, non digitali)
+    expect(await judgeGrants(sql, fakeJudge, settings, NOW)).toEqual({ judged: 4, unavailable: false })
     const byTitle = Object.fromEntries((await listEvaluatedGrants(sql, NOW)).map(g => [g.title, g]))
     expect(byTitle['bando sicuro']!.eligibility).toBe('eligible')
     expect(byTitle['bando escluso']!.eligibility).toBe('excluded')
     expect(byTitle['bando incerto']!.eligibility).toBe('to_verify')
-    expect(byTitle.trattori!.verdict).toBeNull()
+    expect(byTitle.trattori!.verdict).toBe('maybe')
     // Stesso profilo: niente da rifare; profilo nuovo: tutti di nuovo
     expect((await judgeGrants(sql, fakeJudge, settings, NOW)).judged).toBe(0)
-    // Profilo nuovo: di nuovo tutti quelli della ricerca
-    expect((await judgeGrants(sql, fakeJudge, { ...settings, profile: { ...profile, employees: 12 } }, NOW)).judged).toBe(3)
+    expect((await judgeGrants(sql, fakeJudge, { ...settings, profile: { ...profile, employees: 12 } }, NOW)).judged).toBe(4)
     const limited: GrantJudge = async () => {
       throw new ReaderUnavailable('troppi token')
     }
@@ -305,18 +305,18 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
       stats: { listed: 2, queued: 2, read: 2, grants: 1, judged: 1, errors: [], unreachable: [], paused: [] },
       usage: { input: 1000 },
     })
-    expect(run!.added.map(g => g.title)).toEqual(['bando A'])
-    const [grant] = await listGrants(sql, NOW)
-    expect(grant!.runId).toBe(run!.id)
+    const scanOf = async () => Object.fromEntries((await listGrants(sql, NOW)).map(g => [g.title, g.runId]))
+    expect(await scanOf()).toEqual({ 'bando A': run!.id })
     // Lo scan dopo trova un bando in più: nuovo solo quello, mail solo con quello
     await runScan(sql, deps([fakeSource({ a: 'bando A', c: 'bando C' })], mailer), scope, new Date('2026-10-21T08:00:00Z'))
     const [second] = await listRuns(sql)
-    expect(second!.added.map(g => g.title)).toEqual(['bando C'])
+    expect(await scanOf()).toEqual({ 'bando A': run!.id, 'bando C': second!.id })
+    expect((await radarStatus(sql, d)).lastScan).toMatchObject({ id: second!.id, status: 'done' })
     expect(sent).toHaveLength(2)
     expect(sent[1]!.subject).toContain('1 bando nuovo')
   })
 
-  it('un sito che non risponde non è un errore; dopo tre scan va in pausa', async () => {
+  it('un sito che non risponde non è un errore; se non risponde da più di un giorno va in pausa', async () => {
     let calls = 0
     const down = {
       ...fakeSource({}),
@@ -327,32 +327,30 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
       },
     }
     const hours = (h: number) => new Date(NOW.getTime() + h * 3_600_000)
-    // Due scan nella stessa ora contano una volta
-    await ingestSources(sql, [down], hours(0))
-    await ingestSources(sql, [down], hours(1))
-    const [first] = await sql`select unreachable_streak from radar_sources`
-    expect(first!.unreachable_streak).toBe(1)
-    for (const h of [13, 26]) {
+    // Nel primo giorno si riprova a ogni scan, anche ravvicinato
+    for (const h of [0, 1, 20, 25]) {
       expect(await ingestSources(sql, [down], hours(h))).toMatchObject({ errors: [], unreachable: ['Comune di Bari'], paused: [] })
     }
-    expect(await ingestSources(sql, [down], hours(27))).toMatchObject({ errors: [], unreachable: [], paused: ['Comune di Bari'] })
+    // A 25 ore dalla prima volta è andato in pausa per due settimane
+    expect(await ingestSources(sql, [down], hours(26))).toMatchObject({ errors: [], unreachable: [], paused: ['Comune di Bari'] })
     expect(calls).toBe(4)
     // Passata la pausa si riprova; se risponde, riparte da zero
-    await ingestSources(sql, [{ ...down, fetchListing: async () => [] }], hours(26 + 15 * 24))
+    await ingestSources(sql, [{ ...down, fetchListing: async () => [] }], hours(25 + 15 * 24))
     expect(await sql`select * from radar_sources`).toHaveLength(0)
   })
 
-  it('un testo letto col prompt vecchio si rilegge, e intanto il bando resta in elenco col cuore', async () => {
-    await ingestSources(sql, [fakeSource({ a: 'bando A' })], NOW)
+  it('col prompt di lettura cambiato si rileggono i bandi digitali, che intanto restano in elenco', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', t: 'trattori' })], NOW)
     await readPending(sql, fakeReader)
-    const [grant] = await listGrants(sql, NOW)
-    await setGrantLiked(sql, grant!.id, true)
-    await sql`update radar_documents set reader_version = 1`
-    expect(await listGrants(sql, NOW)).toHaveLength(1)
-    // Rilegge e ora dice che non è per le imprese: col cuore il bando resta
+    const liked = (await listGrants(sql, NOW)).find(g => g.title === 'bando A')!
+    await setGrantLiked(sql, liked.id, true)
+    await sql`update radar_documents set reader_key = 'prompt vecchio'`
+    expect(await listGrants(sql, NOW)).toHaveLength(2)
+    // Solo il bando digitale torna in coda; riletto "non per le imprese", col cuore resta
     const notForUs: GrantReader = async () => ({ admitsCompanies: false })
-    expect((await readPending(sql, notForUs)).read).toBe(1)
-    expect((await listGrants(sql, NOW)).map(g => g.liked)).toEqual([true])
+    expect(await readPending(sql, notForUs)).toMatchObject({ read: 1, failed: [] })
+    const after = Object.fromEntries((await listGrants(sql, NOW)).map(g => [g.title, g.liked]))
+    expect(after).toEqual({ 'bando A': true, 'trattori': false })
     expect((await readPending(sql, fakeReader)).tried).toEqual([])
   })
 

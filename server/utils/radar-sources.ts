@@ -1,6 +1,6 @@
 import { romeDate } from '#shared/dates'
 import { comuneSlug, comuniOf, type RadarSearch } from '#shared/radar'
-import { crawlSource } from './radar-crawl'
+import { crawlSource, type CrawlOptions } from './radar-crawl'
 import {
   fetchApi,
   fetchSourcePage,
@@ -137,7 +137,7 @@ function incentiviGov(): RadarSource {
         rows: '20000',
         fl: Object.values(F).join(','),
       })
-      const body = await fetchApi<{ response?: { docs?: Incentive[] } }>(`${INCENTIVI}/solr/coredrupal/select?${params}`, {}, 60_000)
+      const body = await fetchApi<{ response?: { docs?: Incentive[] } }>(`${INCENTIVI}/solr/coredrupal/select?${params}`)
       const docs = body.response?.docs
       if (!docs) throw new Error('incentivi.gov.it non ha restituito bandi')
 
@@ -301,35 +301,28 @@ const pugliaSviluppo = (picker: LinkPicker) => crawlSource(
   picker,
 )
 
-// ---------- agenzie regionali ----------
+// ---------- agenzie regionali e camere di commercio ----------
 
 // ARTI (innovazione, ricerca, startup) e InnovaPuglia (la società IT della
 // Regione: gare e avvisi digitali). Siti senza un elenco unico: dalla home
-const artiPuglia = (picker: LinkPicker) => crawlSource(
+const AGENZIE: CrawlOptions[] = [
   { slug: 'arti-puglia', startUrls: ['https://www.arti.puglia.it/'], maxDepth: 2, maxCalls: 20 },
-  picker,
-)
-
-const innovaPuglia = (picker: LinkPicker) => crawlSource(
   { slug: 'innovapuglia', startUrls: ['https://www.innova.puglia.it/'], maxDepth: 2, maxCalls: 20 },
-  picker,
-)
-
-// ---------- camere di commercio ----------
+]
 
 // Voucher digitali, bandi per l'innovazione e le gare delle camere: dalla
 // pagina dei bandi di ciascuna
-const CAMERE: { slug: string, startUrl: string }[] = [
-  { slug: 'camera-ba', startUrl: 'https://www.ba.camcom.it/info/bandi' },
-  { slug: 'camera-brta', startUrl: 'https://www.brta.camcom.it/bandi' },
-  { slug: 'camera-fg', startUrl: 'https://www.fg.camcom.it/bandi-contributi' },
-  { slug: 'camera-le', startUrl: 'https://www.le.camcom.it/promozione-e-sviluppo-del-territorio/bandi-e-contributi' },
+const CAMERE: CrawlOptions[] = [
+  { slug: 'camera-ba', startUrls: ['https://www.ba.camcom.it/info/bandi'], maxDepth: 2, maxCalls: 15 },
+  { slug: 'camera-brta', startUrls: ['https://www.brta.camcom.it/bandi'], maxDepth: 2, maxCalls: 15 },
+  { slug: 'camera-fg', startUrls: ['https://www.fg.camcom.it/bandi-contributi'], maxDepth: 2, maxCalls: 15 },
+  {
+    slug: 'camera-le',
+    startUrls: ['https://www.le.camcom.it/promozione-e-sviluppo-del-territorio/bandi-e-contributi'],
+    maxDepth: 2,
+    maxCalls: 15,
+  },
 ]
-
-const camere = (picker: LinkPicker) => CAMERE.map(c => crawlSource(
-  { slug: c.slug, startUrls: [c.startUrl], maxDepth: 2, maxCalls: 15 },
-  picker,
-))
 
 // ---------- TED, gare europee ----------
 
@@ -393,7 +386,7 @@ function tedPuglia(): RadarSource {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query, fields: TED_FIELDS, limit: TED_LIMIT, page, scope: 'ACTIVE' }),
-        }, 60_000)
+        })
         if (!body.notices) throw new Error('TED non ha restituito gare')
         notices.push(...body.notices)
         if (body.notices.length < TED_LIMIT || notices.length >= (body.totalNoticeCount ?? 0)) {
@@ -426,9 +419,9 @@ export function radarSources(search: Pick<RadarSearch, 'groups' | 'provinces'>, 
   const sources: RadarSource[] = []
   if (search.groups.includes('governo')) sources.push(incentiviGov())
   if (search.groups.includes('regione')) {
-    sources.push(regionePuglia(), sistemaPuglia(), pugliaSviluppo(picker), artiPuglia(picker), innovaPuglia(picker))
+    sources.push(regionePuglia(), sistemaPuglia(), pugliaSviluppo(picker), ...AGENZIE.map(o => crawlSource(o, picker)))
   }
-  if (search.groups.includes('camere')) sources.push(...camere(picker))
+  if (search.groups.includes('camere')) sources.push(...CAMERE.map(o => crawlSource(o, picker)))
   if (search.groups.includes('gare')) sources.push(tedPuglia())
   if (search.groups.includes('comuni')) {
     for (const c of comuniOf(search.provinces)) sources.push(comune(c.istat, c.site, picker))

@@ -1,8 +1,8 @@
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { crawlSource } from '../server/utils/radar-crawl'
-import { fetchFromSource, resetDownHosts, resolveOrigin, SourceUnreachable, withAttachments } from '../server/utils/radar-fetch'
+import { fetchFromSource, resolveOrigin, SourceUnreachable, withAttachments, withDownHosts } from '../server/utils/radar-fetch'
 
 // Un sito finto: ogni percorso decide come risponde alla richiesta n
 const hits: Record<string, number> = {}
@@ -64,24 +64,25 @@ async function closedPort() {
 }
 
 describe('download dalle fonti', () => {
-  beforeEach(resetDownHosts)
-
   it('nessuna risposta in tempo: non si riprova e il sito resta giù per lo scan', async () => {
-    await expect(get('/lento-poi-ok')).rejects.toBeInstanceOf(SourceUnreachable)
-    expect(hits['/lento-poi-ok']).toBe(1)
-    await expect(get('/')).rejects.toThrow('non risponde')
-    // Scan nuovo: si riprova
-    resetDownHosts()
+    await withDownHosts(async () => {
+      await expect(get('/lento-poi-ok')).rejects.toBeInstanceOf(SourceUnreachable)
+      expect(hits['/lento-poi-ok']).toBe(1)
+      await expect(get('/')).rejects.toThrow('non risponde')
+    })
+    // Fuori da quello scan si riprova
     expect((await get('/lento-poi-ok'))?.toString()).toBe('ok')
   }, 10_000)
 
   it('connessione rifiutata: un secondo tentativo, poi il sito è giù senza altre attese', async () => {
     const dead = `http://127.0.0.1:${await closedPort()}`
     const fetchDead = (path: string) => fetchFromSource(`${dead}${path}`, { origin: dead, maxBytes: 1000, timeoutMs: 300 })
-    await expect(fetchDead('/a')).rejects.toBeInstanceOf(SourceUnreachable)
-    const start = Date.now()
-    await expect(fetchDead('/b')).rejects.toThrow('non risponde')
-    expect(Date.now() - start).toBeLessThan(100)
+    await withDownHosts(async () => {
+      await expect(fetchDead('/a')).rejects.toBeInstanceOf(SourceUnreachable)
+      const start = Date.now()
+      await expect(fetchDead('/b')).rejects.toThrow('non risponde')
+      expect(Date.now() - start).toBeLessThan(100)
+    })
   }, 10_000)
 
   it('riprova una volta un errore del server, poi lascia perdere senza fermare il sito', async () => {

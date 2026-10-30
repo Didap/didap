@@ -5,7 +5,7 @@ import { romeDate } from '#shared/dates'
 import {
   ELIGIBILITY_LABELS,
   evaluateRadarGrant,
-  grantKindLabel,
+  grantKind,
   isInScope,
   sourceLabel,
   type Eligibility,
@@ -90,7 +90,7 @@ export async function searchGrants(
     titolo: g.title,
     ente: g.issuer,
     fonte: sourceLabel(g.source),
-    tipo: grantKindLabel(g.kind),
+    tipo: grantKind(g.kind).label,
     ia: g.ai,
     esito: ELIGIBILITY_LABELS[eligibility],
     motivo: g.verdictReason,

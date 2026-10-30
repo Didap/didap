@@ -117,9 +117,7 @@ export const DB_SCHEMA = `
   );
   create table if not exists radar_state (
     id int primary key check (id = 1),
-    last_ingest_at timestamptz,
     last_ingest_error text,
-    last_digest_on date,
     last_digest_at timestamptz,
     lease_until timestamptz
   );
@@ -238,19 +236,23 @@ export const DB_SCHEMA = `
   -- Tabelle create quando i comuni si spuntavano uno a uno
   alter table radar_runs add column if not exists provinces text[] not null default '{}';
   -- Finanziamento o gara per servizi digitali, IA esplicita, scan che ha
-  -- trovato il bando (i "nuovi"); prompt con cui è stato letto il testo
+  -- trovato il bando (i "nuovi"); impronta del prompt con cui è stato letto
+  -- il testo (READER_KEY)
   alter table radar_grants add column if not exists kind text not null default 'grant'
     check (kind in ('grant', 'tender'));
   alter table radar_grants add column if not exists ai boolean;
   alter table radar_grants add column if not exists run_id uuid references radar_runs (id) on delete set null;
-  create index if not exists radar_grants_run_id on radar_grants (run_id);
-  alter table radar_documents add column if not exists reader_version int not null default 1;
-  -- Fonti che non rispondono: scan di fila senza risposta, pausa fino a
+  alter table radar_documents add column if not exists reader_key text;
+  -- L'ultimo scan e il registro si leggono dal più recente
+  create index if not exists radar_runs_started_at on radar_runs (started_at desc);
+  -- Ultimo scan e mail a orario venivano dal giro automatico, tolto
+  alter table radar_state drop column if exists last_ingest_at;
+  alter table radar_state drop column if exists last_digest_on;
+  -- Fonti che non rispondono: da quando, e in pausa fino a quando
   create table if not exists radar_sources (
     slug text primary key,
-    unreachable_streak int not null default 0,
-    paused_until timestamptz,
-    checked_at timestamptz
+    unreachable_since timestamptz not null,
+    paused_until timestamptz
   );
 
   -- Connettore MCP: client OAuth registrati da Claude, codici d'autorizzazione,

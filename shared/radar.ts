@@ -33,7 +33,7 @@ export type Province = Values<typeof PROVINCES>
 // Comuni per provincia, per i conteggi del pannello e le fonti
 export const comuniOf = (provinces: readonly string[]) => COMUNI_PUGLIA.filter(c => provinces.includes(c.province))
 
-const valuesOf = <T extends readonly { value: string }[]>(list: T) =>
+export const valuesOf = <T extends readonly { value: string }[]>(list: T) =>
   list.map(i => i.value) as unknown as [Values<T>, ...Values<T>[]]
 
 const euro = z.number().int().min(0).max(10_000_000_000).nullable()
@@ -60,7 +60,7 @@ export const SOURCE_GROUPS = [
   { value: 'governo', label: 'Governo', hint: 'Incentivi.gov.it' },
   { value: 'regione', label: 'Regione', hint: 'Regione Puglia, Sistema Puglia, Puglia Sviluppo, ARTI, InnovaPuglia' },
   { value: 'camere', label: 'Camere di commercio', hint: 'Bari, Brindisi-Taranto, Foggia, Lecce' },
-  { value: 'gare', label: 'Gare IT', hint: 'Gare europee (TED) per software e servizi digitali in Puglia' },
+  { value: 'gare', label: 'Gare IT', hint: 'Enti che comprano software, app, IA: gare europee (TED) e quelle sui siti delle altre fonti' },
   { value: 'comuni', label: 'Comuni', hint: 'Tutti i comuni delle province scelte' },
 ] as const
 
@@ -74,8 +74,6 @@ export const radarSearchSchema = z
     provinces: z.array(z.enum(valuesOf(PROVINCES))).max(PROVINCES.length),
     // Solo bandi per sviluppo IT, IA o servizi digitali
     digitalOnly: z.boolean(),
-    // Anche le gare e gli affidamenti in cui l'ente compra servizi digitali
-    tenders: z.boolean(),
   })
   .strict()
 
@@ -106,7 +104,6 @@ export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
     groups: SOURCE_GROUPS.map(g => g.value),
     provinces: PROVINCES.map(p => p.value),
     digitalOnly: true,
-    tenders: true,
   },
   profile: {
     revenue: null,
@@ -310,15 +307,30 @@ export type Application = {
 }
 
 // Finanziamento (l'azienda riceve un aiuto) o gara (l'ente compra un
-// servizio digitale e l'azienda partecipa come fornitore)
+// servizio digitale e l'azienda partecipa come fornitore), con le etichette
+// di importo e agevolazione per ciascuno
 export const GRANT_KINDS = [
-  { value: 'grant', label: 'Finanziamento' },
-  { value: 'tender', label: 'Gara' },
+  { value: 'grant', label: 'Finanziamento', amount: 'Fino a', funding: 'Agevolazione' },
+  { value: 'tender', label: 'Gara', amount: 'Base di gara', funding: 'Procedura' },
 ] as const
 
 export type GrantKind = Values<typeof GRANT_KINDS>
 
-export const grantKindLabel = (kind: GrantKind) => GRANT_KINDS.find(k => k.value === kind)!.label
+export const grantKind = (kind: GrantKind) => GRANT_KINDS.find(k => k.value === kind)!
+
+// Le etichette di un bando in elenco, nel registro e nella mail: gara, IA
+export const grantTags = (g: Pick<RadarGrant, 'kind' | 'ai'>) =>
+  [g.kind === 'tender' ? grantKind(g.kind).label : '', g.ai ? 'IA' : ''].filter(Boolean)
+
+// Importo e agevolazione (per una gara: base d'asta e procedura), nella
+// scheda e nella mail
+export function grantAmountFacts(g: Pick<RadarGrant, 'kind' | 'maxAmount' | 'funding'>): [string, string][] {
+  const labels = grantKind(g.kind)
+  const rows: [string, string][] = []
+  if (g.maxAmount) rows.push([labels.amount, formatWholeEuro(g.maxAmount)])
+  if (g.funding) rows.push([labels.funding, g.funding])
+  return rows
+}
 
 // Giudizio del modello: Didap (col profilo salvato) può candidarsi?
 export type Verdict = 'yes' | 'no' | 'maybe'
@@ -420,9 +432,9 @@ export function sourceLabel(slug: string): string {
 }
 
 // Dentro la ricerca scelta a sinistra: modulo spuntato (per i comuni, il
-// comune spuntato), le gare solo se le si vuole e, con "Solo digitali",
-// niente bandi su altro (trattori, macchinari, film...). Quelli senza
-// risposta del modello si vedono.
+// comune spuntato), le gare di qualunque fonte solo col modulo "Gare IT" e,
+// con "Solo digitali", niente bandi su altro (trattori, macchinari,
+// film...). Quelli senza risposta del modello si vedono.
 export function isInScope(g: Pick<RadarGrant, 'source' | 'digital' | 'kind'>, search: RadarSearch): boolean {
   const group = sourceGroup(g.source)
   if (!search.groups.includes(group)) return false
@@ -430,18 +442,21 @@ export function isInScope(g: Pick<RadarGrant, 'source' | 'digital' | 'kind'>, se
     const province = comuneByIstat(g.source.slice(COMUNE_PREFIX.length))?.province
     if (!province || !search.provinces.includes(province as Province)) return false
   }
-  if (!search.tenders && g.kind === 'tender') return false
+  if (g.kind === 'tender' && !search.groups.includes('gare')) return false
   return !search.digitalOnly || g.digital !== false
 }
+
+// Nuovo per uno scan: trovato da quello scan, ancora aperto e non escluso
+export const isNewIn = (g: EvaluatedGrant, runId: string | null | undefined) =>
+  !!runId && g.runId === runId && !g.closed && g.eligibility !== 'excluded'
 
 // Va nella prossima mail: mai mandato e non escluso dai parametri. Cambiare
 // i parametri può rendere candidabile un bando già visto: parte allora.
 export const isDigestCandidate = (g: EvaluatedGrant) => !g.notifiedAt && g.eligibility !== 'excluded'
 
 export type RadarStatus = {
-  // L'ultimo scan con delle fonti: i suoi bandi sono i "nuovi"
-  lastRunId: string | null
-  lastIngestAt: string | null
+  // L'ultimo scan dal registro: i suoi bandi sono i "nuovi", e dice se è in corso
+  lastScan: { id: string, status: RadarRun['status'], startedAt: string } | null
   lastIngestError: string | null
   lastDigestAt: string | null
   running: boolean
@@ -505,9 +520,6 @@ export const emptyStats = (): RunStats => ({
   paused: [],
 })
 
-// Un bando entrato con uno scan, per il registro
-export type RunGrant = Pick<RadarGrant, 'id' | 'title' | 'source' | 'kind' | 'ai' | 'deadline' | 'createdAt'>
-
 export type RadarRun = {
   id: string
   // profilo: rigiudizio dopo un cambio. automatico e ripresa venivano dal
@@ -522,8 +534,6 @@ export type RadarRun = {
   stats: RunStats
   usage: TokenUsage
   error: string | null
-  // I bandi nuovi dello scan dentro la ricerca salvata, non esclusi dal giudizio
-  added: RunGrant[]
 }
 
 // Dollari per milione di token: input, output. La scrittura in cache costa

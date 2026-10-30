@@ -40,7 +40,9 @@ import {
   ELIGIBILITY_OUTCOME,
   ELIGIBILITY_PLURALS,
   evaluateRadarGrant,
+  grantTags,
   isInScope,
+  isNewIn,
   LEGAL_FORMS,
   PROVINCES,
   radarSettingsSchema,
@@ -159,38 +161,30 @@ async function act(action: () => Promise<string>) {
 const view = ref<'grants' | 'runs'>('grants')
 const runLog = ref<InstanceType<typeof RadarRunLog> | null>(null)
 
-// "Avvia scan": i moduli e le province spuntati, anche se non ancora salvati.
-// Senza gare, le gare europee non si scaricano nemmeno
+// "Avvia scan": i moduli e le province spuntati, anche se non ancora salvati
 const importScope = computed(() => {
   const s = form.value?.search
   if (!s) return null
-  const groups = s.groups.filter(g => (g !== 'comuni' || s.provinces.length) && (g !== 'gare' || s.tenders))
+  const groups = s.groups.filter(g => g !== 'comuni' || s.provinces.length)
   return { groups, provinces: groups.includes('comuni') ? s.provinces : [] }
 })
 
-// Lo scan partito da qui: alla fine si dice cosa ha trovato
-const scanStarted = ref(false)
-
 const runNow = () => act(async () => {
   await $fetch('/api/admin/radar/run', { method: 'POST', body: importScope.value })
-  scanStarted.value = true
   view.value = 'runs'
   await nextTick()
   await runLog.value?.load()
   return 'Scan partito: lo segui nel registro'
 })
 
-// Un bando del registro: si apre nell'elenco, senza la ricerca testuale che
-// potrebbe nasconderlo
+// Un bando del registro (viene dallo stesso elenco): si apre nella sua
+// scheda, senza la ricerca testuale che potrebbe nasconderlo
 function openFromLog(id: string) {
   const g = grants.value.find(x => x.id === id)
-  if (!g) {
-    notify('error', 'Bando non più nell\'elenco: chiuso, scaduto o fuori dalla ricerca')
-    return
-  }
+  if (!g) return
   view.value = 'grants'
   query.value = ''
-  tab.value = isNew(g) ? 'new' : g.closed ? 'liked' : g.eligibility
+  tab.value = TAB_KEYS.find(t => inTab(t, g)) ?? tab.value
   guardDraft(() => (selectedId.value = id))
 }
 
@@ -222,40 +216,45 @@ const grants = computed<EvaluatedGrant[]>(() => {
 // senza cuore: lì si apre la loro cartella. Arrivano solo quelli con la
 // cartella (withFolders), quindi basta closed.
 const isInteresting = (g: EvaluatedGrant) => g.liked || g.closed
-// Nuovo: trovato dall'ultimo scan e non escluso, come li conta la mail
-const isNew = (g: EvaluatedGrant) =>
-  !g.closed && g.eligibility !== 'excluded' && !!g.runId && g.runId === data.value?.status.lastRunId
+const isNew = (g: EvaluatedGrant) => isNewIn(g, data.value?.status.lastScan?.id)
 type Tab = 'new' | Eligibility | 'liked'
 const TABS: Record<Tab, string> = { new: 'Nuovi', ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
+const TAB_KEYS = Object.keys(TABS) as Tab[]
 const tab = ref<Tab>('eligible')
 const query = ref('')
 
+// In che scheda sta un bando: un bando nuovo sta anche nel suo esito
+function inTab(t: Tab, g: EvaluatedGrant) {
+  if (t === 'liked') return isInteresting(g)
+  if (t === 'new') return isNew(g)
+  return !g.closed && g.eligibility === t
+}
+
 const counts = computed(() => {
-  const out: Record<Tab, number> = { new: 0, eligible: 0, to_verify: 0, excluded: 0, liked: 0 }
+  const out = Object.fromEntries(TAB_KEYS.map(t => [t, 0])) as Record<Tab, number>
   for (const g of grants.value) {
-    if (!g.closed) out[g.eligibility]++
-    if (isNew(g)) out.new++
-    if (isInteresting(g)) out.liked++
+    for (const t of TAB_KEYS) if (inTab(t, g)) out[t]++
   }
   return out
 })
 
-const inTab = (g: EvaluatedGrant) => {
-  if (tab.value === 'liked') return isInteresting(g)
-  if (tab.value === 'new') return isNew(g)
-  return !g.closed && g.eligibility === tab.value
-}
-
 const visible = computed(() => {
   const q = query.value.trim().toLowerCase()
-  return grants.value.filter(g => inTab(g) && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
+  return grants.value.filter(g => inTab(tab.value, g) && (!q || `${g.title} ${g.issuer} ${g.summary}`.toLowerCase().includes(q)))
 })
 
-// Scan partito da qui e finito: si dice quanti bandi nuovi ha trovato e si
-// apre la loro scheda (il radar è occupato anche quando rigiudica)
-watch(() => data.value?.status.running, (running, was) => {
-  if (!was || running || !scanStarted.value) return
-  scanStarted.value = false
+// L'ultimo scan del registro è in corso (il radar è occupato anche quando
+// rigiudica dopo un cambio di profilo: quello non è uno scan)
+const scanning = computed(() => data.value?.status.lastScan?.status === 'running')
+
+// Uno scan appena finito, partito da qui o da un'altra scheda: si dice
+// quanti bandi nuovi ha trovato e si apre la loro scheda
+watch(() => data.value?.status.lastScan, (scan, was) => {
+  if (!scan || was?.id !== scan.id || was.status !== 'running' || scan.status === 'running') return
+  if (scan.status === 'failed') {
+    notify('error', 'Scan non riuscito: il motivo è nel registro')
+    return
+  }
   const n = counts.value.new
   notify('ok', n === 1 ? 'Scan finito: 1 bando nuovo' : `Scan finito: ${n} bandi nuovi`)
   if (n) tab.value = 'new'
@@ -542,18 +541,6 @@ function toggleGroup(group: string, on: boolean) {
                       <SwitchThumb />
                     </SwitchRoot>
                   </label>
-                  <label class="param-row">
-                    <span>
-                      Anche gare
-                      <span class="block text-xs whitespace-normal opacity-60">Enti che comprano software, app, IA</span>
-                    </span>
-                    <SwitchRoot
-                      v-model="form.search.tenders"
-                      class="param-switch"
-                    >
-                      <SwitchThumb />
-                    </SwitchRoot>
-                  </label>
                 </div>
                 <button
                   type="button"
@@ -567,7 +554,7 @@ function toggleGroup(group: string, on: boolean) {
                   :title="data && !data.status.llmConfigured ? 'Manca ANTHROPIC_API_KEY' : undefined"
                   @click="runNow"
                 >
-                  {{ data?.status.running ? 'Scan in corso…' : 'Avvia scan' }}
+                  {{ scanning ? 'Scan in corso…' : 'Avvia scan' }}
                 </button>
                 <p
                   v-if="!confirmWipe"
@@ -881,11 +868,11 @@ function toggleGroup(group: string, on: boolean) {
               v-if="data"
               class="text-sm opacity-60"
             >
-              <template v-if="data.status.running">
+              <template v-if="scanning">
                 Scan in corso…
               </template>
               <template v-else>
-                Ultimo scan {{ data.status.lastIngestAt ? formatDateTime(data.status.lastIngestAt) : 'mai' }}
+                Ultimo scan {{ data.status.lastScan ? formatDateTime(data.status.lastScan.startedAt) : 'mai' }}
               </template>
               <template v-if="data.status.pending">
                 · {{ data.status.pending }} in lettura
@@ -996,6 +983,7 @@ function toggleGroup(group: string, on: boolean) {
             min-h-0 flex-1 scrollbar-none
             lg:overflow-y-auto
           "
+          :grants="grants"
           @open="openFromLog"
         />
         <div
@@ -1052,7 +1040,7 @@ function toggleGroup(group: string, on: boolean) {
                 />
                 <span class="flex min-w-0 flex-col gap-1">
                   <span
-                    v-if="isNew(g) || g.kind === 'tender' || g.ai"
+                    v-if="isNew(g) || grantTags(g).length"
                     class="flex flex-wrap gap-1.5 text-xs"
                   >
                     <span
@@ -1063,13 +1051,11 @@ function toggleGroup(group: string, on: boolean) {
                       "
                     >Nuovo</span>
                     <span
-                      v-if="g.kind === 'tender'"
-                      class="rounded-full bg-ink/8 px-2 py-0.5"
-                    >Gara</span>
-                    <span
-                      v-if="g.ai"
-                      class="rounded-full bg-gold/25 px-2 py-0.5"
-                    >IA</span>
+                      v-for="t in grantTags(g)"
+                      :key="t"
+                      class="rounded-full px-2 py-0.5"
+                      :class="t === 'IA' ? 'bg-gold/25' : 'bg-ink/8'"
+                    >{{ t }}</span>
                   </span>
                   <span class="line-clamp-2 font-medium">{{ g.title }}</span>
                   <span class="truncate text-sm opacity-60">{{ g.issuer }}</span>

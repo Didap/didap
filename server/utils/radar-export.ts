@@ -1,7 +1,7 @@
 import { romeDate } from '#shared/dates'
 import {
   ELIGIBILITY_LABELS,
-  grantKindLabel,
+  grantKind,
   sourceLabel,
   titleSlug,
   VERDICT_LABELS,
@@ -37,7 +37,7 @@ export function grantExport(g: EvaluatedGrant, content: string, profile: RadarPr
     `apertura: ${scalar(day(g.opensAt))}`,
     `scadenza: ${scalar(day(g.deadline))}`,
     `trovato_il: ${scalar(day(g.createdAt))}`,
-    `genere: ${scalar(grantKindLabel(g.kind).toLowerCase())}`,
+    `genere: ${scalar(grantKind(g.kind).label.toLowerCase())}`,
     `importo_massimo: ${scalar(g.maxAmount)}`,
     `agevolazione: ${scalar(g.funding)}`,
     `digitale: ${scalar(g.digital)}`,

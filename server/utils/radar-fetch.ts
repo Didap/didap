@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { errorCode, webRequest } from './radar-http'
 
 // Download e testo delle pagine dei siti letti dal radar (portati dal Radar
@@ -11,7 +12,7 @@ type FetchOptions = { origin: string, maxBytes: number, timeoutMs: number }
 // Un sito che per questo scan non c'è: non accetta connessioni, non risponde
 // in tempo, dà 5xx anche al secondo tentativo. Non è un errore da segnalare:
 // la fonte si riprova al prossimo scan (radar.ts la mette in pausa se non
-// risponde per più scan di fila)
+// risponde da più di un giorno)
 export class SourceUnreachable extends Error {}
 
 // Errore che può sparire riprovando una volta: 5xx, 429, download
@@ -25,21 +26,29 @@ class TransientError extends Error {
 
 const RETRY_AFTER_MS = 3_000
 
-// Host giù: le altre pagine dello stesso sito falliscono subito invece di
-// aspettare ognuna il suo timeout. Si azzera a ogni scan; la scadenza
-// copre chi scarica fuori da uno scan (cartella del bando)
-const DOWN_FOR_MS = 30 * 60_000
-const downHosts = new Map<string, number>()
+// Host giù durante uno scan: le altre pagine dello stesso sito falliscono
+// subito invece di aspettare ognuna il suo timeout. Vale dentro
+// `withDownHosts`, cioè per uno scan; fuori (cartella del bando) ogni
+// richiesta fa da sé
+const downHosts = new AsyncLocalStorage<Set<string>>()
 
-export const resetDownHosts = () => downHosts.clear()
+export const withDownHosts = <T>(work: () => Promise<T>) => downHosts.run(new Set(), work)
 
-const markDown = (url: string) => downHosts.set(new URL(url).host, Date.now() + DOWN_FOR_MS)
+const markDown = (url: string) => downHosts.getStore()?.add(new URL(url).host)
 
 function assertUp(url: string) {
   const host = new URL(url).host
-  const until = downHosts.get(host)
-  if (until && until > Date.now()) throw new SourceUnreachable(`${host} non risponde`)
+  if (downHosts.getStore()?.has(host)) throw new SourceUnreachable(`${host} non risponde`)
 }
+
+// Una risposta che non va: 5xx e 429 possono passare riprovando, il resto no
+const statusError = (status: number, message: string) =>
+  status >= 500 || status === 429 ? new TransientError(message) : new Error(message)
+
+// Un corpo che non arriva tutto: tempo scaduto (non si riprova, ma il sito
+// ha risposto e non si segna giù) o connessione caduta (si riprova una volta)
+const bodyError = (signal: AbortSignal, what: string) =>
+  signal.aborted ? new SourceUnreachable(`${what}: troppo lento`) : new TransientError(`${what}: interrotto`)
 
 // Un errore passeggero si riprova una volta dopo una pausa. Se torna, il
 // sito per questo scan non c'è; se non ha accettato la connessione, l'host
@@ -156,10 +165,9 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
     if (/captcha|anti-robot/i.test(`${res.headers.get('server')} ${head}`)) {
       throw new Error(`${url}: il sito chiede un CAPTCHA anti-robot, non si legge in automatico`)
     }
-    if (res.status === 404 || res.status === 410) return skip(`${origin} ha risposto ${res.status} per ${url}`)
     const message = `${origin} ha risposto ${res.status} per ${url}`
-    if (res.status >= 500 || res.status === 429) throw new TransientError(message)
-    if (!res.ok) throw new Error(message)
+    if (res.status === 404 || res.status === 410) return skip(message)
+    if (!res.ok) throw statusError(res.status, message)
     return skip(tooLarge)
   }
 
@@ -173,11 +181,7 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
         chunk = await reader.read()
       }
       catch {
-        // Tempo scaduto a metà del download (file grande, sito lento): non si
-        // riprova, ma il sito ha risposto e non si segna giù. Connessione
-        // caduta: si riprova una volta
-        if (signal.aborted) throw new SourceUnreachable(`Download troppo lento per ${url}`)
-        throw new TransientError(`Download interrotto per ${url}`)
+        throw bodyError(signal, `Download di ${url}`)
       }
       const { done, value } = chunk
       if (done) break
@@ -255,35 +259,33 @@ export function resolveOrigin(url: string): Promise<string> {
   })
 }
 
+// Le API dei cataloghi rispondono entro un minuto, anche coi cataloghi interi
+const API_TIMEOUT_MS = 60_000
+
 // Le API dei cataloghi (incentivi.gov.it, TED): indirizzi fissi, scelti da
 // noi, con la stessa logica dei siti per i tentativi e i siti giù
-export function fetchApi<T>(url: string, init: RequestInit, timeoutMs: number): Promise<T> {
+export function fetchApi<T>(url: string, init: RequestInit = {}): Promise<T> {
   return withRetry(url, async () => {
-    const signal = AbortSignal.timeout(timeoutMs)
+    const signal = AbortSignal.timeout(API_TIMEOUT_MS)
     let res: Response
     try {
       res = await fetch(url, { ...init, signal })
     }
     catch (err) {
-      throw requestError(err, url, timeoutMs, signal)
+      throw requestError(err, url, API_TIMEOUT_MS, signal)
     }
     const host = new URL(url).host
-    if (res.status >= 500 || res.status === 429) {
-      await res.body?.cancel()
-      throw new TransientError(`${host} ha risposto ${res.status}`)
-    }
     if (!res.ok) {
-      const body = await res.text().catch(() => '')
-      throw new Error(`${host} ha risposto ${res.status}: ${body.slice(0, 200)}`)
+      // L'API dice cosa non va nel corpo (TED: il campo della query)
+      const detail = await res.text().catch(() => '')
+      throw statusError(res.status, `${host} ha risposto ${res.status}: ${detail.slice(0, 200)}`)
     }
     try {
       return await res.json() as T
     }
     catch {
-      // Tempo scaduto a metà della risposta (non si riprova), o corpo
-      // interrotto o non JSON
-      if (signal.aborted) throw new SourceUnreachable(`Risposta troppo lenta da ${host}`)
-      throw new TransientError(`Risposta interrotta da ${host}`)
+      // Anche un corpo che non è JSON si riprova una volta
+      throw bodyError(signal, `Risposta di ${host}`)
     }
   })
 }

@@ -1,5 +1,4 @@
-import { formatWholeEuro } from '#shared/money'
-import { ELIGIBILITY_LABELS, grantKindLabel, sourceLabel, type EvaluatedGrant } from '#shared/radar'
+import { ELIGIBILITY_LABELS, grantAmountFacts, grantTags, sourceLabel, type EvaluatedGrant } from '#shared/radar'
 import { BRAND_HEADER, brandFooter, C, escapeHtml, FONT_BODY, FONT_DISPLAY, HEAD, SITE_URL } from './contact-templates'
 
 // Mail di fine scan del radar: i bandi nuovi candidabili, poi quelli con
@@ -21,17 +20,7 @@ const dates = (g: EvaluatedGrant): [string, string][] => [
   ['Scade il', g.deadline ? longDay(g.deadline) : 'a sportello / non indicata'],
 ]
 
-// Importo e agevolazione (per una gara: base d'asta e procedura)
-function facts(g: EvaluatedGrant): [string, string][] {
-  const tender = g.kind === 'tender'
-  const rows: [string, string][] = []
-  if (g.maxAmount) rows.push([tender ? 'Importo a base di gara' : 'Fino a', formatWholeEuro(g.maxAmount)])
-  if (g.funding) rows.push([tender ? 'Procedura' : 'Agevolazione', g.funding])
-  return rows
-}
-
-const tag = (g: EvaluatedGrant) =>
-  [ELIGIBILITY_LABELS[g.eligibility], grantKindLabel(g.kind), g.ai && 'IA', sourceLabel(g.source)].filter(Boolean).join(' · ')
+const tag = (g: EvaluatedGrant) => [ELIGIBILITY_LABELS[g.eligibility], ...grantTags(g), sourceLabel(g.source)].join(' · ')
 
 const toVerify = (g: EvaluatedGrant) => g.requirements.filter((_, i) => g.evaluations[i]!.outcome === 'to_verify')
 
@@ -54,7 +43,7 @@ function grantHtml(g: EvaluatedGrant) {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0 0;margin:0 0 12px;"><tr>${dates(g).map(date).join('<td width="8"></td>')}</tr></table>
           <p style="margin:0 0 12px;font-family:${FONT_BODY};font-size:15px;line-height:1.5;color:${C.ink};">${escapeHtml(g.summary)}</p>
           ${g.verdictReason ? `<p style="margin:0 0 12px;font-family:${FONT_BODY};font-size:14px;line-height:1.5;color:${C.ink};"><strong>Per voi:</strong> ${escapeHtml(g.verdictReason)}</p>` : ''}
-          ${facts(g).map(row).join('')}
+          ${grantAmountFacts(g).map(row).join('')}
           ${toCheck ? `<p style="margin:12px 0 4px;font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${C.ink};">Da verificare:</p><ul style="margin:0;padding-left:18px;font-family:${FONT_BODY};font-size:13px;color:${C.inkSoft};">${toCheck}</ul>` : ''}
           <p style="margin:14px 0 0;font-family:${FONT_BODY};font-size:14px;"><a href="${escapeHtml(g.url)}" style="color:${C.accent};font-weight:600;">Apri il bando</a></p>
         </td>
@@ -100,13 +89,13 @@ export function digestHtml(grants: EvaluatedGrant[]) {
 
 export function digestText(grants: EvaluatedGrant[]) {
   const blocks = grants.map(g => [
-    `${tag(g).toUpperCase()}`,
+    tag(g).toUpperCase(),
     g.title,
     g.issuer,
     ...dates(g).map(([label, value]) => `${label.toUpperCase()}: ${value}`),
     g.summary,
     g.verdictReason && `Per voi: ${g.verdictReason}`,
-    ...facts(g).map(([label, value]) => `${label}: ${value}`),
+    ...grantAmountFacts(g).map(([label, value]) => `${label}: ${value}`),
     ...toVerify(g).map(r => `Da verificare: ${r.label}`),
     g.url,
   ].filter(Boolean).join('\n'))

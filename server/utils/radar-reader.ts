@@ -1,8 +1,10 @@
+import { createHash } from 'node:crypto'
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { ISO_DATE, romeLocalToDate, romeYear } from '#shared/dates'
 import {
   GRANT_KINDS,
+  grantKind,
   LEGAL_FORMS,
   PROVINCES,
   REQUIREMENT_KINDS,
@@ -13,6 +15,7 @@ import {
   type RequirementParams,
   type TokenUsage,
   type Verdict,
+  valuesOf,
 } from '#shared/radar'
 import DIDAP from '../radar/didap.md'
 
@@ -21,15 +24,18 @@ import DIDAP from '../radar/didap.md'
 // sulle imprese e sulle gare per servizi digitali.
 
 // Cosa fa l'azienda (server/radar/didap.md), senza l'introduzione per chi
-// modifica il file. Sta nei prompt in cache: costa poco a ogni chiamata
+// modifica il file. Sta nel prompt del giudizio, in cache: la lettura
+// estrae i fatti del bando e non dipende da chi lo legge
 export const COMPANY_PROFILE = DIDAP.slice(DIDAP.indexOf('\n## ') + 1).trim()
+
+// Impronta di un prompt e della forma della risposta: quando cambia, il
+// radar rilegge (READER_KEY) o rigiudica (JUDGE_KEY) da solo
+const promptKey = (...parts: unknown[]) => createHash('sha256').update(JSON.stringify(parts)).digest('hex').slice(0, 16)
 
 // Il filtro sul tema, deciso alla lettura del bando
 const DIGITAL_RULE = `"digital" is for a software house that builds websites, apps, software and AI solutions: true only if the call funds IT or digital work as its purpose or as one of its main, explicitly named activities: software, web or app development, artificial intelligence, data, cloud, cybersecurity, e-commerce, digital transformation of business processes, digital services or ICT consulting, research and innovation projects in the digital field, calls for innovative or high-tech startups (startup innovative), which usually fund digital products. It is false when the call funds something else, such as machinery, vehicles, tractors or farm equipment, buildings, energy plants, agriculture, tourism facilities, film or audiovisual production, hiring, training, liquidity, guarantees, trade fairs or exports, even if software or digital costs appear as one eligible expense among many.`
 
-const SYSTEM_PROMPT = `You read Italian calls ("bandi", "avvisi", "incentivi", "gare") for the company described below, a software house based in Puglia, Italy, and extract structured data. Answer with one JSON object and nothing else.
-
-${COMPANY_PROFILE}
+const SYSTEM_PROMPT = `You read Italian calls ("bandi", "avvisi", "incentivi", "gare") for a software house based in Puglia, Italy, and extract structured data. Answer with one JSON object and nothing else.
 
 First decide "kind":
 - "grant": private businesses apply as beneficiaries and receive something: a grant, a subsidised loan, a voucher, a tax credit, free services.
@@ -90,6 +96,8 @@ Rules: never invent a value, use null or an empty array when the call does not s
 
 const str = z.string().trim().nullish().transform(v => v ?? '')
 const num = z.number().finite().nullish().transform(v => (v === null || v === undefined || v < 0 ? undefined : v))
+// Senza risposta, o con una risposta strana, resta da capire
+const bool = z.boolean().nullish().catch(null).transform(v => v ?? null)
 const strList = z
   .array(z.unknown())
   .nullish()
@@ -118,13 +126,13 @@ const requirementSchema = z.object({
   page: z.number().int().positive().nullish().catch(null),
 })
 
-const KIND_VALUES = GRANT_KINDS.map(k => k.value) as [GrantKind, ...GrantKind[]]
+const KIND_VALUES = valuesOf(GRANT_KINDS)
 
 const grantSchema = z.object({
   kind: z.enum(KIND_VALUES).catch('grant'),
-  // Senza risposta resta da capire: il bando si mostra
-  digital: z.boolean().nullish().catch(null).transform(v => v ?? null),
-  ai: z.boolean().nullish().catch(null).transform(v => v ?? null),
+  // Un bando senza tema si mostra
+  digital: bool,
+  ai: bool,
   title: z.string().trim().min(1),
   issuer: str,
   summary: str,
@@ -322,6 +330,8 @@ const GRANT_SCHEMA = object({
   },
 })
 
+export const READER_KEY = promptKey(SYSTEM_PROMPT, GRANT_SCHEMA)
+
 let client: Anthropic | null = null
 // L'SDK riprova da solo 429, 529 e 5xx rispettando retry-after
 const anthropic = () => (client ??= new Anthropic({ timeout: 120_000, maxRetries: 2 }))
@@ -409,6 +419,8 @@ const JUDGE_SCHEMA = object({
   reason: STRING,
 })
 
+export const JUDGE_KEY = promptKey(JUDGE_PROMPT, JUDGE_SCHEMA)
+
 export type GrantSummary = {
   kind: GrantKind
   title: string
@@ -451,7 +463,7 @@ export const profileText = (p: RadarProfile, now = new Date()) =>
   `${COMPANY_PROFILE}\n\n## Dati\n\n${profileFields(p, now)}`
 
 export const summaryText = (g: GrantSummary) => [
-  `Tipo: ${g.kind === 'tender' ? 'gara, l\'ente compra un servizio' : 'finanziamento'}`,
+  `Tipo: ${grantKind(g.kind).label}`,
   `Titolo: ${g.title}`,
   `Ente: ${g.issuer}`,
   `Agevolazione: ${g.funding}`,

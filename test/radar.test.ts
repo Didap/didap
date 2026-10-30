@@ -4,7 +4,10 @@ import {
   evaluateGrant,
   evaluateRadarGrant,
   evaluateRequirement,
+  grantAmountFacts,
+  grantTags,
   isInScope,
+  isNewIn,
   parseRadarSettings,
   radarSettingsSchema,
   sourceGroup,
@@ -17,6 +20,7 @@ import {
   type Requirement,
   type SourceGroup,
 } from '#shared/radar'
+import { formatWholeEuro } from '#shared/money'
 import { parse as parseYaml } from 'yaml'
 import { grantExport, grantFileName } from '../server/utils/radar-export'
 import { attachmentName, decodeHtml, isPdfLink, mainHtml, pageLinks, safeDecode } from '../server/utils/radar-fetch'
@@ -103,13 +107,13 @@ describe('valutazione dei requisiti', () => {
 describe('impostazioni del radar', () => {
   it('senza dati usa i default: tutte le fonti, gare comprese, mail a fine scan', () => {
     expect(parseRadarSettings(undefined)).toEqual(DEFAULT_RADAR_SETTINGS)
-    expect(DEFAULT_RADAR_SETTINGS.search).toMatchObject({ groups: SOURCE_GROUPS.map(g => g.value), tenders: true })
+    expect(DEFAULT_RADAR_SETTINGS.search.groups).toEqual(SOURCE_GROUPS.map(g => g.value))
     expect(DEFAULT_RADAR_SETTINGS.notify).toEqual({ enabled: true, emails: [] })
   })
 
   it('una ricerca coi comuni spuntati uno a uno diventa le loro province', () => {
     const s = parseRadarSettings({ search: { groups: ['comuni'], comuni: ['072006', '075035', '072004'], digitalOnly: true } })
-    expect(s.search).toEqual({ groups: ['comuni'], provinces: ['BA', 'LE'], digitalOnly: true, tenders: true })
+    expect(s.search).toEqual({ groups: ['comuni'], provinces: ['BA', 'LE'], digitalOnly: true })
   })
 
   it('un campo non valido torna al default, gli altri restano', () => {
@@ -123,8 +127,8 @@ describe('impostazioni del radar', () => {
     // Campi tolti (descrizione, ora della mail) cadono
     expect(s.profile).not.toHaveProperty('description')
     expect(s.notify).toEqual({ enabled: true, emails: ['a@b.it'] })
-    // Salvate prima di "Solo digitali" e delle gare: filtro acceso, gare dentro
-    expect(s.search).toEqual({ groups: ['governo'], provinces: [], digitalOnly: true, tenders: true })
+    // Salvate prima di "Solo digitali": filtro acceso
+    expect(s.search).toEqual({ groups: ['governo'], provinces: [], digitalOnly: true })
   })
 
   it('invio attivo senza indirizzi non si salva', () => {
@@ -258,7 +262,7 @@ describe('ricerca e giudizio', () => {
   })
 
   it('moduli, province dei comuni, solo digitali e gare', () => {
-    const search = { groups: ['governo', 'comuni'] as SourceGroup[], provinces: ['BA'] as Province[], digitalOnly: true, tenders: true }
+    const search = { groups: ['governo', 'comuni'] as SourceGroup[], provinces: ['BA'] as Province[], digitalOnly: true }
     expect(isInScope(grant(), search)).toBe(true)
     expect(isInScope(grant({ source: 'sistema-puglia' }), search)).toBe(false)
     expect(isInScope(grant({ source: 'comune-072006' }), search)).toBe(true)
@@ -266,13 +270,29 @@ describe('ricerca e giudizio', () => {
     expect(isInScope(grant({ digital: false }), search)).toBe(false)
     expect(isInScope(grant({ digital: null }), search)).toBe(true)
     expect(isInScope(grant({ digital: false }), { ...search, digitalOnly: false })).toBe(true)
-    expect(isInScope(grant({ kind: 'tender' }), search)).toBe(true)
-    expect(isInScope(grant({ kind: 'tender' }), { ...search, tenders: false })).toBe(false)
+    // Le gare di qualunque fonte solo col modulo "Gare IT"
+    expect(isInScope(grant({ kind: 'tender' }), search)).toBe(false)
+    expect(isInScope(grant({ kind: 'tender' }), { ...search, groups: [...search.groups, 'gare'] })).toBe(true)
     expect(sourceLabel('comune-072006')).toBe('Comune di Bari')
     expect(sourceGroup('puglia-sviluppo')).toBe('regione')
     expect(sourceGroup('innovapuglia')).toBe('regione')
     expect(sourceGroup('camera-ba')).toBe('camere')
     expect(sourceGroup('ted-puglia')).toBe('gare')
+  })
+
+  it('nuovi di uno scan, etichette e importi per tipo', () => {
+    const evaluated = (over: Partial<RadarGrant>, eligibility: 'to_verify' | 'excluded' = 'to_verify') =>
+      ({ ...grant(over), eligibility, evaluations: [] })
+    expect(isNewIn(evaluated({ runId: 'r1' }), 'r1')).toBe(true)
+    expect(isNewIn(evaluated({ runId: 'r1' }), 'r2')).toBe(false)
+    expect(isNewIn(evaluated({ runId: 'r1' }, 'excluded'), 'r1')).toBe(false)
+    expect(isNewIn(evaluated({ runId: 'r1', closed: true }), 'r1')).toBe(false)
+    expect(isNewIn(evaluated({ runId: null }), null)).toBe(false)
+    expect(grantTags(grant({ kind: 'tender', ai: true }))).toEqual(['Gara', 'IA'])
+    expect(grantTags(grant())).toEqual([])
+    expect(grantAmountFacts(grant({ kind: 'tender', maxAmount: 241935, funding: 'Procedura aperta' })))
+      .toEqual([['Base di gara', formatWholeEuro(241935)], ['Procedura', 'Procedura aperta']])
+    expect(grantAmountFacts(grant({ maxAmount: 50000 }))).toEqual([['Fino a', formatWholeEuro(50000)]])
   })
 
   it('il giudizio pesa più delle regole, tranne che per escludere', () => {

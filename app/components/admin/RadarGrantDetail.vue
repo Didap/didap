@@ -5,8 +5,15 @@ import RadarGrantDraft from '~/components/admin/RadarGrantDraft.vue'
 import RadarGrantFiles from '~/components/admin/RadarGrantFiles.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { formatDay } from '~/utils/format'
-import { formatWholeEuro } from '#shared/money'
-import { ELIGIBILITY_OUTCOME, sourceLabel, VERDICT_LABELS, type EvaluatedGrant, type FolderStart } from '#shared/radar'
+import {
+  ELIGIBILITY_OUTCOME,
+  grantAmountFacts,
+  grantKind,
+  sourceLabel,
+  VERDICT_LABELS,
+  type EvaluatedGrant,
+  type FolderStart,
+} from '#shared/radar'
 
 // Scheda di un bando, in tre schede: "Dettaglio" (giudizio, dati, sintesi,
 // requisiti e come si presenta), "File" (la cartella del bando) e "Bozza"
@@ -27,12 +34,12 @@ const facts = computed(() => {
   const g = props.grant
   const rows: [string, string][] = [
     ['Scadenza', g.deadline ? formatDay(g.deadline) : 'A sportello'],
+    ['Trovato il', formatDay(g.createdAt)],
+    ['Tipo', `${grantKind(g.kind).label}${g.ai ? ', con IA' : ''}`],
     ['Fonte', sourceLabel(g.source)],
   ]
   if (g.opensAt && new Date(g.opensAt) > new Date()) rows.push(['Apre', formatDay(g.opensAt)])
-  if (g.maxAmount) rows.push(['Fino a', formatWholeEuro(g.maxAmount)])
-  if (g.funding) rows.push(['Aiuto', g.funding])
-  return rows
+  return [...rows, ...grantAmountFacts(g)]
 })
 
 const GENERIC = 'Da verificare a mano'

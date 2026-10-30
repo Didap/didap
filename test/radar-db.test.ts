@@ -8,17 +8,20 @@ import {
   listEvaluatedGrants,
   listGrants,
   listRuns,
-  radarTick,
+  radarRunNow,
+  radarStatus,
   radarWipe,
   readPending,
   readRadarSettings,
   releaseLease,
+  runScan,
   sendDigest,
   setGrantLiked,
   writeRadarSettings,
   type Mail,
   type RadarDeps,
 } from '../server/utils/radar'
+import { SourceUnreachable } from '../server/utils/radar-fetch'
 import { ReaderUnavailable, type GrantJudge, type GrantReader, type GrantReading } from '../server/utils/radar-reader'
 import type { RadarSource } from '../server/utils/radar-sources'
 import { openTestDb, resetTestDb, TEST_DATABASE_URL } from './helpers/db'
@@ -53,6 +56,8 @@ const fakeReader: GrantReader = async ({ content }): Promise<GrantReading> => {
   const max = Number(/max (\d+)/.exec(content)?.[1])
   return {
     admitsCompanies: true,
+    kind: 'grant',
+    ai: null,
     digital: !content.includes('trattori'),
     title: content,
     issuer: 'Regione Puglia',
@@ -244,17 +249,16 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     const settings = await readRadarSettings(sql)
     const { profile } = settings
-    // I trattori (non digitali) sono fuori dalla ricerca: non si giudicano
-    expect(await judgeGrants(sql, fakeJudge, settings, NOW)).toEqual({ judged: 3, unavailable: false })
+    // Si giudicano tutti, anche quelli fuori dalla ricerca (i trattori, non digitali)
+    expect(await judgeGrants(sql, fakeJudge, settings, NOW)).toEqual({ judged: 4, unavailable: false })
     const byTitle = Object.fromEntries((await listEvaluatedGrants(sql, NOW)).map(g => [g.title, g]))
     expect(byTitle['bando sicuro']!.eligibility).toBe('eligible')
     expect(byTitle['bando escluso']!.eligibility).toBe('excluded')
     expect(byTitle['bando incerto']!.eligibility).toBe('to_verify')
-    expect(byTitle.trattori!.verdict).toBeNull()
+    expect(byTitle.trattori!.verdict).toBe('maybe')
     // Stesso profilo: niente da rifare; profilo nuovo: tutti di nuovo
     expect((await judgeGrants(sql, fakeJudge, settings, NOW)).judged).toBe(0)
-    // Profilo nuovo: di nuovo tutti quelli della ricerca
-    expect((await judgeGrants(sql, fakeJudge, { ...settings, profile: { ...profile, employees: 12 } }, NOW)).judged).toBe(3)
+    expect((await judgeGrants(sql, fakeJudge, { ...settings, profile: { ...profile, employees: 12 } }, NOW)).judged).toBe(4)
     const limited: GrantJudge = async () => {
       throw new ReaderUnavailable('troppi token')
     }
@@ -272,46 +276,138 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     expect((await listEvaluatedGrants(sql, NOW))[0]).toMatchObject({ verdict: null, verdictReason: '' })
   })
 
-  it('in un giro un testo che fa errore si prova una volta sola', async () => {
+  const scope = { groups: DEFAULT_RADAR_SETTINGS.search.groups, provinces: [] }
+
+  it('in uno scan un testo che fa errore si prova una volta sola', async () => {
     await writeRadarSettings(sql, settings(null))
     let calls = 0
     const broken: GrantReader = async () => {
       calls++
       throw new Error('Risposta del modello troncata')
     }
-    await radarTick(sql, { ...deps([fakeSource({ a: 'bando lungo' })]), reader: broken }, NOW)
+    await runScan(sql, { ...deps([fakeSource({ a: 'bando lungo' })]), reader: broken }, scope, NOW)
     expect(calls).toBe(1)
     const [doc] = await sql`select status, attempts from radar_documents`
     expect(doc).toMatchObject({ status: 'failed', attempts: 1 })
   })
 
-  it('il giro importa la ricerca salvata, lo registra e manda la mail una volta al giorno', async () => {
+  it('lo scan legge le fonti, lo registra coi bandi nuovi e manda la mail solo con quelli', async () => {
     await writeRadarSettings(sql, settings(null))
     const d = deps([fakeSource({ a: 'bando A', b: 'enti locali' })], mailer)
     d.usage.input = 1000
-    expect(await radarTick(sql, d, NOW)).toBe('ok')
+    await runScan(sql, d, scope, NOW)
     expect(sent).toHaveLength(1)
     const [run] = await listRuns(sql)
     expect(run).toMatchObject({
-      trigger: 'automatico',
+      trigger: 'manuale',
       status: 'done',
-      groups: ['governo', 'regione'],
-      stats: { listed: 2, queued: 2, read: 2, grants: 1, judged: 1, errors: [] },
+      groups: scope.groups,
+      stats: { listed: 2, queued: 2, read: 2, grants: 1, judged: 1, errors: [], unreachable: [], paused: [] },
       usage: { input: 1000 },
     })
-    // Un quarto d'ora dopo: niente da fare, niente nel registro
-    expect(await radarTick(sql, d, new Date('2026-10-20T08:15:00Z'))).toBe('ok')
+    const scanOf = async () => Object.fromEntries((await listGrants(sql, NOW)).map(g => [g.title, g.runId]))
+    expect(await scanOf()).toEqual({ 'bando A': run!.id })
+    // Lo scan dopo trova un bando in più: nuovo solo quello, mail solo con quello
+    await runScan(sql, deps([fakeSource({ a: 'bando A', c: 'bando C' })], mailer), scope, new Date('2026-10-21T08:00:00Z'))
+    const [second] = await listRuns(sql)
+    expect(await scanOf()).toEqual({ 'bando A': run!.id, 'bando C': second!.id })
+    expect((await radarStatus(sql, d)).lastScan).toMatchObject({ id: second!.id, status: 'done' })
+    expect(sent).toHaveLength(2)
+    expect(sent[1]!.subject).toContain('1 bando nuovo')
+  })
+
+  it('un sito che non risponde non è un errore; se non risponde da più di un giorno va in pausa', async () => {
+    let calls = 0
+    const down = {
+      ...fakeSource({}),
+      slug: 'comune-072006',
+      fetchListing: async () => {
+        calls++
+        throw new SourceUnreachable('www.comune.bari.it non risponde')
+      },
+    }
+    const hours = (h: number) => new Date(NOW.getTime() + h * 3_600_000)
+    // Nel primo giorno si riprova a ogni scan, anche ravvicinato
+    for (const h of [0, 1, 20, 25]) {
+      expect(await ingestSources(sql, [down], hours(h))).toMatchObject({ errors: [], unreachable: ['Comune di Bari'], paused: [] })
+    }
+    // A 25 ore dalla prima volta è andato in pausa per due settimane
+    expect(await ingestSources(sql, [down], hours(26))).toMatchObject({ errors: [], unreachable: [], paused: ['Comune di Bari'] })
+    expect(calls).toBe(4)
+    // Passata la pausa si riprova; se risponde, riparte da zero
+    await ingestSources(sql, [{ ...down, fetchListing: async () => [] }], hours(25 + 15 * 24))
+    expect(await sql`select * from radar_sources`).toHaveLength(0)
+  })
+
+  it('col prompt di lettura cambiato si rileggono i bandi digitali, che intanto restano in elenco', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', t: 'trattori' })], NOW)
+    await readPending(sql, fakeReader)
+    const liked = (await listGrants(sql, NOW)).find(g => g.title === 'bando A')!
+    await setGrantLiked(sql, liked.id, true)
+    await sql`update radar_documents set reader_key = 'prompt vecchio'`
+    expect(await listGrants(sql, NOW)).toHaveLength(2)
+    // Solo il bando digitale torna in coda; riletto "non per le imprese", col cuore resta
+    const notForUs: GrantReader = async () => ({ admitsCompanies: false })
+    expect(await readPending(sql, notForUs)).toMatchObject({ read: 1, failed: [] })
+    const after = Object.fromEntries((await listGrants(sql, NOW)).map(g => [g.title, g.liked]))
+    expect(after).toEqual({ 'bando A': true, 'trattori': false })
+    expect((await readPending(sql, fakeReader)).tried).toEqual([])
+  })
+
+  it('una rilettura che fallisce lascia il bando com\'era, in elenco', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A' })], NOW)
+    await readPending(sql, fakeReader)
+    await sql`update radar_documents set reader_key = 'prompt vecchio'`
+    const broken: GrantReader = async () => {
+      throw new Error('Risposta del modello troncata')
+    }
+    expect((await readPending(sql, broken)).failed).toHaveLength(1)
+    expect((await listGrants(sql, NOW)).map(g => g.title)).toEqual(['bando A'])
+    expect((await readPending(sql, fakeReader)).tried).toEqual([])
+  })
+
+  it('i testi scartati col prompt di prima dell\'impronta si rileggono una volta', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'enti locali', b: 'bando B' })], NOW)
+    await readPending(sql, fakeReader)
+    await sql`update radar_documents set reader_key = null`
+    // Il bando B (digitale) e il testo scartato tornano in coda; poi più nessuno
+    expect((await readPending(sql, fakeReader)).tried).toHaveLength(2)
+    expect((await readPending(sql, fakeReader)).tried).toEqual([])
+  })
+
+  it('uno scan rimasto "in corso" senza il turno si mostra fallito', async () => {
+    const [run] = await sql<{ id: string }[]>`
+      insert into radar_runs (trigger, groups, status) values ('manuale', ${['governo']}, 'running') returning id
+    `
+    const d = deps([])
+    expect((await radarStatus(sql, d)).lastScan).toMatchObject({ id: run!.id, status: 'failed' })
+    expect((await listRuns(sql))[0]).toMatchObject({ status: 'failed', error: 'Interrotto (il server si è riavviato)' })
+    // Col turno preso è davvero in corso
+    const lease = await acquireLease(sql)
+    expect((await radarStatus(sql, d)).lastScan?.status).toBe('running')
+    await releaseLease(sql, lease!)
+  })
+
+  it('a fine scan la mail recupera i bandi di uno scan la cui mail non è partita', async () => {
+    await writeRadarSettings(sql, settings(null))
+    const broken = async () => {
+      throw new Error('Resend giù')
+    }
+    await runScan(sql, deps([fakeSource({ a: 'bando A' })], broken), scope, NOW)
+    expect((await listRuns(sql))[0]!.stats.errors).toEqual(['Mail non inviata: Resend giù'])
+    await runScan(sql, deps([fakeSource({ a: 'bando A', b: 'bando B' })], mailer), scope, new Date('2026-10-21T08:00:00Z'))
     expect(sent).toHaveLength(1)
-    expect(await listRuns(sql)).toHaveLength(1)
+    expect(sent[0]!.subject).toContain('2 bandi nuovi')
   })
 
   it('i comuni delle province non scelte restano fuori dalla mail', async () => {
     const comune = { ...fakeSource({ a: 'bando del comune' }), slug: 'comune-072006' }
     await ingestSources(sql, [comune], NOW)
     await readPending(sql, fakeReader)
-    await writeRadarSettings(sql, settings(null))
-    expect(await sendDigest(sql, mailer, NOW)).toBe(0)
     const s = settings(null)
+    s.search = { ...s.search, provinces: ['LE'] }
+    await writeRadarSettings(sql, s)
+    expect(await sendDigest(sql, mailer, NOW)).toBe(0)
     s.search = { ...s.search, groups: ['comuni'], provinces: ['BA'] }
     await writeRadarSettings(sql, s)
     expect(await sendDigest(sql, mailer, NOW)).toBe(1)
@@ -319,7 +415,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
 
   it('svuota i dati ma tiene impostazioni e registro', async () => {
     await writeRadarSettings(sql, settings(100))
-    await radarTick(sql, deps([fakeSource({ a: 'bando A' })]), NOW)
+    await runScan(sql, deps([fakeSource({ a: 'bando A' })]), scope, NOW)
     expect(await radarWipe(sql)).toEqual({ deleted: 1, kept: 0 })
     expect(await listEvaluatedGrants(sql, NOW)).toEqual([])
     expect((await readRadarSettings(sql)).profile.revenue).toBe(100)
@@ -408,11 +504,11 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     expect((await listGrants(sql, NOW, { withFolders: true })).map(g => g.title)).toEqual(['bando A'])
   })
 
-  it('un giro alla volta', async () => {
+  it('uno scan alla volta', async () => {
     const lease = await acquireLease(sql)
     expect(lease).toBeInstanceOf(Date)
     expect(await acquireLease(sql)).toBeNull()
-    expect(await radarTick(sql, { ...deps([]), reader: null, judge: null }, NOW)).toBe('busy')
+    await expect(radarRunNow(sql, deps([]), scope)).rejects.toMatchObject({ statusCode: 409 })
     await releaseLease(sql, new Date(0))
     expect(await acquireLease(sql)).toBeNull()
     await releaseLease(sql, lease!)

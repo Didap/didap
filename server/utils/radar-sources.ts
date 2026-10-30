@@ -1,24 +1,21 @@
 import { romeDate } from '#shared/dates'
 import { comuneSlug, comuniOf, type RadarSearch } from '#shared/radar'
-import { crawlSource } from './radar-crawl'
+import { crawlSource, type CrawlOptions } from './radar-crawl'
 import {
-  attachmentName,
-  attachmentsText,
-  fetchFromSource,
+  fetchApi,
   fetchSourcePage,
   htmlToText,
   innerHtml,
   isPdfLink,
   safeDecode,
-  SOURCE_TIMEOUT_MS,
-  type Attachment,
+  withAttachments,
 } from './radar-fetch'
 import type { LinkPicker } from './radar-reader'
 
-// Fonti del radar in tre moduli: governo (catalogo di incentivi.gov.it),
-// regione (Regione Puglia, Sistema Puglia, Puglia Sviluppo) e comuni, uno
-// per uno. Ogni fonte elenca i bandi e ne restituisce il testo; il resto lo
-// fa radar.ts.
+// Fonti del radar in moduli: governo (catalogo di incentivi.gov.it), regione
+// (Regione Puglia, Sistema Puglia, Puglia Sviluppo, ARTI, InnovaPuglia),
+// camere di commercio, gare IT (TED) e comuni, uno per uno. Ogni fonte
+// elenca i bandi e ne restituisce il testo; il resto lo fa radar.ts.
 
 // `closed`: la fonte lo elenca ancora ma lo segna come chiuso.
 // `content`: il testo, se l'elenco lo dà già (niente fetchContent)
@@ -140,9 +137,8 @@ function incentiviGov(): RadarSource {
         rows: '20000',
         fl: Object.values(F).join(','),
       })
-      const res = await fetch(`${INCENTIVI}/solr/coredrupal/select?${params}`, { signal: AbortSignal.timeout(60_000) })
-      if (!res.ok) throw new Error(`incentivi.gov.it ha risposto ${res.status}`)
-      const docs = ((await res.json()) as { response?: { docs?: Incentive[] } }).response?.docs
+      const body = await fetchApi<{ response?: { docs?: Incentive[] } }>(`${INCENTIVI}/solr/coredrupal/select?${params}`)
+      const docs = body.response?.docs
       if (!docs) throw new Error('incentivi.gov.it non ha restituito bandi')
 
       const now = new Date()
@@ -305,6 +301,107 @@ const pugliaSviluppo = (picker: LinkPicker) => crawlSource(
   picker,
 )
 
+// ---------- agenzie regionali e camere di commercio ----------
+
+// ARTI (innovazione, ricerca, startup) e InnovaPuglia (la società IT della
+// Regione: gare e avvisi digitali). Siti senza un elenco unico: dalla home
+const AGENZIE: CrawlOptions[] = [
+  { slug: 'arti-puglia', startUrls: ['https://www.arti.puglia.it/'], maxDepth: 2, maxCalls: 20 },
+  { slug: 'innovapuglia', startUrls: ['https://www.innova.puglia.it/'], maxDepth: 2, maxCalls: 20 },
+]
+
+// Voucher digitali, bandi per l'innovazione e le gare delle camere: dalla
+// pagina dei bandi di ciascuna
+const CAMERE: CrawlOptions[] = [
+  { slug: 'camera-ba', startUrls: ['https://www.ba.camcom.it/info/bandi'], maxDepth: 2, maxCalls: 15 },
+  { slug: 'camera-brta', startUrls: ['https://www.brta.camcom.it/bandi'], maxDepth: 2, maxCalls: 15 },
+  { slug: 'camera-fg', startUrls: ['https://www.fg.camcom.it/bandi-contributi'], maxDepth: 2, maxCalls: 15 },
+  {
+    slug: 'camera-le',
+    startUrls: ['https://www.le.camcom.it/promozione-e-sviluppo-del-territorio/bandi-e-contributi'],
+    maxDepth: 2,
+    maxCalls: 15,
+  },
+]
+
+// ---------- TED, gare europee ----------
+
+// Le gare sopra soglia europea di tutti gli enti, comuni compresi, per
+// servizi informatici (72), software (48) e ricerca e sviluppo (73) da
+// svolgere in Puglia (NUTS ITF4), con le offerte ancora aperte
+const TED_SEARCH = 'https://api.ted.europa.eu/v3/notices/search'
+const TED_CPV = ['72000000', '48000000', '73000000']
+const TED_FIELDS = [
+  'publication-number',
+  'notice-title',
+  'buyer-name',
+  'publication-date',
+  'deadline-receipt-tender-date-lot',
+  'estimated-value-lot',
+  'procedure-type',
+  'description-lot',
+] as const
+const TED_LIMIT = 100
+const TED_MAX_PAGES = 10
+
+type TedValue = string | number | string[] | Record<string, string | string[]>
+export type TedNotice = Partial<Record<(typeof TED_FIELDS)[number], TedValue>>
+
+// I campi multilingue sono { ita: ..., eng: ... }: prima l'italiano
+function tedText(v: TedValue | undefined): string[] {
+  if (v === undefined || v === null) return []
+  if (typeof v !== 'object') return [String(v)]
+  if (Array.isArray(v)) return v.map(String)
+  const lang = v.ita ?? v.eng ?? Object.values(v)[0]
+  return lang === undefined ? [] : Array.isArray(lang) ? lang : [lang]
+}
+
+export function tedNoticeText(n: TedNotice): string {
+  const line = (label: string, values: string[]) => values.length ? `${label}: ${[...new Set(values)].join('; ')}` : ''
+  return [
+    line('Titolo', tedText(n['notice-title'])),
+    line('Ente appaltante', tedText(n['buyer-name'])),
+    line('Data di pubblicazione', tedText(n['publication-date']).map(d => d.slice(0, 10))),
+    line('Termine per le offerte', tedText(n['deadline-receipt-tender-date-lot']).map(d => d.slice(0, 10))),
+    line('Valore stimato (euro, IVA esclusa)', tedText(n['estimated-value-lot'])),
+    line('Procedura', tedText(n['procedure-type'])),
+    'Tipo: gara d\'appalto pubblicata su TED, aperta agli operatori economici',
+    ...tedText(n['description-lot']).map(d => `\n${d}`),
+  ].filter(Boolean).join('\n')
+}
+
+function tedPuglia(): RadarSource {
+  return {
+    slug: 'ted-puglia',
+    refreshDays: 0,
+    // Solo gare con le offerte aperte: chi sparisce è scaduta
+    complete: true,
+    async fetchListing() {
+      const today = romeDate(new Date()).replaceAll('-', '')
+      const query = `classification-cpv IN (${TED_CPV.join(' ')}) AND place-of-performance IN (ITF4) AND deadline-receipt-tender-date-lot >= ${today}`
+      const notices: TedNotice[] = []
+      // A pagine fino in fondo: l'elenco è completo, e chi manca si chiude
+      for (let page = 1; page <= TED_MAX_PAGES; page++) {
+        const body = await fetchApi<{ notices?: TedNotice[], totalNoticeCount?: number }>(TED_SEARCH, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, fields: TED_FIELDS, limit: TED_LIMIT, page, scope: 'ACTIVE' }),
+        })
+        if (!body.notices) throw new Error('TED non ha restituito gare')
+        notices.push(...body.notices)
+        if (body.notices.length < TED_LIMIT || notices.length >= (body.totalNoticeCount ?? 0)) {
+          return notices.flatMap((n) => {
+            const id = tedText(n['publication-number'])[0]
+            return id ? [{ externalId: id, url: `https://ted.europa.eu/it/notice/-/detail/${id}`, content: tedNoticeText(n) }] : []
+          })
+        }
+      }
+      // Un elenco tagliato chiuderebbe gare aperte: meglio dirlo
+      throw new Error(`TED: più di ${TED_LIMIT * TED_MAX_PAGES} gare, l'elenco non è completo`)
+    },
+  }
+}
+
 // ---------- comuni ----------
 
 // Dalla home del sito istituzionale: il modello trova gli elenchi di avvisi
@@ -321,7 +418,11 @@ const comune = (istat: string, site: string, picker: LinkPicker) => crawlSource(
 export function radarSources(search: Pick<RadarSearch, 'groups' | 'provinces'>, picker: LinkPicker): RadarSource[] {
   const sources: RadarSource[] = []
   if (search.groups.includes('governo')) sources.push(incentiviGov())
-  if (search.groups.includes('regione')) sources.push(regionePuglia(), sistemaPuglia(), pugliaSviluppo(picker))
+  if (search.groups.includes('regione')) {
+    sources.push(regionePuglia(), sistemaPuglia(), pugliaSviluppo(picker), ...AGENZIE.map(o => crawlSource(o, picker)))
+  }
+  if (search.groups.includes('camere')) sources.push(...CAMERE.map(o => crawlSource(o, picker)))
+  if (search.groups.includes('gare')) sources.push(tedPuglia())
   if (search.groups.includes('comuni')) {
     for (const c of comuniOf(search.provinces)) sources.push(comune(c.istat, c.site, picker))
   }

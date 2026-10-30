@@ -4,9 +4,9 @@ import { romeYear } from './dates'
 import { formatDecimal, formatWholeEuro } from './money'
 import { mergeSection } from './settings'
 
-// Radar bandi: dove cercare (governo, regione, comuni), parametri
-// dell'azienda (Didap o un'altra) con cui si valutano i bandi, e
-// impostazioni della mail di riepilogo.
+// Radar bandi: dove cercare (governo, regione, camere di commercio, gare,
+// comuni), parametri dell'azienda con cui si valutano i bandi, e mail di
+// fine scan. Cosa fa l'azienda sta in server/radar/didap.md.
 
 export const PROVINCES = [
   { value: 'BA', label: 'Bari' },
@@ -26,16 +26,6 @@ export const LEGAL_FORMS = [
   { value: 'da_costituire', label: 'Impresa da costituire' },
 ] as const
 
-export const WEEKDAYS = [
-  { value: 1, label: 'Lun' },
-  { value: 2, label: 'Mar' },
-  { value: 3, label: 'Mer' },
-  { value: 4, label: 'Gio' },
-  { value: 5, label: 'Ven' },
-  { value: 6, label: 'Sab' },
-  { value: 7, label: 'Dom' },
-] as const
-
 type Values<T extends readonly { value: unknown }[]> = T[number]['value']
 export type LegalForm = Values<typeof LEGAL_FORMS>
 export type Province = Values<typeof PROVINCES>
@@ -43,16 +33,15 @@ export type Province = Values<typeof PROVINCES>
 // Comuni per provincia, per i conteggi del pannello e le fonti
 export const comuniOf = (provinces: readonly string[]) => COMUNI_PUGLIA.filter(c => provinces.includes(c.province))
 
-const valuesOf = <T extends readonly { value: string }[]>(list: T) =>
+export const valuesOf = <T extends readonly { value: string }[]>(list: T) =>
   list.map(i => i.value) as unknown as [Values<T>, ...Values<T>[]]
 
 const euro = z.number().int().min(0).max(10_000_000_000).nullable()
 
-// Un campo lasciato vuoto (null) rende "da verificare" i requisiti che lo usano
+// Un campo lasciato vuoto (null) rende "da verificare" i requisiti che lo usano.
+// Cosa fa l'azienda non è un campo: sta in server/radar/didap.md
 export const radarProfileSchema = z
   .object({
-    // Cosa fa l'azienda, in poche parole: il modello giudica i bandi su questo
-    description: z.string().trim().max(500),
     revenue: euro,
     employees: z.number().int().min(0).max(1_000_000).nullable(),
     foundedYear: z.number().int().min(1800).max(2100).nullable(),
@@ -66,10 +55,12 @@ export const radarProfileSchema = z
   })
   .strict()
 
-// I tre moduli di fonti, importabili insieme o uno alla volta
+// I moduli di fonti, da cercare insieme o uno alla volta
 export const SOURCE_GROUPS = [
   { value: 'governo', label: 'Governo', hint: 'Incentivi.gov.it' },
-  { value: 'regione', label: 'Regione', hint: 'Regione Puglia, Sistema Puglia, Puglia Sviluppo' },
+  { value: 'regione', label: 'Regione', hint: 'Regione Puglia, Sistema Puglia, Puglia Sviluppo, ARTI, InnovaPuglia' },
+  { value: 'camere', label: 'Camere di commercio', hint: 'Bari, Brindisi-Taranto, Foggia, Lecce' },
+  { value: 'gare', label: 'Gare IT', hint: 'Enti che comprano software, app, IA: gare europee (TED) e quelle sui siti delle altre fonti' },
   { value: 'comuni', label: 'Comuni', hint: 'Tutti i comuni delle province scelte' },
 ] as const
 
@@ -86,12 +77,11 @@ export const radarSearchSchema = z
   })
   .strict()
 
+// La mail parte a fine scan, coi bandi nuovi
 export const radarNotifySchema = z
   .object({
     enabled: z.boolean(),
     emails: z.array(z.string().trim().email('Indirizzo non valido').max(200)).max(5, 'Massimo 5 destinatari'),
-    weekdays: z.array(z.number().int().min(1).max(7)).max(7),
-    time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
   })
   .strict()
 
@@ -110,9 +100,12 @@ export type RadarNotify = z.infer<typeof radarNotifySchema>
 export type RadarSettings = z.infer<typeof radarSettingsSchema>
 
 export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
-  search: { groups: ['governo', 'regione'], provinces: [], digitalOnly: true },
+  search: {
+    groups: SOURCE_GROUPS.map(g => g.value),
+    provinces: PROVINCES.map(p => p.value),
+    digitalOnly: true,
+  },
   profile: {
-    description: 'Software house: siti web, app, software su misura e soluzioni di intelligenza artificiale',
     revenue: null,
     employees: null,
     foundedYear: null,
@@ -124,7 +117,7 @@ export const DEFAULT_RADAR_SETTINGS: RadarSettings = {
     projectMonths: null,
     investment: null,
   },
-  notify: { enabled: true, emails: [], weekdays: [1, 2, 3, 4, 5], time: '08:00' },
+  notify: { enabled: true, emails: [] },
 }
 
 // Ricerche salvate quando i comuni si spuntavano uno a uno: diventano le
@@ -313,6 +306,32 @@ export type Application = {
   documents: { name: string, format: string, notes: string }[]
 }
 
+// Finanziamento (l'azienda riceve un aiuto) o gara (l'ente compra un
+// servizio digitale e l'azienda partecipa come fornitore), con le etichette
+// di importo e agevolazione per ciascuno
+export const GRANT_KINDS = [
+  { value: 'grant', label: 'Finanziamento', amount: 'Fino a', funding: 'Agevolazione' },
+  { value: 'tender', label: 'Gara', amount: 'Base di gara', funding: 'Procedura' },
+] as const
+
+export type GrantKind = Values<typeof GRANT_KINDS>
+
+export const grantKind = (kind: GrantKind) => GRANT_KINDS.find(k => k.value === kind)!
+
+// Le etichette di un bando in elenco, nel registro e nella mail: gara, IA
+export const grantTags = (g: Pick<RadarGrant, 'kind' | 'ai'>) =>
+  [g.kind === 'tender' ? grantKind(g.kind).label : '', g.ai ? 'IA' : ''].filter(Boolean)
+
+// Importo e agevolazione (per una gara: base d'asta e procedura), nella
+// scheda e nella mail
+export function grantAmountFacts(g: Pick<RadarGrant, 'kind' | 'maxAmount' | 'funding'>): [string, string][] {
+  const labels = grantKind(g.kind)
+  const rows: [string, string][] = []
+  if (g.maxAmount) rows.push([labels.amount, formatWholeEuro(g.maxAmount)])
+  if (g.funding) rows.push([labels.funding, g.funding])
+  return rows
+}
+
 // Giudizio del modello: Didap (col profilo salvato) può candidarsi?
 export type Verdict = 'yes' | 'no' | 'maybe'
 
@@ -327,8 +346,11 @@ export type RadarGrant = {
   id: string
   source: string
   url: string
+  kind: GrantKind
   // Sviluppo IT, IA o servizi digitali; null se il modello non l'ha detto
   digital: boolean | null
+  // L'intelligenza artificiale è un oggetto esplicito del bando
+  ai: boolean | null
   verdict: Verdict | null
   verdictReason: string
   title: string
@@ -354,7 +376,9 @@ export type RadarGrant = {
   folderNote: string
   // Chiuso o scaduto: si vede solo se ha la cartella
   closed: boolean
+  // Quando è entrato nel radar e con quale scan (null: prima dei registri)
   createdAt: string
+  runId: string | null
 }
 
 // I requisiti letti li valuta il codice coi parametri; il giudizio del
@@ -380,6 +404,13 @@ export const SOURCE_LABELS: Record<string, string> = {
   'regione-puglia': 'Regione Puglia',
   'sistema-puglia': 'Sistema Puglia',
   'puglia-sviluppo': 'Puglia Sviluppo',
+  'arti-puglia': 'ARTI Puglia',
+  'innovapuglia': 'InnovaPuglia',
+  'camera-ba': 'Camera di commercio di Bari',
+  'camera-brta': 'Camera di commercio di Brindisi-Taranto',
+  'camera-fg': 'Camera di commercio di Foggia',
+  'camera-le': 'Camera di commercio di Lecce',
+  'ted-puglia': 'TED, gare europee',
 }
 
 const COMUNE_PREFIX = 'comune-'
@@ -387,6 +418,8 @@ export const comuneSlug = (istat: string) => `${COMUNE_PREFIX}${istat}`
 
 export function sourceGroup(slug: string): SourceGroup {
   if (slug.startsWith(COMUNE_PREFIX)) return 'comuni'
+  if (slug.startsWith('camera-')) return 'camere'
+  if (slug.startsWith('ted-')) return 'gare'
   return slug === 'incentivi-gov' ? 'governo' : 'regione'
 }
 
@@ -399,24 +432,31 @@ export function sourceLabel(slug: string): string {
 }
 
 // Dentro la ricerca scelta a sinistra: modulo spuntato (per i comuni, il
-// comune spuntato) e, con "Solo digitali", niente bandi su altro (trattori,
-// macchinari, film...). Quelli senza risposta del modello si vedono.
-export function isInScope(g: Pick<RadarGrant, 'source' | 'digital'>, search: RadarSearch): boolean {
+// comune spuntato), le gare di qualunque fonte solo col modulo "Gare IT" e,
+// con "Solo digitali", niente bandi su altro (trattori, macchinari,
+// film...). Quelli senza risposta del modello si vedono.
+export function isInScope(g: Pick<RadarGrant, 'source' | 'digital' | 'kind'>, search: RadarSearch): boolean {
   const group = sourceGroup(g.source)
   if (!search.groups.includes(group)) return false
   if (group === 'comuni') {
     const province = comuneByIstat(g.source.slice(COMUNE_PREFIX.length))?.province
     if (!province || !search.provinces.includes(province as Province)) return false
   }
+  if (g.kind === 'tender' && !search.groups.includes('gare')) return false
   return !search.digitalOnly || g.digital !== false
 }
+
+// Nuovo per uno scan: trovato da quello scan, ancora aperto e non escluso
+export const isNewIn = (g: EvaluatedGrant, runId: string | null | undefined) =>
+  !!runId && g.runId === runId && !g.closed && g.eligibility !== 'excluded'
 
 // Va nella prossima mail: mai mandato e non escluso dai parametri. Cambiare
 // i parametri può rendere candidabile un bando già visto: parte allora.
 export const isDigestCandidate = (g: EvaluatedGrant) => !g.notifiedAt && g.eligibility !== 'excluded'
 
 export type RadarStatus = {
-  lastIngestAt: string | null
+  // L'ultimo scan dal registro: i suoi bandi sono i "nuovi", e dice se è in corso
+  lastScan: { id: string, status: RadarRun['status'], startedAt: string } | null
   lastIngestError: string | null
   lastDigestAt: string | null
   running: boolean
@@ -463,13 +503,27 @@ export type RunStats = {
   // Bandi giudicati col profilo
   judged: number
   errors: string[]
+  // Siti che non hanno risposto (si riprovano al prossimo scan) e siti in
+  // pausa dopo troppi scan senza risposta: non sono errori
+  unreachable: string[]
+  paused: string[]
 }
 
-export const emptyStats = (): RunStats => ({ listed: 0, queued: 0, read: 0, grants: 0, judged: 0, errors: [] })
+export const emptyStats = (): RunStats => ({
+  listed: 0,
+  queued: 0,
+  read: 0,
+  grants: 0,
+  judged: 0,
+  errors: [],
+  unreachable: [],
+  paused: [],
+})
 
 export type RadarRun = {
   id: string
-  // ripresa: coda rimasta dal giro prima; profilo: rigiudizio dopo un cambio
+  // profilo: rigiudizio dopo un cambio. automatico e ripresa venivano dal
+  // giro ogni 15 minuti, tolto: restano nei registri vecchi
   trigger: 'manuale' | 'automatico' | 'ripresa' | 'profilo'
   groups: SourceGroup[]
   provinces: string[]

@@ -115,6 +115,8 @@ export const DB_SCHEMA = `
     data jsonb not null,
     updated_at timestamptz not null default now()
   );
+  -- last_ingest_at e last_digest_on servivano al giro automatico, tolto:
+  -- restano perché il codice di prima, se si torna indietro, le legge
   create table if not exists radar_state (
     id int primary key check (id = 1),
     last_ingest_at timestamptz,
@@ -237,6 +239,22 @@ export const DB_SCHEMA = `
   );
   -- Tabelle create quando i comuni si spuntavano uno a uno
   alter table radar_runs add column if not exists provinces text[] not null default '{}';
+  -- Finanziamento o gara per servizi digitali, IA esplicita, scan che ha
+  -- trovato il bando (i "nuovi"); impronta del prompt con cui è stato letto
+  -- il testo (READER_KEY)
+  alter table radar_grants add column if not exists kind text not null default 'grant'
+    check (kind in ('grant', 'tender'));
+  alter table radar_grants add column if not exists ai boolean;
+  alter table radar_grants add column if not exists run_id uuid references radar_runs (id) on delete set null;
+  alter table radar_documents add column if not exists reader_key text;
+  -- L'ultimo scan e il registro si leggono dal più recente
+  create index if not exists radar_runs_started_at on radar_runs (started_at desc);
+  -- Fonti che non rispondono: da quando, e in pausa fino a quando
+  create table if not exists radar_sources (
+    slug text primary key,
+    unreachable_since timestamptz not null,
+    paused_until timestamptz
+  );
 
   -- Connettore MCP: client OAuth registrati da Claude, codici d'autorizzazione,
   -- collegamenti persona e client, token. Di codici e token solo l'hash

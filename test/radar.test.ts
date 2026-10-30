@@ -4,11 +4,15 @@ import {
   evaluateGrant,
   evaluateRadarGrant,
   evaluateRequirement,
+  grantAmountFacts,
+  grantTags,
   isInScope,
+  isNewIn,
   parseRadarSettings,
   radarSettingsSchema,
   sourceGroup,
   sourceLabel,
+  SOURCE_GROUPS,
   usageCost,
   type RadarGrant,
   type Province,
@@ -16,6 +20,7 @@ import {
   type Requirement,
   type SourceGroup,
 } from '#shared/radar'
+import { formatWholeEuro } from '#shared/money'
 import { parse as parseYaml } from 'yaml'
 import { grantExport, grantFileName } from '../server/utils/radar-export'
 import { attachmentName, decodeHtml, isPdfLink, mainHtml, pageLinks, safeDecode } from '../server/utils/radar-fetch'
@@ -27,9 +32,8 @@ import {
   parseSistemaListing,
   radarSources,
   sistemaFrame,
+  tedNoticeText,
 } from '../server/utils/radar-sources'
-import { romeClock } from '#shared/dates'
-import { shouldIngest, shouldSendDigest } from '../server/utils/radar'
 
 const NOW = new Date('2026-10-20T08:00:00Z')
 
@@ -101,9 +105,10 @@ describe('valutazione dei requisiti', () => {
 })
 
 describe('impostazioni del radar', () => {
-  it('senza dati usa i default, dal lunedì al venerdì alle 8', () => {
+  it('senza dati usa i default: tutte le fonti, gare comprese, mail a fine scan', () => {
     expect(parseRadarSettings(undefined)).toEqual(DEFAULT_RADAR_SETTINGS)
-    expect(DEFAULT_RADAR_SETTINGS.notify.weekdays).toEqual([1, 2, 3, 4, 5])
+    expect(DEFAULT_RADAR_SETTINGS.search.groups).toEqual(SOURCE_GROUPS.map(g => g.value))
+    expect(DEFAULT_RADAR_SETTINGS.notify).toEqual({ enabled: true, emails: [] })
   })
 
   it('una ricerca coi comuni spuntati uno a uno diventa le loro province', () => {
@@ -112,14 +117,18 @@ describe('impostazioni del radar', () => {
   })
 
   it('un campo non valido torna al default, gli altri restano', () => {
-    const s = parseRadarSettings({ profile: { revenue: 'tanti', employees: 4 }, notify: { emails: ['a@b.it'], time: '25:00' } })
+    const s = parseRadarSettings({
+      search: { groups: ['governo'], provinces: [] },
+      profile: { description: 'vecchia', revenue: 'tanti', employees: 4 },
+      notify: { emails: ['a@b.it'], time: '08:00' },
+    })
     expect(s.profile.revenue).toBeNull()
     expect(s.profile.employees).toBe(4)
-    // Impostazioni salvate prima di "Solo digitali": il filtro è acceso
-    expect(s.search.digitalOnly).toBe(true)
-    expect(s.search.groups).toEqual(['governo', 'regione'])
-    expect(s.notify.emails).toEqual(['a@b.it'])
-    expect(s.notify.time).toBe('08:00')
+    // Campi tolti (descrizione, ora della mail) cadono
+    expect(s.profile).not.toHaveProperty('description')
+    expect(s.notify).toEqual({ enabled: true, emails: ['a@b.it'] })
+    // Salvate prima di "Solo digitali": filtro acceso
+    expect(s.search).toEqual({ groups: ['governo'], provinces: [], digitalOnly: true })
   })
 
   it('invio attivo senza indirizzi non si salva', () => {
@@ -170,6 +179,16 @@ describe('lettura del modello', () => {
     expect(parseCallDate(null, true)).toBeNull()
   })
 
+  it('legge se è una gara e se c\'è l\'IA; una risposta strana vale come finanziamento e non detta', () => {
+    const read = (raw: Record<string, unknown>) => {
+      const r = parseGrantReading({ admitsCompanies: true, title: 'x', ...raw })
+      return r.admitsCompanies ? { kind: r.kind, ai: r.ai } : undefined
+    }
+    expect(read({ kind: 'tender', ai: true })).toEqual({ kind: 'tender', ai: true })
+    expect(read({ kind: 'appalto', ai: 'si' })).toEqual({ kind: 'grant', ai: null })
+    expect(read({})).toEqual({ kind: 'grant', ai: null })
+  })
+
   it('legge se il bando è digitale; una risposta strana vale come non detta', () => {
     const read = (digital: unknown) => {
       const r = parseGrantReading({ admitsCompanies: true, digital, title: 'x' })
@@ -215,7 +234,9 @@ describe('ricerca e giudizio', () => {
     id: 'g1',
     source: 'incentivi-gov',
     url: 'https://example.com',
+    kind: 'grant',
     digital: true,
+    ai: null,
     verdict: null,
     verdictReason: '',
     title: 'Voucher digitale',
@@ -236,10 +257,11 @@ describe('ricerca e giudizio', () => {
     folderNote: '',
     closed: false,
     createdAt: NOW.toISOString(),
+    runId: null,
     ...over,
   })
 
-  it('moduli, province dei comuni e solo digitali', () => {
+  it('moduli, province dei comuni, solo digitali e gare', () => {
     const search = { groups: ['governo', 'comuni'] as SourceGroup[], provinces: ['BA'] as Province[], digitalOnly: true }
     expect(isInScope(grant(), search)).toBe(true)
     expect(isInScope(grant({ source: 'sistema-puglia' }), search)).toBe(false)
@@ -248,8 +270,29 @@ describe('ricerca e giudizio', () => {
     expect(isInScope(grant({ digital: false }), search)).toBe(false)
     expect(isInScope(grant({ digital: null }), search)).toBe(true)
     expect(isInScope(grant({ digital: false }), { ...search, digitalOnly: false })).toBe(true)
+    // Le gare di qualunque fonte solo col modulo "Gare IT"
+    expect(isInScope(grant({ kind: 'tender' }), search)).toBe(false)
+    expect(isInScope(grant({ kind: 'tender' }), { ...search, groups: [...search.groups, 'gare'] })).toBe(true)
     expect(sourceLabel('comune-072006')).toBe('Comune di Bari')
     expect(sourceGroup('puglia-sviluppo')).toBe('regione')
+    expect(sourceGroup('innovapuglia')).toBe('regione')
+    expect(sourceGroup('camera-ba')).toBe('camere')
+    expect(sourceGroup('ted-puglia')).toBe('gare')
+  })
+
+  it('nuovi di uno scan, etichette e importi per tipo', () => {
+    const evaluated = (over: Partial<RadarGrant>, eligibility: 'to_verify' | 'excluded' = 'to_verify') =>
+      ({ ...grant(over), eligibility, evaluations: [] })
+    expect(isNewIn(evaluated({ runId: 'r1' }), 'r1')).toBe(true)
+    expect(isNewIn(evaluated({ runId: 'r1' }), 'r2')).toBe(false)
+    expect(isNewIn(evaluated({ runId: 'r1' }, 'excluded'), 'r1')).toBe(false)
+    expect(isNewIn(evaluated({ runId: 'r1', closed: true }), 'r1')).toBe(false)
+    expect(isNewIn(evaluated({ runId: null }), null)).toBe(false)
+    expect(grantTags(grant({ kind: 'tender', ai: true }))).toEqual(['Gara', 'IA'])
+    expect(grantTags(grant())).toEqual([])
+    expect(grantAmountFacts(grant({ kind: 'tender', maxAmount: 241935, funding: 'Procedura aperta' })))
+      .toEqual([['Base di gara', formatWholeEuro(241935)], ['Procedura', 'Procedura aperta']])
+    expect(grantAmountFacts(grant({ maxAmount: 50000 }))).toEqual([['Fino a', formatWholeEuro(50000)]])
   })
 
   it('il giudizio pesa più delle regole, tranne che per escludere', () => {
@@ -273,7 +316,9 @@ describe('ricerca e giudizio', () => {
     const picker = async () => []
     const slugs = (groups: SourceGroup[], provinces: Province[] = []) => radarSources({ groups, provinces }, picker).map(s => s.slug)
     expect(slugs(['governo'])).toEqual(['incentivi-gov'])
-    expect(slugs(['regione'])).toEqual(['regione-puglia', 'sistema-puglia', 'puglia-sviluppo'])
+    expect(slugs(['regione'])).toEqual(['regione-puglia', 'sistema-puglia', 'puglia-sviluppo', 'arti-puglia', 'innovapuglia'])
+    expect(slugs(['camere'])).toEqual(['camera-ba', 'camera-brta', 'camera-fg', 'camera-le'])
+    expect(slugs(['gare'])).toEqual(['ted-puglia'])
     expect(slugs(['comuni'], ['BT'])).toHaveLength(10)
     expect(slugs(['comuni'], ['BT'])).toContain('comune-110001')
     expect(slugs(['comuni', 'governo'], [])).toEqual(['incentivi-gov'])
@@ -300,13 +345,31 @@ describe('ricerca e giudizio', () => {
       requisiti: [{ esito: 'da verificare' }],
       presentazione: { piattaforma: 'PEC', documenti: [{ nome: 'Domanda', formato: 'PDF firmato' }] },
     })
-    expect(data.azienda).toContain('Software house')
+    expect(data).toMatchObject({ genere: 'finanziamento', trovato_il: '2026-10-20' })
+    expect(data.azienda).toContain('software house')
+    expect(data.azienda).toContain('Forma giuridica')
     expect(body).toContain('Testo del bando: art. 1')
     expect(grantFileName(g)).toBe('bando-voucher-digitale-pmi.md')
   })
 })
 
 describe('fonti', () => {
+  it('TED: una gara in italiano, coi campi per lotto', () => {
+    const text = tedNoticeText({
+      'notice-title': { ita: 'Sviluppo della piattaforma digitale', eng: 'Digital platform' },
+      'buyer-name': { ita: ['Comune di Martina Franca'] },
+      'publication-date': '2026-10-01+02:00',
+      'deadline-receipt-tender-date-lot': ['2026-11-02+02:00', '2026-11-02+02:00'],
+      'estimated-value-lot': ['241935.48'],
+      'description-lot': { ita: ['Servizi di sviluppo software e assistente virtuale.'] },
+    })
+    expect(text).toContain('Titolo: Sviluppo della piattaforma digitale')
+    expect(text).toContain('Ente appaltante: Comune di Martina Franca')
+    expect(text).toContain('Termine per le offerte: 2026-11-02\n')
+    expect(text).toContain('Servizi di sviluppo software')
+    expect(text).not.toContain('Digital platform')
+  })
+
   it('incentivi.gov.it: imprese, Puglia, ancora aperti', () => {
     const base = { zm_field_subject_type_value: ['Impresa'], zm_field_regions_value: ['Puglia'], zs_field_close_date: '2026-10-20T00:00:00Z' }
     expect(isOpenToPugliaBusinesses(base, NOW)).toBe(true)
@@ -395,32 +458,5 @@ describe('fonti', () => {
     // Un "%" che non è una sequenza valida non fa cadere niente
     expect(safeDecode('/contributo-50%-imprese')).toBe('/contributo-50%-imprese')
     expect(attachmentName('https://c.it/avviso%.pdf')).toBe('avviso%.pdf')
-  })
-})
-
-describe('calendario', () => {
-  const notify = { enabled: true, emails: ['a@b.it'], weekdays: [1, 2, 3, 4, 5], time: '08:00' }
-
-  it('ora e giorno di Roma', () => {
-    // martedì 20 ottobre 2026, 10:00 a Roma (UTC+2)
-    expect(romeClock(NOW)).toEqual({ date: '2026-10-20', weekday: 2, minutes: 600 })
-  })
-
-  it('scarica una volta al giorno dalle 6', () => {
-    expect(shouldIngest(null, NOW)).toBe(true)
-    expect(shouldIngest(new Date('2026-10-20T04:30:00Z'), NOW)).toBe(false)
-    expect(shouldIngest(new Date('2026-10-19T05:00:00Z'), NOW)).toBe(true)
-    // 5:30 a Roma: ancora presto
-    expect(shouldIngest(new Date('2026-10-19T05:00:00Z'), new Date('2026-10-20T03:30:00Z'))).toBe(false)
-  })
-
-  it('mail nei giorni scelti, dall\'ora scelta, una volta', () => {
-    expect(shouldSendDigest(notify, null, NOW)).toBe(true)
-    expect(shouldSendDigest(notify, '2026-10-20', NOW)).toBe(false)
-    expect(shouldSendDigest({ ...notify, time: '10:30' }, null, NOW)).toBe(false)
-    expect(shouldSendDigest({ ...notify, weekdays: [1] }, null, NOW)).toBe(false)
-    expect(shouldSendDigest({ ...notify, enabled: false }, null, NOW)).toBe(false)
-    // sabato 24 ottobre
-    expect(shouldSendDigest(notify, null, new Date('2026-10-24T08:00:00Z'))).toBe(false)
   })
 })

@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { errorCode, webRequest } from './radar-http'
 
 // Download e testo delle pagine dei siti letti dal radar (portati dal Radar
@@ -8,10 +9,69 @@ const MAX_REDIRECTS = 5
 
 type FetchOptions = { origin: string, maxBytes: number, timeoutMs: number }
 
-// Errore che può sparire riprovando: niente risposta in tempo, rete, 5xx, 429
-class TransientError extends Error {}
+// Un sito che per questo scan non c'è: non accetta connessioni, non risponde
+// in tempo, dà 5xx anche al secondo tentativo. Non è un errore da segnalare:
+// la fonte si riprova al prossimo scan (radar.ts la mette in pausa se non
+// risponde da più di un giorno)
+export class SourceUnreachable extends Error {}
+
+// Errore che può sparire riprovando una volta: 5xx, 429, download
+// interrotto. `connect`: la connessione stessa non è riuscita (tempo di
+// connessione scaduto, rifiutata, DNS); se succede due volte l'host è giù
+class TransientError extends Error {
+  constructor(message: string, readonly connect = false) {
+    super(message)
+  }
+}
 
 const RETRY_AFTER_MS = 3_000
+
+// Host giù durante uno scan: le altre pagine dello stesso sito falliscono
+// subito invece di aspettare ognuna il suo timeout. Vale dentro
+// `withDownHosts`, cioè per uno scan; fuori (cartella del bando) ogni
+// richiesta fa da sé
+const downHosts = new AsyncLocalStorage<Set<string>>()
+
+export const withDownHosts = <T>(work: () => Promise<T>) => downHosts.run(new Set(), work)
+
+const markDown = (url: string) => downHosts.getStore()?.add(new URL(url).host)
+
+function assertUp(url: string) {
+  const host = new URL(url).host
+  if (downHosts.getStore()?.has(host)) throw new SourceUnreachable(`${host} non risponde`)
+}
+
+// Una risposta che non va: 5xx e 429 possono passare riprovando, il resto no
+const statusError = (status: number, message: string) =>
+  status >= 500 || status === 429 ? new TransientError(message) : new Error(message)
+
+// Un corpo che non arriva tutto: tempo scaduto (non si riprova, ma il sito
+// ha risposto e non si segna giù) o connessione caduta (si riprova una volta)
+const bodyError = (signal: AbortSignal, what: string) =>
+  signal.aborted ? new SourceUnreachable(`${what}: troppo lento`) : new TransientError(`${what}: interrotto`)
+
+// Un errore passeggero si riprova una volta dopo una pausa. Se torna, il
+// sito per questo scan non c'è; se non ha accettato la connessione, l'host
+// si segna giù. Nessuna risposta in tempo non si riprova: costerebbe un
+// altro timeout intero (arriva già come SourceUnreachable)
+async function withRetry<T>(url: string, attempt: () => Promise<T>): Promise<T> {
+  assertUp(url)
+  try {
+    return await attempt()
+  }
+  catch (err) {
+    if (!(err instanceof TransientError)) throw err
+    await sleep(RETRY_AFTER_MS)
+  }
+  try {
+    return await attempt()
+  }
+  catch (err) {
+    if (!(err instanceof TransientError)) throw err
+    if (err.connect) markDown(url)
+    throw new SourceUnreachable(err.message)
+  }
+}
 
 // Siti di enti col certificato HTTPS rotto: il radar non li legge (non si
 // spegne la verifica), ma l'errore dice perché
@@ -26,34 +86,47 @@ const CERT_ERRORS: Record<string, string> = {
 
 const certificateProblem = (err: unknown) => CERT_ERRORS[errorCode(err)]
 
-// Perché una richiesta non è arrivata: tempo scaduto, certificato (che non
-// si aggiusta riprovando) o rete, col codice (ENOTFOUND, ECONNRESET...) che
-// dice più di "fetch failed"
-function requestError(err: unknown, url: string, timeoutMs: number, signal: AbortSignal) {
-  if (signal.aborted) return { message: `Nessuna risposta in ${timeoutMs / 1000} s da ${url}`, transient: true }
+// Il sito non ha accettato la connessione: tempo di connessione scaduto,
+// rifiutata, chiusa dall'altra parte, DNS. Gli altri errori di rete (TLS,
+// protocollo) non passano riprovando e si dicono col loro codice
+const CONNECT_ERRORS = new Set([
+  'UND_ERR_CONNECT_TIMEOUT',
+  'UND_ERR_SOCKET',
+  'ETIMEDOUT',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+])
+
+// Perché una richiesta non è arrivata: tempo scaduto (l'host si segna giù
+// subito), certificato, connessione o altro, col codice
+// (UND_ERR_CONNECT_TIMEOUT, ENOTFOUND...) che dice più di "fetch failed"
+function requestError(err: unknown, url: string, timeoutMs: number, signal: AbortSignal): Error {
+  if (signal.aborted) {
+    markDown(url)
+    return new SourceUnreachable(`Nessuna risposta in ${timeoutMs / 1000} s da ${url}`)
+  }
   const cert = certificateProblem(err)
-  if (cert) return { message: `${url}: ${cert}`, transient: false }
-  return { message: `Rete non raggiungibile per ${url}: ${errorCode(err) || (err as Error).message}`, transient: true }
+  if (cert) return new Error(`${url}: ${cert}`)
+  const code = errorCode(err)
+  if (CONNECT_ERRORS.has(code)) return new TransientError(`Sito non raggiungibile: ${url} (${code})`, true)
+  return new Error(`Rete non raggiungibile per ${url}: ${code || (err as Error).message}`)
 }
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // Con `optional` un file che non c'è (più) o troppo grande dà null invece di
-// un errore: un link rotto si salta. Un errore passeggero si riprova una
-// volta; se torna, fa riprovare il bando al giro successivo.
+// un errore: un link rotto si salta. Un sito che non risponde dà
+// SourceUnreachable e il bando si riprova allo scan successivo.
 export async function fetchFromSource(url: string, options: FetchOptions & { optional: true }): Promise<Buffer | null>
 export async function fetchFromSource(url: string, options: FetchOptions): Promise<Buffer>
 export async function fetchFromSource(
   url: string,
   options: FetchOptions & { optional?: boolean },
 ): Promise<Buffer | null> {
-  try {
-    return await fetchOnce(url, options)
-  }
-  catch (err) {
-    if (!(err instanceof TransientError)) throw err
-    await sleep(RETRY_AFTER_MS)
-    return fetchOnce(url, options)
-  }
+  return withRetry(url, () => fetchOnce(url, options))
 }
 
 async function fetchOnce(url: string, options: FetchOptions & { optional?: boolean }): Promise<Buffer | null> {
@@ -75,8 +148,7 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
       res = await webRequest(target, signal)
     }
     catch (err) {
-      const { message, transient } = requestError(err, url, timeoutMs, signal)
-      throw transient ? new TransientError(message) : new Error(message)
+      throw requestError(err, url, timeoutMs, signal)
     }
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) break
@@ -93,10 +165,9 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
     if (/captcha|anti-robot/i.test(`${res.headers.get('server')} ${head}`)) {
       throw new Error(`${url}: il sito chiede un CAPTCHA anti-robot, non si legge in automatico`)
     }
-    if (res.status === 404 || res.status === 410) return skip(`${origin} ha risposto ${res.status} per ${url}`)
     const message = `${origin} ha risposto ${res.status} per ${url}`
-    if (res.status >= 500 || res.status === 429) throw new TransientError(message)
-    if (!res.ok) throw new Error(message)
+    if (res.status === 404 || res.status === 410) return skip(message)
+    if (!res.ok) throw statusError(res.status, message)
     return skip(tooLarge)
   }
 
@@ -110,8 +181,7 @@ async function fetchOnce(url: string, options: FetchOptions & { optional?: boole
         chunk = await reader.read()
       }
       catch {
-        // Tempo scaduto o connessione caduta a metà del download (file grandi, sito lento)
-        throw new TransientError(`Download interrotto per ${url}`)
+        throw bodyError(signal, `Download di ${url}`)
       }
       const { done, value } = chunk
       if (done) break
@@ -168,23 +238,56 @@ export function decodeHtml(body: Buffer): string {
 // Dove porta davvero un indirizzo (http -> https, senza o con www): i siti
 // dei comuni si leggono poi solo dentro questa origine. Conta l'origine,
 // non la risposta: una home che dà 404 si gestisce dopo.
-export async function resolveOrigin(url: string): Promise<string> {
-  const signal = AbortSignal.timeout(SOURCE_TIMEOUT_MS)
-  let target = url
-  for (let hops = 0; hops <= MAX_REDIRECTS; hops++) {
+export function resolveOrigin(url: string): Promise<string> {
+  return withRetry(url, async () => {
+    const signal = AbortSignal.timeout(SOURCE_TIMEOUT_MS)
+    let target = url
+    for (let hops = 0; hops <= MAX_REDIRECTS; hops++) {
+      let res: Response
+      try {
+        res = await webRequest(target, signal)
+      }
+      catch (err) {
+        throw requestError(err, url, SOURCE_TIMEOUT_MS, signal)
+      }
+      await res.body?.cancel()
+      const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
+      if (!location) return new URL(target).origin
+      target = new URL(location, target).toString()
+    }
+    throw new Error(`Troppi redirect per ${url}`)
+  })
+}
+
+// Le API dei cataloghi rispondono entro un minuto, anche coi cataloghi interi
+const API_TIMEOUT_MS = 60_000
+
+// Le API dei cataloghi (incentivi.gov.it, TED): indirizzi fissi, scelti da
+// noi, con la stessa logica dei siti per i tentativi e i siti giù
+export function fetchApi<T>(url: string, init: RequestInit = {}): Promise<T> {
+  return withRetry(url, async () => {
+    const signal = AbortSignal.timeout(API_TIMEOUT_MS)
     let res: Response
     try {
-      res = await webRequest(target, signal)
+      res = await fetch(url, { ...init, signal })
     }
     catch (err) {
-      throw new Error(requestError(err, url, SOURCE_TIMEOUT_MS, signal).message)
+      throw requestError(err, url, API_TIMEOUT_MS, signal)
     }
-    await res.body?.cancel()
-    const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
-    if (!location) return new URL(target).origin
-    target = new URL(location, target).toString()
-  }
-  throw new Error(`Troppi redirect per ${url}`)
+    const host = new URL(url).host
+    if (!res.ok) {
+      // L'API dice cosa non va nel corpo (TED: il campo della query)
+      const detail = await res.text().catch(() => '')
+      throw statusError(res.status, `${host} ha risposto ${res.status}: ${detail.slice(0, 200)}`)
+    }
+    try {
+      return await res.json() as T
+    }
+    catch {
+      // Anche un corpo che non è JSON si riprova una volta
+      throw bodyError(signal, `Risposta di ${host}`)
+    }
+  })
 }
 
 // decodeURIComponent senza eccezioni: un "%" a caso nei link altrui resta com'è
@@ -216,11 +319,15 @@ const MAX_ATTACHMENTS = 5
 const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024
 
 // Il testo di una pagina più quello dei PDF che collega (i primi 5, fino a
-// 15 MB). Un file troppo grande o un link rotto si salta; gli errori
-// passeggeri fanno riprovare tutto il bando.
+// 15 MB). Un file troppo grande, un link rotto o un file che non arriva
+// (5xx, troppo lento) si salta: il bando si legge col resto.
 export async function withAttachments(content: string, urls: string[], origin: string): Promise<string> {
   const files = await Promise.all(urls.slice(0, MAX_ATTACHMENTS).map(async (href) => {
     const data = await fetchFromSource(href, { origin, maxBytes: MAX_ATTACHMENT_BYTES, timeoutMs: SOURCE_TIMEOUT_MS, optional: true })
+      .catch((err) => {
+        if (err instanceof SourceUnreachable) return null
+        throw err
+      })
     return data && { name: attachmentName(href), data }
   }))
   const pdf = await attachmentsText(files.filter(f => f !== null))

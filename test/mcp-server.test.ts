@@ -23,6 +23,8 @@ const USER = { id: '00000000-0000-0000-0000-000000000001', name: 'Prova', email:
 // Bandi finti come in mcp-bandi.test.ts: il contenuto è il titolo
 const reader: GrantReader = async ({ content }) => ({
   admitsCompanies: true,
+  kind: 'grant',
+  ai: null,
   digital: true,
   title: content,
   issuer: 'Regione Puglia',

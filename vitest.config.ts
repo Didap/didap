@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
@@ -9,10 +10,13 @@ try {
 catch {}
 
 export default defineConfig({
-  // I .md importati dal server sono testo, come nel build di Nitro
+  // Il profilo di Didap, come nel build (nitro.virtual in nuxt.config)
   plugins: [{
-    name: 'raw-md',
-    transform: (code, id) => (id.endsWith('.md') ? { code: `export default ${JSON.stringify(code)}`, map: null } : undefined),
+    name: 'didap-profile',
+    resolveId: id => (id === '#didap-profile' ? '\0didap-profile' : undefined),
+    load: id => (id === '\0didap-profile'
+      ? `export default ${JSON.stringify(readFileSync(new URL('./server/radar/didap.md', import.meta.url), 'utf8'))}`
+      : undefined),
   }],
   resolve: {
     alias: { '#shared': fileURLToPath(new URL('./shared', import.meta.url)) },

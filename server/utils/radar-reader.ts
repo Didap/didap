@@ -17,7 +17,7 @@ import {
   type Verdict,
   valuesOf,
 } from '#shared/radar'
-import DIDAP from '../radar/didap.md'
+import DIDAP from '#didap-profile'
 
 // Lettura dei bandi con Claude (Haiku di default, RADAR_LLM_MODEL per
 // cambiarlo). Il prompt nasce da quello del Radar Bandi di cityfix, girato

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import tailwindcss from '@tailwindcss/vite'
 import { typesetBody } from './shared/typeset'
 
@@ -34,6 +35,14 @@ export default defineNuxtConfig({
     // I file in public partono già compressi (gzip e brotli): il Lottie della
     // splash, per esempio, da 1 MB scende a circa 230 KB
     compressPublicAssets: true,
+    // Il profilo di Didap per il radar, da server/radar/didap.md. Non con un
+    // import del .md: il plugin raw di Nitro marca il chunk con
+    // ROLLUP_NO_REPLACE, import.meta.url resta quello del chunk e tutti i
+    // file di /_nuxt rispondono 404
+    virtual: {
+      '#didap-profile': () =>
+        `export default ${JSON.stringify(readFileSync(new URL('./server/radar/didap.md', import.meta.url), 'utf8'))}`,
+    },
   },
 
   // Il corpo in markdown dei contenuti segue le regole di sbandieramento

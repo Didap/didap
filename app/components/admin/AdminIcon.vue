@@ -1,6 +1,5 @@
 <script setup lang="ts">
-// Icone piccole dei pannelli admin, a tratto: frecce, croce, spunta, elenco
-// e griglia
+// Icone piccole dei pannelli admin, a tratto
 defineProps<{ name: 'up' | 'down' | 'close' | 'check' | 'list' | 'grid' }>()
 
 const PATHS = {

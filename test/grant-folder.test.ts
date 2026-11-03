@@ -101,10 +101,10 @@ describe.skipIf(!TEST_DATABASE_URL)('cartella del bando', () => {
   async function oneGrant() {
     await ingestSources(sql, [source])
     await readPending(sql, reader)
-    return (await listGrants(sql, new Date(), { withKept: true }))[0]!
+    return (await listGrants(sql, new Date(), { closed: 'kept' }))[0]!
   }
 
-  const reread = async () => (await listGrants(sql, new Date(), { withKept: true }))[0]!
+  const reread = async () => (await listGrants(sql, new Date(), { closed: 'kept' }))[0]!
 
   // "Dal bando" dentro la principale, e i nomi dei file che contiene
   async function fromSite(grantId: string) {

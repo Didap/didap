@@ -8,6 +8,7 @@ import {
   grantTags,
   grantTrack,
   hasOutcome,
+  isKept,
   isInScope,
   isNewIn,
   parseRadarSettings,
@@ -263,7 +264,6 @@ describe('ricerca e giudizio', () => {
     outcomeChecking: false,
     outcomeError: '',
     closed: false,
-    kept: false,
     createdAt: NOW.toISOString(),
     runId: null,
     ...over,
@@ -515,5 +515,9 @@ describe('esito', () => {
     expect(hasOutcome({ applied: true, outcome: outcome('won') })).toBe(true)
     // Candidatura tolta: l'esito resta salvato ma non conta
     expect(grantTrack({ ...g, liked: true, outcome: outcome('won') })).toBe('liked')
+    // Tenuto anche fuori dalla ricerca: con la cartella o la candidatura
+    expect(isKept({ hasFolder: false, applied: false })).toBe(false)
+    expect(isKept({ hasFolder: true, applied: false })).toBe(true)
+    expect(isKept({ hasFolder: false, applied: true })).toBe(true)
   })
 })

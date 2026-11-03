@@ -146,17 +146,17 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B', c: 'bando scaduto' })], NOW)
     await readPending(sql, fakeReader)
     await setGrantApplied(sql, await grantId('bando scaduto'), true)
-    expect((await listGrants(sql, NOW, { withKept: true })).map(g => [g.title, g.applied, g.liked, g.closed, g.kept]).sort()).toEqual([
-      ['bando A', false, false, false, false],
-      ['bando B', false, false, false, false],
-      ['bando scaduto', true, true, true, true],
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => [g.title, g.applied, g.liked, g.closed]).sort()).toEqual([
+      ['bando A', false, false, false],
+      ['bando B', false, false, false],
+      ['bando scaduto', true, true, true],
     ])
     // Tolta la candidatura il cuore resta
     await setGrantApplied(sql, await grantId('bando A'), true)
     await setGrantApplied(sql, await grantId('bando A'), false)
     expect((await listGrants(sql, NOW)).find(g => g.title === 'bando A')).toMatchObject({ applied: false, liked: true })
     expect(await radarWipe(sql)).toEqual({ deleted: 2, kept: 1 })
-    expect((await listGrants(sql, NOW, { withKept: true })).map(g => g.title)).toEqual(['bando scaduto'])
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando scaduto'])
     await expect(setGrantApplied(sql, NO_GRANT, true)).rejects.toMatchObject({ statusCode: 404 })
   })
 
@@ -504,7 +504,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     await giveFolder('bando B')
     expect(await radarWipe(sql)).toEqual({ deleted: 1, kept: 1 })
-    expect((await listGrants(sql, NOW, { withKept: true })).map(g => [g.title, g.hasFolder])).toEqual([['bando B', true]])
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => [g.title, g.hasFolder])).toEqual([['bando B', true]])
     const docs = await sql`select status from radar_documents`
     expect(docs.map(d => d.status)).toEqual(['read'])
   })
@@ -518,7 +518,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     // b sparisce dalla fonte: chiuso
     await ingestSources(sql, [fakeSource({ a: 'bando A', c: 'bando scaduto' })], NOW)
     expect((await listGrants(sql, NOW)).map(g => g.title)).toEqual(['bando A'])
-    const all = await listGrants(sql, NOW, { withKept: true })
+    const all = await listGrants(sql, NOW, { closed: 'kept' })
     expect(all.map(g => [g.title, g.closed]).sort()).toEqual([
       ['bando A', false],
       ['bando B', true],
@@ -533,9 +533,9 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     // b sparisce dalla fonte: chiuso
     await ingestSources(sql, [fakeSource({ a: 'bando A', c: 'bando scaduto' })], NOW)
-    expect((await listGrants(sql, NOW, { withKept: true })).map(g => g.title)).toEqual(['bando A'])
-    const all = await listGrants(sql, NOW, { withClosed: true })
-    expect(all.map(g => [g.title, g.closed, g.kept]).sort()).toEqual([
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando A'])
+    const all = await listGrants(sql, NOW, { closed: 'all' })
+    expect(all.map(g => [g.title, g.closed, g.hasFolder || g.applied]).sort()).toEqual([
       ['bando A', false, false],
       ['bando B', true, false],
       ['bando scaduto', true, false],
@@ -548,7 +548,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await giveFolder('bando A')
     await ingestSources(sql, [fakeSource({ a: 'enti locali A', b: 'enti locali B' })], NOW)
     expect((await readPending(sql, fakeReader)).read).toBe(2)
-    expect((await listGrants(sql, NOW, { withKept: true })).map(g => [g.title, g.hasFolder, g.closed]))
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => [g.title, g.hasFolder, g.closed]))
       .toEqual([['bando A', true, false]])
     const docs = await sql`select external_id, status from radar_documents order by external_id`
     expect(docs.map(d => [d.external_id, d.status])).toEqual([['a', 'read'], ['b', 'skipped']])
@@ -581,7 +581,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     await ingestSources(sql, [fakeSource({ a: 'enti locali A' })], NOW)
     await folderDuring('bando A', () => readPending(sql, fakeReader))
-    expect((await listGrants(sql, NOW, { withKept: true })).map(g => g.title)).toEqual(['bando A'])
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando A'])
     expect((await sql`select status from radar_documents`).map(d => d.status)).toEqual(['read'])
   })
 
@@ -589,7 +589,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B' })], NOW)
     await readPending(sql, fakeReader)
     expect(await folderDuring('bando A', () => radarWipe(sql))).toEqual({ deleted: 1, kept: 1 })
-    expect((await listGrants(sql, NOW, { withKept: true })).map(g => g.title)).toEqual(['bando A'])
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando A'])
   })
 
   it('uno scan alla volta', async () => {

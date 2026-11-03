@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
-import { ISO_DATE, romeLocalToDate, romeYear } from '#shared/dates'
+import { DAY_MS, ISO_DATE, romeLocalToDate, romeYear } from '#shared/dates'
 import {
   GRANT_KINDS,
   grantKind,
@@ -213,7 +213,7 @@ export function parseCallDate(value: string | null | undefined, endOfDay: boolea
 // I cataloghi segnano "fino a esaurimento fondi" con date tipo 31/12/2050:
 // oltre dieci anni non è una scadenza vera, il bando è a sportello
 const realDeadline = (date: Date | null) =>
-  date && date.getTime() - Date.now() < 10 * 365 * 86_400_000 ? date : null
+  date && date.getTime() - Date.now() < 10 * 365 * DAY_MS ? date : null
 
 export type GrantReading =
   | { admitsCompanies: false }

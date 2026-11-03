@@ -68,7 +68,7 @@ export async function searchGrants(
   search: GrantSearch,
   now = new Date(),
 ): Promise<{ bandi: GrantHit[], altri: number }> {
-  const [grants, settings] = await Promise.all([listGrants(sql, now, { withKept: true }), readRadarSettings(sql)])
+  const [grants, settings] = await Promise.all([listGrants(sql, now, { closed: 'kept' }), readRadarSettings(sql)])
   const esiti = new Set<Eligibility>((search.esito?.length ? search.esito : DEFAULT_ESITI).map(e => ESITI[e]))
   const text = search.testo?.trim().toLowerCase()
   const limit = search.scadenzaEntroGiorni === undefined ? null : now.getTime() + search.scadenzaEntroGiorni * DAY_MS

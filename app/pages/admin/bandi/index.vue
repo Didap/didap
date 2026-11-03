@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { until, useDocumentVisibility, useEventListener, useIntervalFn, useLocalStorage, useMediaQuery } from '@vueuse/core'
+import { until, useDocumentVisibility, useEventListener, useLocalStorage, useMediaQuery } from '@vueuse/core'
 import {
   CollapsibleContent,
   DialogClose,
@@ -39,6 +39,7 @@ import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { GRANT_DRAFT, useGrantDraft } from '~/composables/useGrantDraft'
+import { usePollWhile } from '~/composables/usePollWhile'
 import { holdsDraft, refreshesDraft, shownGrant } from '~/utils/grantDraftEditor'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime } from '~/utils/format'
@@ -47,7 +48,9 @@ import {
   ELIGIBILITY_PLURALS,
   evaluateRadarGrant,
   grantTrack,
+  GRANT_TRACKS,
   isInScope,
+  isKept,
   isNewIn,
   LEGAL_FORMS,
   OUTCOME_LABELS,
@@ -76,9 +79,11 @@ useSeoMeta({ title: 'Bandi - Admin Didap' })
 await useAdminSession()
 const { notify } = useAdminToast()
 
-// Bandi grezzi dal server: si valutano qui coi parametri del modulo
+// Bandi grezzi dal server: si valutano qui coi parametri del modulo. Sono
+// tanti (anche gli scaduti): niente reattività profonda, chi cambia un bando
+// sul posto passa da editGrant
 type RadarList = { grants: RadarGrant[], status: RadarStatus }
-const data = ref<RadarList | null>(null)
+const data = shallowRef<RadarList | null>(null)
 const form = ref<RadarSettings | null>(null)
 // Un indirizzo per riga; diventa la lista al salvataggio
 const emails = ref('')
@@ -101,18 +106,33 @@ function fill(settings: RadarSettings) {
 
 const revert = () => saved.value && fill(saved.value)
 
-// Vince l'ultima lettura partita: una più vecchia che arriva dopo (un giro
-// del ricaricamento partito prima di un clic) non riporta indietro lo stato
-let loads = 0
+// Vince l'ultima versione: una lettura partita prima di un'altra lettura, o
+// di un cambio fatto qui (editGrant), non riporta indietro lo stato
+let version = 0
+let reading = 0
 async function loadGrants() {
-  const n = ++loads
+  const v = ++version
+  reading++
   try {
     const list = await $fetch<RadarList>('/api/admin/radar/grants')
-    if (n === loads) data.value = list
+    if (v === version) data.value = list
   }
   catch (err) {
     notify('error', adminErrorText(err))
   }
+  finally {
+    reading--
+  }
+}
+
+// Un bando cambiato qui (cuore, candidatura, cartella): sul posto, come
+// versione più nuova di ogni lettura in volo, e la vista si aggiorna
+function editGrant(id: string, edit: (g: RadarGrant) => void) {
+  const g = data.value?.grants.find(x => x.id === id)
+  if (!g) return
+  edit(g)
+  version++
+  triggerRef(data)
 }
 
 onAdminReady(async () => {
@@ -127,12 +147,10 @@ onAdminReady(async () => {
 })
 
 // Mentre il radar gira, una cartella del bando si sta riempiendo o si cerca
-// un esito, l'elenco si ricarica da solo; con la scheda del browser nascosta
-// aspetta che torni
-const pageVisibility = useDocumentVisibility()
-const { pause, resume } = useIntervalFn(loadGrants, 10_000, { immediate: false })
+// un esito, l'elenco si ricarica da solo. Un giro salta se la lettura di
+// prima non è tornata: con tanti bandi una lettura lenta non va scartata
 const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.folderFilling || g.outcomeChecking))
-watch(() => busyRadar.value && pageVisibility.value === 'visible', r => (r ? resume() : pause()))
+usePollWhile(() => reading || loadGrants(), busyRadar, 10_000)
 
 async function save() {
   const body = current()
@@ -223,7 +241,7 @@ const grants = computed<EvaluatedGrant[]>(() => {
   const f = form.value
   const list = data.value?.grants ?? []
   if (!f) return []
-  return list.filter(g => g.kept || isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
+  return list.filter(g => isKept(g) || isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
 })
 
 // Le schede: i bandi nuovi dell'ultimo scan, poi gli aperti per esito, poi
@@ -241,7 +259,7 @@ const TABS: Record<Tab, string> = {
   expired: 'Scaduti',
 }
 const TAB_KEYS = Object.keys(TABS) as Tab[]
-const TRACKS: Tab[] = ['liked', 'applied', 'outcome', 'expired']
+const TRACKS: readonly Tab[] = GRANT_TRACKS
 const tab = ref<Tab>('eligible')
 const query = ref('')
 
@@ -296,13 +314,13 @@ async function patchGrant(id: string, patch: Partial<Pick<RadarGrant, 'liked' | 
   const g = data.value?.grants.find(x => x.id === id)
   if (!g) return
   const before = { liked: g.liked, applied: g.applied }
-  Object.assign(g, patch)
+  editGrant(id, x => Object.assign(x, patch))
   follow(id)
   try {
     await save()
   }
   catch (err) {
-    Object.assign(g, before)
+    editGrant(id, x => Object.assign(x, before))
     follow(id)
     notify('error', adminErrorText(err))
   }
@@ -337,8 +355,10 @@ async function checkOutcome(id: string) {
 // Un controllo dell'esito appena finito: si dice com'è andato e il bando
 // aperto si segue nella sua scheda
 watch(() => data.value?.grants, (list, was) => {
+  const checking = new Set(was?.filter(g => g.outcomeChecking).map(g => g.id))
+  if (!checking.size) return
   for (const g of list ?? []) {
-    if (g.outcomeChecking || !was?.find(x => x.id === g.id)?.outcomeChecking) continue
+    if (g.outcomeChecking || !checking.has(g.id)) continue
     if (g.outcomeError) notify('error', `Esito non controllato: ${g.title}`)
     else if (g.outcome) notify('ok', `${OUTCOME_LABELS[g.outcome.status].title}: ${g.title}`)
     follow(g.id)
@@ -348,17 +368,17 @@ watch(() => data.value?.grants, (list, was) => {
 // Cartella del bando: già riempita, o partita (l'elenco si ricarica
 // finché c'è una cartella in riempimento)
 function setFolder(id: string, start: FolderStart) {
-  const g = data.value?.grants.find(x => x.id === id)
-  if (!g) return
-  g.hasFolder = true
-  g.liked = true
-  g.folderFilled = start.status === 'ready'
-  g.folderFilling = start.status === 'filling'
-  // Il server azzera nota ed errore quando riparte: qui subito, senza aspettare
-  if (g.folderFilling) {
-    g.folderNote = ''
-    g.folderFailed = false
-  }
+  editGrant(id, (g) => {
+    g.hasFolder = true
+    g.liked = true
+    g.folderFilled = start.status === 'ready'
+    g.folderFilling = start.status === 'filling'
+    // Il server azzera nota ed errore quando riparte: qui subito, senza aspettare
+    if (g.folderFilling) {
+      g.folderNote = ''
+      g.folderFailed = false
+    }
+  })
 }
 
 // Scheda del dettaglio ("Dettaglio", "File" o "Bozza"): resta passando da un bando all'altro
@@ -370,11 +390,10 @@ const detailTab = ref<DetailTab>('detail')
 // cartella e cuore: l'elenco si rilegge e segue il riempimento come dopo
 // "Crea cartella del bando".
 const draft = useGrantDraft((id) => {
-  const g = data.value?.grants.find(x => x.id === id)
-  if (g) {
+  editGrant(id, (g) => {
     g.hasFolder = true
     g.liked = true
-  }
+  })
   loadGrants()
 })
 provide(GRANT_DRAFT, draft)
@@ -457,19 +476,20 @@ function refreshDraft() {
   if (refreshesDraft(draft, shownId)) void draft.load()
 }
 useEventListener('focus', refreshDraft)
+const pageVisibility = useDocumentVisibility()
 watch(pageVisibility, (v) => {
-  if (v !== 'visible') return
-  refreshDraft()
-  // Un lavoro in corso mentre la scheda era nascosta: si vede subito a che punto è
-  if (busyRadar.value) void loadGrants()
+  if (v === 'visible') refreshDraft()
 })
 
-// Elenco (la scheda del bando a destra, o sotto la riga) o card su più
-// colonne (la scheda in un pannello sopra la pagina). La scelta resta sul
-// computer
+// Elenco o card su più colonne. La scelta resta sul computer
 type Layout = 'list' | 'cards'
 const layout = useLocalStorage<Layout>('didap-radar-layout', 'list', { initOnMounted: true })
 const cards = computed(() => layout.value === 'cards')
+
+// Dove si apre la scheda del bando, una sola montata: sotto la riga
+// (elenco, schermo stretto), a destra (elenco, da xl) o in un pannello
+// sopra la pagina (card)
+const detailAt = computed(() => (cards.value ? 'drawer' : isXl.value ? 'side' : 'row'))
 
 // Passando alle card non resta aperto il bando scelto in automatico
 function setLayout(next: Layout) {
@@ -482,18 +502,17 @@ function setLayout(next: Layout) {
 
 const closeDrawer = () => guardDraft(() => (selectedId.value = null))
 
-// Sullo schermo largo, nell'elenco, la scheda a destra non resta mai vuota
-// se c'è un bando; mai al posto di un bando con la bozza da tenere (anche
-// sparito dai dati)
+// La scheda a destra non resta mai vuota se c'è un bando; mai al posto di
+// un bando con la bozza da tenere (anche sparito dai dati)
 watchEffect(() => {
-  if (isXl.value && !cards.value && !selected.value && visible.value.length && !keepsDraft.value) {
+  if (detailAt.value === 'side' && !selected.value && visible.value.length && !keepsDraft.value) {
     selectedId.value = visible.value[0]!.id
   }
 })
 
 function pick(id: string) {
-  // Sotto xl la scheda si apre sotto la riga: un secondo clic la chiude
-  const next = !isXl.value && selectedId.value === id ? null : id
+  // La scheda sotto la riga si chiude con un secondo clic
+  const next = detailAt.value === 'row' && selectedId.value === id ? null : id
   if (next !== selectedId.value) guardDraft(() => (selectedId.value = next))
 }
 
@@ -1222,8 +1241,8 @@ function toggleGroup(group: string, on: boolean) {
                   items-start gap-x-4 py-4 pl-5 text-left
                   lg:pl-8
                 "
-                :aria-expanded="isXl ? undefined : selectedId === g.id"
-                :aria-current="isXl && selectedId === g.id ? 'true' : undefined"
+                :aria-expanded="detailAt === 'row' ? selectedId === g.id : undefined"
+                :aria-current="detailAt === 'side' && selectedId === g.id ? 'true' : undefined"
                 @click="pick(g.id)"
               >
                 <RadarOutcomeIcon
@@ -1257,7 +1276,7 @@ function toggleGroup(group: string, on: boolean) {
               />
               </div>
               <div
-                v-if="!isXl && selectedId === g.id"
+                v-if="detailAt === 'row' && selectedId === g.id"
                 class="border-t border-ink/10 bg-white"
               >
                 <RadarGrantDetail
@@ -1283,7 +1302,7 @@ function toggleGroup(group: string, on: boolean) {
         aria-label="Scheda del bando"
       >
         <RadarGrantDetail
-          v-if="isXl && selected"
+          v-if="detailAt === 'side' && selected"
           :grant="selected"
           v-bind="detailBindings"
         />
@@ -1293,7 +1312,7 @@ function toggleGroup(group: string, on: boolean) {
     <!-- Con le card la scheda del bando si apre in un pannello sopra la pagina;
          chiudendolo con la bozza da salvare si chiede prima -->
     <DialogRoot
-      :open="cards && !!selected"
+      :open="detailAt === 'drawer' && !!selected"
       @update:open="v => v || closeDrawer()"
     >
       <DialogPortal>

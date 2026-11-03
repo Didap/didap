@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { createError } from 'h3'
 import type postgres from 'postgres'
+import { DAY_MS } from '#shared/dates'
 import {
   emptyStats,
   emptyUsage,
@@ -99,14 +100,15 @@ const closedGrant = (sql: Sql, now: Date) => sql`
 `
 
 // Tenuto: resta nel pannello anche chiuso o scaduto, e né "Svuota" né una
-// rilettura lo cancellano. Ha la cartella o la candidatura
+// rilettura lo cancellano. Ha la cartella o la candidatura (nel pannello:
+// isKept in shared/radar.ts)
 const keptGrant = (sql: Sql) => sql`(g.folder_at is not null or g.applied_at is not null)`
 
 // Un lavoro in background su un bando (riempimento della cartella, controllo
 // dell'esito) preso da meno di `minutes` minuti: è ancora vivo, e il turno
-// non si può riprendere. Null se nessuno l'ha preso
+// non si può riprendere
 export const liveClaim = (sql: Sql, claimedAt: 'folder_claimed_at' | 'outcome_claimed_at', minutes: number) =>
-  sql`${sql(claimedAt)} > now() - ${`${minutes} minutes`}::interval`
+  sql`coalesce(${sql(claimedAt)} > now() - ${`${minutes} minutes`}::interval, false)`
 
 // Bandi ancora da leggere: la stessa condizione per la coda e per il
 // contatore. Quando il prompt di lettura cambia (READER_KEY) si rileggono i
@@ -268,7 +270,7 @@ async function recordReach(sql: Sql, down: string[], back: string[], now: Date) 
   if (back.length) await sql`delete from radar_sources where slug = any(${back})`
   if (!down.length) return
   const dayAgo = new Date(now.getTime() - PAUSE_AFTER_HOURS * 3_600_000)
-  const until = new Date(now.getTime() + PAUSE_DAYS * 86_400_000)
+  const until = new Date(now.getTime() + PAUSE_DAYS * DAY_MS)
   await sql`
     insert into radar_sources (slug, unreachable_since)
     select unnest(${down}::text[]), ${now}::timestamptz
@@ -295,7 +297,7 @@ async function ingestSource(sql: Sql, source: RadarSource, now: Date): Promise<S
       select external_id, content_hash, fetched_at from radar_documents where source = ${source.slug}
     `).map(r => [r.external_id, r]),
   )
-  const fresh = now.getTime() - source.refreshDays * 86_400_000
+  const fresh = now.getTime() - source.refreshDays * DAY_MS
   const unchanged: Listing[] = []
   for (const listing of listings) {
     if (listing.closed) continue
@@ -566,27 +568,25 @@ export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
 
 // Bandi aperti, dalla scadenza più vicina; `id`: solo quel bando. Il
 // pannello li valuta da sé coi parametri del modulo, anche non salvati.
-// `withKept`: anche i bandi tenuti (con cartella o candidatura) chiusi o
-// scaduti (esportazione, Claude); `withClosed`: anche tutti gli altri
-// chiusi o scaduti (il pannello, per gli scaduti). La mail e il resto del
-// radar vedono solo quelli aperti.
+// `closed`: anche i chiusi o scaduti, solo quelli tenuti ('kept': Claude)
+// o tutti ('all': il pannello, con gli scaduti, e l'esportazione). La mail
+// e il resto del radar vedono solo quelli aperti.
 export async function listGrants(
   sql: Sql,
   now: Date,
-  { unnotified = false, id = '', withKept = false, withClosed = false } = {},
+  { unnotified = false, id = '', closed }: { unnotified?: boolean, id?: string, closed?: 'kept' | 'all' } = {},
 ): Promise<RadarGrant[]> {
-  const shown = withClosed
+  const shown = closed === 'all'
     ? sql`(d.status = 'read' or ${keptGrant(sql)})`
-    : withKept ? sql`(${openGrant(sql, now)} or ${keptGrant(sql)})` : openGrant(sql, now)
+    : closed === 'kept' ? sql`(${openGrant(sql, now)} or ${keptGrant(sql)})` : openGrant(sql, now)
   const rows = await sql`
     select g.id, d.source, d.url, g.kind, g.digital, g.ai, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
       g.liked_at, g.folder_at, g.folder_filled_at, g.folder_failed_at, g.folder_note,
-      coalesce(g.folder_filled_at is null and ${liveClaim(sql, 'folder_claimed_at', FOLDER_CLAIM_MINUTES)}, false)
-        as folder_filling,
+      g.folder_filled_at is null and ${liveClaim(sql, 'folder_claimed_at', FOLDER_CLAIM_MINUTES)} as folder_filling,
       g.applied_at, g.outcome, g.outcome_error,
-      coalesce(${liveClaim(sql, 'outcome_claimed_at', OUTCOME_CLAIM_MINUTES)}, false) as outcome_checking,
-      ${closedGrant(sql, now)} as closed, ${keptGrant(sql)} as kept,
+      ${liveClaim(sql, 'outcome_claimed_at', OUTCOME_CLAIM_MINUTES)} as outcome_checking,
+      ${closedGrant(sql, now)} as closed,
       g.created_at, g.run_id
     from radar_grants g join radar_documents d on d.id = g.document_id
     where ${shown}
@@ -625,7 +625,6 @@ export async function listGrants(
     outcomeChecking: r.outcome_checking,
     outcomeError: r.outcome_error,
     closed: r.closed,
-    kept: r.kept,
     createdAt: r.created_at.toISOString(),
     runId: r.run_id,
   }))
@@ -647,7 +646,7 @@ export async function readGrantDocument(sql: Sql, id: string, now = new Date()) 
     sql<{ content: string }[]>`
       select d.content from radar_grants g join radar_documents d on d.id = g.document_id where g.id = ${id}
     `,
-    listGrants(sql, now, { id, withClosed: true }),
+    listGrants(sql, now, { id, closed: 'all' }),
     readRadarSettings(sql),
   ])
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })

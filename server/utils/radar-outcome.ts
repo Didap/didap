@@ -70,14 +70,12 @@ const TOOLS: Anthropic.ToolUnion[] = [
   { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 5 },
   REPORT_TOOL,
 ]
-// Al più cinque richieste per controllo (la prima, le riprese dopo una
-// pausa, un sollecito) e 25 minuti in tutto, meno del turno
-// (OUTCOME_CLAIM_MINUTES): passati, il controllo si ferma anche a metà di
-// una risposta. Il timeout della richiesta copre solo l'attesa dell'inizio
+// Al più cinque richieste per controllo: la prima, le riprese dopo una
+// pausa, un sollecito
 const MAX_REQUESTS = 5
-const CHECK_TIMEOUT_MS = 25 * 60_000
-const REQUEST_TIMEOUT_MS = 5 * 60_000
-const REQUEST_RETRIES = 1
+// Il controllo si ferma, anche a metà di una risposta, dieci minuti prima
+// che scada il turno: un controllo ancora vivo non ne trova uno nuovo
+const CHECK_TIMEOUT_MS = (OUTCOME_CLAIM_MINUTES - 10) * 60_000
 // 10 dollari ogni mille ricerche, oltre ai token
 const SEARCH_DOLLARS = 0.01
 
@@ -118,7 +116,8 @@ export function parseOutcome(raw: unknown): Omit<GrantOutcome, 'checkedAt' | 'co
 }
 
 export type OutcomeQuery = Pick<RadarGrant, 'kind' | 'title' | 'issuer' | 'url' | 'funding' | 'summary'> & { deadline: Date | null }
-export type OutcomeFinder = (grant: OutcomeQuery) => Promise<Omit<GrantOutcome, 'checkedAt'>>
+// `signal`: la scadenza del controllo, data da chi tiene il turno
+export type OutcomeFinder = (grant: OutcomeQuery, signal: AbortSignal) => Promise<Omit<GrantOutcome, 'checkedAt'>>
 
 const callText = (g: OutcomeQuery) => [
   `Tipo: ${grantKind(g.kind).label}`,
@@ -131,12 +130,11 @@ const callText = (g: OutcomeQuery) => [
   g.summary,
 ].join('\n')
 
-export const llmOutcomeFinder: OutcomeFinder = async (grant) => {
+export const llmOutcomeFinder: OutcomeFinder = async (grant, signal) => {
   const model = outcomeModel()
   const usage = emptyUsage()
   let searches = 0
   const messages: Anthropic.MessageParam[] = [{ role: 'user', content: callText(grant) }]
-  const signal = AbortSignal.timeout(CHECK_TIMEOUT_MS)
   for (let i = 0; i < MAX_REQUESTS; i++) {
     let res: Anthropic.Message
     try {
@@ -149,7 +147,7 @@ export const llmOutcomeFinder: OutcomeFinder = async (grant) => {
         tools: TOOLS,
         output_config: { effort: 'medium' },
         messages,
-      }, { timeout: REQUEST_TIMEOUT_MS, maxRetries: REQUEST_RETRIES, signal }).finalMessage()
+      }, { signal }).finalMessage()
     }
     catch (err) {
       if (signal.aborted) throw new Error('Il controllo è durato troppo ed è stato fermato')
@@ -187,7 +185,7 @@ export async function startGrantOutcome(
   const [claimed] = await sql`
     update radar_grants set outcome_claim = ${claim}, outcome_claimed_at = now(), outcome_error = ''
     where id = ${id} and applied_at is not null
-      and not coalesce(${liveClaim(sql, 'outcome_claimed_at', OUTCOME_CLAIM_MINUTES)}, false)
+      and not ${liveClaim(sql, 'outcome_claimed_at', OUTCOME_CLAIM_MINUTES)}
     returning id
   `
   if (claimed) {
@@ -210,7 +208,8 @@ async function checkOutcome(sql: Sql, finder: OutcomeFinder, id: string, claim: 
       where g.id = ${id}
     `
     if (!grant) throw new Error('Bando non trovato')
-    const outcome: GrantOutcome = { ...await finder(grant), checkedAt: new Date().toISOString() }
+    const found = await finder(grant, AbortSignal.timeout(CHECK_TIMEOUT_MS))
+    const outcome: GrantOutcome = { ...found, checkedAt: new Date().toISOString() }
     await sql`
       update radar_grants set outcome = ${sql.json(outcome)}, outcome_claim = null, outcome_claimed_at = null
       where id = ${id} and outcome_claim = ${claim}

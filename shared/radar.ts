@@ -380,11 +380,8 @@ export type RadarGrant = {
   outcome: GrantOutcome | null
   outcomeChecking: boolean
   outcomeError: string
-  // Chiuso dalla fonte o scaduto (nel pannello sta tra gli scaduti, se non
-  // ci siamo candidati); tenuto: ha la cartella o la candidatura, e resta
-  // anche fuori dalla ricerca scelta
+  // Chiuso dalla fonte o scaduto (in che scheda va: grantTrack)
   closed: boolean
-  kept: boolean
   // Quando è entrato nel radar e con quale scan (null: prima dei registri)
   createdAt: string
   runId: string | null
@@ -524,10 +521,15 @@ export type GrantOutcome = {
 export const hasOutcome = <T extends Pick<RadarGrant, 'applied' | 'outcome'>>(g: T): g is T & { outcome: GrantOutcome } =>
   g.applied && !!g.outcome && g.outcome.status !== 'not_published'
 
+// Tenuto: ha la cartella o la candidatura, e resta nel pannello anche fuori
+// dalla ricerca scelta (la stessa regola di keptGrant in server/utils/radar.ts)
+export const isKept = (g: Pick<RadarGrant, 'hasFolder' | 'applied'>) => g.hasFolder || g.applied
+
 // Dove sta un bando fuori dalle schede per esito, in una sola: esito
 // pubblicato, candidati, scaduti (chiusi senza candidatura, col cuore o
 // no), interessanti (aperti col cuore). null: aperto e mai segnato
-export type GrantTrack = 'liked' | 'applied' | 'outcome' | 'expired'
+export const GRANT_TRACKS = ['liked', 'applied', 'outcome', 'expired'] as const
+export type GrantTrack = (typeof GRANT_TRACKS)[number]
 
 export function grantTrack(g: Pick<RadarGrant, 'liked' | 'closed' | 'applied' | 'outcome'>): GrantTrack | null {
   if (hasOutcome(g)) return 'outcome'
@@ -537,7 +539,7 @@ export function grantTrack(g: Pick<RadarGrant, 'liked' | 'closed' | 'applied' | 
 }
 
 // Un controllo dell'esito in corso da più di così è morto col processo: si
-// può rifare. Più lungo del controllo più lento (server/utils/radar-outcome.ts)
+// può rifare. Il controllo si ferma prima (server/utils/radar-outcome.ts)
 export const OUTCOME_CLAIM_MINUTES = 40
 
 // Il titolo per i nomi dei file del bando: "Voucher digitale: PMI" ->

@@ -59,7 +59,7 @@ export async function startGrantFolder(
   const [claimed] = await sql`
     update radar_grants set folder_claim = ${claim}, folder_claimed_at = now(), folder_note = '', folder_failed_at = null
     where id = ${id} and folder_filled_at is null
-      and not coalesce(${liveClaim(sql, 'folder_claimed_at', FOLDER_CLAIM_MINUTES)}, false)
+      and not ${liveClaim(sql, 'folder_claimed_at', FOLDER_CLAIM_MINUTES)}
     returning id
   `
   // Già in corso (altro clic, altra istanza): il pannello aspetta lo stesso lavoro

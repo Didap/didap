@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useIntervalFn } from '@vueuse/core'
+import { usePollWhile } from '~/composables/usePollWhile'
 import { adminErrorText } from '~/utils/adminErrors'
 import { formatDateTime, formatDay, formatDollars } from '~/utils/format'
 import { formatDecimal } from '#shared/money'
@@ -50,12 +51,11 @@ const rows = computed(() => {
   }
   return (runs.value ?? []).map(r => ({ ...r, added: added.get(r.id) ?? [] }))
 })
-const { pause, resume } = useIntervalFn(load, 5_000, { immediate: false })
+// Il registro si rilegge mentre uno scan gira
+usePollWhile(load, running, 5_000)
 // Uno scan finito, anche partito da un'altra scheda: il pannello ricarica i
 // bandi, che danno i nuovi di ogni scan
 watch(running, (r, was) => {
-  if (r) resume()
-  else pause()
   if (was && !r) emit('finished')
 })
 

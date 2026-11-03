@@ -16,11 +16,13 @@ import {
   releaseLease,
   runScan,
   sendDigest,
+  setGrantApplied,
   setGrantLiked,
   writeRadarSettings,
   type Mail,
   type RadarDeps,
 } from '../server/utils/radar'
+import { startGrantOutcome, type OutcomeFinder } from '../server/utils/radar-outcome'
 import { SourceUnreachable } from '../server/utils/radar-fetch'
 import { ReaderUnavailable, type GrantJudge, type GrantReader, type GrantReading } from '../server/utils/radar-reader'
 import type { RadarSource } from '../server/utils/radar-sources'
@@ -135,6 +137,78 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await ingestSources(sql, [fakeSource({ a: 'bando A max 900' })], NOW)
     expect((await readPending(sql, fakeReader)).read).toBe(1)
     expect((await listEvaluatedGrants(sql, NOW))[0]!.title).toBe('bando A max 900')
+  })
+
+  const grantId = async (title: string) => (await sql<{ id: string }[]>`select id from radar_grants where title = ${title}`)[0]!.id
+  const NO_GRANT = '00000000-0000-4000-8000-000000000000'
+
+  it('la candidatura mette il cuore, tiene il bando chiuso e lo protegge da "Svuota"', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B', c: 'bando scaduto' })], NOW)
+    await readPending(sql, fakeReader)
+    await setGrantApplied(sql, await grantId('bando scaduto'), true)
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => [g.title, g.applied, g.liked, g.closed]).sort()).toEqual([
+      ['bando A', false, false, false],
+      ['bando B', false, false, false],
+      ['bando scaduto', true, true, true],
+    ])
+    // Tolta la candidatura il cuore resta
+    await setGrantApplied(sql, await grantId('bando A'), true)
+    await setGrantApplied(sql, await grantId('bando A'), false)
+    expect((await listGrants(sql, NOW)).find(g => g.title === 'bando A')).toMatchObject({ applied: false, liked: true })
+    expect(await radarWipe(sql)).toEqual({ deleted: 2, kept: 1 })
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando scaduto'])
+    await expect(setGrantApplied(sql, NO_GRANT, true)).rejects.toMatchObject({ statusCode: 404 })
+  })
+
+  it('"Controlla esito" gira in background su un bando candidato', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A' })], NOW)
+    await readPending(sql, fakeReader)
+    const id = await grantId('bando A')
+    const won = {
+      status: 'won' as const,
+      summary: 'Siete primi in graduatoria.',
+      publishedOn: '2026-10-01',
+      ourScore: '90/100',
+      ourRank: 1,
+      winners: [{ name: 'Didap S.r.l.', score: '90/100' }],
+      sources: [{ title: 'Graduatoria', url: 'https://example.com/graduatoria.pdf' }],
+      cost: 0.2,
+    }
+    const finder: OutcomeFinder = async () => won
+    const broken: OutcomeFinder = async () => {
+      throw new Error('modello giù')
+    }
+    const jobs: (() => Promise<void>)[] = []
+    const later = (job: () => Promise<void>) => void jobs.push(job)
+    const grant = async () => (await listGrants(sql, NOW))[0]!
+
+    await expect(startGrantOutcome(sql, null, id)).rejects.toMatchObject({ statusCode: 503 })
+    await expect(startGrantOutcome(sql, finder, id)).rejects.toMatchObject({ statusCode: 409 })
+    await expect(startGrantOutcome(sql, finder, NO_GRANT)).rejects.toMatchObject({ statusCode: 404 })
+
+    await setGrantApplied(sql, id, true)
+    await startGrantOutcome(sql, finder, id, later)
+    // Un secondo clic mentre cerca aspetta lo stesso controllo
+    await startGrantOutcome(sql, finder, id, later)
+    expect(jobs).toHaveLength(1)
+    expect(await grant()).toMatchObject({ outcomeChecking: true, outcome: null })
+    await jobs[0]!()
+    expect(await grant()).toMatchObject({ outcomeChecking: false, outcomeError: '', outcome: won })
+
+    // Un controllo fallito lascia l'esito di prima e dice perché
+    await startGrantOutcome(sql, broken, id, later)
+    await jobs[1]!()
+    expect(await grant()).toMatchObject({ outcomeChecking: false, outcomeError: 'Non riuscito: modello giù', outcome: won })
+
+    // Turno scaduto e ripreso: il controllo rimasto indietro non scrive
+    await startGrantOutcome(sql, broken, id, later)
+    await sql`update radar_grants set outcome_claimed_at = now() - interval '1 hour' where id = ${id}`
+    await startGrantOutcome(sql, finder, id, later)
+    expect(jobs).toHaveLength(4)
+    await jobs[2]!()
+    expect(await grant()).toMatchObject({ outcomeChecking: true, outcomeError: '' })
+    await jobs[3]!()
+    expect(await grant()).toMatchObject({ outcomeChecking: false, outcomeError: '', outcome: won })
   })
 
   it('il cuore resta anche quando il bando si rilegge', async () => {
@@ -430,7 +504,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     await giveFolder('bando B')
     expect(await radarWipe(sql)).toEqual({ deleted: 1, kept: 1 })
-    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => [g.title, g.hasFolder])).toEqual([['bando B', true]])
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => [g.title, g.hasFolder])).toEqual([['bando B', true]])
     const docs = await sql`select status from radar_documents`
     expect(docs.map(d => d.status)).toEqual(['read'])
   })
@@ -444,7 +518,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     // b sparisce dalla fonte: chiuso
     await ingestSources(sql, [fakeSource({ a: 'bando A', c: 'bando scaduto' })], NOW)
     expect((await listGrants(sql, NOW)).map(g => g.title)).toEqual(['bando A'])
-    const all = await listGrants(sql, NOW, { withFolders: true })
+    const all = await listGrants(sql, NOW, { closed: 'kept' })
     expect(all.map(g => [g.title, g.closed]).sort()).toEqual([
       ['bando A', false],
       ['bando B', true],
@@ -454,13 +528,27 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     expect(sent[0]!.text).not.toContain('bando B')
   })
 
+  it('il pannello vede anche i bandi chiusi o scaduti senza cartella né candidatura (gli scaduti)', async () => {
+    await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B', c: 'bando scaduto' })], NOW)
+    await readPending(sql, fakeReader)
+    // b sparisce dalla fonte: chiuso
+    await ingestSources(sql, [fakeSource({ a: 'bando A', c: 'bando scaduto' })], NOW)
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando A'])
+    const all = await listGrants(sql, NOW, { closed: 'all' })
+    expect(all.map(g => [g.title, g.closed, g.hasFolder || g.applied]).sort()).toEqual([
+      ['bando A', false, false],
+      ['bando B', true, false],
+      ['bando scaduto', true, false],
+    ])
+  })
+
   it('una rilettura "non per le imprese" non cancella un bando con cartella', async () => {
     await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B' })], NOW)
     await readPending(sql, fakeReader)
     await giveFolder('bando A')
     await ingestSources(sql, [fakeSource({ a: 'enti locali A', b: 'enti locali B' })], NOW)
     expect((await readPending(sql, fakeReader)).read).toBe(2)
-    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => [g.title, g.hasFolder, g.closed]))
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => [g.title, g.hasFolder, g.closed]))
       .toEqual([['bando A', true, false]])
     const docs = await sql`select external_id, status from radar_documents order by external_id`
     expect(docs.map(d => [d.external_id, d.status])).toEqual([['a', 'read'], ['b', 'skipped']])
@@ -493,7 +581,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await readPending(sql, fakeReader)
     await ingestSources(sql, [fakeSource({ a: 'enti locali A' })], NOW)
     await folderDuring('bando A', () => readPending(sql, fakeReader))
-    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => g.title)).toEqual(['bando A'])
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando A'])
     expect((await sql`select status from radar_documents`).map(d => d.status)).toEqual(['read'])
   })
 
@@ -501,7 +589,7 @@ describe.skipIf(!TEST_DATABASE_URL)('radar bandi su Postgres', () => {
     await ingestSources(sql, [fakeSource({ a: 'bando A', b: 'bando B' })], NOW)
     await readPending(sql, fakeReader)
     expect(await folderDuring('bando A', () => radarWipe(sql))).toEqual({ deleted: 1, kept: 1 })
-    expect((await listGrants(sql, NOW, { withFolders: true })).map(g => g.title)).toEqual(['bando A'])
+    expect((await listGrants(sql, NOW, { closed: 'kept' })).map(g => g.title)).toEqual(['bando A'])
   })
 
   it('uno scan alla volta', async () => {

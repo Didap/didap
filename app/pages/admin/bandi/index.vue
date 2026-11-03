@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { until, useDocumentVisibility, useEventListener, useIntervalFn, useMediaQuery } from '@vueuse/core'
+import { until, useDocumentVisibility, useEventListener, useLocalStorage, useMediaQuery } from '@vueuse/core'
 import {
   CollapsibleContent,
+  DialogClose,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
   PopoverContent,
   PopoverPortal,
   PopoverRoot,
@@ -25,31 +31,36 @@ import AdminConfirm from '~/components/admin/AdminConfirm.vue'
 import AdminIcon from '~/components/admin/AdminIcon.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import OptionalNumber from '~/components/admin/OptionalNumber.vue'
-import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
 import RadarGrantDetail from '~/components/admin/RadarGrantDetail.vue'
+import RadarGrantDue from '~/components/admin/RadarGrantDue.vue'
+import RadarGrantTags from '~/components/admin/RadarGrantTags.vue'
+import RadarLikeButton from '~/components/admin/RadarLikeButton.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import RadarProvincePicker from '~/components/admin/RadarProvincePicker.vue'
 import RadarRunLog from '~/components/admin/RadarRunLog.vue'
 import { GRANT_DRAFT, useGrantDraft } from '~/composables/useGrantDraft'
+import { usePollWhile } from '~/composables/usePollWhile'
 import { holdsDraft, refreshesDraft, shownGrant } from '~/utils/grantDraftEditor'
 import { adminErrorText } from '~/utils/adminErrors'
-import { formatDateTime, formatDay } from '~/utils/format'
-import { romeDate } from '#shared/dates'
-import { formatWholeEuro } from '#shared/money'
+import { formatDateTime } from '~/utils/format'
 import {
   ELIGIBILITY_OUTCOME,
   ELIGIBILITY_PLURALS,
   evaluateRadarGrant,
-  grantTags,
+  grantTrack,
+  GRANT_TRACKS,
   isInScope,
+  isKept,
   isNewIn,
   LEGAL_FORMS,
+  OUTCOME_LABELS,
   PROVINCES,
   radarSettingsSchema,
   SOURCE_GROUPS,
   type Eligibility,
   type EvaluatedGrant,
   type FolderStart,
+  type GrantTrack,
   type LegalForm,
   type RadarGrant,
   type RadarSettings,
@@ -68,9 +79,11 @@ useSeoMeta({ title: 'Bandi - Admin Didap' })
 await useAdminSession()
 const { notify } = useAdminToast()
 
-// Bandi grezzi dal server: si valutano qui coi parametri del modulo
+// Bandi grezzi dal server: si valutano qui coi parametri del modulo. Sono
+// tanti (anche gli scaduti): niente reattività profonda, chi cambia un bando
+// sul posto passa da editGrant
 type RadarList = { grants: RadarGrant[], status: RadarStatus }
-const data = ref<RadarList | null>(null)
+const data = shallowRef<RadarList | null>(null)
 const form = ref<RadarSettings | null>(null)
 // Un indirizzo per riga; diventa la lista al salvataggio
 const emails = ref('')
@@ -93,13 +106,33 @@ function fill(settings: RadarSettings) {
 
 const revert = () => saved.value && fill(saved.value)
 
+// Vince l'ultima versione: una lettura partita prima di un'altra lettura, o
+// di un cambio fatto qui (editGrant), non riporta indietro lo stato
+let version = 0
+let reading = 0
 async function loadGrants() {
+  const v = ++version
+  reading++
   try {
-    data.value = await $fetch<RadarList>('/api/admin/radar/grants')
+    const list = await $fetch<RadarList>('/api/admin/radar/grants')
+    if (v === version) data.value = list
   }
   catch (err) {
     notify('error', adminErrorText(err))
   }
+  finally {
+    reading--
+  }
+}
+
+// Un bando cambiato qui (cuore, candidatura, cartella): sul posto, come
+// versione più nuova di ogni lettura in volo, e la vista si aggiorna
+function editGrant(id: string, edit: (g: RadarGrant) => void) {
+  const g = data.value?.grants.find(x => x.id === id)
+  if (!g) return
+  edit(g)
+  version++
+  triggerRef(data)
 }
 
 onAdminReady(async () => {
@@ -113,11 +146,11 @@ onAdminReady(async () => {
   }
 })
 
-// Mentre il radar gira, o una cartella del bando si sta riempiendo,
-// l'elenco si ricarica da solo
-const { pause, resume } = useIntervalFn(loadGrants, 10_000, { immediate: false })
-const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.folderFilling))
-watch(busyRadar, r => (r ? resume() : pause()))
+// Mentre il radar gira, una cartella del bando si sta riempiendo o si cerca
+// un esito, l'elenco si ricarica da solo. Un giro salta se la lettura di
+// prima non è tornata: con tanti bandi una lettura lenta non va scartata
+const busyRadar = computed(() => !!data.value?.status.running || !!data.value?.grants.some(g => g.folderFilling || g.outcomeChecking))
+usePollWhile(() => reading || loadGrants(), busyRadar, 10_000)
 
 async function save() {
   const body = current()
@@ -193,7 +226,7 @@ const confirmWipe = ref(false)
 const wipe = () => act(async () => {
   confirmWipe.value = false
   const { deleted, kept } = await $fetch<{ deleted: number, kept: number }>('/api/admin/radar/wipe', { method: 'POST' })
-  return `Dati svuotati: ${deleted} testi cancellati${kept ? `, ${kept} bandi con cartella tenuti` : ''}`
+  return `Dati svuotati: ${deleted} testi cancellati${kept ? `, ${kept} bandi con cartella o candidatura tenuti` : ''}`
 })
 
 const sendNow = () => act(async () => {
@@ -202,32 +235,47 @@ const sendNow = () => act(async () => {
 })
 
 // Valutazione coi parametri del pannello, anche prima di salvarli. I bandi
-// con la cartella restano anche fuori dalla ricerca scelta.
+// tenuti (cartella o candidatura) restano anche fuori dalla ricerca scelta.
 const now = new Date()
 const grants = computed<EvaluatedGrant[]>(() => {
   const f = form.value
   const list = data.value?.grants ?? []
   if (!f) return []
-  return list.filter(g => g.hasFolder || isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
+  return list.filter(g => isKept(g) || isInScope(g, f.search)).map(g => ({ ...g, ...evaluateRadarGrant(g, f.profile, now) }))
 })
 
-// Le schede: i bandi nuovi dell'ultimo scan, poi per esito, poi quelli
-// segnati col cuore. I bandi chiusi stanno solo negli interessanti, anche
-// senza cuore: lì si apre la loro cartella. Arrivano solo quelli con la
-// cartella (withFolders), quindi basta closed.
-const isInteresting = (g: EvaluatedGrant) => g.liked || g.closed
+// Le schede: i bandi nuovi dell'ultimo scan, poi gli aperti per esito, poi
+// dove sta un bando segnato o chiuso (grantTrack: interessanti, candidati,
+// esiti, scaduti), in una sola. Gli scaduti restano tutti, anche senza
+// cuore: lì si apre anche la loro cartella.
 const isNew = (g: EvaluatedGrant) => isNewIn(g, data.value?.status.lastScan?.id)
-type Tab = 'new' | Eligibility | 'liked'
-const TABS: Record<Tab, string> = { new: 'Nuovi', ...ELIGIBILITY_PLURALS, liked: 'Interessanti' }
+type Tab = 'new' | Eligibility | GrantTrack
+const TABS: Record<Tab, string> = {
+  new: 'Nuovi',
+  ...ELIGIBILITY_PLURALS,
+  liked: 'Interessanti',
+  applied: 'Candidati',
+  outcome: 'Esiti',
+  expired: 'Scaduti',
+}
 const TAB_KEYS = Object.keys(TABS) as Tab[]
+const TRACKS: readonly Tab[] = GRANT_TRACKS
 const tab = ref<Tab>('eligible')
 const query = ref('')
 
 // In che scheda sta un bando: un bando nuovo sta anche nel suo esito
 function inTab(t: Tab, g: EvaluatedGrant) {
-  if (t === 'liked') return isInteresting(g)
   if (t === 'new') return isNew(g)
+  if (TRACKS.includes(t)) return grantTrack(g) === t
   return !g.closed && g.eligibility === t
+}
+
+// Il bando aperto è passato a un'altra delle nostre schede (candidatura,
+// esito trovato): lo si segue, così resta davanti
+function follow(id: string) {
+  const g = grants.value.find(x => x.id === id)
+  const track = g && grantTrack(g)
+  if (track && selectedId.value === id && TRACKS.includes(tab.value)) tab.value = track
 }
 
 const counts = computed(() => {
@@ -260,35 +308,77 @@ watch(() => data.value?.status.lastScan, (scan, was) => {
   if (n) tab.value = 'new'
 })
 
-// Il cuore cambia subito; se il salvataggio non va, torna com'era
-async function toggleLike(id: string) {
+// Cuore e candidatura cambiano subito, e il bando aperto si segue se cambia
+// scheda; se il salvataggio non va, tornano com'erano
+async function patchGrant(id: string, patch: Partial<Pick<RadarGrant, 'liked' | 'applied'>>, save: () => Promise<unknown>) {
   const g = data.value?.grants.find(x => x.id === id)
   if (!g) return
-  const liked = !g.liked
-  g.liked = liked
+  const before = { liked: g.liked, applied: g.applied }
+  editGrant(id, x => Object.assign(x, patch))
+  follow(id)
   try {
-    await $fetch(`/api/admin/radar/grants/${id}/like`, { method: 'PUT', body: { liked } })
+    await save()
   }
   catch (err) {
-    g.liked = !liked
+    editGrant(id, x => Object.assign(x, before))
+    follow(id)
     notify('error', adminErrorText(err))
   }
 }
 
+function toggleLike(id: string) {
+  const liked = !data.value?.grants.find(x => x.id === id)?.liked
+  return patchGrant(id, { liked }, () => $fetch(`/api/admin/radar/grants/${id}/like`, { method: 'PUT', body: { liked } }))
+}
+
+// La candidatura mette anche il cuore: si sceglie tra gli interessanti
+const setApplied = (id: string, applied: boolean) => patchGrant(
+  id,
+  applied ? { applied, liked: true } : { applied },
+  () => $fetch(`/api/admin/radar/grants/${id}/apply`, { method: 'PUT', body: { applied } }),
+)
+
+// "Controlla esito": parte in background, l'elenco si ricarica finché il
+// controllo è in corso
+async function checkOutcome(id: string) {
+  try {
+    await $fetch(`/api/admin/radar/grants/${id}/outcome`, { method: 'POST' })
+  }
+  catch (err) {
+    notify('error', adminErrorText(err))
+    return
+  }
+  // Il turno è già preso: rileggendo il bando risulta in controllo
+  await loadGrants()
+}
+
+// Un controllo dell'esito appena finito: si dice com'è andato e il bando
+// aperto si segue nella sua scheda
+watch(() => data.value?.grants, (list, was) => {
+  const checking = new Set(was?.filter(g => g.outcomeChecking).map(g => g.id))
+  if (!checking.size) return
+  for (const g of list ?? []) {
+    if (g.outcomeChecking || !checking.has(g.id)) continue
+    if (g.outcomeError) notify('error', `Esito non controllato: ${g.title}`)
+    else if (g.outcome) notify('ok', `${OUTCOME_LABELS[g.outcome.status].title}: ${g.title}`)
+    follow(g.id)
+  }
+})
+
 // Cartella del bando: già riempita, o partita (l'elenco si ricarica
 // finché c'è una cartella in riempimento)
 function setFolder(id: string, start: FolderStart) {
-  const g = data.value?.grants.find(x => x.id === id)
-  if (!g) return
-  g.hasFolder = true
-  g.liked = true
-  g.folderFilled = start.status === 'ready'
-  g.folderFilling = start.status === 'filling'
-  // Il server azzera nota ed errore quando riparte: qui subito, senza aspettare
-  if (g.folderFilling) {
-    g.folderNote = ''
-    g.folderFailed = false
-  }
+  editGrant(id, (g) => {
+    g.hasFolder = true
+    g.liked = true
+    g.folderFilled = start.status === 'ready'
+    g.folderFilling = start.status === 'filling'
+    // Il server azzera nota ed errore quando riparte: qui subito, senza aspettare
+    if (g.folderFilling) {
+      g.folderNote = ''
+      g.folderFailed = false
+    }
+  })
 }
 
 // Scheda del dettaglio ("Dettaglio", "File" o "Bozza"): resta passando da un bando all'altro
@@ -300,11 +390,10 @@ const detailTab = ref<DetailTab>('detail')
 // cartella e cuore: l'elenco si rilegge e segue il riempimento come dopo
 // "Crea cartella del bando".
 const draft = useGrantDraft((id) => {
-  const g = data.value?.grants.find(x => x.id === id)
-  if (g) {
+  editGrant(id, (g) => {
     g.hasFolder = true
     g.liked = true
-  }
+  })
   loadGrants()
 })
 provide(GRANT_DRAFT, draft)
@@ -353,6 +442,17 @@ function setDetailTab(t: DetailTab) {
   if (t !== detailTab.value) guardDraft(() => (detailTab.value = t))
 }
 
+// La scheda del bando, uguale nei tre posti in cui si apre (sotto la riga,
+// a destra, nel pannello delle card): stessi dati, stessi eventi
+const detailBindings = computed(() => ({
+  'tab': detailTab.value,
+  'filesConfigured': !!data.value?.status.filesConfigured,
+  'onUpdate:tab': setDetailTab,
+  'onFolder': setFolder,
+  'onApply': setApplied,
+  'onOutcome': checkOutcome,
+}))
+
 const selectedId = ref<string | null>(null)
 // Con la bozza da salvare (o in salvataggio) il bando resta aperto anche se
 // un filtro, la ricerca o i moduli e le province della ricerca non ancora
@@ -381,25 +481,39 @@ watch(pageVisibility, (v) => {
   if (v === 'visible') refreshDraft()
 })
 
-// Sullo schermo largo la scheda a destra non resta mai vuota se c'è un bando;
-// mai al posto di un bando con la bozza da tenere (anche sparito dai dati)
+// Elenco o card su più colonne. La scelta resta sul computer
+type Layout = 'list' | 'cards'
+const layout = useLocalStorage<Layout>('didap-radar-layout', 'list', { initOnMounted: true })
+const cards = computed(() => layout.value === 'cards')
+
+// Dove si apre la scheda del bando, una sola montata: sotto la riga
+// (elenco, schermo stretto), a destra (elenco, da xl) o in un pannello
+// sopra la pagina (card)
+const detailAt = computed(() => (cards.value ? 'drawer' : isXl.value ? 'side' : 'row'))
+
+// Passando alle card non resta aperto il bando scelto in automatico
+function setLayout(next: Layout) {
+  if (next === 'list') layout.value = next
+  else guardDraft(() => {
+    selectedId.value = null
+    layout.value = next
+  })
+}
+
+const closeDrawer = () => guardDraft(() => (selectedId.value = null))
+
+// La scheda a destra non resta mai vuota se c'è un bando; mai al posto di
+// un bando con la bozza da tenere (anche sparito dai dati)
 watchEffect(() => {
-  if (isXl.value && !selected.value && visible.value.length && !keepsDraft.value) selectedId.value = visible.value[0]!.id
+  if (detailAt.value === 'side' && !selected.value && visible.value.length && !keepsDraft.value) {
+    selectedId.value = visible.value[0]!.id
+  }
 })
 
 function pick(id: string) {
-  // Sotto xl la scheda si apre sotto la riga: un secondo clic la chiude
-  const next = !isXl.value && selectedId.value === id ? null : id
+  // La scheda sotto la riga si chiude con un secondo clic
+  const next = detailAt.value === 'row' && selectedId.value === id ? null : id
   if (next !== selectedId.value) guardDraft(() => (selectedId.value = next))
-}
-
-const DAY = 86_400_000
-// Quanto manca, in giorni di calendario a Roma
-function timeLeft(g: EvaluatedGrant) {
-  if (!g.deadline) return { text: 'A sportello', urgent: false }
-  const days = (Date.parse(romeDate(new Date(g.deadline))) - Date.parse(romeDate(now))) / DAY
-  const text = days <= 0 ? 'Scade oggi' : days === 1 ? 'Scade domani' : `${days} giorni`
-  return { text, urgent: days <= 14 }
 }
 
 const EMPTY: Record<Tab, string> = {
@@ -408,6 +522,9 @@ const EMPTY: Record<Tab, string> = {
   to_verify: 'Nessun bando da verificare.',
   excluded: 'Nessun bando escluso.',
   liked: 'Nessun bando segnato: usa il cuore su quelli che vi interessano.',
+  applied: 'Nessuna candidatura: apri un bando interessante e usa "Ci siamo candidati".',
+  outcome: 'Nessun esito: apri un bando candidato e usa "Controlla esito".',
+  expired: 'Nessun bando scaduto: qui restano quelli chiusi a cui non vi siete candidati.',
 }
 
 // Etichette brevi per la colonna stretta
@@ -436,12 +553,17 @@ function toggleGroup(group: string, on: boolean) {
 
 <template>
   <AdminShell fill>
-    <div class="
-      grid flex-1 grid-cols-[minmax(0,1fr)] content-start
-      lg:min-h-0 lg:grid-cols-[18rem_minmax(0,1fr)] lg:content-stretch
-      xl:grid-cols-[18rem_minmax(0,1fr)_minmax(0,30rem)]
-      2xl:grid-cols-[19rem_minmax(0,1fr)_minmax(0,38rem)]
-    ">
+    <!-- Con le card la colonna della scheda non c'è: l'elenco prende il posto -->
+    <div
+      class="
+        grid flex-1 grid-cols-[minmax(0,1fr)] content-start
+        lg:min-h-0 lg:grid-cols-[18rem_minmax(0,1fr)] lg:content-stretch
+      "
+      :class="cards ? '2xl:grid-cols-[19rem_minmax(0,1fr)]' : `
+        xl:grid-cols-[18rem_minmax(0,1fr)_minmax(0,30rem)]
+        2xl:grid-cols-[19rem_minmax(0,1fr)_minmax(0,38rem)]
+      `"
+    >
       <!-- Parametri -->
       <CollapsibleRoot
         as="aside"
@@ -963,16 +1085,44 @@ function toggleGroup(group: string, on: boolean) {
                 <span class="tabular-nums opacity-60">{{ counts[key] }}</span>
               </ToggleGroupItem>
             </ToggleGroupRoot>
-            <input
-              v-model="query"
-              type="search"
-              placeholder="Cerca"
-              aria-label="Cerca nei bandi"
-              class="
-                panel-input rounded-full px-4
-                sm:ml-auto sm:w-64
-              "
-            >
+            <!-- Ricerca e vista insieme, a destra: non vanno a capo da sole -->
+            <div class="
+              flex w-full items-center gap-3
+              sm:ml-auto sm:w-auto
+            ">
+              <input
+                v-model="query"
+                type="search"
+                placeholder="Cerca"
+                aria-label="Cerca nei bandi"
+                class="
+                  min-w-0 flex-1 panel-input rounded-full px-4
+                  sm:w-64 sm:flex-none
+                "
+              >
+              <ToggleGroupRoot
+                :model-value="layout"
+                type="single"
+                class="toggle-segmented shrink-0"
+                aria-label="Vista dei bandi"
+                @update:model-value="v => v && setLayout(v as Layout)"
+              >
+                <ToggleGroupItem
+                  value="list"
+                  aria-label="Elenco"
+                  title="Elenco"
+                >
+                  <AdminIcon name="list" />
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="cards"
+                  aria-label="Card"
+                  title="Card"
+                >
+                  <AdminIcon name="grid" />
+                </ToggleGroupItem>
+              </ToggleGroupRoot>
+            </div>
           </div>
         </header>
 
@@ -990,7 +1140,7 @@ function toggleGroup(group: string, on: boolean) {
         <div
           v-else
           class="
-            min-h-0 flex-1 scrollbar-none
+            @container min-h-0 flex-1 scrollbar-none
             lg:overflow-y-auto
           "
         >
@@ -1014,6 +1164,66 @@ function toggleGroup(group: string, on: boolean) {
               {{ EMPTY[tab] }}
             </template>
           </p>
+          <!-- Card: da una a quattro per riga, secondo lo spazio della colonna -->
+          <ul
+            v-else-if="cards"
+            class="
+              grid grid-cols-1 gap-4 p-5
+              lg:p-8
+              @xl:grid-cols-2
+              @4xl:grid-cols-3
+              @6xl:grid-cols-4
+            "
+          >
+            <li
+              v-for="g in listed"
+              :key="g.id"
+              class="relative"
+            >
+              <button
+                type="button"
+                class="
+                  flex size-full flex-col gap-3 rounded-2xl border bg-white p-4
+                  text-left transition
+                  hover:border-ink/40
+                "
+                :class="selectedId === g.id ? 'border-ink' : 'border-ink/10'"
+                aria-haspopup="dialog"
+                @click="pick(g.id)"
+              >
+                <span class="flex items-start gap-3 pr-7">
+                  <RadarOutcomeIcon
+                    :outcome="ELIGIBILITY_OUTCOME[g.eligibility]"
+                    class="mt-0.5 shrink-0"
+                  />
+                  <span class="flex min-w-0 flex-col gap-1.5">
+                    <RadarGrantTags
+                      :grant="g"
+                      :is-new="isNew(g)"
+                    />
+                    <span class="line-clamp-3 font-medium wrap-break-word">{{ g.title }}</span>
+                    <span class="truncate text-sm opacity-60">{{ g.issuer }}</span>
+                  </span>
+                </span>
+                <span
+                  v-if="g.summary"
+                  class="line-clamp-4 text-sm text-ink/75"
+                >{{ g.summary }}</span>
+                <RadarGrantDue
+                  :grant="g"
+                  class="
+                    mt-auto flex-wrap items-baseline gap-x-3 border-t
+                    border-ink/10 pt-3
+                  "
+                />
+              </button>
+              <RadarLikeButton
+                :liked="g.liked"
+                class="absolute top-4 right-4"
+                @toggle="toggleLike(g.id)"
+              />
+            </li>
+          </ul>
           <ul v-else>
             <li
               v-for="g in listed"
@@ -1031,8 +1241,8 @@ function toggleGroup(group: string, on: boolean) {
                   items-start gap-x-4 py-4 pl-5 text-left
                   lg:pl-8
                 "
-                :aria-expanded="isXl ? undefined : selectedId === g.id"
-                :aria-current="isXl && selectedId === g.id ? 'true' : undefined"
+                :aria-expanded="detailAt === 'row' ? selectedId === g.id : undefined"
+                :aria-current="detailAt === 'side' && selectedId === g.id ? 'true' : undefined"
                 @click="pick(g.id)"
               >
                 <RadarOutcomeIcon
@@ -1040,24 +1250,10 @@ function toggleGroup(group: string, on: boolean) {
                   class="mt-0.5"
                 />
                 <span class="flex min-w-0 flex-col gap-1">
-                  <span
-                    v-if="isNew(g) || grantTags(g).length"
-                    class="flex flex-wrap gap-1.5 text-xs"
-                  >
-                    <span
-                      v-if="isNew(g)"
-                      class="
-                        rounded-full bg-green px-2 py-0.5 font-medium
-                        text-paper-light
-                      "
-                    >Nuovo</span>
-                    <span
-                      v-for="t in grantTags(g)"
-                      :key="t"
-                      class="rounded-full px-2 py-0.5"
-                      :class="t === 'IA' ? 'bg-gold/25' : 'bg-ink/8'"
-                    >{{ t }}</span>
-                  </span>
+                  <RadarGrantTags
+                    :grant="g"
+                    :is-new="isNew(g)"
+                  />
                   <span class="line-clamp-2 font-medium">{{ g.title }}</span>
                   <span class="truncate text-sm opacity-60">{{ g.issuer }}</span>
                   <span
@@ -1065,70 +1261,27 @@ function toggleGroup(group: string, on: boolean) {
                     class="line-clamp-2 text-sm text-ink/75"
                   >{{ g.summary }}</span>
                 </span>
-                <span class="
-                  flex flex-col items-end gap-1 text-right text-sm
-                  whitespace-nowrap
-                ">
-                  <RadarClosedTag
-                    v-if="g.closed"
-                    :deadline="g.deadline"
-                  />
-                  <template v-else>
-                    <span
-                      class="font-medium"
-                      :class="timeLeft(g).urgent ? 'text-red' : ''"
-                    >{{ timeLeft(g).text }}</span>
-                    <span
-                      v-if="g.deadline"
-                      class="text-xs tabular-nums opacity-60"
-                    >Scade {{ formatDay(g.deadline) }}</span>
-                  </template>
-                  <span class="text-xs tabular-nums opacity-60">Trovato {{ formatDay(g.createdAt) }}</span>
-                  <span
-                    v-if="g.maxAmount"
-                    class="tabular-nums opacity-60"
-                  >{{ formatWholeEuro(g.maxAmount) }}</span>
-                </span>
+                <RadarGrantDue
+                  :grant="g"
+                  class="flex-col items-end text-right"
+                />
               </button>
-              <button
-                type="button"
+              <RadarLikeButton
+                :liked="g.liked"
                 class="
-                  flex shrink-0 items-start px-4 pt-4 transition
-                  hover:text-red
+                  flex shrink-0 items-start px-4 pt-4
                   lg:pr-7
                 "
-                :class="g.liked ? 'text-red' : 'text-ink/25'"
-                :aria-pressed="g.liked"
-                :aria-label="g.liked ? 'Togli dagli interessanti' : 'Segna come interessante'"
-                :title="g.liked ? 'Togli dagli interessanti' : 'Segna come interessante'"
-                @click="toggleLike(g.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M10 17s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 6.3a3.6 3.6 0 0 1 6.5 2.1C16.5 13.1 10 17 10 17z"
-                    :fill="g.liked ? 'currentColor' : 'none'"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
+                @toggle="toggleLike(g.id)"
+              />
               </div>
               <div
-                v-if="!isXl && selectedId === g.id"
+                v-if="detailAt === 'row' && selectedId === g.id"
                 class="border-t border-ink/10 bg-white"
               >
                 <RadarGrantDetail
                   :grant="g"
-                  :tab="detailTab"
-                  @update:tab="setDetailTab"
-                  :files-configured="!!data?.status.filesConfigured"
-                  @folder="setFolder"
+                  v-bind="detailBindings"
                 />
               </div>
             </li>
@@ -1137,8 +1290,10 @@ function toggleGroup(group: string, on: boolean) {
       </section>
 
       <!-- Scheda del bando, da xl in su (sotto si apre nella riga): una sola
-           scheda montata, non due elenchi della cartella in parallelo -->
+           scheda montata, non due elenchi della cartella in parallelo. Con
+           le card la colonna non c'è: la scheda si apre nel pannello -->
       <aside
+        v-if="!cards"
         class="
           hidden min-h-0 scrollbar-none overflow-y-auto border-l border-ink/10
           bg-white
@@ -1147,15 +1302,51 @@ function toggleGroup(group: string, on: boolean) {
         aria-label="Scheda del bando"
       >
         <RadarGrantDetail
-          v-if="isXl && selected"
+          v-if="detailAt === 'side' && selected"
           :grant="selected"
-          :tab="detailTab"
-          @update:tab="setDetailTab"
-          :files-configured="!!data?.status.filesConfigured"
-          @folder="setFolder"
+          v-bind="detailBindings"
         />
       </aside>
     </div>
+
+    <!-- Con le card la scheda del bando si apre in un pannello sopra la pagina;
+         chiudendolo con la bozza da salvare si chiede prima -->
+    <DialogRoot
+      :open="detailAt === 'drawer' && !!selected"
+      @update:open="v => v || closeDrawer()"
+    >
+      <DialogPortal>
+        <DialogOverlay class="fixed inset-0 z-40 bg-ink/30" />
+        <DialogContent
+          class="
+            fixed inset-y-0 right-0 z-40 w-full max-w-2xl overflow-y-auto
+            bg-white shadow-2xl
+          "
+          :aria-describedby="undefined"
+        >
+          <div class="sticky top-0 z-10 flex justify-end bg-white/90 p-3">
+            <DialogClose
+              class="
+                rounded-full p-2
+                hover:bg-ink/5
+              "
+              aria-label="Chiudi la scheda del bando"
+            >
+              <AdminIcon name="close" />
+            </DialogClose>
+          </div>
+          <template v-if="selected">
+            <DialogTitle class="sr-only">
+              {{ selected.title }}
+            </DialogTitle>
+            <RadarGrantDetail
+              :grant="selected"
+              v-bind="detailBindings"
+            />
+          </template>
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
 
     <AdminConfirm
       v-model:open="leaveOpen"

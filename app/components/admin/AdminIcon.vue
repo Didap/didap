@@ -1,11 +1,14 @@
 <script setup lang="ts">
-// Icone piccole dei pannelli admin, a tratto: frecce e croce
-defineProps<{ name: 'up' | 'down' | 'close' }>()
+// Icone piccole dei pannelli admin, a tratto
+defineProps<{ name: 'up' | 'down' | 'close' | 'check' | 'list' | 'grid' }>()
 
 const PATHS = {
   up: 'M4 10l4-4 4 4',
   down: 'M4 6l4 4 4-4',
   close: 'M4.5 4.5l7 7M11.5 4.5l-7 7',
+  check: 'M3.5 8.5l3 3 6-7',
+  list: 'M3 4h10M3 8h10M3 12h10',
+  grid: 'M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z',
 }
 </script>
 

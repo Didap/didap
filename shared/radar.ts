@@ -374,7 +374,13 @@ export type RadarGrant = {
   folderFilling: boolean
   folderFailed: boolean
   folderNote: string
-  // Chiuso o scaduto: si vede solo se ha la cartella
+  // Ci siamo candidati; l'esito dell'ultimo "Controlla esito", controllo in
+  // corso, errore dell'ultimo controllo fallito ('' se è andato)
+  applied: boolean
+  outcome: GrantOutcome | null
+  outcomeChecking: boolean
+  outcomeError: string
+  // Chiuso dalla fonte o scaduto (in che scheda va: grantTrack)
   closed: boolean
   // Quando è entrato nel radar e con quale scan (null: prima dei registri)
   createdAt: string
@@ -474,6 +480,67 @@ export const FOLDER_CLAIM_MINUTES = 30
 
 // Risposta di "Crea cartella del bando": già riempita, o partita in background
 export type FolderStart = { status: 'ready' } | { status: 'filling' }
+
+// ---------- candidatura ed esito ----------
+
+// Esito di un bando a cui ci siamo candidati, cercato sul web dal modello:
+// non ancora pubblicato, vinto (ammessi al finanziamento, gara aggiudicata a
+// noi), perso, o pubblicato senza poter dire se ci siamo (graduatorie per
+// numero di protocollo, documenti parziali)
+export const OUTCOME_STATUSES = ['not_published', 'won', 'lost', 'unclear'] as const
+export type OutcomeStatus = (typeof OUTCOME_STATUSES)[number]
+
+// Titolo nella scheda del bando, etichetta nell'elenco, icona come per un
+// requisito (null: niente icona, l'esito non c'è ancora)
+export const OUTCOME_LABELS: Record<OutcomeStatus, { title: string, tag: string, icon: Outcome | null }> = {
+  not_published: { title: 'Esito non ancora pubblicato', tag: 'In attesa', icon: null },
+  won: { title: 'Avete vinto', tag: 'Vinto', icon: 'met' },
+  lost: { title: 'Non avete vinto', tag: 'Perso', icon: 'not_met' },
+  unclear: { title: 'Esito pubblicato, da verificare', tag: 'Da verificare', icon: 'to_verify' },
+}
+
+export type GrantOutcome = {
+  status: OutcomeStatus
+  // Cosa è stato pubblicato e cosa dice di noi, in due o tre frasi
+  summary: string
+  // Data dell'atto che pubblica l'esito (YYYY-MM-DD)
+  publishedOn: string | null
+  // Punteggio e posizione come li scrive il documento
+  ourScore: string | null
+  ourRank: number | null
+  // Chi ha vinto: l'aggiudicatario della gara o i primi della graduatoria
+  winners: { name: string, score: string | null }[]
+  // Dove è pubblicato
+  sources: { title: string, url: string }[]
+  checkedAt: string
+  // Costo stimato del controllo in dollari (null: modello senza prezzo)
+  cost: number | null
+}
+
+// Esito pubblicato: il bando passa dai candidati agli esiti
+export const hasOutcome = <T extends Pick<RadarGrant, 'applied' | 'outcome'>>(g: T): g is T & { outcome: GrantOutcome } =>
+  g.applied && !!g.outcome && g.outcome.status !== 'not_published'
+
+// Tenuto: ha la cartella o la candidatura, e resta nel pannello anche fuori
+// dalla ricerca scelta (la stessa regola di keptGrant in server/utils/radar.ts)
+export const isKept = (g: Pick<RadarGrant, 'hasFolder' | 'applied'>) => g.hasFolder || g.applied
+
+// Dove sta un bando fuori dalle schede per esito, in una sola: esito
+// pubblicato, candidati, scaduti (chiusi senza candidatura, col cuore o
+// no), interessanti (aperti col cuore). null: aperto e mai segnato
+export const GRANT_TRACKS = ['liked', 'applied', 'outcome', 'expired'] as const
+export type GrantTrack = (typeof GRANT_TRACKS)[number]
+
+export function grantTrack(g: Pick<RadarGrant, 'liked' | 'closed' | 'applied' | 'outcome'>): GrantTrack | null {
+  if (hasOutcome(g)) return 'outcome'
+  if (g.applied) return 'applied'
+  if (g.closed) return 'expired'
+  return g.liked ? 'liked' : null
+}
+
+// Un controllo dell'esito in corso da più di così è morto col processo: si
+// può rifare. Il controllo si ferma prima (server/utils/radar-outcome.ts)
+export const OUTCOME_CLAIM_MINUTES = 40
 
 // Il titolo per i nomi dei file del bando: "Voucher digitale: PMI" ->
 // "voucher-digitale-pmi", senza accenti, al massimo 60 caratteri ('' se

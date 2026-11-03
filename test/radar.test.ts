@@ -6,6 +6,9 @@ import {
   evaluateRequirement,
   grantAmountFacts,
   grantTags,
+  grantTrack,
+  hasOutcome,
+  isKept,
   isInScope,
   isNewIn,
   parseRadarSettings,
@@ -24,6 +27,7 @@ import { formatWholeEuro } from '#shared/money'
 import { parse as parseYaml } from 'yaml'
 import { grantExport, grantFileName } from '../server/utils/radar-export'
 import { attachmentName, decodeHtml, isPdfLink, mainHtml, pageLinks, safeDecode } from '../server/utils/radar-fetch'
+import { parseOutcome } from '../server/utils/radar-outcome'
 import { parseCallDate, parseGrantReading, parseJudgement, parsePicks } from '../server/utils/radar-reader'
 import {
   incentiveText,
@@ -255,6 +259,10 @@ describe('ricerca e giudizio', () => {
     folderFilling: false,
     folderFailed: false,
     folderNote: '',
+    applied: false,
+    outcome: null,
+    outcomeChecking: false,
+    outcomeError: '',
     closed: false,
     createdAt: NOW.toISOString(),
     runId: null,
@@ -458,5 +466,58 @@ describe('fonti', () => {
     // Un "%" che non è una sequenza valida non fa cadere niente
     expect(safeDecode('/contributo-50%-imprese')).toBe('/contributo-50%-imprese')
     expect(attachmentName('https://c.it/avviso%.pdf')).toBe('avviso%.pdf')
+  })
+})
+
+describe('esito', () => {
+  const report = {
+    status: 'lost',
+    summary: ' Non siete tra i finanziati. ',
+    published_on: '2026-10-01',
+    our_score: '61/100',
+    our_rank: 14,
+    winners: [{ name: 'Alfa srl', score: '88/100' }, { name: ' ', score: null }],
+    sources: [
+      { title: 'Graduatoria', url: 'https://regione.puglia.it/graduatoria.pdf' },
+      { title: 'Trappola', url: 'javascript:alert(1)' },
+      { title: 'Allegato', url: 'https://regione.puglia.it/graduatoria.pdf' },
+    ],
+  }
+
+  it('legge l\'esito del modello: solo link web e una volta sola, niente nomi vuoti', () => {
+    expect(parseOutcome(report)).toEqual({
+      status: 'lost',
+      summary: 'Non siete tra i finanziati.',
+      publishedOn: '2026-10-01',
+      ourScore: '61/100',
+      ourRank: 14,
+      winners: [{ name: 'Alfa srl', score: '88/100' }],
+      sources: [{ title: 'Graduatoria', url: 'https://regione.puglia.it/graduatoria.pdf' }],
+    })
+    expect(parseOutcome({ ...report, published_on: 'ottobre', our_score: '', our_rank: 0, winners: null, sources: 'x' }))
+      .toMatchObject({ publishedOn: null, ourScore: null, ourRank: null, winners: [], sources: [] })
+    expect(() => parseOutcome({ ...report, status: 'boh' })).toThrow()
+    expect(() => parseOutcome({ ...report, summary: '  ' })).toThrow('senza spiegarlo')
+  })
+
+  it('un bando segnato o chiuso sta in una scheda sola: interessanti, candidati, esiti o scaduti', () => {
+    const outcome = (status: string) => ({ ...parseOutcome({ ...report, status }), checkedAt: NOW.toISOString(), cost: null })
+    const g = { liked: false, closed: false, applied: false, outcome: null }
+    expect(grantTrack(g)).toBeNull()
+    expect(grantTrack({ ...g, liked: true })).toBe('liked')
+    // Chiuso senza candidatura: tra gli scaduti, col cuore o no
+    expect(grantTrack({ ...g, closed: true })).toBe('expired')
+    expect(grantTrack({ ...g, closed: true, liked: true })).toBe('expired')
+    expect(grantTrack({ ...g, closed: true, applied: true })).toBe('applied')
+    expect(grantTrack({ ...g, liked: true, applied: true })).toBe('applied')
+    expect(grantTrack({ ...g, applied: true, outcome: outcome('not_published') })).toBe('applied')
+    expect(grantTrack({ ...g, applied: true, outcome: outcome('unclear') })).toBe('outcome')
+    expect(hasOutcome({ applied: true, outcome: outcome('won') })).toBe(true)
+    // Candidatura tolta: l'esito resta salvato ma non conta
+    expect(grantTrack({ ...g, liked: true, outcome: outcome('won') })).toBe('liked')
+    // Tenuto anche fuori dalla ricerca: con la cartella o la candidatura
+    expect(isKept({ hasFolder: false, applied: false })).toBe(false)
+    expect(isKept({ hasFolder: true, applied: false })).toBe(true)
+    expect(isKept({ hasFolder: false, applied: true })).toBe(true)
   })
 })

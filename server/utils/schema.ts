@@ -249,6 +249,15 @@ export const DB_SCHEMA = `
   alter table radar_documents add column if not exists reader_key text;
   -- L'ultimo scan e il registro si leggono dal più recente
   create index if not exists radar_runs_started_at on radar_runs (started_at desc);
+  -- Ci siamo candidati (la scheda "Candidati"): come la cartella, tiene il
+  -- bando anche chiuso e lo protegge da "Svuota". L'esito trovato sul web da
+  -- "Controlla esito" (l'ultimo), il gettone e l'ora del controllo in corso,
+  -- l'errore dell'ultimo controllo fallito
+  alter table radar_grants add column if not exists applied_at timestamptz;
+  alter table radar_grants add column if not exists outcome jsonb;
+  alter table radar_grants add column if not exists outcome_claim uuid;
+  alter table radar_grants add column if not exists outcome_claimed_at timestamptz;
+  alter table radar_grants add column if not exists outcome_error text not null default '';
   -- Fonti che non rispondono: da quando, e in pausa fino a quando
   create table if not exists radar_sources (
     slug text primary key,

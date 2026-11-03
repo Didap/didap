@@ -1,7 +1,7 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import { z } from 'zod'
-import { romeDate } from '#shared/dates'
+import { DAY_MS, romeDate } from '#shared/dates'
 import {
   ELIGIBILITY_LABELS,
   evaluateRadarGrant,
@@ -23,7 +23,6 @@ const ESITI = { candidabile: 'eligible', da_verificare: 'to_verify', escluso: 'e
 const DEFAULT_ESITI: (keyof typeof ESITI)[] = ['candidabile', 'da_verificare']
 
 const MAX_HITS = 50
-const DAY_MS = 86_400_000
 
 export const grantSearchSchema = z.object({
   esito: z.array(z.enum(['candidabile', 'da_verificare', 'escluso'])).optional(),
@@ -62,13 +61,14 @@ const day = (iso: string | null) => (iso ? romeDate(new Date(iso)) : null)
 
 // I bandi del radar come li vede il pannello: nella ricerca salvata (salvo
 // `fuoriDallaRicerca`), valutati col profilo, con i filtri richiesti. Quelli
-// con cartella restano anche chiusi. Al massimo 50; `altri` conta il resto.
+// con cartella o candidatura restano anche chiusi. Al massimo 50; `altri`
+// conta il resto.
 export async function searchGrants(
   sql: postgres.Sql,
   search: GrantSearch,
   now = new Date(),
 ): Promise<{ bandi: GrantHit[], altri: number }> {
-  const [grants, settings] = await Promise.all([listGrants(sql, now, { withFolders: true }), readRadarSettings(sql)])
+  const [grants, settings] = await Promise.all([listGrants(sql, now, { closed: 'kept' }), readRadarSettings(sql)])
   const esiti = new Set<Eligibility>((search.esito?.length ? search.esito : DEFAULT_ESITI).map(e => ESITI[e]))
   const text = search.testo?.trim().toLowerCase()
   const limit = search.scadenzaEntroGiorni === undefined ? null : now.getTime() + search.scadenzaEntroGiorni * DAY_MS

@@ -497,6 +497,7 @@ describe('esito', () => {
     expect(parseOutcome({ ...report, published_on: 'ottobre', our_score: '', our_rank: 0, winners: null, sources: 'x' }))
       .toMatchObject({ publishedOn: null, ourScore: null, ourRank: null, winners: [], sources: [] })
     expect(() => parseOutcome({ ...report, status: 'boh' })).toThrow()
+    expect(() => parseOutcome({ ...report, summary: '  ' })).toThrow('senza spiegarlo')
   })
 
   it('un bando segnato o chiuso sta in una scheda sola: interessanti, candidati, esiti o scaduti', () => {

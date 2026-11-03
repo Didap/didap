@@ -639,18 +639,19 @@ export async function listEvaluatedGrants(sql: Sql, now = new Date()): Promise<E
   return evaluate(grants, profile, now)
 }
 
-// Un bando aperto (o tenuto), valutato, col testo letto e il profilo
-// (esportazione, cartella)
+// Un bando letto, aperto o chiuso come nel pannello (anche tra gli
+// scaduti), valutato, col testo letto e il profilo (esportazione, cartella,
+// Claude)
 export async function readGrantDocument(sql: Sql, id: string, now = new Date()) {
   const [[row], [grant], { profile }] = await Promise.all([
     sql<{ content: string }[]>`
       select d.content from radar_grants g join radar_documents d on d.id = g.document_id where g.id = ${id}
     `,
-    listGrants(sql, now, { id, withKept: true }),
+    listGrants(sql, now, { id, withClosed: true }),
     readRadarSettings(sql),
   ])
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
-  if (!grant) throw createError({ statusCode: 404, statusMessage: 'Bando chiuso o scaduto' })
+  if (!grant) throw createError({ statusCode: 404, statusMessage: 'Bando da rileggere: riprova dopo il prossimo scan' })
   return { grant: { ...grant, ...evaluateRadarGrant(grant, profile, now) }, content: row.content, profile }
 }
 

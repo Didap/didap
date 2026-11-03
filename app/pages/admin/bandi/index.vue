@@ -101,9 +101,14 @@ function fill(settings: RadarSettings) {
 
 const revert = () => saved.value && fill(saved.value)
 
+// Vince l'ultima lettura partita: una più vecchia che arriva dopo (un giro
+// del ricaricamento partito prima di un clic) non riporta indietro lo stato
+let loads = 0
 async function loadGrants() {
+  const n = ++loads
   try {
-    data.value = await $fetch<RadarList>('/api/admin/radar/grants')
+    const list = await $fetch<RadarList>('/api/admin/radar/grants')
+    if (n === loads) data.value = list
   }
   catch (err) {
     notify('error', adminErrorText(err))
@@ -203,7 +208,7 @@ const confirmWipe = ref(false)
 const wipe = () => act(async () => {
   confirmWipe.value = false
   const { deleted, kept } = await $fetch<{ deleted: number, kept: number }>('/api/admin/radar/wipe', { method: 'POST' })
-  return `Dati svuotati: ${deleted} testi cancellati${kept ? `, ${kept} bandi con cartella tenuti` : ''}`
+  return `Dati svuotati: ${deleted} testi cancellati${kept ? `, ${kept} bandi con cartella o candidatura tenuti` : ''}`
 })
 
 const sendNow = () => act(async () => {
@@ -325,11 +330,8 @@ async function checkOutcome(id: string) {
     notify('error', adminErrorText(err))
     return
   }
-  const g = data.value?.grants.find(x => x.id === id)
-  if (g) {
-    g.outcomeChecking = true
-    g.outcomeError = ''
-  }
+  // Il turno è già preso: rileggendo il bando risulta in controllo
+  await loadGrants()
 }
 
 // Un controllo dell'esito appena finito: si dice com'è andato e il bando
@@ -421,6 +423,17 @@ function setDetailTab(t: DetailTab) {
   if (t !== detailTab.value) guardDraft(() => (detailTab.value = t))
 }
 
+// La scheda del bando, uguale nei tre posti in cui si apre (sotto la riga,
+// a destra, nel pannello delle card): stessi dati, stessi eventi
+const detailBindings = computed(() => ({
+  'tab': detailTab.value,
+  'filesConfigured': !!data.value?.status.filesConfigured,
+  'onUpdate:tab': setDetailTab,
+  'onFolder': setFolder,
+  'onApply': setApplied,
+  'onOutcome': checkOutcome,
+}))
+
 const selectedId = ref<string | null>(null)
 // Con la bozza da salvare (o in salvataggio) il bando resta aperto anche se
 // un filtro, la ricerca o i moduli e le province della ricerca non ancora
@@ -445,7 +458,10 @@ function refreshDraft() {
 }
 useEventListener('focus', refreshDraft)
 watch(pageVisibility, (v) => {
-  if (v === 'visible') refreshDraft()
+  if (v !== 'visible') return
+  refreshDraft()
+  // Un lavoro in corso mentre la scheda era nascosta: si vede subito a che punto è
+  if (busyRadar.value) void loadGrants()
 })
 
 // Elenco (la scheda del bando a destra, o sotto la riga) o card su più
@@ -1246,12 +1262,7 @@ function toggleGroup(group: string, on: boolean) {
               >
                 <RadarGrantDetail
                   :grant="g"
-                  :tab="detailTab"
-                  @update:tab="setDetailTab"
-                  :files-configured="!!data?.status.filesConfigured"
-                  @folder="setFolder"
-                  @apply="setApplied"
-                  @outcome="checkOutcome"
+                  v-bind="detailBindings"
                 />
               </div>
             </li>
@@ -1274,12 +1285,7 @@ function toggleGroup(group: string, on: boolean) {
         <RadarGrantDetail
           v-if="isXl && selected"
           :grant="selected"
-          :tab="detailTab"
-          @update:tab="setDetailTab"
-          :files-configured="!!data?.status.filesConfigured"
-          @folder="setFolder"
-          @apply="setApplied"
-          @outcome="checkOutcome"
+          v-bind="detailBindings"
         />
       </aside>
     </div>
@@ -1316,12 +1322,7 @@ function toggleGroup(group: string, on: boolean) {
             </DialogTitle>
             <RadarGrantDetail
               :grant="selected"
-              :tab="detailTab"
-              @update:tab="setDetailTab"
-              :files-configured="!!data?.status.filesConfigured"
-              @folder="setFolder"
-              @apply="setApplied"
-              @outcome="checkOutcome"
+              v-bind="detailBindings"
             />
           </template>
         </DialogContent>

@@ -2,6 +2,9 @@
 
 export const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
+// Un giorno in millisecondi
+export const DAY_MS = 86_400_000
+
 // en-CA formatta già come YYYY-MM-DD
 const romeDay = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Europe/Rome',

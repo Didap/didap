@@ -70,10 +70,12 @@ const TOOLS: Anthropic.ToolUnion[] = [
   { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 5 },
   REPORT_TOOL,
 ]
-// Tre richieste per controllo (la prima, una ripresa, un sollecito), una
-// ripetizione se l'API non risponde: al più 3 x 5 x 2 = 30 minuti, meno del
-// turno (OUTCOME_CLAIM_MINUTES)
-const MAX_REQUESTS = 3
+// Al più cinque richieste per controllo (la prima, le riprese dopo una
+// pausa, un sollecito) e 25 minuti in tutto, meno del turno
+// (OUTCOME_CLAIM_MINUTES): passati, il controllo si ferma anche a metà di
+// una risposta. Il timeout della richiesta copre solo l'attesa dell'inizio
+const MAX_REQUESTS = 5
+const CHECK_TIMEOUT_MS = 25 * 60_000
 const REQUEST_TIMEOUT_MS = 5 * 60_000
 const REQUEST_RETRIES = 1
 // 10 dollari ogni mille ricerche, oltre ai token
@@ -96,6 +98,8 @@ const reportSchema = z.object({
 // come href nel pannello: solo http(s), una volta sola
 export function parseOutcome(raw: unknown): Omit<GrantOutcome, 'checkedAt' | 'cost'> {
   const r = reportSchema.parse(raw)
+  // Un esito senza spiegazione non si salva: niente "Avete vinto" senza basi
+  if (!r.summary) throw new Error('Il modello ha dato un esito senza spiegarlo')
   return {
     status: r.status,
     summary: r.summary.slice(0, 1000),
@@ -132,6 +136,7 @@ export const llmOutcomeFinder: OutcomeFinder = async (grant) => {
   const usage = emptyUsage()
   let searches = 0
   const messages: Anthropic.MessageParam[] = [{ role: 'user', content: callText(grant) }]
+  const signal = AbortSignal.timeout(CHECK_TIMEOUT_MS)
   for (let i = 0; i < MAX_REQUESTS; i++) {
     let res: Anthropic.Message
     try {
@@ -144,9 +149,10 @@ export const llmOutcomeFinder: OutcomeFinder = async (grant) => {
         tools: TOOLS,
         output_config: { effort: 'medium' },
         messages,
-      }, { timeout: REQUEST_TIMEOUT_MS, maxRetries: REQUEST_RETRIES }).finalMessage()
+      }, { timeout: REQUEST_TIMEOUT_MS, maxRetries: REQUEST_RETRIES, signal }).finalMessage()
     }
     catch (err) {
+      if (signal.aborted) throw new Error('Il controllo è durato troppo ed è stato fermato')
       throw llmFailure(err)
     }
     addUsage(usage, res.usage)

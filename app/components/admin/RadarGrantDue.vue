@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
 import { formatDay } from '~/utils/format'
-import { romeDate } from '#shared/dates'
+import { DAY_MS, romeDate } from '#shared/dates'
 import { formatWholeEuro } from '#shared/money'
 import type { RadarGrant } from '#shared/radar'
 
@@ -10,13 +10,11 @@ import type { RadarGrant } from '#shared/radar'
 // disposizione la dà chi lo usa, con le sue classi.
 const props = defineProps<{ grant: Pick<RadarGrant, 'closed' | 'deadline' | 'createdAt' | 'maxAmount'> }>()
 
-const DAY = 86_400_000
-
 // In giorni di calendario a Roma
 const left = computed(() => {
   const { deadline } = props.grant
   if (!deadline) return { text: 'A sportello', urgent: false }
-  const days = (Date.parse(romeDate(new Date(deadline))) - Date.parse(romeDate(new Date()))) / DAY
+  const days = (Date.parse(romeDate(new Date(deadline))) - Date.parse(romeDate(new Date()))) / DAY_MS
   const text = days <= 0 ? 'Scade oggi' : days === 1 ? 'Scade domani' : `${days} giorni`
   return { text, urgent: days <= 14 }
 })

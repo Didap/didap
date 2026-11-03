@@ -1,7 +1,7 @@
 import { createError } from 'h3'
 import type postgres from 'postgres'
 import { z } from 'zod'
-import { romeDate } from '#shared/dates'
+import { DAY_MS, romeDate } from '#shared/dates'
 import {
   ELIGIBILITY_LABELS,
   evaluateRadarGrant,
@@ -23,7 +23,6 @@ const ESITI = { candidabile: 'eligible', da_verificare: 'to_verify', escluso: 'e
 const DEFAULT_ESITI: (keyof typeof ESITI)[] = ['candidabile', 'da_verificare']
 
 const MAX_HITS = 50
-const DAY_MS = 86_400_000
 
 export const grantSearchSchema = z.object({
   esito: z.array(z.enum(['candidabile', 'da_verificare', 'escluso'])).optional(),

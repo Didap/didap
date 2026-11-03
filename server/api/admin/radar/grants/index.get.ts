@@ -1,7 +1,7 @@
-// Bandi aperti e quelli con cartella, più lo stato del radar; il pannello
-// li valuta coi suoi parametri
+// Tutti i bandi letti, aperti e chiusi (gli scaduti restano in memoria), più
+// lo stato del radar; il pannello li valuta coi suoi parametri
 export default defineEventHandler(async () => {
   const sql = await useDb()
-  const [grants, status] = await Promise.all([listGrants(sql, new Date(), { withFolders: true }), radarStatus(sql, radarDeps())])
+  const [grants, status] = await Promise.all([listGrants(sql, new Date(), { withClosed: true }), radarStatus(sql, radarDeps())])
   return { grants, status }
 })

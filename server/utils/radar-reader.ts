@@ -284,13 +284,13 @@ export const llmModel = () => process.env.RADAR_LLM_MODEL || 'claude-haiku-5-5'
 
 // La forma della risposta, imposta al modello (structured outputs): tutti i
 // campi sempre presenti, null o vuoti quando non servono
-const nullable = (type: string) => ({ anyOf: [{ type }, { type: 'null' }] })
+export const llmNullable = (type: string) => ({ anyOf: [{ type }, { type: 'null' }] })
 const STRING = { type: 'string' }
 const strings = { type: 'array', items: STRING }
-const object = (properties: Record<string, unknown>) =>
-  ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
+export const llmObject = (properties: Record<string, unknown>) =>
+  ({ type: 'object' as const, additionalProperties: false, required: Object.keys(properties), properties })
 
-const GRANT_SCHEMA = object({
+const GRANT_SCHEMA = llmObject({
   kind: { type: 'string', enum: KIND_VALUES },
   admitsCompanies: { type: 'boolean' },
   digital: { type: 'boolean' },
@@ -298,34 +298,34 @@ const GRANT_SCHEMA = object({
   title: STRING,
   issuer: STRING,
   summary: STRING,
-  opensAt: nullable('string'),
-  deadline: nullable('string'),
-  maxAmount: nullable('number'),
+  opensAt: llmNullable('string'),
+  deadline: llmNullable('string'),
+  maxAmount: llmNullable('number'),
   funding: STRING,
-  application: object({
+  application: llmObject({
     platform: STRING,
-    documents: { type: 'array', items: object({ name: STRING, format: STRING, notes: STRING }) },
+    documents: { type: 'array', items: llmObject({ name: STRING, format: STRING, notes: STRING }) },
   }),
   requirements: {
     type: 'array',
-    items: object({
+    items: llmObject({
       kind: { type: 'string', enum: REQUIREMENT_KINDS },
-      params: object({
+      params: llmObject({
         regions: strings,
         provinces: strings,
-        min: nullable('number'),
-        max: nullable('number'),
-        minYears: nullable('number'),
-        maxYears: nullable('number'),
-        minMonths: nullable('number'),
-        maxMonths: nullable('number'),
+        min: llmNullable('number'),
+        max: llmNullable('number'),
+        minYears: llmNullable('number'),
+        maxYears: llmNullable('number'),
+        minMonths: llmNullable('number'),
+        maxMonths: llmNullable('number'),
         allowed: { type: 'array', items: { type: 'string', enum: LEGAL_FORMS.map(f => f.value) } },
         include: strings,
         exclude: strings,
       }),
       label: STRING,
       quote: STRING,
-      page: nullable('integer'),
+      page: llmNullable('integer'),
     }),
   },
 })
@@ -334,7 +334,33 @@ export const READER_KEY = promptKey(SYSTEM_PROMPT, GRANT_SCHEMA)
 
 let client: Anthropic | null = null
 // L'SDK riprova da solo 429, 529 e 5xx rispettando retry-after
-const anthropic = () => (client ??= new Anthropic({ timeout: 120_000, maxRetries: 2 }))
+export const llmClient = () => (client ??= new Anthropic({ timeout: 120_000, maxRetries: 2 }))
+
+// Un errore dell'API in italiano: ReaderUnavailable se non dipende dal bando
+export function llmFailure(err: unknown): unknown {
+  // Un timeout può dipendere dal testo (troppo lungo): conta sul bando
+  if (err instanceof Anthropic.APIConnectionTimeoutError) return new Error('Il modello non ha risposto in tempo')
+  if (err instanceof Anthropic.APIConnectionError) return new ReaderUnavailable(`Modello non raggiungibile: ${err.message}`)
+  if (err instanceof Anthropic.APIError) {
+    const message = `Il modello ha risposto ${err.status}: ${err.message.slice(0, 300)}`
+    // Chiave, limiti, servizio giù o credito finito (un 400 senza un tipo
+    // suo): non dipende dal bando
+    const unavailable = [401, 402, 403, 429].includes(err.status ?? 0) || (err.status ?? 0) >= 500
+      || /credit balance/i.test(err.message)
+    return unavailable ? new ReaderUnavailable(message) : new Error(message)
+  }
+  return err
+}
+
+// Token di una risposta, sommati in `usage` (il registro degli import)
+export function addUsage(usage: TokenUsage | undefined, u: Anthropic.Usage) {
+  if (!usage) return
+  usage.calls++
+  usage.input += u.input_tokens
+  usage.output += u.output_tokens
+  usage.cacheWrite += u.cache_creation_input_tokens ?? 0
+  usage.cacheRead += u.cache_read_input_tokens ?? 0
+}
 
 type Ask = {
   system: Anthropic.TextBlockParam[]
@@ -350,7 +376,7 @@ type Ask = {
 async function askLlm({ system, content, schema, effort, maxTokens, usage }: Ask): Promise<unknown> {
   let res: Anthropic.Message
   try {
-    res = await anthropic().messages.create({
+    res = await llmClient().messages.create({
       model: llmModel(),
       max_tokens: maxTokens,
       system,
@@ -359,26 +385,9 @@ async function askLlm({ system, content, schema, effort, maxTokens, usage }: Ask
     })
   }
   catch (err) {
-    // Un timeout può dipendere dal testo (troppo lungo): conta sul bando
-    if (err instanceof Anthropic.APIConnectionTimeoutError) throw new Error('Il modello non ha risposto in tempo')
-    if (err instanceof Anthropic.APIConnectionError) throw new ReaderUnavailable(`Modello non raggiungibile: ${err.message}`)
-    if (err instanceof Anthropic.APIError) {
-      const message = `Il modello ha risposto ${err.status}: ${err.message.slice(0, 300)}`
-      // Chiave, limiti, servizio giù o credito finito (un 400 senza un tipo
-      // suo): non dipende dal bando
-      const unavailable = [401, 402, 403, 429].includes(err.status ?? 0) || (err.status ?? 0) >= 500
-        || /credit balance/i.test(err.message)
-      throw unavailable ? new ReaderUnavailable(message) : new Error(message)
-    }
-    throw err
+    throw llmFailure(err)
   }
-  if (usage) {
-    usage.calls++
-    usage.input += res.usage.input_tokens
-    usage.output += res.usage.output_tokens
-    usage.cacheWrite += res.usage.cache_creation_input_tokens ?? 0
-    usage.cacheRead += res.usage.cache_read_input_tokens ?? 0
-  }
+  addUsage(usage, res.usage)
   if (res.stop_reason === 'refusal') throw new Error('Il modello si è rifiutato di leggere il testo')
   if (res.stop_reason === 'max_tokens') throw new Error('Risposta del modello troncata')
   const text = res.content.find(b => b.type === 'text')
@@ -414,7 +423,7 @@ Decide "verdict":
 
 Answer with one JSON object.`
 
-const JUDGE_SCHEMA = object({
+const JUDGE_SCHEMA = llmObject({
   verdict: { type: 'string', enum: ['yes', 'no', 'maybe'] },
   reason: STRING,
 })
@@ -503,8 +512,8 @@ const PICKER_PROMPT = `You see the links of one page of an Italian public websit
 
 Skip procurement of anything that is not IT or digital work (lavori, forniture, servizi sociali, pulizie, mense), job contests (concorsi), events, services for citizens, documents of the council, contacts and generic pages. Pick at most 20 calls and 3 lists, the most promising first. Answer with one JSON object; an empty list is a fine answer.`
 
-const PICKER_SCHEMA = object({
-  picks: { type: 'array', items: object({ index: { type: 'integer' }, kind: { type: 'string', enum: ['call', 'list'] } }) },
+const PICKER_SCHEMA = llmObject({
+  picks: { type: 'array', items: llmObject({ index: { type: 'integer' }, kind: { type: 'string', enum: ['call', 'list'] } }) },
 })
 
 export type PageLink = { text: string, href: string }

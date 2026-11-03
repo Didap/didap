@@ -5,7 +5,7 @@ import { cleanFileName, MAX_FILE_BYTES, MAX_FILE_MB, uniqueName } from '#shared/
 import { FOLDER_CLAIM_MINUTES, type FolderStart } from '#shared/radar'
 import type { FileStore } from './file-store'
 import { addFileOnce, grantSourceFolder } from './grant-files'
-import { inPool, readGrantDocument } from './radar'
+import { inPool, liveClaim, readGrantDocument } from './radar'
 import { grantExport, grantFileName } from './radar-export'
 import { attachmentName, fetchFromSource, fetchSourcePage, isPdfLink, mainHtml, pagePdfLinks, SOURCE_TIMEOUT_MS } from './radar-fetch'
 
@@ -59,7 +59,7 @@ export async function startGrantFolder(
   const [claimed] = await sql`
     update radar_grants set folder_claim = ${claim}, folder_claimed_at = now(), folder_note = '', folder_failed_at = null
     where id = ${id} and folder_filled_at is null
-      and (folder_claimed_at is null or folder_claimed_at < now() - ${`${FOLDER_CLAIM_MINUTES} minutes`}::interval)
+      and not coalesce(${liveClaim(sql, 'folder_claimed_at', FOLDER_CLAIM_MINUTES)}, false)
     returning id
   `
   // Già in corso (altro clic, altra istanza): il pannello aspetta lo stesso lavoro

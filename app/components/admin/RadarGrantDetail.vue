@@ -1,32 +1,39 @@
 <script setup lang="ts">
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
+import AdminIcon from '~/components/admin/AdminIcon.vue'
 import RadarClosedTag from '~/components/admin/RadarClosedTag.vue'
 import RadarGrantDraft from '~/components/admin/RadarGrantDraft.vue'
 import RadarGrantFiles from '~/components/admin/RadarGrantFiles.vue'
+import RadarGrantOutcome from '~/components/admin/RadarGrantOutcome.vue'
 import RadarOutcomeIcon from '~/components/admin/RadarOutcomeIcon.vue'
 import { formatDay } from '~/utils/format'
 import {
   ELIGIBILITY_OUTCOME,
   grantAmountFacts,
   grantKind,
+  grantTrack,
   sourceLabel,
   VERDICT_LABELS,
   type EvaluatedGrant,
   type FolderStart,
 } from '#shared/radar'
 
-// Scheda di un bando, in tre schede: "Dettaglio" (giudizio, dati, sintesi,
-// requisiti e come si presenta), "File" (la cartella del bando) e "Bozza"
-// (la bozza della candidatura, condivisa con Claude). Il motivo
-// di un requisito compare solo quando c'è qualcosa da guardare; la frase del
-// bando si apre col clic.
+// Scheda di un bando, in tre schede: "Dettaglio" (esito se ci siamo
+// candidati, giudizio, dati, sintesi, requisiti e come si presenta), "File"
+// (la cartella del bando) e "Bozza" (la bozza della candidatura, condivisa
+// con Claude). Il motivo di un requisito compare solo quando c'è qualcosa da
+// guardare; la frase del bando si apre col clic.
 const props = defineProps<{ grant: EvaluatedGrant, filesConfigured: boolean }>()
 // La scheda scelta la tiene la pagina: resta passando da un bando all'altro.
 // Lasciando la bozza con modifiche la pagina chiede prima conferma.
 const tab = defineModel<'detail' | 'files' | 'draft'>('tab', { required: true })
-// La cartella si riempie in background: la pagina segna il bando e lo
-// ricarica finché non è pronta
-defineEmits<{ folder: [id: string, start: FolderStart] }>()
+// La cartella si riempie e l'esito si cerca in background: la pagina segna
+// il bando e lo ricarica finché non hanno finito. La candidatura la salva la
+// pagina, come il cuore
+defineEmits<{ folder: [id: string, start: FolderStart], apply: [id: string, applied: boolean], outcome: [id: string] }>()
+
+// Ci si candida scegliendo tra i bandi nostri (interessanti, o già candidati)
+const canApply = computed(() => grantTrack(props.grant) !== null)
 
 const VERDICT_OUTCOME = { yes: 'met', no: 'not_met', maybe: 'to_verify' } as const
 
@@ -114,6 +121,27 @@ const note = (i: number) => {
         >
           Esporta per Claude
         </a>
+        <button
+          v-if="canApply"
+          type="button"
+          class="
+            inline-flex w-fit items-center gap-2 rounded-full border px-4 py-2
+            text-sm transition
+          "
+          :class="grant.applied ? 'border-green bg-green/10' : `
+            border-ink/20
+            hover:border-ink
+          `"
+          :aria-pressed="grant.applied"
+          :title="grant.applied ? 'Togli dai candidati' : 'Segna che vi siete candidati a questo bando'"
+          @click="$emit('apply', grant.id, !grant.applied)"
+        >
+          <AdminIcon
+            v-if="grant.applied"
+            name="check"
+          />
+          Ci siamo candidati
+        </button>
       </div>
       <ToggleGroupRoot
         :model-value="tab"
@@ -150,6 +178,12 @@ const note = (i: number) => {
     />
 
     <template v-else>
+    <RadarGrantOutcome
+      v-if="grant.applied"
+      :grant="grant"
+      @check="id => $emit('outcome', id)"
+    />
+
     <div
       v-if="grant.verdict"
       class="flex items-start gap-3 rounded-xl bg-ink/4 p-3 text-sm"

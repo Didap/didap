@@ -92,7 +92,7 @@ describe.skipIf(!TEST_DATABASE_URL)('bozza della candidatura', () => {
     await resetTestDb(sql)
     await ingestSources(sql, [source])
     await readPending(sql, reader)
-    const grants = await listGrants(sql, new Date(), { withFolders: true })
+    const grants = await listGrants(sql, new Date(), { withKept: true })
     g = grants.find(x => x.title === 'Voucher bando A')!.id
     h = grants.find(x => x.title === 'Voucher bando B')!.id
   })

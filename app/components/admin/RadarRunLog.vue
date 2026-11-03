@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useIntervalFn } from '@vueuse/core'
 import { adminErrorText } from '~/utils/adminErrors'
-import { formatDateTime, formatDay } from '~/utils/format'
+import { formatDateTime, formatDay, formatDollars } from '~/utils/format'
 import { formatDecimal } from '#shared/money'
 import {
   comuniOf,
@@ -76,8 +76,6 @@ const STATUS: Record<RadarRun['status'], { text: string, cls: string }> = {
 }
 
 const fmt = formatDecimal
-const dollars = (n: number | null) =>
-  n === null ? 'prezzo n.d.' : `≈ ${n.toLocaleString('it-IT', { style: 'currency', currency: 'USD', minimumFractionDigits: n < 1 ? 3 : 2 })}`
 
 const now = ref(Date.now())
 useIntervalFn(() => (now.value = Date.now()), 1_000)
@@ -127,7 +125,7 @@ const totals = computed(() => {
         border-b border-ink/10 px-5 py-3 text-sm opacity-60
         lg:px-8
       ">
-        Ultimi {{ runs.length }} giri: {{ fmt(totals.tokens) }} token, {{ dollars(totals.cost) }}
+        Ultimi {{ runs.length }} giri: {{ fmt(totals.tokens) }} token, {{ formatDollars(totals.cost) }}
       </p>
       <ul>
         <li
@@ -186,7 +184,7 @@ const totals = computed(() => {
                 :title="`Input ${fmt(r.usage.input)}, output ${fmt(r.usage.output)}, cache letta ${fmt(r.usage.cacheRead)}, cache scritta ${fmt(r.usage.cacheWrite)}`"
               >
                 {{ fmt(r.usage.input + r.usage.cacheRead + r.usage.cacheWrite) }} in, {{ fmt(r.usage.output) }} out
-                <span class="opacity-60">· {{ dollars(usageCost(r.model, r.usage)) }}</span>
+                <span class="opacity-60">· {{ formatDollars(usageCost(r.model, r.usage)) }}</span>
               </dd>
             </div>
           </dl>

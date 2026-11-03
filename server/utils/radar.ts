@@ -8,10 +8,12 @@ import {
   FOLDER_CLAIM_MINUTES,
   isDigestCandidate,
   isInScope,
+  OUTCOME_CLAIM_MINUTES,
   parseRadarSettings,
   sourceLabel,
   type Application,
   type EvaluatedGrant,
+  type GrantOutcome,
   type RadarGrant,
   type RadarProfile,
   type RadarRun,
@@ -95,6 +97,16 @@ const openGrant = (sql: Sql, now: Date) => sql`
 const closedGrant = (sql: Sql, now: Date) => sql`
   (d.closed_at is not null or (g.deadline is not null and g.deadline < ${now}))
 `
+
+// Tenuto: resta nel pannello anche chiuso o scaduto, e né "Svuota" né una
+// rilettura lo cancellano. Ha la cartella o la candidatura
+const keptGrant = (sql: Sql) => sql`(g.folder_at is not null or g.applied_at is not null)`
+
+// Un lavoro in background su un bando (riempimento della cartella, controllo
+// dell'esito) preso da meno di `minutes` minuti: è ancora vivo, e il turno
+// non si può riprendere. Null se nessuno l'ha preso
+export const liveClaim = (sql: Sql, claimedAt: 'folder_claimed_at' | 'outcome_claimed_at', minutes: number) =>
+  sql`${sql(claimedAt)} > now() - ${`${minutes} minutes`}::interval`
 
 // Bandi ancora da leggere: la stessa condizione per la coda e per il
 // contatore. Quando il prompt di lettura cambia (READER_KEY) si rileggono i
@@ -424,12 +436,15 @@ export async function readPending(
             verdict = null, verdict_reason = '', judged_profile = null, updated_at = now()
         `
       }
-      // Un bando con cartella o col cuore non si cancella: resta coi dati di
-      // prima. La condizione sta nella delete: una cartella creata nel
-      // frattempo blocca la riga e Postgres la ricontrolla dopo.
+      // Un bando con cartella, col cuore o candidato non si cancella: resta
+      // coi dati di prima. La condizione sta nella delete: una cartella
+      // creata nel frattempo blocca la riga e Postgres la ricontrolla dopo.
       let kept = false
       if (!reading.admitsCompanies) {
-        await tx`delete from radar_grants where document_id = ${doc.id} and folder_at is null and liked_at is null`
+        await tx`
+          delete from radar_grants g
+          where g.document_id = ${doc.id} and g.liked_at is null and not ${keptGrant(sql)}
+        `
         kept = (await tx`select 1 from radar_grants where document_id = ${doc.id}`).length > 0
       }
       const status = reading.admitsCompanies || kept ? 'read' : 'skipped'
@@ -551,23 +566,30 @@ export async function listRuns(sql: Sql, limit = 30): Promise<RadarRun[]> {
 
 // Bandi aperti, dalla scadenza più vicina; `id`: solo quel bando. Il
 // pannello li valuta da sé coi parametri del modulo, anche non salvati.
-// `withFolders`: anche i bandi con cartella chiusi o scaduti (pannello,
-// esportazione); la mail e il resto del radar vedono solo quelli aperti.
+// `withKept`: anche i bandi tenuti (con cartella o candidatura) chiusi o
+// scaduti (esportazione, Claude); `withClosed`: anche tutti gli altri
+// chiusi o scaduti (il pannello, per gli scaduti). La mail e il resto del
+// radar vedono solo quelli aperti.
 export async function listGrants(
   sql: Sql,
   now: Date,
-  { unnotified = false, id = '', withFolders = false } = {},
+  { unnotified = false, id = '', withKept = false, withClosed = false } = {},
 ): Promise<RadarGrant[]> {
+  const shown = withClosed
+    ? sql`(d.status = 'read' or ${keptGrant(sql)})`
+    : withKept ? sql`(${openGrant(sql, now)} or ${keptGrant(sql)})` : openGrant(sql, now)
   const rows = await sql`
     select g.id, d.source, d.url, g.kind, g.digital, g.ai, g.verdict, g.verdict_reason, g.title, g.issuer, g.summary,
       g.opens_at, g.deadline, g.max_amount, g.funding, g.requirements, g.application, g.notified_at,
       g.liked_at, g.folder_at, g.folder_filled_at, g.folder_failed_at, g.folder_note,
-      coalesce(g.folder_filled_at is null and g.folder_claimed_at > now() - ${`${FOLDER_CLAIM_MINUTES} minutes`}::interval, false)
+      coalesce(g.folder_filled_at is null and ${liveClaim(sql, 'folder_claimed_at', FOLDER_CLAIM_MINUTES)}, false)
         as folder_filling,
-      ${closedGrant(sql, now)} as closed,
+      g.applied_at, g.outcome, g.outcome_error,
+      coalesce(${liveClaim(sql, 'outcome_claimed_at', OUTCOME_CLAIM_MINUTES)}, false) as outcome_checking,
+      ${closedGrant(sql, now)} as closed, ${keptGrant(sql)} as kept,
       g.created_at, g.run_id
     from radar_grants g join radar_documents d on d.id = g.document_id
-    where (${openGrant(sql, now)} ${withFolders ? sql`or g.folder_at is not null` : sql``})
+    where ${shown}
       ${unnotified ? sql`and g.notified_at is null` : sql``}
       ${id ? sql`and g.id = ${id}` : sql``}
     order by g.deadline asc nulls last, g.created_at desc
@@ -598,7 +620,12 @@ export async function listGrants(
     folderFilling: r.folder_filling,
     folderFailed: r.folder_failed_at !== null,
     folderNote: r.folder_note,
+    applied: r.applied_at !== null,
+    outcome: r.outcome as GrantOutcome | null,
+    outcomeChecking: r.outcome_checking,
+    outcomeError: r.outcome_error,
     closed: r.closed,
+    kept: r.kept,
     createdAt: r.created_at.toISOString(),
     runId: r.run_id,
   }))
@@ -612,14 +639,14 @@ export async function listEvaluatedGrants(sql: Sql, now = new Date()): Promise<E
   return evaluate(grants, profile, now)
 }
 
-// Un bando aperto (o con cartella), valutato, col testo letto e il profilo
+// Un bando aperto (o tenuto), valutato, col testo letto e il profilo
 // (esportazione, cartella)
 export async function readGrantDocument(sql: Sql, id: string, now = new Date()) {
   const [[row], [grant], { profile }] = await Promise.all([
     sql<{ content: string }[]>`
       select d.content from radar_grants g join radar_documents d on d.id = g.document_id where g.id = ${id}
     `,
-    listGrants(sql, now, { id, withFolders: true }),
+    listGrants(sql, now, { id, withKept: true }),
     readRadarSettings(sql),
   ])
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
@@ -631,6 +658,19 @@ export async function readGrantDocument(sql: Sql, id: string, now = new Date()) 
 export async function setGrantLiked(sql: Sql, id: string, liked: boolean) {
   const [row] = await sql`
     update radar_grants set liked_at = ${liked ? sql`coalesce(liked_at, now())` : null}
+    where id = ${id}
+    returning id
+  `
+  if (!row) throw createError({ statusCode: 404, statusMessage: 'Bando non trovato' })
+}
+
+// Ci siamo candidati: si sceglie tra gli interessanti, quindi mette anche il
+// cuore. Togliendo la candidatura l'esito resta salvato ma non si vede
+export async function setGrantApplied(sql: Sql, id: string, applied: boolean) {
+  const [row] = await sql`
+    update radar_grants set ${applied
+      ? sql`applied_at = coalesce(applied_at, now()), liked_at = coalesce(liked_at, now())`
+      : sql`applied_at = null`}
     where id = ${id}
     returning id
   `
@@ -790,10 +830,11 @@ function inBackground(lease: { release: () => Promise<void> }, work: () => Promi
   })()
 }
 
+// Senza chiave: lo scan e "Controlla esito" non partono
+export const llmMissing = () => createError({ statusCode: 503, statusMessage: 'Modello AI non configurato (ANTHROPIC_API_KEY)' })
+
 function requireLlm(deps: RadarDeps) {
-  if (!deps.reader || !deps.judge) {
-    throw createError({ statusCode: 503, statusMessage: 'Modello AI non configurato (ANTHROPIC_API_KEY)' })
-  }
+  if (!deps.reader || !deps.judge) throw llmMissing()
 }
 
 // "Avvia scan" dal pannello: i moduli e i comuni scelti, subito. È l'unico
@@ -816,18 +857,18 @@ export async function radarJudgeNow(sql: Sql, deps: RadarDeps) {
 
 // "Svuota": via documenti e bandi letti (cuori compresi) e fonti in pausa,
 // restano impostazioni e registro. Il prossimo scan riparte da zero.
-// I bandi con cartella restano col loro documento (`kept`): non si
-// rileggono finché il testo non cambia.
+// I bandi con cartella o candidatura restano col loro documento (`kept`):
+// non si rileggono finché il testo non cambia.
 export async function radarWipe(sql: Sql): Promise<{ deleted: number, kept: number }> {
   const lease = await acquireLease(sql)
   if (!lease) throw createError({ statusCode: 409, statusMessage: 'Il radar sta girando: riprova a import finito' })
   try {
-    // Prima i bandi senza cartella, con la condizione nella delete: una
-    // cartella creata nel frattempo blocca la riga e Postgres la ricontrolla
-    // (la cascata da radar_documents invece non guarda folder_at). Poi i
-    // documenti rimasti senza bando.
+    // Prima i bandi senza cartella né candidatura, con la condizione nella
+    // delete: una cartella creata nel frattempo blocca la riga e Postgres la
+    // ricontrolla (la cascata da radar_documents invece non guarda
+    // folder_at). Poi i documenti rimasti senza bando.
     const result = await sql.begin(async (tx) => {
-      await tx`delete from radar_grants where folder_at is null`
+      await tx`delete from radar_grants g where not ${keptGrant(sql)}`
       await tx`delete from radar_sources`
       const gone = await tx`
         delete from radar_documents d where not exists (select 1 from radar_grants g where g.document_id = d.id)

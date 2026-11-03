@@ -18,7 +18,7 @@ export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
 }
 
 // Link esterni solo http(s); immagini solo percorsi del sito o https
-const httpUrl = z
+export const httpUrl = z
   .string()
   .trim()
   .max(500)

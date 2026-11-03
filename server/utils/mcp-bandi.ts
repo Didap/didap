@@ -62,13 +62,14 @@ const day = (iso: string | null) => (iso ? romeDate(new Date(iso)) : null)
 
 // I bandi del radar come li vede il pannello: nella ricerca salvata (salvo
 // `fuoriDallaRicerca`), valutati col profilo, con i filtri richiesti. Quelli
-// con cartella restano anche chiusi. Al massimo 50; `altri` conta il resto.
+// con cartella o candidatura restano anche chiusi. Al massimo 50; `altri`
+// conta il resto.
 export async function searchGrants(
   sql: postgres.Sql,
   search: GrantSearch,
   now = new Date(),
 ): Promise<{ bandi: GrantHit[], altri: number }> {
-  const [grants, settings] = await Promise.all([listGrants(sql, now, { withFolders: true }), readRadarSettings(sql)])
+  const [grants, settings] = await Promise.all([listGrants(sql, now, { withKept: true }), readRadarSettings(sql)])
   const esiti = new Set<Eligibility>((search.esito?.length ? search.esito : DEFAULT_ESITI).map(e => ESITI[e]))
   const text = search.testo?.trim().toLowerCase()
   const limit = search.scadenzaEntroGiorni === undefined ? null : now.getTime() + search.scadenzaEntroGiorni * DAY_MS

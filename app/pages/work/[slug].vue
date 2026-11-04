@@ -2,7 +2,7 @@
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import StatusPill from '~/components/StatusPill.vue'
-import { useIntersectionObserver } from '@vueuse/core'
+import { useIntersectionObserver, useMediaQuery } from '@vueuse/core'
 import { TEAM } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
@@ -11,8 +11,10 @@ import { typeset } from '#shared/typeset'
 // scheda strutturata mostrano il corpo markdown al posto dei blocchi testo.
 // Sopra al markdown si applicano le modifiche fatte da /admin.
 // Con `screens` (CityFix) il corpo è quello scritto per chi non è del
-// mestiere: il motivo, cosa abbiamo fatto, una voce per riga col suo
-// video, la cosa difficile e il modello.
+// mestiere: il problema, cosa abbiamo fatto, cosa offre a cittadino,
+// Comune e ditta (voci e video per gruppo), cosa ci guadagna il Comune,
+// poi la cosa difficile, quanto costa e come si parte. Le modifiche da
+// /admin a `features`, `intro` e `media` qui non si vedono.
 definePageMeta({ surface: 'cream', nav: 'product' })
 
 const route = useRoute()
@@ -42,13 +44,15 @@ const host = computed(() => {
   }
 })
 
-// Quando la testata esce da sotto la nav, nella nav arriva il logo
+// Quando la testata esce da sotto la nav (alta 72, 97 da lg), nella nav
+// arriva il logo
 const hero = useTemplateRef('hero')
 const heroPassed = useProductHeroPassed()
+const lg = useMediaQuery('(min-width: 64rem)')
 useIntersectionObserver(
   hero,
   ([entry]) => { heroPassed.value = !entry?.isIntersecting },
-  { rootMargin: '-97px 0px 0px 0px' },
+  { rootMargin: () => `-${lg.value ? 97 : 72}px 0px 0px 0px` },
 )
 onBeforeUnmount(() => { heroPassed.value = false })
 
@@ -286,7 +290,7 @@ useSeoMeta({
               lg:grid-cols-[302fr_954fr]
             ">
               <p class="text-label opacity-70">
-                {{ g.label }}
+                {{ typeset(g.label) }}
               </p>
               <div
                 class="grid items-start gap-8"
@@ -745,7 +749,7 @@ useSeoMeta({
   }
 
   .offer-band .offer-tile {
-    aspect-ratio: var(--ratio);
+    aspect-ratio: var(--ratio, 1);
   }
 
   .offer-band .offer-tile :deep(.offer-video) {

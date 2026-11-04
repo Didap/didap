@@ -25,10 +25,25 @@ Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
 `media/cityfix/osm/roads.json`, dati OpenStreetMap con licenza ODbL),
 `media/helllo/build.mjs` (dall'illustrazione esportata dal Figma in `media/helllo/figma/`).
 
+## CityFix: le illustrazioni
+
+La scheda di CityFix parla coi disegni, quasi senza testo. I pezzi della città (palazzi,
+strada, buca, Comune, furgone, persone, pin e icone a pixel dell'app in `pixel-icons.json`)
+stanno in `media/cityfix/kit.mjs` e servono sia alle tavole ferme sia ai clip:
+
+- `node media/cityfix/build-illustrazioni.mjs` scrive gli SVG in `public/covers/`:
+  `strada` (pair), `passaggi` (feature[1]), `insieme` e `rione` (triple).
+- `node media/cityfix/build-clip.mjs [clip]` scrive i progetti HyperFrames `scatta` (pair),
+  `giro` (wide, senza versione da telefono), `comuni` (feature[0]) e `riparata` (triple);
+  poi check, render e codifica come sopra.
+
+I vecchi clip con le schermate dell'app (`segnala`, `backoffice`, `mappa`, `stato`,
+`chiusura`, `sostieni`, `avviso`) restano qui come sorgenti ma non sono più nella pagina.
+
 ## Da fare (28 ottobre 2026)
 
 - Versioni da telefono mancanti: Bin or Deal `ricerca` (wide), `verdi` (feature[0]) e i tre
-  triple; CityFix `backoffice` (wide). Senza, sul telefono parte il video da desktop.
+  triple; CityFix `giro` (wide). Senza, sul telefono parte il video da desktop.
 - CityFix: i dati della mappa vengono da OpenStreetMap ma nei clip non c'è il credito.
 - Bin or Deal: lo stack in pagina viene dal codice (Next.js, Hono, PostgreSQL, Playwright);
   il vecchio corpo markdown dice ancora Clerk, Neon e Upstash.

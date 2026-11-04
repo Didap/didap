@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "historyId": "ec67561c-b64b-452a-b5fe-56c494e17886",
+  "currentRevision": "e4dc2c8c-868b-4d0f-b877-355e7794fbc2",
+  "pendingChanges": false,
+  "files": {
+    "hyperframes.json": {
+      "hash": "c7a3009d23e471acfb1ca9ec252ea16a0ca4dfe55e3b3b9d7089c8f0764f4a43",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\ec67561c-b64b-452a-b5fe-56c494e17886\\blobs\\c7\\c7a3009d23e471acfb1ca9ec252ea16a0ca4dfe55e3b3b9d7089c8f0764f4a43"
+    },
+    "index.html": {
+      "hash": "570afce90af6fa321fb69367fe958795e8f8ba98d67ccff93568ce03f421bddb",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\ec67561c-b64b-452a-b5fe-56c494e17886\\blobs\\57\\570afce90af6fa321fb69367fe958795e8f8ba98d67ccff93568ce03f421bddb"
+    },
+    "meta.json": {
+      "hash": "356d6d4c3d168669844605bbc31eeb6539d622ca6bc5c648c1311bb0a703570f",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\ec67561c-b64b-452a-b5fe-56c494e17886\\blobs\\35\\356d6d4c3d168669844605bbc31eeb6539d622ca6bc5c648c1311bb0a703570f"
+    }
+  },
+  "revisions": {
+    "e4dc2c8c-868b-4d0f-b877-355e7794fbc2": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793797188597,
+      "endedAt": 1793797188600,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\ec67561c-b64b-452a-b5fe-56c494e17886\\blobs\\7c\\7cac83207fdc097c4a9e6cfea62d901b401c8892ffd05ec12a19146fc17c6da6",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\ec67561c-b64b-452a-b5fe-56c494e17886\\blobs\\57\\570afce90af6fa321fb69367fe958795e8f8ba98d67ccff93568ce03f421bddb"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "a2485eef-b2e0-498b-b1a0-47ff0602c05a"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "a2485eef-b2e0-498b-b1a0-47ff0602c05a",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\giro\\.hyperframes\\artifacts\\checks\\a2485eef-b2e0-498b-b1a0-47ff0602c05a.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793797053257,
+        "contentHash": "507c4fed5486aa4519eae6072bcea419ba0cc6cc94c309bddf232ef00b176b39",
+        "revision": null,
+        "inputFingerprint": "01d49e5589e321811f2bbc033de58e32037a93fd1d00c5441b14095b73cefc29",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "e4dc2c8c-868b-4d0f-b877-355e7794fbc2",
+      "id": "cdc213da-0cef-492f-a352-120c1ffffa00-2"
+    },
+    "revisions": {
+      "e4dc2c8c-868b-4d0f-b877-355e7794fbc2": [
+        {
+          "scope": "full",
+          "id": "cdc213da-0cef-492f-a352-120c1ffffa00-0",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\snap-giro\\frame-00-at-1.9s.png",
+          "time": 1.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793797190264,
+          "contentHash": "d5f4423c4e34f382eb24e8ed8b38091eed187b8fe661d837e9da4b35810da37c",
+          "revision": "e4dc2c8c-868b-4d0f-b877-355e7794fbc2",
+          "inputFingerprint": "ec4944259c3f88719e1c5b277c57684dea092ce4a9ebaeb8985d6415d2156dad",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "cdc213da-0cef-492f-a352-120c1ffffa00-1",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\snap-giro\\frame-01-at-7.6s.png",
+          "time": 7.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793797190264,
+          "contentHash": "38b7030725d425185cd033631e45980706bcaa7dc779c35834d63c21e537a03c",
+          "revision": "e4dc2c8c-868b-4d0f-b877-355e7794fbc2",
+          "inputFingerprint": "ec4944259c3f88719e1c5b277c57684dea092ce4a9ebaeb8985d6415d2156dad",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "cdc213da-0cef-492f-a352-120c1ffffa00-2",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\snap-giro\\frame-02-at-8s.png",
+          "time": 8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793797190264,
+          "contentHash": "18944beea3b364584e94c4afbc0018b2584ee539620663e8434eab4c39771257",
+          "revision": "e4dc2c8c-868b-4d0f-b877-355e7794fbc2",
+          "inputFingerprint": "ec4944259c3f88719e1c5b277c57684dea092ce4a9ebaeb8985d6415d2156dad",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "6ab9e18c-f435-4103-b0d7-a4496aba09ba",
+      "completedAt": 1793797246367,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\render-giro.mp4",
+      "status": "completed",
+      "revision": "e4dc2c8c-868b-4d0f-b877-355e7794fbc2"
+    },
+    "retainedRevisions": [
+      "e4dc2c8c-868b-4d0f-b877-355e7794fbc2"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

@@ -16,152 +16,50 @@ order: 3
 status: pilot
 scope: Full-stack design and development
 stack: Expo, Vue 3, NestJS, PostgreSQL
-lede: Citizens report problems around the city, the municipality hands them to contractors, the contractors fix them. Whoever made the report can follow it to the end.
+lede: The citizen reports, the municipality assigns the job, the contractor fixes it. And whoever reported it sees every step.
 hero:
   src: /covers/cityfix-hero.mp4
   poster: /covers/cityfix-hero-poster.webp
   srcMobile: /covers/cityfix-hero-mobile.mp4
   posterMobile: /covers/cityfix-hero-mobile-poster.webp
   alt: The map of Brindisi drawn in blue like a technical drawing, with report pins appearing one after another on the streets of the centre
-intro: "CityFix is the platform for looking after a city. The citizen opens the app, answers a few questions and sends the location and a photo of a pothole, a dead street light or a broken bench. The municipality receives it in the back office, acknowledges it and assigns it to a supplier. The supplier does the work and closes it. Every status change reaches the phone of the person who reported it."
+intro: CityFix is city maintenance in an app. A photo and a location are all it takes to report a pothole, a dead street light or a broken bench.
 challenge:
-  title: Eight thousand municipalities, one database.
-  body: "Every municipality is a separate authority: its own operators, its own suppliers, its own reports. One deployment has to serve all of them without a single record crossing from one to another. Every row carries its municipality and PostgreSQL enforces the isolation with Row Level Security, underneath the application code. The ISTAT registry of every Italian municipality is already loaded."
-features:
-  title: A new way to deal with problems around the city.
-  items:
-    - name: Guided reporting
-      desc: The app asks where the problem is, for a photo and what kind it is, one question at a time. Sending takes under a minute.
-    - name: No duplicates
-      desc: The map shows nearby reports. If someone has already reported the same problem, you just back it instead of making a new one.
-    - name: Status always visible
-      desc: Sent, acknowledged, assigned, completed. Whoever reported it sees every step and gets a notice on their phone.
-    - name: Municipal dashboard
-      desc: The municipality sees reports come in, takes them on and hands them to a contractor. Open, in progress and overdue, on the map and in a table.
-    - name: Closed with a photo
-      desc: The contractor fixes the problem and closes the job with a photo. Set against the photo of the problem, it shows what has changed.
-    - name: Neighbourhoods and notices
-      desc: The municipality posts notices for a single neighbourhood or the whole city, for example about water main works. The neighbourhoods are already drawn on the map.
+  title: Eight thousand municipalities, one system.
+  body: Starting in a new city needs no installation. Each municipality sees only its own reports, its own offices and its own contractors.
 model: The app is free for citizens. The municipality pays an annual licence based on its population, with no limits on operators, contractors or reports.
 next: bin-or-deal
 media:
   pair:
-    - src: /covers/cityfix-logo.svg
-      alt: The CityFix logo
-    - src: /covers/cityfix-segnala.mp4
-      poster: /covers/cityfix-segnala-poster.webp
-      alt: "Guided reporting in the CityFix app: the bot asks where the problem is, the location, the photo and the type come in, then Invia sends the report to the municipality"
+    - src: /covers/cityfix-strada.svg
+      alt: "A street drawn in blue with its problems, each with a red pin: a dead street light, a broken bench, an overflowing bin and a pothole. A passer-by looks at their phone"
+    - src: /covers/cityfix-scatta.mp4
+      poster: /covers/cityfix-scatta-poster.webp
+      alt: "A phone frames the pothole and takes the photo. The report fills in with the photo, the location and the type, then it is sent and becomes a pin that lights the first status pixel"
   wide:
-    src: /covers/cityfix-backoffice.mp4
-    poster: /covers/cityfix-backoffice-poster.webp
-    alt: "The back office of the Comune di Brindisi: a new report lands at the top of the open list, the operator acknowledges it, assigns it to a supplier and the In corso count goes up"
+    src: /covers/cityfix-giro.mp4
+    poster: /covers/cityfix-giro-poster.webp
+    alt: "The life of a report: the citizen photographs the pothole, the report flies to the town hall, the town hall passes it to the contractor, the van arrives and fixes it, the pin turns green and the news goes back to the citizen. At the top the four status pixels light up one by one"
   feature:
-    - src: /covers/cityfix-mappa.mp4
-      poster: /covers/cityfix-mappa-poster.webp
-      srcMobile: /covers/cityfix-mappa-mobile.mp4
-      posterMobile: /covers/cityfix-mappa-mobile-poster.webp
-      alt: "The report map in the CityFix app: blue pins on the streets of Brindisi, one lifts and opens its card, and the bar button turns from Segnala ora to Sostieni"
-    - src: /covers/cityfix-stato.mp4
-      poster: /covers/cityfix-stato-poster.webp
-      alt: "A report in detail: the four status pixels fill one at a time, from Inviata to Completata, while the history grows"
+    - src: /covers/cityfix-comuni.mp4
+      poster: /covers/cityfix-comuni-poster.webp
+      alt: "CityFix in the middle, connected to many municipalities around it. Each one has its own padlock and its own reports, which appear and turn green only inside its tile"
+    - src: /covers/cityfix-passaggi.svg
+      alt: "The four states of a report, one under the other: sent from the phone, taken on by the town hall, assigned to the contractor's van, completed with fresh asphalt and a green pin"
   triple:
-    - src: /covers/cityfix-chiusura.mp4
-      poster: /covers/cityfix-chiusura-poster.webp
-      alt: "The supplier closes the job: the photo of the pothole wipes into the photo of the new asphalt and a Completata stamp lands"
-    - src: /covers/cityfix-sostieni.mp4
-      poster: /covers/cityfix-sostieni-poster.webp
-      alt: "Backing a report: someone who sees the same pothole taps Sostieni, the button turns to Sostenuta, one more avatar joins and the count goes to 7 people"
-    - src: /covers/cityfix-avviso.mp4
-      poster: /covers/cityfix-avviso-poster.webp
-      alt: "A notice from the municipality for the Centro neighbourhood: the zone draws itself on the map of Brindisi and the notice about water main works comes in, valid until 31 October"
+    - src: /covers/cityfix-insieme.svg
+      alt: "Three people around the same pothole, each with a thumbs up: the report stays one, with the people who back it"
+    - src: /covers/cityfix-rione.svg
+      alt: "The town hall sends a notice: the waves leave the town hall and the bell reaches only the houses of the circled neighbourhood"
+    - src: /covers/cityfix-riparata.mp4
+      poster: /covers/cityfix-riparata-poster.webp
+      alt: "A contractor's worker photographs the pothole, fills it with a shovel and photographs it again. The two photos, before and after, and the green stamp"
 team:
   - barbara
   - william
   - cristiano
   - alessandro
   - vitantonio
-screens:
-  why:
-    title: Citizens' reports get lost along the way.
-    body: "Whoever spots a pothole or a dead street light often doesn't know who to tell. If they do, the report passes from office to office and from contractor to contractor, and nobody gets back to them. The municipality, juggling emails, forms and spreadsheets, can't tell how many there are, who is working on them or what they cost. So problems stay where they are and people stop reporting them."
-  made:
-    title: A platform that connects citizens, the municipality and contractors.
-    body: "We designed and built CityFix ourselves, from scratch. It works in three steps:"
-    steps:
-      - You see a problem, open the app and take a photo. Your phone adds the location.
-      - The municipality gets the report, takes it on and hands it to the right contractor.
-      - The contractor fixes it and closes the job with a photo. You get a notice at every step.
-    media:
-      src: /covers/cityfix-ciclo.mp4
-      poster: /covers/cityfix-ciclo-poster.webp
-      alt: "The life of a report on a single card: the photo of the pothole comes in, the number of citizens backing it goes up and the four statuses light up one after another, from Inviata to Completata"
-  offers:
-    title: A new way to deal with problems around the city.
-    groups:
-      - label: The citizen
-        title: Reports in a minute and follows every step.
-        items:
-          - name: Guided reporting
-            desc: The app asks where the problem is, for a photo and what kind it is, one question at a time.
-          - name: No duplicates
-            desc: If someone has already reported the same problem, you just back it instead of making a new one.
-          - name: Status always visible
-            desc: Sent, acknowledged, assigned, completed. Every step comes with a notice on the phone.
-        media:
-          - src: /covers/cityfix-segnala.mp4
-            poster: /covers/cityfix-segnala-poster.webp
-            ratio: 1256/1520
-            alt: "Guided reporting in the CityFix app: the bot asks where the problem is, the location, the photo and the type come in, then Invia sends the report to the municipality"
-          - src: /covers/cityfix-mappa.mp4
-            poster: /covers/cityfix-mappa-poster.webp
-            ratio: 1696/1520
-            alt: "The report map in the CityFix app: blue pins on the streets of Brindisi, one lifts and opens its card, and the bar button turns from Segnala ora to Sostieni"
-          - src: /covers/cityfix-stato.mp4
-            poster: /covers/cityfix-stato-poster.webp
-            ratio: 816/1520
-            backdrop: '#efedfd'
-            alt: "A report in detail: the four status pixels fill one at a time, from Inviata to Completata, while the history grows"
-      - label: The municipality
-        title: Sees everything in one place and hands out the work.
-        items:
-          - name: Municipal dashboard
-            desc: Reports come in order, on the map and in a table. The municipality takes them on and hands them to a contractor.
-          - name: Neighbourhoods and notices
-            desc: The municipality posts notices for a single neighbourhood or the whole city, for example about water main works.
-        media:
-          - src: /covers/cityfix-backoffice.mp4
-            poster: /covers/cityfix-backoffice-poster.webp
-            ratio: 1920/1080
-            alt: "The back office of the Comune di Brindisi: a new report lands at the top of the open list, the operator acknowledges it, assigns it to a supplier and the In corso count goes up"
-          - src: /covers/cityfix-avviso.mp4
-            poster: /covers/cityfix-avviso-poster.webp
-            ratio: 822/1080
-            alt: "A notice from the municipality for the Centro neighbourhood: the zone draws itself on the map of Brindisi and the notice about water main works comes in, valid until 31 October"
-      - label: The contractor
-        title: Fixes it and proves it with a photo.
-        items:
-          - name: Closed with a photo
-            desc: The contractor closes the job with a photo. Set against the photo of the problem, it shows what has changed.
-        media:
-          - src: /covers/cityfix-chiusura.mp4
-            poster: /covers/cityfix-chiusura-poster.webp
-            ratio: 822/1080
-            alt: "The supplier closes the job: the photo of the pothole wipes into the photo of the new asphalt and a Completata stamp lands"
-  payoff:
-    title: The whole picture, with the numbers ready.
-    body: "The municipality knows what is open, who is working on it, what is overdue and how much it has spent, instead of chasing emails, forms and spreadsheets. At the end of the year the report fills itself in, with the numbers ready for the council."
-    media:
-      src: /covers/cityfix-resoconto.mp4
-      poster: /covers/cityfix-resoconto-poster.webp
-      alt: "The municipality's annual report, with sample data: the number of problems solved counts up and the bars for the twelve months grow one after another"
-  challenge:
-    title: Serving eight thousand municipalities with one system.
-    body: "There is one system for everyone, so starting in a new city needs no installation. But each municipality sees only its own reports, offices and contractors: no data passes from one municipality to another."
-  start:
-    - You write to us and we show you CityFix on the map of your town.
-    - We set up the municipality's space and the first account for the office.
-    - You invite the technical office and your contractors. Citizens download the app and start reporting.
-  backdrop: '#2a1ce7'
 ---
 
 ## The product

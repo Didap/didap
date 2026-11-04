@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
-import ProductPlain from '~/components/ProductPlain.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core'
 import { TEAM } from '#shared/team'
@@ -11,12 +10,10 @@ import { typeset } from '#shared/typeset'
 // Le sezioni compaiono solo se il frontmatter ha i dati; i prodotti senza
 // scheda strutturata mostrano il corpo markdown al posto dei blocchi testo.
 // Sopra al markdown si applicano le modifiche fatte da /admin.
-// Con `screens` (CityFix) il corpo è quello scritto per chi non è del
-// mestiere, in components/ProductPlain.
 definePageMeta({ surface: 'cream', nav: 'product' })
 
 const route = useRoute()
-const { t, te } = useI18n()
+const { t } = useI18n()
 const localePath = useLocalePath()
 const slug = computed(() => String(route.params.slug))
 
@@ -65,14 +62,9 @@ const hasStory = computed(
 )
 
 // Le immagini finiscono a filo: il blocco dopo stacca
-const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model && !project.value?.screens)
+const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model)
 
-// Con `screens` sotto il nome c'è il ruolo (product.roles.<chiave>)
-const team = computed(() => (project.value?.team ?? []).map((key) => ({
-  key,
-  ...TEAM[key],
-  role: project.value?.screens && te(`product.roles.${key}`) ? t(`product.roles.${key}`) : '',
-})))
+const team = computed(() => (project.value?.team ?? []).map(key => ({ key, ...TEAM[key] })))
 
 useSeoMeta({
   title: () => `${project.value?.title} - Didap`,
@@ -82,15 +74,13 @@ useSeoMeta({
 
 <template>
   <article v-if="project">
-    <!-- Immagine di testata, a tutta larghezza 1440x864. Con `screens`
-         più bassa: nome e frase si vedono già all'apertura -->
+    <!-- Immagine di testata, a tutta larghezza 1440x864 -->
     <MediaSlot
       ref="hero"
       data-preview-section="testata"
       v-if="project.hero"
       :media="{ alt: project.title, ...project.hero }"
-      class="aspect-1440/864 w-full"
-      :class="project.screens ? 'max-h-[72vh]' : 'max-h-[90vh]'"
+      class="aspect-1440/864 max-h-[90vh] w-full"
     />
 
     <!-- Header: sulla stessa griglia dei blocchi sotto. A sinistra il
@@ -136,7 +126,7 @@ useSeoMeta({
     <!-- Immagini · due affiancate -->
     <section
       data-preview-section="prodotto"
-      v-if="project.media?.pair?.length && !project.screens"
+      v-if="project.media?.pair?.length"
       class="page-x"
     >
       <div class="
@@ -152,17 +142,7 @@ useSeoMeta({
       </div>
     </section>
 
-    <!-- Scheda scritta semplice (components/ProductPlain) -->
-    <ProductPlain
-      v-if="project.screens"
-      :screens="project.screens"
-      :challenge="project.challenge"
-      :model="project.model"
-      :url="project.url"
-      :host="host"
-    />
-
-    <template v-else-if="hasStory">
+    <template v-if="hasStory">
       <!-- Testo · Il prodotto -->
       <section
         data-preview-section="prodotto"
@@ -209,11 +189,13 @@ useSeoMeta({
         </div>
       </section>
 
-      <!-- Testo · Cosa fa -->
+      <!-- Testo · Cosa fa. Le immagini possono stare anche senza le voci:
+           allora stacca il blocco dopo -->
       <section
         data-preview-section="cosafa"
-        v-if="project.features"
+        v-if="project.features || project.media?.feature?.length"
         class="page-x"
+        :class="{ 'pb-6': !project.features }"
       >
         <div
           v-if="project.media?.feature?.length"
@@ -236,10 +218,13 @@ useSeoMeta({
             class="aspect-408/760 w-full"
           />
         </div>
-        <div class="
-          flex flex-col gap-7 py-16
-          lg:py-28
-        ">
+        <div
+          v-if="project.features"
+          class="
+            flex flex-col gap-7 py-16
+            lg:py-28
+          "
+        >
           <h2 class="text-title">
             {{ typeset(project.features.title) }}
           </h2>
@@ -350,12 +335,8 @@ useSeoMeta({
                   :class="m.width"
                 >
               </div>
-              <p class="grid gap-0.5">
-                <span class="text-body">{{ m.name }}</span>
-                <span
-                  v-if="m.role"
-                  class="text-label opacity-60"
-                >{{ m.role }}</span>
+              <p class="text-body">
+                {{ m.name }}
               </p>
             </li>
           </ul>

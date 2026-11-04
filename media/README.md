@@ -21,14 +21,26 @@ pair 1256x1520, wide 1920x1080 (telefono 810x1012), feature[0] 1696x1520 (telefo
 feature[1] 816x1520, triple 822x1080. Clip da 10 a 14 secondi, in loop, senza audio.
 
 Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
-`media/cruciverba-lab/scripts/`, `media/cityfix/build-*.mjs` (le strade di Brindisi in
+`media/cruciverba-lab/scripts/`, `media/cityfix/build-hero.mjs` (le strade di Brindisi in
 `media/cityfix/osm/roads.json`, dati OpenStreetMap con licenza ODbL),
 `media/helllo/build.mjs` (dall'illustrazione esportata dal Figma in `media/helllo/figma/`).
+
+## CityFix: le illustrazioni
+
+La scheda di CityFix parla coi disegni, quasi senza testo. I pezzi della città (palazzi,
+strada, buca, Comune, furgone, persone, pin e icone a pixel dell'app in `pixel-icons.json`)
+stanno in `media/cityfix/kit.mjs` e servono sia alle tavole ferme sia ai clip:
+
+- `node media/cityfix/build-illustrazioni.mjs` scrive gli SVG in `public/covers/`:
+  `strada` (pair), `passaggi` (feature[1]), `insieme` e `rione` (triple).
+- `node media/cityfix/build-clip.mjs [clip]` scrive i progetti HyperFrames `scatta` (pair),
+  `giro` (wide, senza versione da telefono), `comuni` (feature[0]) e `riparata` (triple);
+  poi check, render e codifica come sopra.
 
 ## Da fare (28 ottobre 2026)
 
 - Versioni da telefono mancanti: Bin or Deal `ricerca` (wide), `verdi` (feature[0]) e i tre
-  triple; CityFix `backoffice` (wide). Senza, sul telefono parte il video da desktop.
+  triple; CityFix `giro` (wide). Senza, sul telefono parte il video da desktop.
 - CityFix: i dati della mappa vengono da OpenStreetMap ma nei clip non c'è il credito.
 - Bin or Deal: lo stack in pagina viene dal codice (Next.js, Hono, PostgreSQL, Playwright);
   il vecchio corpo markdown dice ancora Clerk, Neon e Upstash.

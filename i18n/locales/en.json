@@ -147,21 +147,7 @@
     "next": "Next product",
     "placeholder_image": "Image",
     "team": "The hands behind it",
-    "why": "The problem",
-    "made": "What we did",
-    "offers": "What it offers",
-    "challenge": "The hard part",
-    "model": "What it costs",
-    "payoff": "For the municipality",
-    "start": "How to start",
-    "all": "All products",
-    "roles": {
-      "barbara": "Project manager",
-      "william": "Full-stack developer",
-      "cristiano": "Full-stack developer",
-      "alessandro": "Full-stack developer",
-      "vitantonio": "Designer"
-    }
+    "all": "All products"
   },
   "splash": {
     "skip": "Skip"

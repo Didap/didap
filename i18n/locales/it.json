@@ -147,21 +147,7 @@
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine",
     "team": "Ci hanno messo le mani",
-    "why": "Il problema",
-    "made": "Cosa abbiamo fatto",
-    "offers": "Cosa offre",
-    "challenge": "La cosa difficile",
-    "model": "Quanto costa",
-    "payoff": "Per il Comune",
-    "start": "Come si parte",
-    "all": "Tutti i prodotti",
-    "roles": {
-      "barbara": "Project manager",
-      "william": "Sviluppatore full-stack",
-      "cristiano": "Sviluppatore full-stack",
-      "alessandro": "Sviluppatore full-stack",
-      "vitantonio": "Designer"
-    }
+    "all": "Tutti i prodotti"
   },
   "splash": {
     "skip": "Salta"

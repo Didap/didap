@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "historyId": "663eddbd-810d-4d45-821f-1bf2e5b7fd7d",
+  "currentRevision": "fed525f2-6f6c-48cc-9a84-5edcd990f467",
+  "pendingChanges": false,
+  "files": {
+    "hyperframes.json": {
+      "hash": "c7a3009d23e471acfb1ca9ec252ea16a0ca4dfe55e3b3b9d7089c8f0764f4a43",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\663eddbd-810d-4d45-821f-1bf2e5b7fd7d\\blobs\\c7\\c7a3009d23e471acfb1ca9ec252ea16a0ca4dfe55e3b3b9d7089c8f0764f4a43"
+    },
+    "index.html": {
+      "hash": "ba37d2126adcad843b979aa28369fa600245ac42b95f7d48f6f267ca5c6cba0f",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\663eddbd-810d-4d45-821f-1bf2e5b7fd7d\\blobs\\ba\\ba37d2126adcad843b979aa28369fa600245ac42b95f7d48f6f267ca5c6cba0f"
+    },
+    "meta.json": {
+      "hash": "ff719814571c02c98e0384b24b2cb78a4c01ca3414ea3be404f449f6358370ff",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\663eddbd-810d-4d45-821f-1bf2e5b7fd7d\\blobs\\ff\\ff719814571c02c98e0384b24b2cb78a4c01ca3414ea3be404f449f6358370ff"
+    }
+  },
+  "revisions": {
+    "fed525f2-6f6c-48cc-9a84-5edcd990f467": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793797185369,
+      "endedAt": 1793797185372,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\663eddbd-810d-4d45-821f-1bf2e5b7fd7d\\blobs\\77\\7769305bd3c0d4ebcfab659c66058ccb91c721793c504dd1ed7d8791bd51e64b",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\663eddbd-810d-4d45-821f-1bf2e5b7fd7d\\blobs\\ba\\ba37d2126adcad843b979aa28369fa600245ac42b95f7d48f6f267ca5c6cba0f"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "a3b77121-2582-4514-8df7-e627fc3b2eeb"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "a3b77121-2582-4514-8df7-e627fc3b2eeb",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\riparata\\.hyperframes\\artifacts\\checks\\a3b77121-2582-4514-8df7-e627fc3b2eeb.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793797071325,
+        "contentHash": "0dda3a51a51f39eeb21890786e2fc1d773f87f0ce40ff13b4ced7eb3df0c353b",
+        "revision": null,
+        "inputFingerprint": "5b1c1b0216775b1ac8aa42e089a9f0dd408ce39e6356879767dd6c6bde9c1541",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "fed525f2-6f6c-48cc-9a84-5edcd990f467",
+      "id": "207f0030-bf3a-4f89-bb62-65ee9ff9ed6e-2"
+    },
+    "revisions": {
+      "fed525f2-6f6c-48cc-9a84-5edcd990f467": [
+        {
+          "scope": "full",
+          "id": "207f0030-bf3a-4f89-bb62-65ee9ff9ed6e-0",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\snap-riparata\\frame-00-at-1.6s.png",
+          "time": 1.6,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793797186910,
+          "contentHash": "497261fdcdc8bb9e43a9e900c41dab76a52eeb77d119bd877ebaa6a9a373c968",
+          "revision": "fed525f2-6f6c-48cc-9a84-5edcd990f467",
+          "inputFingerprint": "7b79024fc1b89deaebc2f234130321ea142903090a0a50e922be9a4b6f70b9c2",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "207f0030-bf3a-4f89-bb62-65ee9ff9ed6e-1",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\snap-riparata\\frame-01-at-2.05s.png",
+          "time": 2.05,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793797186910,
+          "contentHash": "f4a8f97d7366ca9e0642bb1541d053003f1abeb17c37ce3e25536bdf5625e1c7",
+          "revision": "fed525f2-6f6c-48cc-9a84-5edcd990f467",
+          "inputFingerprint": "7b79024fc1b89deaebc2f234130321ea142903090a0a50e922be9a4b6f70b9c2",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "207f0030-bf3a-4f89-bb62-65ee9ff9ed6e-2",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\snap-riparata\\frame-02-at-2.25s.png",
+          "time": 2.25,
+          "metadata": {
+            "width": 822,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793797186910,
+          "contentHash": "7d9d63f2198741daf5a1ef2c432d8198be6b57735968cf417992b68bf4a01972",
+          "revision": "fed525f2-6f6c-48cc-9a84-5edcd990f467",
+          "inputFingerprint": "7b79024fc1b89deaebc2f234130321ea142903090a0a50e922be9a4b6f70b9c2",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "52328f2d-ee76-4d7f-8e15-0edb4787083e",
+      "completedAt": 1793797286697,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\c--Users-aless-Documents-GitHub-didap\\33b5e97f-4d06-4dc9-b8de-8341d819ea53\\scratchpad\\render-riparata.mp4",
+      "status": "completed",
+      "revision": "fed525f2-6f6c-48cc-9a84-5edcd990f467"
+    },
+    "retainedRevisions": [
+      "fed525f2-6f6c-48cc-9a84-5edcd990f467"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

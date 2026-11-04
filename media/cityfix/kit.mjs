@@ -20,11 +20,14 @@ export const C = {
   green: '#479B3E',
 }
 
-// Il tratto non cresce con la scala: tutto ha lo stesso spessore.
-// Gli arti invece scalano (`limb`), sono pieni e non linee
-const STYLE = `
-.o{stroke:${C.blue};stroke-width:6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.t{stroke-width:4}
+// Il tratto non cresce con la scala dei pezzi: tutto ha lo stesso
+// spessore, 6 unità della tavola larga `w` (4 per il tratto sottile `t`).
+// In vw perché `non-scaling-stroke` misura in pixel dello schermo: così
+// segue la tavola quando la pagina la mostra più piccola. Gli arti invece
+// scalano (`limb`), sono pieni e non linee
+const style = w => `
+.o{stroke:${C.blue};stroke-width:calc(600vw / ${w});stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.t{stroke-width:calc(400vw / ${w})}
 .w{fill:${C.white}}.l{fill:${C.lav}}.l2{fill:${C.lav2}}.b{fill:${C.blue}}.d{fill:${C.deep}}.r{fill:${C.red}}.g{fill:${C.green}}.n{fill:none}
 .limb{fill:none;stroke-linecap:round;stroke-linejoin:round}
 `
@@ -51,7 +54,7 @@ export const ground = (w, h, kind) => {
 }
 
 export const svgDoc = (w, h, kind, inner, attrs = '') =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"${attrs ? ` ${attrs}` : ''}><style>${STYLE}</style>${ground(w, h, kind)}${inner}</svg>`
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"${attrs ? ` ${attrs}` : ''}><style>${style(w)}</style>${ground(w, h, kind)}${inner}</svg>`
 
 // Il pin della mappa, con la punta in (0,0). `k` è la scala del
 // disegno da 24x34 (3 = 72x102)

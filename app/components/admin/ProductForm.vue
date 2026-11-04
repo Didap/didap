@@ -369,14 +369,12 @@ const usesMarkdownBody = computed(
       </AdminField>
     </AdminSection>
 
-    <!-- Cosa fa -->
+    <!-- Cosa fa: le immagini e l'elenco si accendono ognuno per conto suo -->
     <AdminSection
       id="cosafa"
       :highlight="highlighted === 'cosafa'"
-      v-model:enabled="form.featuresOn"
       title="Cosa fa"
       description="Le funzioni principali, una per riga."
-      toggle
       @focus="onFocus"
     >
       <AdminSwitch
@@ -402,142 +400,148 @@ const usesMarkdownBody = computed(
           aspect="aspect-[408/760]"
         />
       </div>
-      <AdminField
-        label="Titolo"
-        :value="form.features.title"
-        :max="200"
-      >
-        <input
-          v-model="form.features.title"
-          maxlength="200"
-          placeholder="Es. Dalla sera dell'asta a tutta la stagione."
-          class="admin-input"
+      <AdminSwitch
+        v-model="form.featuresOn"
+        label="Elenco delle funzioni"
+      />
+      <template v-if="form.featuresOn">
+        <AdminField
+          label="Titolo"
+          :value="form.features.title"
+          :max="200"
         >
-      </AdminField>
+          <input
+            v-model="form.features.title"
+            maxlength="200"
+            placeholder="Es. Dalla sera dell'asta a tutta la stagione."
+            class="admin-input"
+          >
+        </AdminField>
 
-      <div class="flex flex-col gap-2">
-        <span class="text-sm font-medium">Voci</span>
-        <ol
-          class="flex flex-col"
-          @dragover.prevent
-          @drop="onItemDrop"
-        >
-          <li
-            v-for="(item, i) in items"
-            :key="i"
-            class="relative py-1"
-            :draggable="armed === i"
-            @dragstart="onItemDragStart(i, $event)"
-            @dragover="onItemDragOver(i, $event)"
-            @dragend="onItemDragEnd"
+        <div class="flex flex-col gap-2">
+          <span class="text-sm font-medium">Voci</span>
+          <ol
+            class="flex flex-col"
+            @dragover.prevent
+            @drop="onItemDrop"
           >
-            <span
-              v-if="dropAt === i"
-              class="absolute inset-x-0 -top-px h-0.5 rounded-full bg-green"
-              aria-hidden="true"
-            />
-            <div
-              class="
-                grid items-center gap-2 rounded-xl bg-paper p-2 transition
-                sm:grid-cols-[auto_1fr_2fr_auto]
-              "
-              :class="dragFrom === i ? 'opacity-40' : ''"
+            <li
+              v-for="(item, i) in items"
+              :key="i"
+              class="relative py-1"
+              :draggable="armed === i"
+              @dragstart="onItemDragStart(i, $event)"
+              @dragover="onItemDragOver(i, $event)"
+              @dragend="onItemDragEnd"
             >
-              <button
-                type="button"
-                data-item-handle
+              <span
+                v-if="dropAt === i"
+                class="absolute inset-x-0 -top-px h-0.5 rounded-full bg-green"
+                aria-hidden="true"
+              />
+              <div
                 class="
-                  flex h-9 w-7 cursor-grab items-center justify-center
-                  rounded-lg text-ink/40
-                  hover:bg-ink/5 hover:text-ink
-                  active:cursor-grabbing
+                  grid items-center gap-2 rounded-xl bg-paper p-2 transition
+                  sm:grid-cols-[auto_1fr_2fr_auto]
                 "
-                :aria-label="`Voce ${i + 1}: trascina o usa le frecce su e giù per spostarla`"
-                title="Trascina per spostare"
-                @mousedown="armed = i"
-                @mouseup="armed = null"
-                @keydown="onHandleKey(i, $event)"
+                :class="dragFrom === i ? 'opacity-40' : ''"
               >
-                <svg
-                  width="12"
-                  height="18"
-                  viewBox="0 0 12 18"
-                  fill="currentColor"
-                  aria-hidden="true"
-                ><circle
-                  cx="3"
-                  cy="3"
-                  r="1.6"
-                /><circle
-                  cx="9"
-                  cy="3"
-                  r="1.6"
-                /><circle
-                  cx="3"
-                  cy="9"
-                  r="1.6"
-                /><circle
-                  cx="9"
-                  cy="9"
-                  r="1.6"
-                /><circle
-                  cx="3"
-                  cy="15"
-                  r="1.6"
-                /><circle
-                  cx="9"
-                  cy="15"
-                  r="1.6"
-                /></svg>
-              </button>
-              <input
-                v-model="item.name"
-                data-feature-name
-                maxlength="120"
-                placeholder="Funzione"
-                :aria-label="`Voce ${i + 1}: nome`"
-                class="admin-input"
-              >
-              <input
-                v-model="item.desc"
-                maxlength="600"
-                placeholder="Cosa fa, in una riga"
-                :aria-label="`Voce ${i + 1}: descrizione`"
-                class="admin-input"
-              >
-              <button
-                type="button"
-                class="
-                  admin-icon
-                  hover:bg-red!
-                "
-                :aria-label="`Elimina la voce ${i + 1}`"
-                title="Elimina"
-                @click="form.features.items.splice(i, 1)"
-              >
-                ×
-              </button>
-            </div>
-            <span
-              v-if="dropAt === items.length && i === items.length - 1"
-              class="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-green"
-              aria-hidden="true"
-            />
-          </li>
-        </ol>
-        <div>
-          <button
-            type="button"
-            class="
-              rounded-full border border-dashed border-ink/30 px-4 py-2 text-sm
-              hover:border-ink
-            "
-            @click="addItem"
-          >
-            + Aggiungi voce
-          </button>
+                <button
+                  type="button"
+                  data-item-handle
+                  class="
+                    flex h-9 w-7 cursor-grab items-center justify-center
+                    rounded-lg text-ink/40
+                    hover:bg-ink/5 hover:text-ink
+                    active:cursor-grabbing
+                  "
+                  :aria-label="`Voce ${i + 1}: trascina o usa le frecce su e giù per spostarla`"
+                  title="Trascina per spostare"
+                  @mousedown="armed = i"
+                  @mouseup="armed = null"
+                  @keydown="onHandleKey(i, $event)"
+                >
+                  <svg
+                    width="12"
+                    height="18"
+                    viewBox="0 0 12 18"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  ><circle
+                    cx="3"
+                    cy="3"
+                    r="1.6"
+                  /><circle
+                    cx="9"
+                    cy="3"
+                    r="1.6"
+                  /><circle
+                    cx="3"
+                    cy="9"
+                    r="1.6"
+                  /><circle
+                    cx="9"
+                    cy="9"
+                    r="1.6"
+                  /><circle
+                    cx="3"
+                    cy="15"
+                    r="1.6"
+                  /><circle
+                    cx="9"
+                    cy="15"
+                    r="1.6"
+                  /></svg>
+                </button>
+                <input
+                  v-model="item.name"
+                  data-feature-name
+                  maxlength="120"
+                  placeholder="Funzione"
+                  :aria-label="`Voce ${i + 1}: nome`"
+                  class="admin-input"
+                >
+                <input
+                  v-model="item.desc"
+                  maxlength="600"
+                  placeholder="Cosa fa, in una riga"
+                  :aria-label="`Voce ${i + 1}: descrizione`"
+                  class="admin-input"
+                >
+                <button
+                  type="button"
+                  class="
+                    admin-icon
+                    hover:bg-red!
+                  "
+                  :aria-label="`Elimina la voce ${i + 1}`"
+                  title="Elimina"
+                  @click="form.features.items.splice(i, 1)"
+                >
+                  ×
+                </button>
+              </div>
+              <span
+                v-if="dropAt === items.length && i === items.length - 1"
+                class="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-green"
+                aria-hidden="true"
+              />
+            </li>
+          </ol>
+          <div>
+            <button
+              type="button"
+              class="
+                rounded-full border border-dashed border-ink/30 px-4 py-2 text-sm
+                hover:border-ink
+              "
+              @click="addItem"
+            >
+              + Aggiungi voce
+            </button>
+          </div>
         </div>
-      </div>
+      </template>
     </AdminSection>
 
     <!-- Chiusura -->

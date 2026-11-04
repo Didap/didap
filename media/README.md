@@ -21,7 +21,7 @@ pair 1256x1520, wide 1920x1080 (telefono 810x1012), feature[0] 1696x1520 (telefo
 feature[1] 816x1520, triple 822x1080. Clip da 10 a 14 secondi, in loop, senza audio.
 
 Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
-`media/cruciverba-lab/scripts/`, `media/cityfix/build-*.mjs` (le strade di Brindisi in
+`media/cruciverba-lab/scripts/`, `media/cityfix/build-hero.mjs` (le strade di Brindisi in
 `media/cityfix/osm/roads.json`, dati OpenStreetMap con licenza ODbL),
 `media/helllo/build.mjs` (dall'illustrazione esportata dal Figma in `media/helllo/figma/`).
 
@@ -36,9 +36,6 @@ stanno in `media/cityfix/kit.mjs` e servono sia alle tavole ferme sia ai clip:
 - `node media/cityfix/build-clip.mjs [clip]` scrive i progetti HyperFrames `scatta` (pair),
   `giro` (wide, senza versione da telefono), `comuni` (feature[0]) e `riparata` (triple);
   poi check, render e codifica come sopra.
-
-I vecchi clip con le schermate dell'app (`segnala`, `backoffice`, `mappa`, `stato`,
-`chiusura`, `sostieni`, `avviso`) restano qui come sorgenti ma non sono più nella pagina.
 
 ## Da fare (28 ottobre 2026)
 

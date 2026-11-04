@@ -112,7 +112,7 @@ export function fromAdminForm(f: AdminForm): ProductOverride {
     media: {
       pair: f.pairOn ? f.pair.map(cleanSlot) : [],
       wide: f.wideOn ? cleanSlot(f.wide) : null,
-      feature: f.featuresOn && f.featureMediaOn ? f.feature.map(cleanSlot) : [],
+      feature: f.featureMediaOn ? f.feature.map(cleanSlot) : [],
       triple: f.tripleOn ? f.triple.map(cleanSlot) : [],
     },
   }

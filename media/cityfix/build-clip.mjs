@@ -42,19 +42,30 @@ ${script}
 // Il pixel dello stato `#<p><i>` acceso del colore `c` al tempo `t`
 const lightUp = (p, i, c, t) => `tl.to('#${p}${i}', { fill: '${c}', duration: 0.25, ease: 'power2.out' }, ${t});`
 
-// Generatore deterministico per le posizioni sparse
-let seed = 7
-const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
+// Generatore deterministico per le posizioni sparse, uno per clip
+const random = (seed) => () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
 
-// Il logo di CityFix, la parte che disegna la scritta
-const logo = fs.readFileSync(new URL('../../public/covers/cityfix-logo.svg', import.meta.url), 'utf8')
-  .match(/<svg x="[\s\S]*?<\/svg>/)[0]
+// Il logo di CityFix, la parte che disegna la scritta (l'<svg> dentro
+// quello col fondo blu)
+const logo = () => {
+  const svg = fs.readFileSync(new URL('../../public/covers/cityfix-logo.svg', import.meta.url), 'utf8')
+  const mark = svg.match(/<svg x="[\s\S]*?<\/svg>/)?.[0]
+  if (!mark) throw new Error('cityfix-logo.svg: manca la scritta in un <svg x="..."> interno')
+  return mark
+}
+
+const HYPERFRAMES = {
+  $schema: 'https://hyperframes.heygen.com/schema/hyperframes.json',
+  registry: 'https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry',
+  paths: { blocks: 'compositions', components: 'compositions/components', assets: 'assets' },
+  media: { autoProxy: true },
+}
 
 const CLIPS = {
   // pair[1], 1256x1520: il telefono inquadra la buca, scatta, la scheda
   // si compila (posizione, tipo, descrizione), parte e diventa un pin che
   // accende il primo pixel dello stato
-  scatta: (() => {
+  scatta: () => {
     const sw = 528
     const sh = 1005
     const cam = `<g id="cam" clip-path="url(#scr)">
@@ -124,13 +135,13 @@ ${at(0, 0, 1, pin(C.red, 'road', 3.4), 'fly', 'opacity="0"')}`
       ${lightUp('st', 0, C.lav2, 10.8)}
       tl.set('#fly', { y: 900, scale: 1, opacity: 0 }, 11.0);`
     return { w: 1256, h: 1520, kind: 'blue', dur: 12, svg, script }
-  })(),
+  },
 
   // wide, 1920x1080: il giro intero. Il cittadino scatta, la
   // segnalazione va al Comune, il Comune la passa alla ditta, il furgone
   // arriva e ripara, il pin diventa verde e la notizia torna al telefono.
   // In alto i quattro pixel dello stato si accendono a ogni passaggio
-  giro: (() => {
+  giro: () => {
     const garage = `<rect class="w o" x="-190" y="-320" width="380" height="320"/>
 <rect class="l2 o" x="-160" y="-230" width="320" height="230"/>
 ${[0, 1, 2, 3, 4].map(i => `<line class="o t" x1="-160" y1="${-190 + i * 40}" x2="160" y2="${-190 + i * 40}"/>`).join('')}
@@ -212,11 +223,11 @@ ${at(0, 0, 1, pin(C.green, 'check', 2.2), 'tokG', 'opacity="0"')}`
       tl.set(['#w1', '#w2'], { rotation: 0 }, 12.4);
       tl.to('#van', { opacity: 1, duration: 0.6 }, 12.8);`
     return { w: 1920, h: 1080, kind: 'light', dur: 14, svg, script }
-  })(),
+  },
 
   // feature[0], 1696x1520: un sistema solo al centro, tanti Comuni
   // intorno, ognuno chiuso col suo lucchetto e con le sue segnalazioni
-  comuni: (() => {
+  comuni: () => {
     const T = 250
     const G = 46
     const x0 = (1696 - (5 * T + 4 * G)) / 2
@@ -224,6 +235,7 @@ ${at(0, 0, 1, pin(C.green, 'check', 2.2), 'tokG', 'opacity="0"')}`
     const core = { x: x0 + T + G, y: y0 + T + G, w: 3 * T + 2 * G, h: 2 * T + G }
     const cx = core.x + core.w / 2
     const cy = core.y + core.h / 2
+    const rnd = random(7)
     const tiles = []
     for (let r = 0; r < 4; r++) {
       for (let c = 0; c < 5; c++) {
@@ -245,7 +257,7 @@ ${at(0, 0, 1, pin(C.green, 'check', 2.2), 'tokG', 'opacity="0"')}`
     const svg = `
 ${tiles.map((t, i) => `<line id="ln${i}" x1="${cx}" y1="${cy}" x2="${t.x + T / 2}" y2="${t.y + T / 2}" stroke="#fff" stroke-width="4" opacity="0.45"/>`).join('')}
 <g id="core"><rect x="${core.x}" y="${core.y}" width="${core.w}" height="${core.h}" rx="44" fill="#fff"/>
-${logo.replace(/x="[^"]*" y="[^"]*" width="[^"]*" height="[^"]*"/, `x="${cx - 280}" y="${cy - 78}" width="560" height="157"`).replace('fill="#FFFFFF"', `fill="${C.blue}"`)}</g>
+${logo().replace(/x="[^"]*" y="[^"]*" width="[^"]*" height="[^"]*"/, `x="${cx - 280}" y="${cy - 78}" width="560" height="157"`).replaceAll('fill="#FFFFFF"', `fill="${C.blue}"`)}</g>
 ${tiles.map((t, i) => `<g id="t${i}"><rect x="${t.x}" y="${t.y}" width="${T}" height="${T}" rx="30" fill="rgba(255,255,255,0.12)" stroke="#fff" stroke-width="4"/>
 ${at(t.x + T / 2, t.y + T - 24, 0.27, municipio())}
 ${pins[i].map(p => at(p.x, p.y, 1, pin(C.red, 'road', 1.25), p.id, 'opacity="0"') + (p.done ? at(p.x, p.y, 1, pin(C.green, 'check', 1.25), `${p.id}g`, 'opacity="0"') : '')).join('')}
@@ -268,11 +280,11 @@ ${pins.flat().map(p => `      tl.fromTo('#${p.id}', { opacity: 0, y: -24, scale:
       tl.to('#${p.id}g', { opacity: 0, duration: 0.3 }, 10.5);`
       : `\n      tl.to('#${p.id}', { opacity: 0, duration: 0.3 }, 10.5);`}`).join('\n')}`
     return { w: 1696, h: 1520, kind: 'blue', dur: 12, svg, script }
-  })(),
+  },
 
   // triple[2], 822x1080: la ditta fotografa la buca, la riempie, la
   // fotografa di nuovo. Le due foto, prima e dopo, e il timbro verde
-  riparata: (() => {
+  riparata: () => {
     const shovel = `<path class="limb" d="M40 -250 L196 -40" stroke="${C.blue}" stroke-width="16"/><path class="limb" d="M40 -250 L196 -40" stroke="#fff" stroke-width="6"/>
 <path class="l2 o" d="M176 -66 L226 -30 L204 12 L154 -24 Z"/>`
     const polaroid = (inner) => `<rect x="-150" y="-170" width="300" height="340" rx="10" fill="#fff" stroke="${C.blue}" stroke-width="6"/>
@@ -324,16 +336,18 @@ ${at(411, 520, 1, `<circle r="62" fill="${C.green}" stroke="#fff" stroke-width="
       tl.to('#pinG', { opacity: 0, duration: 0.2 }, 11.1);
       tl.to('#pinR', { opacity: 1, duration: 0.2 }, 11.2);`
     return { w: 822, h: 1080, kind: 'light', dur: 12, svg, script }
-  })(),
+  },
 }
 
 const only = process.argv.slice(2)
-for (const [id, clip] of Object.entries(CLIPS)) {
+for (const [id, make] of Object.entries(CLIPS)) {
   if (only.length && !only.includes(id)) continue
+  const clip = make()
   const dir = new URL(`${id}/`, here)
   fs.mkdirSync(dir, { recursive: true })
   fs.writeFileSync(new URL('index.html', dir), page({ id, ...clip }))
   fs.writeFileSync(new URL('meta.json', dir), JSON.stringify({ id: `cityfix-${id}`, name: `cityfix-${id}` }))
-  fs.copyFileSync(new URL('chiusura/hyperframes.json', here), new URL('hyperframes.json', dir))
+  fs.writeFileSync(new URL('hyperframes.json', dir), `${JSON.stringify(HYPERFRAMES, null, 2)}
+`)
   console.log(`media/cityfix/${id}/index.html`)
 }

@@ -2,7 +2,8 @@
 // come una tavola tecnica (tratto blu, fondi bianchi e lavanda, rosso per
 // i problemi e verde per i lavori finiti), le icone a pixel dell'app.
 // Lo usano build-illustrazioni.mjs per le tavole ferme (SVG in
-// public/covers) e per i clip HyperFrames (SVG in linea, animato per id).
+// public/covers) e build-clip.mjs per i clip HyperFrames (SVG in linea,
+// animato per id).
 // Ogni pezzo è disegnato attorno al suo punto d'appoggio (0,0), di solito
 // il centro della base; `at()` lo mette in scena.
 import fs from 'node:fs'
@@ -45,7 +46,7 @@ export const icon = (name, size, fill = C.white) =>
 
 // Fondo: chiaro (carta con la griglia lavanda) o blu (griglia bianca),
 // come i clip dell'app
-export const ground = (w, h, kind) => {
+const ground = (w, h, kind) => {
   const dark = kind === 'blue'
   const line = dark ? 'rgba(255,255,255,0.10)' : 'rgba(43,28,232,0.07)'
   return `<rect width="${w}" height="${h}" fill="${dark ? C.blue : C.paper}"/>
@@ -53,8 +54,10 @@ export const ground = (w, h, kind) => {
 <rect width="${w}" height="${h}" fill="url(#grid)"/>`
 }
 
-export const svgDoc = (w, h, kind, inner, attrs = '') =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"${attrs ? ` ${attrs}` : ''}><style>${style(w)}</style>${ground(w, h, kind)}${inner}</svg>`
+// Le coordinate calcolate arrivano a 2 decimali
+export const svgDoc = (w, h, kind, inner) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><style>${style(w)}</style>${ground(w, h, kind)}${inner}</svg>`
+    .replace(/\d+\.\d{3,}/g, n => String(Math.round(Number(n) * 100) / 100))
 
 // Il pin della mappa, con la punta in (0,0). `k` è la scala del
 // disegno da 24x34 (3 = 72x102)
@@ -115,13 +118,12 @@ ${at(0, -366, 1, icon('landmark', 36, C.blue))}
 <g${flagId ? ` id="${flagId}"` : ''}><path class="r o t" d="M6 -556 h93 l-14 30 l14 30 h-96 z"/></g>`
 }
 
-// Il lampione: acceso col cono di luce, spento con la testa scura
-export const lamp = ({ h = 520, on = true, lightId = '', headId = '' } = {}) =>
-  `${on ? `<path${lightId ? ` id="${lightId}"` : ''} d="M48 ${-h + 40} L-60 0 H170 Z" fill="${C.lav2}" opacity="0.7"/>` : ''}
-<path class="w o" d="M-34 0 h68 l-10 -40 h-48 z"/>
+// Il lampione spento, con la testa scura
+export const lamp = (h = 520) =>
+  `<path class="w o" d="M-34 0 h68 l-10 -40 h-48 z"/>
 <rect class="w o" x="-9" y="${-h}" width="18" height="${h - 40}"/>
 <path class="n o" d="M0 ${-h + 10} C0 ${-h - 40} 40 ${-h - 50} 50 ${-h - 10}"/>
-<path${headId ? ` id="${headId}"` : ''} class="${on ? 'w' : 'd'} o" d="M24 ${-h - 10} h52 l12 32 h-76 z"/>`
+<path class="d o" d="M24 ${-h - 10} h52 l12 32 h-76 z"/>`
 
 // La panchina: rotta con lo schienale caduto e una crepa
 export const bench = ({ broken = false } = {}) =>
@@ -143,11 +145,6 @@ export const bin = ({ full = false } = {}) =>
 <path class="w o" d="M-70 -180 h140 l-14 180 h-112 z"/>
 <line class="o t" x1="-30" y1="-150" x2="-26" y2="-30"/><line class="o t" x1="0" y1="-150" x2="0" y2="-30"/><line class="o t" x1="30" y1="-150" x2="26" y2="-30"/>
 <rect class="b o" x="-82" y="-196" width="164" height="22" rx="6"/>`
-
-export const tree = () =>
-  `<rect class="w o" x="-14" y="-200" width="28" height="200"/>
-<circle class="l o" cx="-60" cy="-230" r="70"/><circle class="l o" cx="60" cy="-240" r="74"/><circle class="l o" cx="0" cy="-310" r="86"/>
-<path class="n o t" d="M0 -120 L-34 -170 M0 -150 L30 -196"/>`
 
 export const cone = () =>
   `<path class="r o" d="M-34 0 L-12 -96 h24 L34 0 z"/>
@@ -176,10 +173,10 @@ export const patch = (w = 240) =>
 
 // Il telefono: base al centro, il contenuto dello schermo in coordinate
 // dello schermo (0,0 in alto a sinistra, `w-2p` x `h-2p`)
-export const phone = ({ w = 120, h = 220, screen = '', fill = 'b', screenId = '' } = {}) => {
+export const phone = ({ w = 120, h = 220, screen = '', fill = 'b' } = {}) => {
   const p = Math.max(6, w * 0.06)
   return `<rect class="${fill} o" x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="${w * 0.16}"/>
-<g${screenId ? ` id="${screenId}"` : ''} transform="translate(${-w / 2 + p} ${-h + p * 1.6})"><rect class="w" width="${w - 2 * p}" height="${h - p * 3.2}" rx="${w * 0.1}"/>${screen}</g>`
+<g transform="translate(${-w / 2 + p} ${-h + p * 1.6})"><rect class="w" width="${w - 2 * p}" height="${h - p * 3.2}" rx="${w * 0.1}"/>${screen}</g>`
 }
 
 // Una persona, di profilo verso destra. `pose`: 'phone' guarda il
@@ -216,7 +213,7 @@ ${hat
 // Il furgone della ditta, rivolto a destra, ruote con id per girare
 export const van = ({ wheelIds = ['', ''], beaconId = '' } = {}) => {
   const wheel = (cx, id) =>
-    `<g transform="translate(${cx} -34)"><g${id ? ` id="${id}"` : ''}><circle class="d o" r="40"/><circle class="w o" r="16"/><path d="M-30 0 H30 M0 -30 V30" stroke="${C.lav2}" stroke-width="5"/><circle class="w o" r="16"/></g></g>`
+    `<g transform="translate(${cx} -34)"><g${id ? ` id="${id}"` : ''}><circle class="d o" r="40"/><path d="M-30 0 H30 M0 -30 V30" stroke="${C.lav2}" stroke-width="5"/><circle class="w o" r="16"/></g></g>`
   return `<ellipse cx="10" cy="4" rx="230" ry="10" fill="rgba(28,17,153,0.16)"/>
 <path class="w o" d="M-210 -50 V-230 Q-210 -250 -190 -250 H90 Q110 -250 120 -232 L172 -150 Q200 -140 206 -110 V-50 Q206 -36 192 -36 H-196 Q-210 -36 -210 -50 Z"/>
 <path class="l o" d="M100 -228 L148 -150 H96 Q90 -150 90 -158 V-220 Q90 -228 100 -228 Z"/>
@@ -229,16 +226,19 @@ ${wheel(-130, wheelIds[0])}${wheel(130, wheelIds[1])}`
 }
 
 // Una casa bassa, base al centro
-export const house = ({ w = 150, h = 130, fill = 'w' } = {}) =>
-  `<rect class="${fill} o" x="${-w / 2}" y="${-h}" width="${w}" height="${h}"/>
+export const house = (fill = 'w') => {
+  const w = 150
+  const h = 130
+  return `<rect class="${fill} o" x="${-w / 2}" y="${-h}" width="${w}" height="${h}"/>
 <path class="l2 o" d="M${-w / 2 - 16} ${-h} L0 ${-h - w * 0.5} L${w / 2 + 16} ${-h} Z"/>
 <rect class="l o t" x="${-w / 2 + 18}" y="${-h + 26}" width="${w * 0.26}" height="${w * 0.26}" rx="3"/>
 <rect class="l2 o t" x="${w / 2 - 18 - w * 0.24}" y="${-h * 0.62}" width="${w * 0.24}" height="${h * 0.62}"/>`
+}
 
 // La campanella degli avvisi, centrata
-export const bell = (fill = C.blue) =>
-  `<path d="M-15 8 V-4 a15 15 0 0 1 30 0 V8 l5 6 h-40 z" fill="${fill}"/><circle cx="0" cy="18" r="5" fill="${fill}"/><rect x="-3" y="-24" width="6" height="7" rx="2" fill="${fill}"/>`
+export const bell = () =>
+  `<g fill="${C.blue}"><path d="M-15 8 V-4 a15 15 0 0 1 30 0 V8 l5 6 h-40 z"/><circle cx="0" cy="18" r="5"/><rect x="-3" y="-24" width="6" height="7" rx="2"/></g>`
 
 // Un fumetto tondo con la punta in basso, centrato sul tondo
-export const bubble = (r = 44, inner = '', fill = 'w') =>
-  `<path class="${fill} o" d="M${-r * 0.3} ${r * 0.92} L0 ${r * 1.4} L${r * 0.3} ${r * 0.92} A${r} ${r} 0 1 0 ${-r * 0.3} ${r * 0.92} Z"/>${inner}`
+export const bubble = (r, inner) =>
+  `<path class="w o" d="M${-r * 0.3} ${r * 0.92} L0 ${r * 1.4} L${r * 0.3} ${r * 0.92} A${r} ${r} 0 1 0 ${-r * 0.3} ${r * 0.92} Z"/>${inner}`

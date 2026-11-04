@@ -13,7 +13,7 @@ const TAVOLE = {
 ${at(300, 1110, 1, building({ w: 470, h: 900, cols: 3, rows: 6 }))}
 ${at(950, 1110, 1, building({ w: 560, h: 720, cols: 4, rows: 4, fill: 'l' }))}
 ${street(0, 1110, 1256, 100, 310)}
-${at(560, 1160, 1, lamp({ h: 560, on: false }))}
+${at(560, 1160, 1, lamp(560))}
 ${at(860, 1160, 0.95, bench({ broken: true }))}
 ${at(1110, 1160, 0.9, bin({ full: true }))}
 ${at(700, 1360, 1, pothole(300))}
@@ -65,8 +65,8 @@ ${[1, 2, 3].map(i => `<path d="M${411 - 210 - i * 38} ${170 - i * 30} q${-i * 22
 <path d="M${411 + 210 + i * 38} ${170 - i * 30} q${i * 22} ${60 + i * 30} 0 ${120 + i * 60}" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity="${1 - i * 0.22}"/>`).join('')}
 <rect x="170" y="560" width="482" height="420" rx="36" fill="rgba(255,255,255,0.12)" stroke="#fff" stroke-width="5" stroke-dasharray="18 14"/>
 <line x1="0" y1="940" x2="822" y2="940" stroke="#fff" stroke-width="6"/>
-${at(85, 940, 0.8, house({ fill: 'l2' }), '', 'opacity="0.55"')}
-${at(737, 940, 0.8, house({ fill: 'l2' }), '', 'opacity="0.55"')}
+${at(85, 940, 0.8, house('l2'), '', 'opacity="0.55"')}
+${at(737, 940, 0.8, house('l2'), '', 'opacity="0.55"')}
 ${[260, 411, 562].map((x, i) => at(x, 940, 0.9, house()) + at(x, 680 - (i === 1 ? 30 : 0), 1, bubble(40, bell())) ).join('')}
 `),
 }

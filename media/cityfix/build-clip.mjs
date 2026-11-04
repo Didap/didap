@@ -90,7 +90,7 @@ ${bars(140, y + 30, [220, 140])}${at(450, y + 50, 1, icon('check', 36, C.green))
 ${at(264, 230, 0.75, pothole(300))}</g>
 ${chip('c1', 380, 'map-pin')}
 ${chip('c2', 500, 'road')}
-<g id="c3"><rect x="36" y="626" width="456" height="160" rx="28" fill="${C.lav}"/>${bars(70, 660, [380, 340, 220, 300].slice(0, 4))}</g>
+<g id="c3"><rect x="36" y="626" width="456" height="160" rx="28" fill="${C.lav}"/>${bars(70, 660, [380, 340, 220, 300])}</g>
 <g id="send"><rect x="36" y="850" width="456" height="104" rx="52" fill="${C.blue}"/>
 <path d="M232 902 H296 M272 878 L298 902 L272 926" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
 </g></g>
@@ -99,7 +99,7 @@ ${chip('c2', 500, 'road')}
     const svg = `<defs><clipPath id="scr"><rect width="${sw}" height="${sh}" rx="60"/></clipPath></defs>
 <rect class="w o" x="300" y="1180" width="660" height="440" rx="120"/>
 ${at(628, 1400, 1, phone({ w: 600, h: 1120, fill: 'd', screen: cam + form }))}
-<rect class="w o" x="922" y="760" width="70" height="78" rx="36"/><rect class="w o" x="922" y="852" width="70" height="78" rx="36"/><rect class="w o" x="922" y="944" width="70" height="78" rx="36"/>
+${[760, 852, 944].map(y => `<rect class="w o" x="922" y="${y}" width="70" height="78" rx="36"/>`).join('')}
 <rect class="w o" x="282" y="960" width="80" height="210" rx="40" transform="rotate(14 322 1065)"/>
 <path class="d o" d="M380 1520 L400 1420 H860 L880 1520 Z"/>
 <g id="status"><rect x="548" y="70" width="160" height="160" rx="32" fill="#fff"/>${at(579, 101, 1, statusPixels(0, 44, 10, C.blue, C.lav2, 'st'))}</g>

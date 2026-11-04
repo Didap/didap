@@ -1,8 +1,8 @@
 import { useEventListener } from '@vueuse/core'
 
 /**
- * Le pagine a schermate (la home, le schede prodotto a slide): una pila
- * di schermate alte quanto lo schermo, `[data-screen]` dentro `root`,
+ * La pagina a schermate (la home): una pila di schermate alte quanto lo
+ * schermo, `[data-screen]` dentro `root`,
  * con lo snap del browser (classe `screen-snap` su <html>, stili in
  * main.css). Restituisce la schermata in scena, quella che passa per la
  * metà dello schermo, e `motion` se il movimento è permesso.

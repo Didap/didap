@@ -7,8 +7,8 @@ import { TEAM_MEMBERS } from './shared/team'
 // diventa un video in loop muto, con `poster` come fotogramma fermo.
 // `srcMobile` e `posterMobile` sono la versione da telefono del video,
 // in verticale, sotto il breakpoint sm. `ratio` ("larghezza/altezza")
-// è la proporzione del video, per chi lo mostra intero (le slide);
-// `backdrop` il colore del suo fondo, se diverso da quello delle slide.
+// è la proporzione del video, per chi lo mostra intero (`screens`);
+// `backdrop` il colore del suo fondo, se diverso da quello di `screens`.
 const mediaSlot = z.object({
   src: z.string().optional(),
   poster: z.string().optional(),
@@ -57,18 +57,37 @@ const projectSchema = z.object({
   logo: z.string().optional(),
   // Ci hanno messo le mani: chiavi di shared/team.ts
   team: z.array(z.enum(TEAM_MEMBERS)).default([]),
-  // Scheda a slide (components/ProductScreens.vue), scritta per chi non
-  // è del mestiere: il motivo, cosa abbiamo fatto (con i passi di come
-  // funziona), la cosa difficile detta semplice (se manca vale
-  // `challenge`) e un video per ogni voce di `features.items`, nello
-  // stesso ordine. Il resto viene dai campi della scheda
+  // La scheda scritta per chi non è del mestiere (pages/work/[slug].vue):
+  // il problema, cosa abbiamo fatto (i passi di come funziona, col video
+  // che li riassume), cosa offre a chi la usa (un gruppo per cittadino,
+  // Comune e ditta, con le sue voci e i suoi video), cosa ci guadagna il
+  // Comune (`payoff`), la cosa difficile detta semplice (se manca vale
+  // `challenge`), il prezzo (`model`) e come si parte. Il resto viene dai
+  // campi della scheda
   screens: z
     .object({
       why: z.object({ title: z.string(), body: z.string() }),
-      made: z.object({ title: z.string(), body: z.string(), steps: z.array(z.string()).default([]) }),
+      made: z.object({
+        title: z.string(),
+        body: z.string(),
+        steps: z.array(z.string()).default([]),
+        media: mediaSlot.optional(),
+      }),
+      offers: z
+        .object({
+          title: z.string(),
+          groups: z.array(z.object({
+            label: z.string(),
+            title: z.string(),
+            items: z.array(z.object({ name: z.string(), desc: z.string() })),
+            media: z.array(mediaSlot).default([]),
+          })),
+        })
+        .optional(),
+      payoff: z.object({ title: z.string(), body: z.string(), media: mediaSlot.optional() }).optional(),
       challenge: z.object({ title: z.string(), body: z.string() }).optional(),
-      media: z.array(mediaSlot).default([]),
-      // Il colore di fondo dei video, intorno a loro sulle slide
+      start: z.array(z.string()).default([]),
+      // Il colore di fondo dei video, intorno a loro
       backdrop: z.string().optional(),
     })
     .optional(),

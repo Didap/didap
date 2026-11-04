@@ -21,6 +21,10 @@ const mediaSlot = z.object({
   backdrop: z.string().optional(),
 })
 
+// Un titolo col suo testo, una voce col suo nome
+const titledBody = z.object({ title: z.string(), body: z.string() })
+const namedItem = z.object({ name: z.string(), desc: z.string() })
+
 const projectSchema = z.object({
   title: z.string(),
   summary: z.string(),
@@ -45,11 +49,11 @@ const projectSchema = z.object({
   lede: z.string().optional(),
   hero: mediaSlot.optional(),
   intro: z.string().optional(),
-  challenge: z.object({ title: z.string(), body: z.string() }).optional(),
+  challenge: titledBody.optional(),
   features: z
     .object({
       title: z.string(),
-      items: z.array(z.object({ name: z.string(), desc: z.string() })),
+      items: z.array(namedItem),
     })
     .optional(),
   model: z.string().optional(),
@@ -57,19 +61,18 @@ const projectSchema = z.object({
   logo: z.string().optional(),
   // Ci hanno messo le mani: chiavi di shared/team.ts
   team: z.array(z.enum(TEAM_MEMBERS)).default([]),
-  // La scheda scritta per chi non è del mestiere (pages/work/[slug].vue):
+  // La scheda scritta per chi non è del mestiere (components/ProductPlain):
   // il problema, cosa abbiamo fatto (i passi di come funziona, col video
   // che li riassume), cosa offre a chi la usa (un gruppo per cittadino,
   // Comune e ditta, con le sue voci e i suoi video), cosa ci guadagna il
   // Comune (`payoff`), la cosa difficile detta semplice (se manca vale
   // `challenge`), il prezzo (`model`) e come si parte. Il resto viene dai
-  // campi della scheda
+  // campi della scheda. Le modifiche da /admin a `features`, `intro` e
+  // `media` qui non si vedono
   screens: z
     .object({
-      why: z.object({ title: z.string(), body: z.string() }),
-      made: z.object({
-        title: z.string(),
-        body: z.string(),
+      why: titledBody,
+      made: titledBody.extend({
         steps: z.array(z.string()).default([]),
         media: mediaSlot.optional(),
       }),
@@ -79,13 +82,13 @@ const projectSchema = z.object({
           groups: z.array(z.object({
             label: z.string(),
             title: z.string(),
-            items: z.array(z.object({ name: z.string(), desc: z.string() })),
+            items: z.array(namedItem),
             media: z.array(mediaSlot).default([]),
           })),
         })
         .optional(),
-      payoff: z.object({ title: z.string(), body: z.string(), media: mediaSlot.optional() }).optional(),
-      challenge: z.object({ title: z.string(), body: z.string() }).optional(),
+      payoff: titledBody.extend({ media: mediaSlot.optional() }).optional(),
+      challenge: titledBody.optional(),
       start: z.array(z.string()).default([]),
       // Il colore di fondo dei video, intorno a loro
       backdrop: z.string().optional(),

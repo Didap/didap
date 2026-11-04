@@ -1,6 +1,5 @@
 {
   "nav": {
-    "home": "Home",
     "work": "Prodotti",
     "projects": "Progetti",
     "clients": "Partner",
@@ -143,23 +142,19 @@
     "no_results": "Nessun progetto trovato con questi filtri."
   },
   "product": {
-    "category": "Categoria",
-    "status": "Stato",
-    "scope": "Ruolo",
-    "stack": "Stack",
-    "platform": "Piattaforma",
     "open": "Apri {host}",
     "notify": "Avvisami quando esce",
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine",
     "team": "Ci hanno messo le mani",
-    "why": "Il motivo",
+    "why": "Il problema",
     "made": "Cosa abbiamo fatto",
     "offers": "Cosa offre",
     "challenge": "La cosa difficile",
-    "model": "Il modello",
+    "model": "Quanto costa",
+    "payoff": "Per il Comune",
+    "start": "Come si parte",
     "all": "Tutti i prodotti",
-    "scroll": "Scorri per scoprire {name}",
     "roles": {
       "barbara": "Project manager",
       "william": "Sviluppatore full-stack",

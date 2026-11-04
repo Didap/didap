@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
+import ProductPlain from '~/components/ProductPlain.vue'
 import StatusPill from '~/components/StatusPill.vue'
+import { useIntersectionObserver, useMediaQuery } from '@vueuse/core'
 import { TEAM } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
@@ -9,10 +11,12 @@ import { typeset } from '#shared/typeset'
 // Le sezioni compaiono solo se il frontmatter ha i dati; i prodotti senza
 // scheda strutturata mostrano il corpo markdown al posto dei blocchi testo.
 // Sopra al markdown si applicano le modifiche fatte da /admin.
+// Con `screens` (CityFix) il corpo è quello scritto per chi non è del
+// mestiere, in components/ProductPlain.
 definePageMeta({ surface: 'cream', nav: 'product' })
 
 const route = useRoute()
-const { t } = useI18n()
+const { t, te } = useI18n()
 const localePath = useLocalePath()
 const slug = computed(() => String(route.params.slug))
 
@@ -38,6 +42,18 @@ const host = computed(() => {
   }
 })
 
+// Quando la testata esce da sotto la nav (alta 72, 97 da lg), nella nav
+// arriva il logo
+const hero = useTemplateRef('hero')
+const heroPassed = useProductHeroPassed()
+const lg = useMediaQuery('(min-width: 64rem)')
+useIntersectionObserver(
+  hero,
+  ([entry]) => { heroPassed.value = !entry?.isIntersecting },
+  { rootMargin: () => `-${lg.value ? 97 : 72}px 0px 0px 0px` },
+)
+onBeforeUnmount(() => { heroPassed.value = false })
+
 const hasStory = computed(
   () =>
     !!(
@@ -49,9 +65,14 @@ const hasStory = computed(
 )
 
 // Le immagini finiscono a filo: il blocco dopo stacca
-const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model)
+const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model && !project.value?.screens)
 
-const team = computed(() => (project.value?.team ?? []).map((key) => ({ key, ...TEAM[key] })))
+// Con `screens` sotto il nome c'è il ruolo (product.roles.<chiave>)
+const team = computed(() => (project.value?.team ?? []).map((key) => ({
+  key,
+  ...TEAM[key],
+  role: project.value?.screens && te(`product.roles.${key}`) ? t(`product.roles.${key}`) : '',
+})))
 
 useSeoMeta({
   title: () => `${project.value?.title} - Didap`,
@@ -61,121 +82,53 @@ useSeoMeta({
 
 <template>
   <article v-if="project">
-    <!-- Immagine di testata, a tutta larghezza 1440x864 -->
+    <!-- Immagine di testata, a tutta larghezza 1440x864. Con `screens`
+         più bassa: nome e frase si vedono già all'apertura -->
     <MediaSlot
+      ref="hero"
       data-preview-section="testata"
       v-if="project.hero"
       :media="{ alt: project.title, ...project.hero }"
-      class="aspect-1440/864 max-h-[90vh] w-full"
+      class="aspect-1440/864 w-full"
+      :class="project.screens ? 'max-h-[72vh]' : 'max-h-[90vh]'"
     />
 
-    <!-- Header -->
+    <!-- Header: sulla stessa griglia dei blocchi sotto. A sinistra il
+         nome e lo stato, a destra la frase e il link -->
     <header class="page-x" data-preview-section="scheda">
       <div class="
-        flex flex-col gap-6 pt-10 pb-16
-        lg:pb-20
+        grid gap-x-6 gap-y-8 pt-12 pb-16
+        lg:grid-cols-[302fr_954fr] lg:pt-16 lg:pb-20
       ">
-        <p class="text-label opacity-60">
-          <NuxtLink
-            :to="localePath('/work')"
-            class="hover:text-green"
-          >{{ t('nav.work') }}</NuxtLink>
-          <span
-            class="whitespace-pre"
-            aria-hidden="true"
-          >  /  </span>
-          <span>{{ project.title }}</span>
-        </p>
+        <div class="flex flex-col items-start gap-4">
+          <h1 class="text-hero">
+            {{ project.title }}
+          </h1>
+          <StatusPill
+            v-if="project.status"
+            :status="project.status"
+          >
+            {{ t(`home.status_${project.status}`) }}
+          </StatusPill>
+        </div>
 
-        <h1 class="
-          text-center text-display
-          lg:pb-12
-        ">
-          {{ project.title }}
-        </h1>
-
-        <div class="
-          grid gap-12
-          lg:grid-cols-[412fr_844fr] lg:gap-6
-        ">
-          <dl class="flex flex-col gap-5">
-            <div
-              v-if="project.role"
-              class="flex flex-col gap-1.5"
-            >
-              <dt class="text-label opacity-60">
-                {{ t('product.category') }}
-              </dt>
-              <dd class="text-body">
-                {{ project.role }}
-              </dd>
-            </div>
-            <div
-              v-if="project.status"
-              class="flex flex-col items-start gap-1.5"
-            >
-              <dt class="text-label opacity-60">
-                {{ t('product.status') }}
-              </dt>
-              <dd>
-                <StatusPill :status="project.status">
-                  {{ t(`home.status_${project.status}`) }}
-                </StatusPill>
-              </dd>
-            </div>
-            <div
-              v-if="project.scope"
-              class="flex flex-col gap-1.5"
-            >
-              <dt class="text-label opacity-60">
-                {{ t('product.scope') }}
-              </dt>
-              <dd class="text-body">
-                {{ typeset(project.scope) }}
-              </dd>
-            </div>
-            <div
-              v-if="project.stack"
-              class="flex flex-col gap-1.5"
-            >
-              <dt class="text-label opacity-60">
-                {{ t('product.stack') }}
-              </dt>
-              <dd class="text-body">
-                {{ typeset(project.stack) }}
-              </dd>
-            </div>
-            <div
-              v-if="project.platform"
-              class="flex flex-col gap-1.5"
-            >
-              <dt class="text-label opacity-60">
-                {{ t('product.platform') }}
-              </dt>
-              <dd class="text-body">
-                {{ typeset(project.platform) }}
-              </dd>
-            </div>
-          </dl>
-
-          <div class="flex flex-col items-start gap-8">
-            <p class="text-title">
-              {{ typeset(project.lede || project.summary) }}
-            </p>
-            <DidapButton
-              v-if="project.url"
-              :href="project.url"
-            >
-              {{ t('product.open', { host }) }}
-            </DidapButton>
-            <!-- Prodotto non ancora uscito: la richiesta passa dai contatti -->
-            <DidapButton
-              v-else-if="project.notify"
-              :to="localePath({ path: '/contact', query: { product: project.title } })"
-            >
-              {{ t('product.notify') }}
-            </DidapButton>
-          </div>
+        <div class="flex flex-col items-start gap-8">
+          <p class="text-title">
+            {{ typeset(project.lede || project.summary) }}
+          </p>
+          <DidapButton
+            v-if="project.url"
+            :href="project.url"
+          >
+            {{ t('product.open', { host }) }}
+          </DidapButton>
+          <!-- Prodotto non ancora uscito: la richiesta passa dai contatti -->
+          <DidapButton
+            v-else-if="project.notify"
+            :to="localePath({ path: '/contact', query: { product: project.title } })"
+          >
+            {{ t('product.notify') }}
+          </DidapButton>
         </div>
       </div>
     </header>
@@ -183,7 +136,7 @@ useSeoMeta({
     <!-- Immagini · due affiancate -->
     <section
       data-preview-section="prodotto"
-      v-if="project.media?.pair?.length"
+      v-if="project.media?.pair?.length && !project.screens"
       class="page-x"
     >
       <div class="
@@ -199,7 +152,17 @@ useSeoMeta({
       </div>
     </section>
 
-    <template v-if="hasStory">
+    <!-- Scheda scritta semplice (components/ProductPlain) -->
+    <ProductPlain
+      v-if="project.screens"
+      :screens="project.screens"
+      :challenge="project.challenge"
+      :model="project.model"
+      :url="project.url"
+      :host="host"
+    />
+
+    <template v-else-if="hasStory">
       <!-- Testo · Il prodotto -->
       <section
         data-preview-section="prodotto"
@@ -387,8 +350,12 @@ useSeoMeta({
                   :class="m.width"
                 >
               </div>
-              <p class="text-body">
-                {{ m.name }}
+              <p class="grid gap-0.5">
+                <span class="text-body">{{ m.name }}</span>
+                <span
+                  v-if="m.role"
+                  class="text-label opacity-60"
+                >{{ m.role }}</span>
               </p>
             </li>
           </ul>

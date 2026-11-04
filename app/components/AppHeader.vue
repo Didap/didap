@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
-import SiteMenu from '~/components/SiteMenu.vue'
 
 // Componente "Nav" del Figma: Didi (la testa tonda, senza la D) a
 // sinistra, link Semibold 13 maiuscoli a 45 di distanza, CTA a destra.
 // Niente selettore di lingua: la sceglie il browser. Alto 97. Variante
-// `product` (scheda prodotto): SiteMenu a sinistra, niente voci, logo
-// del prodotto al posto della CTA.
+// `product` (scheda prodotto): al posto della CTA il logo del prodotto
+// (o il suo nome), che porta al prodotto e compare quando la testata
+// della scheda esce dallo schermo.
 // Didi lascia la nav per DidiGuide e ci ricade dall'alto quando torna.
 const props = defineProps<{ cream?: boolean; product?: boolean }>()
 
@@ -25,7 +25,10 @@ const productSlug = computed(() =>
   props.product ? String(route.params.slug ?? '') : '',
 )
 const { project: productNav } = await useProductPage(productSlug)
-const showProduct = computed(() => props.product && productNav.value)
+const showProduct = computed(() => props.product && productNav.value?.url)
+// Il logo arriva quando la testata della scheda esce dallo schermo
+const heroPassed = useProductHeroPassed()
+const productAway = computed(() => !!productNav.value?.hero && !heroPassed.value)
 
 const menuOpen = ref(false)
 watch(
@@ -51,18 +54,7 @@ function closeMenuOnLink(e: MouseEvent) {
         lg:h-[97px] lg:grid-cols-[1fr_auto_1fr]
       "
     >
-      <!-- Scheda prodotto: il menu, che si allunga sopra la pagina -->
-      <div
-        v-if="product"
-        class="relative h-[52px] w-[228px]"
-      >
-        <SiteMenu
-          :label="productNav?.title ?? t('nav.work')"
-          class="absolute top-0 left-0"
-        />
-      </div>
       <NuxtLink
-        v-else
         :to="localePath('/')"
         class="block"
         :class="{ invisible: didiAway }"
@@ -82,12 +74,7 @@ function closeMenuOnLink(e: MouseEvent) {
         >
       </NuxtLink>
 
-      <span
-        v-if="product"
-        aria-hidden="true"
-      />
       <nav
-        v-else
         class="
           hidden items-center gap-[45px]
           lg:flex
@@ -109,34 +96,36 @@ function closeMenuOnLink(e: MouseEvent) {
       </nav>
 
       <div class="flex items-center justify-end gap-6">
-        <template v-if="product">
-          <template v-if="showProduct">
-            <a
-              v-if="productNav!.logo"
-              :href="productNav!.url"
-              target="_blank"
-              rel="noopener"
-              class="block"
-              :aria-label="t('nav.open_product', { name: productNav!.title })"
+        <div
+          v-if="showProduct"
+          class="transition-[opacity,visibility] duration-300"
+          :class="{ 'invisible opacity-0': productAway }"
+        >
+          <a
+            v-if="productNav!.logo"
+            :href="productNav!.url"
+            target="_blank"
+            rel="noopener"
+            class="block"
+            :aria-label="t('nav.open_product', { name: productNav!.title })"
+          >
+            <img
+              :src="productNav!.logo"
+              :alt="productNav!.title"
+              class="
+                h-8 w-auto max-w-[180px] object-contain
+                lg:h-10
+              "
             >
-              <img
-                :src="productNav!.logo"
-                :alt="productNav!.title"
-                class="
-                  h-10 w-auto max-w-[180px] object-contain
-                  lg:h-[49px]
-                "
-              >
-            </a>
-            <DidapButton
-              v-else-if="productNav!.url"
-              :href="productNav!.url"
-              medium
-            >
-              {{ productNav!.title }}
-            </DidapButton>
-          </template>
-        </template>
+          </a>
+          <DidapButton
+            v-else
+            :href="productNav!.url"
+            medium
+          >
+            {{ productNav!.title }}
+          </DidapButton>
+        </div>
         <span
           v-else
           class="
@@ -152,7 +141,6 @@ function closeMenuOnLink(e: MouseEvent) {
           </DidapButton>
         </span>
         <button
-          v-if="!product"
           type="button"
           class="
             -mr-2 flex size-10 items-center justify-center
@@ -184,7 +172,6 @@ function closeMenuOnLink(e: MouseEvent) {
     </div>
 
     <div
-      v-if="!product"
       v-show="menuOpen"
       id="mobile-menu"
       class="

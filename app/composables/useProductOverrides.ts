@@ -33,6 +33,12 @@ export const useProductPreview = () =>
   )
 
 /**
+ * La testata della scheda prodotto è uscita dallo schermo: fino ad allora
+ * la nav non mostra il logo del prodotto, che sta già nella testata.
+ */
+export const useProductHeroPassed = () => useState('product-hero-passed', () => false)
+
+/**
  * Prodotto (markdown + modifiche admin) per slug. Usato dalla scheda e
  * dalla nav: stesse chiavi, quindi i dati si caricano una volta sola.
  * Con slug vuoto non interroga nulla.

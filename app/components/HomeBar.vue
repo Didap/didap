@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import SiteMenu from '~/components/SiteMenu.vue'
-
 // La barra della home a schermate: Didi a sinistra, "Lavoriamo insieme"
 // a destra, senza fondo sopra le schermate. Sull'apertura non c'è
 // (`shown` falso): sale via e torna con la prima schermata. `light` quando
@@ -8,12 +6,10 @@ import SiteMenu from '~/components/SiteMenu.vue'
 // e un alone di carta che stacca Didi dal video scuro. Didi è quella
 // della nav: DidiGuide la porta via e la rimette qui. `glow` tiene
 // l'alone anche col testo ink, se Didi e il testo stanno su fondi diversi.
-// Con `menu` (le schede prodotto) al posto di Didi c'è SiteMenu, col
-// nome della pagina. "Lavoriamo insieme" porta alla chiusura rossa della
-// home (sulla home con la corsa di useScreens) e sparisce quando la
-// chiusura è in scena (`cta` falso).
+// "Lavoriamo insieme" porta alla chiusura rossa della home (con la corsa
+// di useScreens) e sparisce quando la chiusura è in scena (`cta` falso).
 const props = withDefaults(
-  defineProps<{ shown: boolean, light: boolean, glow?: boolean, menu?: string, cta?: boolean }>(),
+  defineProps<{ shown: boolean, light: boolean, glow?: boolean, cta?: boolean }>(),
   { cta: true },
 )
 const halo = computed(() => props.glow ?? !props.light)
@@ -38,18 +34,7 @@ const didiAway = useDidiAway()
       shown ? '' : 'invisible -translate-y-full opacity-0',
     ]"
   >
-    <!-- Il menu si allunga verso il basso sopra la pagina, dall'alto fermo -->
-    <div
-      v-if="menu"
-      class="relative h-[52px] w-[228px]"
-    >
-      <SiteMenu
-        :label="menu"
-        class="absolute top-0 left-0"
-      />
-    </div>
     <NuxtLink
-      v-else
       :to="localePath('/')"
       class="block"
       :class="{ invisible: didiAway }"
@@ -72,10 +57,9 @@ const didiAway = useDidiAway()
       >
     </NuxtLink>
 
-    <!-- Col menu, su telefono basta la sua voce Lavora con noi -->
     <NuxtLink
       :to="ctaPath"
-      :class="[{ 'max-sm:hidden': menu }, cta ? '' : 'invisible opacity-0']"
+      :class="cta ? '' : 'invisible opacity-0'"
       class="
         border-b-[1.5px] border-current py-2.5 text-button leading-none
         transition-[opacity,visibility] duration-300

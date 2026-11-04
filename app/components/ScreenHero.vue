@@ -3,10 +3,10 @@ import type { MediaSlotData } from '~/components/MediaSlot.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import ScreenVeil from '~/components/ScreenVeil.vue'
 
-// Una schermata con il video di testata a tutto schermo (la home, la
-// scheda a slide): in basso, sul velo, il nome e la frase a sinistra e
-// le azioni (slot) a destra. In verticale il video sta in alto, dietro
-// il suo poster sfocato. `shade`: un'ombra in alto per la barra, sui
+// Una schermata con il video di testata a tutto schermo (la home): in
+// basso, sul velo, il nome e la frase a sinistra e le azioni (slot) a
+// destra. In verticale il video sta in alto, dietro il suo poster
+// sfocato. `shade`: un'ombra in alto per la barra, sui
 // video chiari in cima. Va dentro una <section class="screen">.
 defineProps<{
   media: MediaSlotData

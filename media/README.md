@@ -55,8 +55,10 @@ stanno in `media/cityfix/kit.mjs` e servono sia alle tavole ferme sia ai clip:
 ## Da fare (28 ottobre 2026)
 
 - Versioni da telefono mancanti: Bin or Deal `ricerca` (wide), `verdi` (feature[0]) e i tre
-  triple; CityFix `giro` (wide). Senza, sul telefono parte il video da desktop.
-- CityFix: i dati della mappa vengono da OpenStreetMap ma nei clip non c'è il credito.
+  triple. Senza, sul telefono parte il video da desktop.
+- CityFix: i dati della mappa dell'hero vengono da OpenStreetMap ma nel clip non c'è il credito.
+- CityFix: sul telefono le schermate da computer (wide e feature[0]) restano piccole; MediaSlot
+  non ha una versione da telefono per le immagini ferme.
 - Bin or Deal: lo stack in pagina viene dal codice (Next.js, Hono, PostgreSQL, Playwright);
   il vecchio corpo markdown dice ancora Clerk, Neon e Upstash.
 - Cruciverba Lab: i testi dicono dieci giochi al giorno (il sito ne ha dieci) e che l'account

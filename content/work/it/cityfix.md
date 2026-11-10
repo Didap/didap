@@ -52,7 +52,7 @@ media:
       alt: Il logo di CityFix
     - src: /covers/cityfix-punto1.mp4
       poster: /covers/cityfix-punto1-poster.webp
-      alt: "La chat dell'app CityFix: Giulia scrive via Appia 42, scatta la foto della buca, l'app le propone una segnalazione simile a 30 metri e lei la sostiene"
+      alt: "Un telefono con la chat dell'app CityFix: Giulia scrive via Appia 42, scatta la foto della buca, l'app le propone una segnalazione simile a 30 metri e lei la sostiene"
   wide:
     src: /covers/cityfix-punto2.mp4
     poster: /covers/cityfix-punto2-poster.webp
@@ -67,7 +67,7 @@ media:
       alt: "Il resoconto dell'anno: i numeri salgono fino a 412 problemi risolti, 87% nei tempi, 6 giorni in media e 1.240 cittadini attivi, poi crescono le barre dei mesi. Dati di esempio"
     - src: /covers/cityfix-punto3.mp4
       poster: /covers/cityfix-punto3-poster.webp
-      alt: "La mappa della città: la buca di via Appia diventa verde, il contatore dei problemi risolti sale, a chi l'ha segnalata arrivano 25 punti e poi le altre segnalazioni si chiudono una dopo l'altra"
+      alt: "Un telefono con la mappa della città: la buca di via Appia diventa verde, il contatore dei problemi risolti sale, a chi l'ha segnalata arrivano 25 punti e poi le altre segnalazioni si chiudono una dopo l'altra"
   triple:
     - src: /covers/cityfix-post-buca.webp
       alt: "Post Instagram: «Una città non è mai finita.» Foto di una buca in via Fulvia, segnalata su CityFix"

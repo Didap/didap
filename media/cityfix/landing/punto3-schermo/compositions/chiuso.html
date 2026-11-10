@@ -59,7 +59,7 @@
       position: absolute;
       inset: 0;
       width: 1080px;
-      height: 2012px;
+      height: 2330px;
     }
     .water-edge {
       fill: none;
@@ -182,7 +182,7 @@
     #callout {
       position: absolute;
       left: 390px;
-      top: 540px;
+      top: 74px;
       width: 400px;
       padding: 24px 28px 26px;
       background: var(--white);
@@ -260,11 +260,56 @@
     .px .e { background: #dddbfb; }
     .px .c { background: var(--green); }
 
+    #world-ui {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1080px;
+    }
+
+    /* Barra di stato (sfuma sulla mappa) e indicatore home, punti dello schermo x 2.77 */
+    #status {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 190px;
+      padding: 24px 88px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(var(--white) 150px, rgb(254 254 255 / 0));
+      font-family: "Urbanist", sans-serif;
+      font-weight: 600;
+      font-size: 44px;
+      color: var(--ink);
+    }
+    .bars {
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+    }
+    .bars i {
+      width: 8px;
+      border-radius: 2px;
+      background: var(--ink);
+    }
+    #home {
+      position: absolute;
+      left: 50%;
+      bottom: 22px;
+      width: 370px;
+      height: 14px;
+      margin-left: -185px;
+      border-radius: 7px;
+      background: var(--ink);
+    }
+
     /* "Problemi risolti" counter */
     #counter {
       position: absolute;
       left: 48px;
-      top: 48px;
+      top: 198px;
       padding: 22px 30px 22px 26px;
       background: var(--white);
       border-radius: 24px;
@@ -303,7 +348,7 @@
       position: absolute;
       left: 48px;
       right: 48px;
-      bottom: 40px;
+      bottom: 114px;
       padding: 18px 40px 34px;
       background: var(--white);
       border-radius: 36px;
@@ -411,10 +456,10 @@
     .seg.lit i { opacity: 1; }
   </style>
 
-  <div id="root" data-composition-id="chiuso" data-width="1080" data-height="2012" data-layout-allow-overlap>
+  <div id="root" data-composition-id="chiuso" data-width="1080" data-height="2330" data-layout-allow-overlap>
     <!-- Stylised city in the app's basemap palette. World coordinates, turned -9°
          around the centre so the street grid does not read as a spreadsheet. -->
-    <svg id="map" viewBox="0 -466 1080 2012" aria-hidden="true" data-layout-allow-overflow data-layout-allow-occlusion>
+    <svg id="map" viewBox="0 0 1080 1080" aria-hidden="true" data-layout-allow-overflow data-layout-allow-occlusion>
       <g id="world" transform="rotate(-9 540 540)">
         <!-- River -->
         <path class="water-edge" d="M -320 830 C -20 750, 280 905, 600 835 S 1120 760, 1420 850" />
@@ -435,6 +480,8 @@
     <div id="pattern"></div>
 
     <div id="ui">
+      <!-- Pin e scheda stanno sul mondo, che nello schermo del telefono scende di SHIFT -->
+      <div id="world-ui">
       <!-- Seven other reports in the city -->
       <div class="pin pin-other" id="pin-d" data-wx="720" data-wy="580" data-glyph="building" style="--s: 2.5"></div>
       <div class="pin pin-other" id="pin-c" data-wx="330" data-wy="700" data-glyph="trash" style="--s: 2.5"></div>
@@ -468,6 +515,8 @@
             ><span class="px"><i class="c"></i><i class="c"></i><i class="c"></i><i class="c"></i></span>Completata</span
           >
         </div>
+      </div>
+
       </div>
 
       <div id="counter">
@@ -514,6 +563,13 @@
         </div>
       </div>
     </section>
+
+    <!-- Barra di stato e indicatore home del telefono -->
+    <div id="status">
+      <span>9:41</span>
+      <span class="bars"><i style="height: 11px"></i><i style="height: 17px"></i><i style="height: 22px"></i><i style="height: 28px"></i></span>
+    </div>
+    <div id="home"></div>
   </div>
 
   <script>
@@ -539,10 +595,18 @@
       const root = document.querySelector('[data-composition-id="chiuso"]');
       const $ = (sel) => root.querySelector(sel);
 
+      // Lo schermo del telefono è più alto del quadrato della landing: il mondo (mappa, pin,
+      // scheda) scende di SHIFT, contatore e notifica restano ai bordi dello schermo.
+      const H_SCREEN = 2330;
+      const SHIFT = (H_SCREEN - 1080) / 2;
+      $("#map").setAttribute("viewBox", `0 ${-SHIFT} 1080 ${H_SCREEN}`);
+      $("#world-ui").style.top = SHIFT + "px";
+
       // ── Basemap: streets on a grid in world coordinates ──
       const RIVER_TOP = 748; // blocks above the river stop here
       const RIVER_BOTTOM = 918; // and start again here
       const H = [
+        { y: -720, k: "minor" },
         { y: -560, k: "minor" },
         { y: -400, k: "minor" },
         { y: -230, k: "minor" },
@@ -557,6 +621,7 @@
         { y: 1480, k: "minor" },
         { y: 1640, k: "minor" },
         { y: 1800, k: "minor" },
+        { y: 1960, k: "minor" },
       ];
       const V = [
         { x: -60, k: "minor" },
@@ -667,7 +732,7 @@
       root.querySelectorAll(".pin").forEach((pin) => {
         const [sx, sy] = toScreen(+pin.dataset.wx, +pin.dataset.wy);
         pin.style.left = sx.toFixed(1) + "px";
-        pin.style.top = (sy + 466).toFixed(1) + "px"; // il mondo scende di 466 nello slot alto
+        pin.style.top = sy.toFixed(1) + "px";
         const body = document.createElement("div");
         body.className = "pin-body";
         body.id = pin.id + "-body";
@@ -728,7 +793,7 @@
       gsap.set("#notif", { y: 600 });
       gsap.set(["#pt-reporter", "#pt-supporters"], { opacity: 0, y: 14 });
 
-      // 0 → 1.3 - opening: the map, seven red reports, the chosen one selected.
+      // 0 → 1.3 - opening: the map, eleven red reports, the chosen one selected.
 
       // 1.3 - HERO: Buca in strada turns green, a calm check replaces the glyph.
       const F = "#pin-focal";

@@ -311,8 +311,9 @@
       // ~5.85 - December value
       tl.to("#bar-tag", { opacity: 1, duration: 0.3, ease }, T_TAG);
 
-      // Hold the full report until 9.0 - identical to frame 0.
-      tl.set({}, {}, 10); // un secondo in più sul resoconto pieno: il clip dura 10 s come gli altri
+      // Hold the full report until 10.0 (a second more than the landing, like the other
+      // clips of the page) - identical to frame 0.
+      tl.set({}, {}, 10);
 
       tl.eventCallback("onUpdate", () => renderCounters(tl.time()));
       window.addEventListener("hf-seek", (e) => renderCounters(e.detail.time));

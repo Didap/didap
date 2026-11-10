@@ -52,7 +52,7 @@ media:
       alt: The CityFix logo
     - src: /covers/cityfix-punto1.mp4
       poster: /covers/cityfix-punto1-poster.webp
-      alt: "The CityFix app chat: Giulia types via Appia 42, takes a photo of the pothole, the app suggests a similar report 30 metres away and she backs it"
+      alt: "A phone showing the CityFix app chat: Giulia types via Appia 42, takes a photo of the pothole, the app suggests a similar report 30 metres away and she backs it"
   wide:
     src: /covers/cityfix-punto2.mp4
     poster: /covers/cityfix-punto2-poster.webp
@@ -67,7 +67,7 @@ media:
       alt: "The year in numbers: the figures climb to 412 problems solved, 87% on time, 6 days on average and 1,240 active citizens, then the monthly bars grow. Sample data"
     - src: /covers/cityfix-punto3.mp4
       poster: /covers/cityfix-punto3-poster.webp
-      alt: "The city map: the pothole in via Appia turns green, the solved counter goes up, whoever reported it earns 25 points, then the other reports close one after another"
+      alt: "A phone showing the city map: the pothole in via Appia turns green, the solved counter goes up, whoever reported it earns 25 points, then the other reports close one after another"
   triple:
     - src: /covers/cityfix-post-buca.webp
       alt: "Instagram post: 'A city is never finished.' Photo of a pothole in via Fulvia, reported on CityFix"

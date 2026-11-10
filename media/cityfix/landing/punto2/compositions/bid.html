@@ -464,6 +464,7 @@
       const main = gsap.timeline({ paused: true });
       const tl = gsap.timeline();
       const T0 = 6.4;
+      const FADE = 12.8; // come in desk.html: le due scene sfumano insieme
       const END = 13.7;
       const E = 'power3.out'; // DESIGN.md cubic-bezier(0.22, 1, 0.36, 1)
       const NI = { immediateRender: false };
@@ -480,10 +481,6 @@
         '#bid-photo-1', '#bid-photo-2', '#bid-photo-3',
         '#bid-tag-1', '#bid-tag-2', '#bid-tag-3',
       ];
-      tl.set(shown, { opacity: 1, y: 0 }, 0);
-      tl.set(hidden, { opacity: 0, y: 0, scale: 1 }, 0);
-      tl.set(['#bid-fill-1', '#bid-fill-2', '#bid-fill-3'], { scaleX: 0 }, 0);
-      tl.set('#bid-btn', { backgroundColor: GREEN, scale: 1 }, 0);
 
       function show(sel, t) {
         tl.fromTo(sel, { opacity: 0 }, { opacity: 1, duration: 0.001, ...NI }, t);
@@ -509,7 +506,6 @@
         tl.fromTo('#bid-btn', { backgroundColor: fromBg }, { backgroundColor: toBg, duration: 0.2, ease: 'power2.inOut', ...NI }, t + 0.04);
         tl.fromTo(inSel, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.32, ease: E, ...NI }, t + 0.22);
       }
-
 
       // 1. The comune's choice lands: Assegnata a te (1.05)
       tl.fromTo('#bid-chip-a', { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4, ease: E, ...NI }, 1.05);
@@ -545,11 +541,11 @@
         main.set('#bid-btn', { backgroundColor: GREEN, scale: 1 }, t);
       };
       baseline(0);
-      main.set('#bid-screen', { x: 0, opacity: 1 }, 0);
+      main.set('#bid-screen', { opacity: 1 }, 0);
       main.add(tl, T0);
-      main.to('#bid-screen', { opacity: 0, duration: 0.3, ease: 'power2.in' }, END - 0.9);
-      baseline(END - 0.55);
-      main.to('#bid-screen', { opacity: 1, duration: 0.4, ease: E }, END - 0.5);
+      main.to('#bid-screen', { opacity: 0, duration: 0.3, ease: 'power2.in' }, FADE);
+      baseline(FADE + 0.35);
+      main.to('#bid-screen', { opacity: 1, duration: 0.4, ease: E }, FADE + 0.4);
       main.set({}, {}, END);
 
       window.__timelines['bid'] = main;

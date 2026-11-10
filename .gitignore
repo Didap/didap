@@ -36,6 +36,7 @@ logs
 
 # Illustrazioni di CityFix: font, foto e scene copiate dalla landing (media/cityfix/landing/sync.mjs)
 /media/cityfix/landing/*/assets/
+/media/cityfix/landing/telefono.png
 /media/cityfix/landing/punto2-mobile/compositions/
 /media/cityfix/landing/resoconto-mobile/compositions/
 /media/cityfix/landing/*/.hyperframes/

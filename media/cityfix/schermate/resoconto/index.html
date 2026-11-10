@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1696, height=1520" />
+    <!-- Generato da media/cityfix/schermate/build.mjs -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1696px; height: 1520px; overflow: hidden; background: #2B1CE8; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+      #fondo, #telefono { position: absolute; inset: 0; width: 100%; height: 100%; }
+      #schermo { position: absolute; overflow: hidden; background: #fefeff; }
+      #pagina { position: absolute; left: 0; width: 100%; }
+      #pagina img { position: absolute; left: 0; width: 100%; }
+      #clip { position: absolute; object-fit: cover; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="resoconto" data-start="0" data-duration="9" data-width="1696" data-height="1520">
+
+      <img id="fondo" class="clip" data-start="0" data-duration="9" data-track-index="0" src="assets/fondo.png" alt="">
+      <div id="schermo" data-layout-allow-overflow data-layout-allow-overlap style="left:278.19px;top:556.04px;width:534.44px;height:534.44px;border-radius:24.67px">
+        <video id="clip" class="clip" data-start="0" data-duration="9" data-track-index="1" src="assets/clip.mp4" muted playsinline
+          style="inset:0;width:100%;height:100%"></video>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true })
+      tl.set({}, {}, 9)
+      window.__timelines['resoconto'] = tl
+    </script>
+  </body>
+</html>

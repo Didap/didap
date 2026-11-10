@@ -50,16 +50,20 @@ media:
   pair:
     - src: /covers/cityfix-logo.svg
       alt: The CityFix logo
-    - src: /covers/cityfix-punto1.webp
-      alt: "The CityFix landing page on a phone, at the citizen's step: in the chat they send the photo of the pothole and back a similar report 30 metres away"
+    - src: /covers/cityfix-punto1.mp4
+      poster: /covers/cityfix-punto1-poster.webp
+      alt: "The CityFix landing page on a phone, at the citizen's step: the page scrolls down to the chat, where the citizen gives via Appia 42, sends the photo of the pothole and backs a similar report 30 metres away"
   wide:
-    src: /covers/cityfix-punto2.webp
-    alt: "The CityFix landing page on a computer, at the municipality and contractor step: the technical office assigns the pothole in via Appia 42 to Edilstrade Rossi, high priority, 480 euros and 3 days"
+    src: /covers/cityfix-punto2.mp4
+    poster: /covers/cityfix-punto2-poster.webp
+    alt: "The CityFix landing page on a computer, at the municipality and contractor step: the technical office assigns the pothole in via Appia 42 to Edilstrade Rossi, high priority, 480 euros and 3 days, and the contractor uploads the photos of the finished work"
   feature:
-    - src: /covers/cityfix-resoconto.webp
-      alt: "The yearly report on the CityFix landing page, on a computer: 412 problems solved, 87% on time, 6 days on average, 1,240 active citizens and the problems solved month by month. Sample data"
-    - src: /covers/cityfix-punto3.webp
-      alt: "The CityFix landing page on a phone, at the city's step: on the map the pothole in via Appia turns green and whoever reported it earns 25 points"
+    - src: /covers/cityfix-resoconto.mp4
+      poster: /covers/cityfix-resoconto-poster.webp
+      alt: "The yearly report on the CityFix landing page, on a computer: the numbers climb to 412 problems solved, 87% on time, 6 days on average and 1,240 active citizens, and the monthly bars grow. Sample data"
+    - src: /covers/cityfix-punto3.mp4
+      poster: /covers/cityfix-punto3-poster.webp
+      alt: "The CityFix landing page on a phone, at the city's step: the page scrolls down to the map, the pothole in via Appia turns green and whoever reported it earns 25 points"
   triple:
     - src: /covers/cityfix-post-buca.webp
       alt: "Instagram post: 'A city is never finished.' Photo of a pothole in via Fulvia, reported on CityFix"

@@ -27,17 +27,22 @@ Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
 
 ## CityFix: le schermate della landing
 
-La scheda di CityFix mostra la landing (repo `cityfix-landing`): il passo 1 e il passo 3 dal
-telefono, il passo 2 e il resoconto dal computer, e i post Instagram della landing nel triple.
-Le schermate stanno in una cornice sul blu di CityFix: per il telefono l'iPhone 17 Pro del
-mockup `9052-01-iphone-17-pro-mockup.psd`, per il computer una finestra del browser.
+La scheda di CityFix mostra la landing (repo `cityfix-landing`) in clip HyperFrames: il passo 1
+e il passo 3 dal telefono, il passo 2 e il resoconto dal computer, e i post Instagram della
+landing fermi nel triple. Le schermate stanno in una cornice sul blu di CityFix: per il telefono
+l'iPhone 17 Pro del mockup `9052-01-iphone-17-pro-mockup.psd`, per il computer una finestra del
+browser. Dentro gira il clip della landing; sul telefono la pagina scende dal titolo al clip, lo
+lascia girare e torna su.
 
 - `python media/cityfix/schermate/telefono.py <psd>` ricava la cornice del telefono
   (`telefono.png`, fuori dal repo perché il mockup ha una licenza) e dove sta lo schermo
   (`telefono.json`). Serve `psd-tools[composite]`.
 - Con la landing accesa in locale (`npm run dev` in `cityfix-landing`),
-  `node media/cityfix/schermate/build.mjs` scrive `cityfix-punto1`, `cityfix-punto3`
-  (pair e feature[1]), `cityfix-punto2` (wide) e `cityfix-resoconto` (feature[0]) in WebP.
+  `node media/cityfix/schermate/build.mjs` scrive i progetti `punto1`, `punto3` (pair e
+  feature[1]), `punto2` (wide) e `resoconto` (feature[0]) in `media/cityfix/schermate/`, con
+  le schermate in `assets/` (fuori dal repo, rigenerate dallo script). Stampa a che secondo
+  prendere il poster di ciascuno.
+- Poi check, render e codifica come sopra, in `public/covers/cityfix-<clip>.mp4`.
 - I post (`cityfix-post-*.webp`) vengono da `public/social/` della landing, ritagliati alla
   misura del triple (822x1080).
 
@@ -51,8 +56,8 @@ Prima delle schermate la scheda parlava coi disegni: le sorgenti restano in `med
 - Versioni da telefono mancanti: Bin or Deal `ricerca` (wide), `verdi` (feature[0]) e i tre
   triple. Senza, sul telefono parte il video da desktop.
 - CityFix: i dati della mappa dell'hero vengono da OpenStreetMap ma nel clip non c'è il credito.
-- CityFix: sul telefono le schermate da computer (wide e feature[0]) restano piccole; MediaSlot
-  non ha una versione da telefono per le immagini ferme.
+- CityFix: sul telefono i clip da computer (`punto2` e `resoconto`) restano piccoli, manca una
+  versione da telefono.
 - Bin or Deal: lo stack in pagina viene dal codice (Next.js, Hono, PostgreSQL, Playwright);
   il vecchio corpo markdown dice ancora Clerk, Neon e Upstash.
 - Cruciverba Lab: i testi dicono dieci giochi al giorno (il sito ne ha dieci) e che l'account

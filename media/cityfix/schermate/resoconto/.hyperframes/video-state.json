@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "historyId": "b7501826-81b1-42ec-aa41-776f1b214a9d",
+  "currentRevision": "3814f087-ca18-444a-aaaf-079e89005064",
+  "pendingChanges": false,
+  "files": {
+    "assets/clip.mp4": {
+      "hash": "f48fc5be8b2da214ea9b7a12b54cd4df4c761cdc90f3168da078e4d4e9a31dbb",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\f4\\f48fc5be8b2da214ea9b7a12b54cd4df4c761cdc90f3168da078e4d4e9a31dbb"
+    },
+    "assets/fondo.png": {
+      "hash": "a9d0bcef98005be612663622d3e207330ddcebca9e6b4e1d77a5a30e00256174",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\a9\\a9d0bcef98005be612663622d3e207330ddcebca9e6b4e1d77a5a30e00256174"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "045c1d65dad2c7a9ff802cf2ee3a33e3bff5638b6325f6d9af91b6c1aa4ef7cd",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\04\\045c1d65dad2c7a9ff802cf2ee3a33e3bff5638b6325f6d9af91b6c1aa4ef7cd"
+    },
+    "meta.json": {
+      "hash": "f4e44d901bf19164f18d706c876b386f6a04126c2a2d21e747ab855268df0519",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\f4\\f4e44d901bf19164f18d706c876b386f6a04126c2a2d21e747ab855268df0519"
+    }
+  },
+  "revisions": {
+    "6f9a6750-d342-44a6-b7b2-9245f21584e7": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1794311989819,
+      "endedAt": 1794311989821,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\e9\\e90e8493b9cd4ac79adf92dbc1be974f1c26898d28b835107953a6e0967ed15f",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\04\\045c1d65dad2c7a9ff802cf2ee3a33e3bff5638b6325f6d9af91b6c1aa4ef7cd"
+        }
+      }
+    },
+    "3814f087-ca18-444a-aaaf-079e89005064": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1794312060565,
+      "endedAt": 1794312060571,
+      "files": {
+        "assets/fondo.png": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\02\\02ddca15e1722dd725096f0f323ffd1d75806c9dd722a4513b48bc0ab2a1ee96",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\b7501826-81b1-42ec-aa41-776f1b214a9d\\blobs\\a9\\a9d0bcef98005be612663622d3e207330ddcebca9e6b4e1d77a5a30e00256174"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "ec84d05a-418f-42ec-abd6-6eefe41ab7f0"
+    },
+    "revisions": {
+      "6f9a6750-d342-44a6-b7b2-9245f21584e7": [
+        {
+          "id": "c71bc3e3-6a9b-4f4b-8cc2-99bbe8e0fcc0",
+          "scope": "project",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1794311993870,
+          "contentHash": "4938fa8faa999e6fbbc10c165e281f953fde047ba012610f0083c1d3a6e8a820",
+          "revision": "6f9a6750-d342-44a6-b7b2-9245f21584e7",
+          "inputFingerprint": "302e2ece8d8c8a85a9f49c2804dabf1dcfa6099e5231e0ee19561c2c23d2ab69",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "c958931e-d664-4b98-87ce-afb1e0d8d78c"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "ec84d05a-418f-42ec-abd6-6eefe41ab7f0",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\schermate\\resoconto\\.hyperframes\\artifacts\\checks\\ec84d05a-418f-42ec-abd6-6eefe41ab7f0.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": true,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1794311932633,
+        "contentHash": "109f44e224e352b46728b5017944d3ba200c0695e6b364729f7085a52a8a17ac",
+        "revision": null,
+        "inputFingerprint": "7d3c1e0894688e2e91aaf04ffc1b2c85bf3fbf5c590e89e19cbeb7ec6a5ff8e6",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "3814f087-ca18-444a-aaaf-079e89005064",
+      "id": "3008cb9c-8ec9-4651-9a34-9a73968f71cc-2"
+    },
+    "revisions": {
+      "3814f087-ca18-444a-aaaf-079e89005064": [
+        {
+          "scope": "full",
+          "id": "3008cb9c-8ec9-4651-9a34-9a73968f71cc-0",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap\\resoconto\\frame-00-at-0.2s.png",
+          "time": 0.2,
+          "metadata": {
+            "width": 1696,
+            "height": 1520,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794312062940,
+          "contentHash": "20636e3f5801788c13086d41f3a46815ba02db1f3ff52f063127af92703286fe",
+          "revision": "3814f087-ca18-444a-aaaf-079e89005064",
+          "inputFingerprint": "c88c4aaa5ecd29b686cd62c3a2140769c9b91a0e5b26d8429e82e7fcc80461fa",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "3008cb9c-8ec9-4651-9a34-9a73968f71cc-1",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap\\resoconto\\frame-01-at-3s.png",
+          "time": 3,
+          "metadata": {
+            "width": 1696,
+            "height": 1520,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794312062940,
+          "contentHash": "0c0b9a330a404de8f5294b46e33940c263cf2c971fe6300656def934b868ca58",
+          "revision": "3814f087-ca18-444a-aaaf-079e89005064",
+          "inputFingerprint": "c88c4aaa5ecd29b686cd62c3a2140769c9b91a0e5b26d8429e82e7fcc80461fa",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "3008cb9c-8ec9-4651-9a34-9a73968f71cc-2",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap\\resoconto\\frame-02-at-5.6s.png",
+          "time": 5.6,
+          "metadata": {
+            "width": 1696,
+            "height": 1520,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794312062940,
+          "contentHash": "5f07e844af72ce6eb297d12af623ee07523cb9f1c40493b8c690759eea4b2526",
+          "revision": "3814f087-ca18-444a-aaaf-079e89005064",
+          "inputFingerprint": "c88c4aaa5ecd29b686cd62c3a2140769c9b91a0e5b26d8429e82e7fcc80461fa",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "c958931e-d664-4b98-87ce-afb1e0d8d78c",
+      "completedAt": 1794312174082,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\render\\resoconto.mp4",
+      "status": "completed",
+      "revision": "3814f087-ca18-444a-aaaf-079e89005064"
+    },
+    "retainedRevisions": [
+      "3814f087-ca18-444a-aaaf-079e89005064"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

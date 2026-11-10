@@ -50,16 +50,24 @@ media:
   pair:
     - src: /covers/cityfix-logo.svg
       alt: The CityFix logo
-    - src: /covers/cityfix-punto1.webp
-      alt: "The CityFix landing page on a phone, at the citizen's step: in the chat they send the photo of the pothole and back a similar report 30 metres away"
+    - src: /covers/cityfix-punto1.mp4
+      poster: /covers/cityfix-punto1-poster.webp
+      alt: "A phone showing the CityFix app chat: Giulia types via Appia 42, takes a photo of the pothole, the app suggests a similar report 30 metres away and she backs it"
   wide:
-    src: /covers/cityfix-punto2.webp
-    alt: "The CityFix landing page on a computer, at the municipality and contractor step: the technical office assigns the pothole in via Appia 42 to Edilstrade Rossi, high priority, 480 euros and 3 days"
+    src: /covers/cityfix-punto2.mp4
+    poster: /covers/cityfix-punto2-poster.webp
+    srcMobile: /covers/cityfix-punto2-mobile.mp4
+    posterMobile: /covers/cityfix-punto2-mobile-poster.webp
+    alt: "The municipality's backoffice assigns the pothole in via Appia 42 to Edilstrade Rossi, high priority, 480 euros and 3 days. The contractor gets the job, uploads three photos of the finished work and the job is completed"
   feature:
-    - src: /covers/cityfix-resoconto.webp
-      alt: "The yearly report on the CityFix landing page, on a computer: 412 problems solved, 87% on time, 6 days on average, 1,240 active citizens and the problems solved month by month. Sample data"
-    - src: /covers/cityfix-punto3.webp
-      alt: "The CityFix landing page on a phone, at the city's step: on the map the pothole in via Appia turns green and whoever reported it earns 25 points"
+    - src: /covers/cityfix-resoconto.mp4
+      poster: /covers/cityfix-resoconto-poster.webp
+      srcMobile: /covers/cityfix-resoconto-mobile.mp4
+      posterMobile: /covers/cityfix-resoconto-mobile-poster.webp
+      alt: "The year in numbers: the figures climb to 412 problems solved, 87% on time, 6 days on average and 1,240 active citizens, then the monthly bars grow. Sample data"
+    - src: /covers/cityfix-punto3.mp4
+      poster: /covers/cityfix-punto3-poster.webp
+      alt: "A phone showing the city map: the pothole in via Appia turns green, the solved counter goes up, whoever reported it earns 25 points, then the other reports close one after another"
   triple:
     - src: /covers/cityfix-post-buca.webp
       alt: "Instagram post: 'A city is never finished.' Photo of a pothole in via Fulvia, reported on CityFix"

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+  <!-- La mappa della città per lo slot alto della scheda, 816x1520: lo schermo (punto3-schermo, renderizzato in assets/schermo.mp4) dentro l'iPhone 17 Pro
+       del mockup (assets/telefono.png, da telefono.py). Misure da telefono.json, telefono alto 1320. -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=816, height=1520" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 816px; height: 1520px; overflow: hidden; background: #f4f4f4; }
+      #root { position: relative; width: 100%; height: 100%; background: #f4f4f4; }
+      /* L'ombra del telefono: una sagoma con gli angoli del vetro, sotto la cornice */
+      #ombra {
+        position: absolute; left: 89.88px; top: 100.0px; width: 636.23px; height: 1320px;
+        border-radius: 91.41px; box-shadow: 0 46px 90px -40px rgba(43, 28, 232, 0.38);
+      }
+      #schermo {
+        position: absolute; left: 106.95px; top: 108.53px; width: 603.32px; height: 1301.72px;
+        border-radius: 85.32px; overflow: hidden; background: #fefeff;
+      }
+      #clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      #telefono { position: absolute; left: 89.88px; top: 100.0px; width: 636.23px; height: 1320px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="punto3" data-start="0" data-duration="10" data-width="816" data-height="1520">
+      <div id="ombra" class="clip" data-start="0" data-duration="10" data-track-index="0"></div>
+      <div id="schermo" data-layout-allow-overlap>
+        <video id="clip" class="clip" data-start="0" data-duration="10" data-track-index="1" src="assets/schermo.mp4" muted playsinline></video>
+      </div>
+      <img id="telefono" class="clip" data-start="0" data-duration="10" data-track-index="2" src="assets/telefono.png" alt="" data-layout-allow-overlap />
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["punto3"] = gsap.timeline({ paused: true }).set({}, {}, 10);
+    </script>
+  </body>
+</html>

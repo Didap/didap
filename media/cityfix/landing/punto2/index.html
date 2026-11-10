@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="it">
+  <!-- Dalla landing di CityFix (motion/view-affido), rifatto per lo slot largo della scheda:
+       il comune e l'impresa affiancati, 2160x1215, ridotto a 1920x1080 nella codifica -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2160, height=1215" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 2160px;
+        height: 1215px;
+        overflow: hidden;
+        background: #f4f4f4;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: #f4f4f4;
+      }
+      #desk,
+      #bid {
+        position: absolute;
+        top: 67px;
+        width: 1080px;
+        height: 1080px;
+        overflow: hidden;
+      }
+      #desk {
+        left: 0;
+      }
+      #bid {
+        left: 1080px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- A sinistra il comune affida la buca (desk), a destra l'impresa in attesa riceve l'incarico
+         e carica le foto del lavoro finito (bid). Loop senza salti. -->
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="13.7"
+      data-width="2160"
+      data-height="1215"
+    >
+      <!-- Il backoffice del comune: affida a 5.6 s, resta su "Assegnata", sfuma a 12.8 s -->
+      <div
+        id="desk"
+        data-composition-id="desk"
+        data-composition-src="compositions/desk.html"
+        data-start="0"
+        data-duration="13.7"
+        data-track-index="1"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1080"
+      ></div>
+      <!-- La card dell'impresa: in attesa, poi dal 6.4 s incarico e foto, sfuma a 12.8 s -->
+      <div
+        id="bid"
+        data-composition-id="bid"
+        data-composition-src="compositions/bid.html"
+        data-start="0"
+        data-duration="13.7"
+        data-track-index="2"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1080"
+      ></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="it">
+  <!-- Dalla landing di CityFix (motion/mayor-report), rifatto per lo slot grande della scheda sul telefono: 1080x1920, ridotto a 810x1440 nella codifica -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #f4f4f4;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: #f4f4f4;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- CityFix - "Resoconto 2026" (MayorView.astro). 10 s seamless loop, 30 fps, no audio. -->
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="10"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div
+        id="report"
+        data-composition-id="report"
+        data-composition-src="compositions/report.html" style="--report-card: 980px; --report-cols: 2; --report-track: 760px"
+        data-start="0"
+        data-duration="10"
+        data-track-index="0"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+    </div>
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

@@ -34,5 +34,12 @@ logs
 # Superpowers (bozze e lavoro dei piani)
 .superpowers/
 
-# Cornice iPhone ricavata dal mockup con licenza (media/cityfix/schermate/telefono.py)
-/media/cityfix/schermate/telefono.png
+# Illustrazioni di CityFix: font, foto e scene copiate dalla landing (media/cityfix/landing/sync.mjs)
+/media/cityfix/landing/*/assets/
+/media/cityfix/landing/telefono.png
+/media/cityfix/landing/punto2-mobile/compositions/
+/media/cityfix/landing/resoconto-mobile/compositions/
+/media/cityfix/landing/*/.hyperframes/
+
+# Report dei check e degli snapshot di HyperFrames
+/media/**/.hyperframes/artifacts/

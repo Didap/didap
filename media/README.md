@@ -38,19 +38,13 @@ mockup `9052-01-iphone-17-pro-mockup.psd`, per il computer una finestra del brow
 - Con la landing accesa in locale (`npm run dev` in `cityfix-landing`),
   `node media/cityfix/schermate/build.mjs` scrive `cityfix-punto1`, `cityfix-punto3`
   (pair e feature[1]), `cityfix-punto2` (wide) e `cityfix-resoconto` (feature[0]) in WebP.
-- I post (`cityfix-post-*.webp`) sono copiati così come sono da `public/social/` della landing.
+- I post (`cityfix-post-*.webp`) vengono da `public/social/` della landing, ritagliati alla
+  misura del triple (822x1080).
 
 ## CityFix: le illustrazioni (ora fuori dalla scheda)
 
-Prima delle schermate la scheda parlava coi disegni. I pezzi della città (palazzi,
-strada, buca, Comune, furgone, persone, pin e icone a pixel dell'app in `pixel-icons.json`)
-stanno in `media/cityfix/kit.mjs` e servono sia alle tavole ferme sia ai clip:
-
-- `node media/cityfix/build-illustrazioni.mjs` scrive gli SVG in `public/covers/`:
-  `strada` (pair), `passaggi` (feature[1]), `insieme` e `rione` (triple).
-- `node media/cityfix/build-clip.mjs [clip]` scrive i progetti HyperFrames `scatta` (pair),
-  `giro` (wide, senza versione da telefono), `comuni` (feature[0]) e `riparata` (triple);
-  poi check, render e codifica come sopra.
+Prima delle schermate la scheda parlava coi disegni: le sorgenti restano in `media/cityfix/`
+(`kit.mjs`, `build-illustrazioni.mjs`, `build-clip.mjs`), ma nessuno slot le usa.
 
 ## Da fare (28 ottobre 2026)
 

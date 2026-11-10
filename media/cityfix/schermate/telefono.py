@@ -49,12 +49,13 @@ island[int((sy1 - sy0) * 0.08):] = 0
 hole = screen * (1 - island)
 region[..., 3] *= 1 - hole
 
-bx0, by0, bx1, by1 = body.bbox
-Image.fromarray(px.astype(np.uint8)).crop((bx0, by0, bx1, by1)).save(os.path.join(here, 'telefono.png'))
+frame = Image.fromarray(px.astype(np.uint8)).crop(body.bbox)
+frame.save(os.path.join(here, 'telefono.png'))
+bx0, by0 = body.bbox[:2]
 with open(os.path.join(here, 'telefono.json'), 'w') as f:
     json.dump({
-        'width': bx1 - bx0,
-        'height': by1 - by0,
+        'width': frame.width,
+        'height': frame.height,
         'screen': {'x': sx0 - bx0, 'y': sy0 - by0, 'width': sx1 - sx0, 'height': sy1 - sy0},
     }, f, indent=2)
-print('telefono.png', bx1 - bx0, 'x', by1 - by0)
+print('telefono.png', frame.width, 'x', frame.height)

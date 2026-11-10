@@ -11,9 +11,9 @@
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
       #fondo, #telefono { position: absolute; inset: 0; width: 100%; height: 100%; }
       #schermo { position: absolute; overflow: hidden; background: #fefeff; }
+      #clip { position: absolute; object-fit: cover; }
       #pagina { position: absolute; left: 0; width: 100%; }
       #pagina img { position: absolute; left: 0; width: 100%; }
-      #clip { position: absolute; object-fit: cover; }
     </style>
   </head>
   <body>
@@ -21,9 +21,9 @@
 
       <img id="fondo" class="clip" data-start="0" data-duration="14.4" data-track-index="0" src="assets/fondo.png" alt="">
       <div id="schermo" data-layout-allow-overflow data-layout-allow-overlap style="left:106.95px;top:108.53px;width:603.32px;height:1301.72px;border-radius:85.32px">
-        <div id="pagina" style="top:83.54px;height:1439.81px">
+        <div id="pagina" style="top:83.54px;height:1616.16px">
           <img src="assets/pagina-0.png" alt="" style="top:-0.34px">
-          <img src="assets/pagina-1.png" alt="" style="top:222.43px">
+          <img src="assets/pagina-1.png" alt="" style="top:398.78px">
           <video id="clip" class="clip" data-start="2.2" data-duration="10" data-track-index="1" src="assets/clip.mp4" muted playsinline
             style="left:30.94px;top:879.8px;width:541.44px;height:541.44px;border-radius:37.13px"></video>
         </div>
@@ -32,7 +32,7 @@
     </div>
     <script>
       const tl = gsap.timeline({ paused: true })
-      tl.to('#pagina', { y: -222.33, duration: 1.4, ease: 'power2.inOut' }, 0.8)
+      tl.to('#pagina', { y: -398.69, duration: 1.4, ease: 'power2.inOut' }, 0.8)
       tl.to('#pagina', { y: 0, duration: 1.4, ease: 'power2.inOut' }, 12.2)
       tl.set({}, {}, 14.4)
       window.__timelines['punto3'] = tl

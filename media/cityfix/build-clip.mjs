@@ -5,7 +5,8 @@
 // Run: node media/cityfix/build-clip.mjs, poi check e render dalla
 // cartella del clip (media/README.md)
 import fs from 'node:fs'
-import { C, at, building, bubble, cone, flip, icon, municipio, patch, person, phone, pin, pothole, statusPixels, street, svgDoc, van } from './kit.mjs'
+import { fileURLToPath } from 'node:url'
+import { C, at, building, bubble, cone, flip, icon, municipio, patch, person, phone, pin, pothole, statusPixels, street, svgDoc, van, writeProject } from './kit.mjs'
 
 const here = new URL('./', import.meta.url)
 
@@ -54,12 +55,6 @@ const logo = () => {
   return mark
 }
 
-const HYPERFRAMES = {
-  $schema: 'https://hyperframes.heygen.com/schema/hyperframes.json',
-  registry: 'https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry',
-  paths: { blocks: 'compositions', components: 'compositions/components', assets: 'assets' },
-  media: { autoProxy: true },
-}
 
 const CLIPS = {
   // pair[1], 1256x1520: il telefono inquadra la buca, scatta, la scheda
@@ -346,8 +341,6 @@ for (const [id, make] of Object.entries(CLIPS)) {
   const dir = new URL(`${id}/`, here)
   fs.mkdirSync(dir, { recursive: true })
   fs.writeFileSync(new URL('index.html', dir), page({ id, ...clip }))
-  fs.writeFileSync(new URL('meta.json', dir), JSON.stringify({ id: `cityfix-${id}`, name: `cityfix-${id}` }))
-  fs.writeFileSync(new URL('hyperframes.json', dir), `${JSON.stringify(HYPERFRAMES, null, 2)}
-`)
+  writeProject(fileURLToPath(dir), id)
   console.log(`media/cityfix/${id}/index.html`)
 }

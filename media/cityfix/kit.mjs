@@ -7,8 +7,21 @@
 // Ogni pezzo è disegnato attorno al suo punto d'appoggio (0,0), di solito
 // il centro della base; `at()` lo mette in scena.
 import fs from 'node:fs'
+import path from 'node:path'
 
 const ICONS = JSON.parse(fs.readFileSync(new URL('./pixel-icons.json', import.meta.url), 'utf8'))
+
+// I file di un progetto HyperFrames dei clip di CityFix, accanto al suo index.html
+const HYPERFRAMES = {
+  $schema: 'https://hyperframes.heygen.com/schema/hyperframes.json',
+  registry: 'https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry',
+  paths: { blocks: 'compositions', components: 'compositions/components', assets: 'assets' },
+  media: { autoProxy: true },
+}
+export const writeProject = (dir, id) => {
+  fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify({ id: `cityfix-${id}`, name: `cityfix-${id}` }))
+  fs.writeFileSync(path.join(dir, 'hyperframes.json'), `${JSON.stringify(HYPERFRAMES, null, 2)}\n`)
+}
 
 export const C = {
   blue: '#2B1CE8',

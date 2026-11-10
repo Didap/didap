@@ -15,7 +15,7 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { C } from '../kit.mjs'
+import { C, writeProject } from '../kit.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(HERE, '../../..')
@@ -25,7 +25,8 @@ const LANDING_URL = process.argv[2] ?? 'http://localhost:4321/'
 
 // Cornice del telefono: misure in pixel del mockup
 const FRAME = JSON.parse(readFileSync(path.join(HERE, 'telefono.json'), 'utf8'))
-const FRAME_PNG = `data:image/png;base64,${readFileSync(path.join(HERE, 'telefono.png')).toString('base64')}`
+const png = base64 => `data:image/png;base64,${base64}`
+const FRAME_PNG = png(readFileSync(path.join(HERE, 'telefono.png')).toString('base64'))
 const FRAME_RADIUS = 140 // angoli dello schermo, poco dentro quelli del vetro
 const ISLAND_Y = 80 // centro della Dynamic Island dall'alto dello schermo
 
@@ -73,7 +74,6 @@ const CAPTURE_CSS = '.motion-video{display:block!important}'
   + '#cookie-banner,astro-dev-toolbar,.cta-dock{display:none!important}'
   + 'html{scrollbar-width:none}::-webkit-scrollbar{display:none}'
 
-const png = buf => `data:image/png;base64,${buf}`
 
 // Fotografa la sezione col clip fermo sul primo fotogramma. Dal telefono la pagina va
 // dal titolo della sezione al fondo del clip, in più schermate una sotto l'altra.
@@ -102,43 +102,63 @@ async function capture(browser, s) {
           v.addEventListener('error', () => reject(new Error(`${sel}: ${what}`)), { once: true })
         }))
       }
-      v.currentTime = 0
-      await within('il clip non torna all\'inizio', new Promise(r => v.addEventListener('seeked', r, { once: true })))
+      if (v.currentTime !== 0) {
+        v.currentTime = 0
+        await within('il clip non torna all\'inizio', new Promise(r => v.addEventListener('seeked', r, { once: true })))
+      }
       await Promise.race([new Promise(r => v.requestVideoFrameCallback(r)), new Promise(r => setTimeout(r, 1000))])
       const slot = v.closest('.motion-slot')
+      if (!slot) throw new Error(`${sel}: il clip non sta in un .motion-slot`)
       const r = slot.getBoundingClientRect()
       return {
         x: r.left, y: r.top + window.scrollY, w: r.width, h: r.height,
         radius: parseFloat(getComputedStyle(slot).borderTopLeftRadius),
-        src: new URL(v.currentSrc || v.src).pathname,
+        src: decodeURIComponent(new URL(v.currentSrc || v.src).pathname),
         duration: v.duration,
       }
     }, s.sel)
 
-    // Dove inizia la pagina fotografata (y nel documento) e quanto è alta
-    const { top, height } = await page.evaluate((sel, phone, under, gap) => {
+    // Dove inizia la pagina fotografata (y nel documento), quanto scende il telefono e quanto
+    // è alta. In fondo alla discesa in cima allo schermo c'è un blocco di testo intero (il
+    // paragrafo o la lista) da cui il clip ci sta tutto sotto, così nessuna frase parte a metà.
+    const { top, fall, height } = await page.evaluate((sel, phone, under, gap) => {
       const el = document.querySelector(sel)
       const r = el.getBoundingClientRect()
       const vh = window.innerHeight
+      const docTop = node => node.getBoundingClientRect().top + window.scrollY
       if (phone) {
-        const start = el.querySelector('.view-role').getBoundingClientRect().top + window.scrollY - under
+        const role = el.querySelector('.view-role')
+        if (!role) throw new Error(`${sel}: manca il titolo .view-role`)
+        const start = docTop(role) - under
         const clipBottom = el.querySelector('.motion-slot').getBoundingClientRect().bottom + window.scrollY
-        return { top: start, height: Math.max(vh, clipBottom + gap - start) }
+        const need = clipBottom + gap - vh - start
+        const stops = [...el.querySelectorAll('.view-body, .view-points')].map(b => docTop(b) - under - start)
+        const fall = Math.max(0, stops.find(f => f >= need) ?? need)
+        return { top: start, fall, height: fall + vh }
       }
       const header = document.querySelector('.site-header')?.offsetHeight ?? 0
-      return { top: r.top + window.scrollY - header - (vh - header - r.height) / 2, height: vh }
+      return { top: r.top + window.scrollY - header - (vh - header - r.height) / 2, fall: 0, height: vh }
     }, s.sel, s.vp === PHONE, FADE + 2, CLIP_GAP)
 
     const vh = s.vp.height
     const parts = []
     for (let dy = 0; ; dy = Math.min(dy + vh, height - vh)) {
-      await page.evaluate(y => window.scrollTo(0, y), top + dy)
-      await new Promise(r => setTimeout(r, 300))
+      // Anche le immagini che si caricano scorrendo
+      await page.evaluate(async (y) => {
+        window.scrollTo(0, y)
+        await new Promise(r => setTimeout(r, 300))
+        await Promise.all([...document.images].filter(i => !i.complete)
+          .map(i => new Promise((r) => {
+            i.addEventListener('load', r)
+            i.addEventListener('error', r)
+            setTimeout(r, 5000)
+          })))
+      }, top + dy)
       const real = await page.evaluate(() => window.scrollY)
       parts.push({ dy: real - top, img: png(await page.screenshot({ captureBeyondViewport: false, encoding: 'base64' })) })
       if (dy >= height - vh) break
     }
-    return { parts, height, clip: { ...clip, y: clip.y - top } }
+    return { parts, fall, height, clip: { ...clip, y: clip.y - top } }
   }
   finally {
     await page.close()
@@ -213,7 +233,7 @@ function indexHtml(s, shot) {
     const sx = (w - FRAME.width * K) / 2 + FRAME.screen.x * K
     const sy = (h - PHONE_H) / 2 + FRAME.screen.y * K
     const c = shot.clip
-    const fall = round((shot.height - s.vp.height) * PT)
+    const fall = round(shot.fall * PT)
     body = `
       <img id="fondo" class="clip" data-start="0" data-duration="${total}" data-track-index="0" src="assets/fondo.png" alt="">
       <div id="schermo" data-layout-allow-overflow data-layout-allow-overlap style="${box(sx, sy, SCREEN_W, FRAME.screen.height * K)};border-radius:${round(FRAME_RADIUS * K)}px">
@@ -253,11 +273,11 @@ ${shot.parts.map((p, i) => `          <img src="assets/pagina-${i}.png" alt="" s
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { width: ${w}px; height: ${h}px; overflow: hidden; background: ${C.blue}; }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
-      #fondo, #telefono { position: absolute; inset: 0; width: 100%; height: 100%; }
+      #fondo${phone ? ', #telefono' : ''} { position: absolute; inset: 0; width: 100%; height: 100%; }
       #schermo { position: absolute; overflow: hidden; background: #fefeff; }
+      #clip { position: absolute; object-fit: cover; }${phone ? `
       #pagina { position: absolute; left: 0; width: 100%; }
-      #pagina img { position: absolute; left: 0; width: 100%; }
-      #clip { position: absolute; object-fit: cover; }
+      #pagina img { position: absolute; left: 0; width: 100%; }` : ''}
     </style>
   </head>
   <body>
@@ -291,13 +311,7 @@ try {
       await still(browser, s.tile, layers.desk(s, shot), path.join(assets, 'fondo.png'))
     }
     writeFileSync(path.join(dir, 'index.html'), indexHtml(s, shot))
-    writeFileSync(path.join(dir, 'hyperframes.json'), `${JSON.stringify({
-      $schema: 'https://hyperframes.heygen.com/schema/hyperframes.json',
-      registry: 'https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry',
-      paths: { blocks: 'compositions', components: 'compositions/components', assets: 'assets' },
-      media: { autoProxy: true },
-    }, null, 2)}\n`)
-    writeFileSync(path.join(dir, 'meta.json'), JSON.stringify({ id: `cityfix-${s.name}`, name: `cityfix-${s.name}` }))
+    writeProject(dir, s.name)
     const poster = round((s.vp === PHONE ? HOLD + SCROLL : 0) + s.poster)
     console.log(`${path.relative(ROOT, dir)}  poster a ${poster}s`)
   }

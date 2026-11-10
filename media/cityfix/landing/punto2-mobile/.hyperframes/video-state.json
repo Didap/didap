@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "historyId": "6b3875c0-16e3-437c-9f9b-039915777f6d",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/DunbarTall-Bold.ttf": {
+      "hash": "77d8e4f3e17c74ed514abacd395a4b49a89000bf54f88d4516055c147a5b1d0f",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\77\\77d8e4f3e17c74ed514abacd395a4b49a89000bf54f88d4516055c147a5b1d0f"
+    },
+    "assets/fonts/DunbarTall-Medium.ttf": {
+      "hash": "e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\e4\\e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6"
+    },
+    "assets/fonts/urbanist-latin-ext-wght-normal.woff2": {
+      "hash": "f71047c01398a570cabbd2810cb0893992b3dd2e34c966afa0e54b3f12b6f329",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\f7\\f71047c01398a570cabbd2810cb0893992b3dd2e34c966afa0e54b3f12b6f329"
+    },
+    "assets/fonts/urbanist-latin-wght-normal.woff2": {
+      "hash": "7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\79\\7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb"
+    },
+    "assets/photos/riparata-dettaglio.jpg": {
+      "hash": "41fc981d301b86e417a5b940bbeeaedaffb4d9c58ccd37ab26460c78f455f6e2",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\41\\41fc981d301b86e417a5b940bbeeaedaffb4d9c58ccd37ab26460c78f455f6e2"
+    },
+    "assets/photos/riparata-strada.jpg": {
+      "hash": "6373806ad5d1f0b4e08d6a6b7aa5b9144f39ae4cdb564f0c83f18193a65b04c3",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\63\\6373806ad5d1f0b4e08d6a6b7aa5b9144f39ae4cdb564f0c83f18193a65b04c3"
+    },
+    "assets/photos/riparata.jpg": {
+      "hash": "c7a64a4101c91819ba10b6c9ebf19cf9a82723e371069efd10a689d7a20382ab",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\c7\\c7a64a4101c91819ba10b6c9ebf19cf9a82723e371069efd10a689d7a20382ab"
+    },
+    "compositions/bid.html": {
+      "hash": "b943851ff1363860c5045db00de1e3e1dbdb301643081b9aa02ec09c39492e89",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\b9\\b943851ff1363860c5045db00de1e3e1dbdb301643081b9aa02ec09c39492e89"
+    },
+    "compositions/desk.html": {
+      "hash": "3cb734ae7e7d23a0d6f8a0c3020f36fcfe15782bb77cb31bc46825b5d212eb32",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\3c\\3cb734ae7e7d23a0d6f8a0c3020f36fcfe15782bb77cb31bc46825b5d212eb32"
+    },
+    "hyperframes.json": {
+      "hash": "687e5c4a0a6ff969a5f316158089fb408f0c2d8f989d19e47289f7aa34a18d24",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\68\\687e5c4a0a6ff969a5f316158089fb408f0c2d8f989d19e47289f7aa34a18d24"
+    },
+    "index.html": {
+      "hash": "7bdcc2baeebaabcf7269e4ed7f90a8e161d60b63ddc6c8d38d99f5dc37d2d1c0",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\7b\\7bdcc2baeebaabcf7269e4ed7f90a8e161d60b63ddc6c8d38d99f5dc37d2d1c0"
+    },
+    "meta.json": {
+      "hash": "a5696af5625e67bb5d0c4d9f43e59c6e8f5528d6abfe69ee46e1d49824a73a3c",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\6b3875c0-16e3-437c-9f9b-039915777f6d\\blobs\\a5\\a5696af5625e67bb5d0c4d9f43e59c6e8f5528d6abfe69ee46e1d49824a73a3c"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "f5035f1a-108d-45ab-9699-b3d93fcbde92"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "f5035f1a-108d-45ab-9699-b3d93fcbde92",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\landing\\punto2-mobile\\.hyperframes\\artifacts\\checks\\f5035f1a-108d-45ab-9699-b3d93fcbde92.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1794314545052,
+        "contentHash": "23ea82e06fa14500fe08898ecca632a6af2c52f2e83cf2ee89111ce494724625",
+        "revision": null,
+        "inputFingerprint": "59cc62238dff9d68cfbb4e56a8097149dabfba0da839131659d6029a670ec1a5",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "25581963-1e6b-44ce-a848-5ab515f9e5bd-2"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "25581963-1e6b-44ce-a848-5ab515f9e5bd-0",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\punto2-mobile\\frame-00-at-0.3s.png",
+        "time": 0.3,
+        "metadata": {
+          "width": 1080,
+          "height": 1350,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314553017,
+        "contentHash": "97b473151403407860aae6a4ce371f909677c4397d438559ea13328d8f01aad4",
+        "revision": null,
+        "inputFingerprint": "59cc62238dff9d68cfbb4e56a8097149dabfba0da839131659d6029a670ec1a5",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "25581963-1e6b-44ce-a848-5ab515f9e5bd-1",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\punto2-mobile\\frame-01-at-4s.png",
+        "time": 4,
+        "metadata": {
+          "width": 1080,
+          "height": 1350,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314553017,
+        "contentHash": "03c022f2f82cee055385811b0dc908bf2642918b19370ce19372a95b1596693b",
+        "revision": null,
+        "inputFingerprint": "59cc62238dff9d68cfbb4e56a8097149dabfba0da839131659d6029a670ec1a5",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "25581963-1e6b-44ce-a848-5ab515f9e5bd-2",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\punto2-mobile\\frame-02-at-10s.png",
+        "time": 10,
+        "metadata": {
+          "width": 1080,
+          "height": 1350,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314553017,
+        "contentHash": "3206f03c90dfe4e90764a15c526b00a4b8183337e75fef2f416afbaee67af42c",
+        "revision": null,
+        "inputFingerprint": "59cc62238dff9d68cfbb4e56a8097149dabfba0da839131659d6029a670ec1a5",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "b2ef7e71-45cd-43df-8441-36269a7a57ea",
+      "completedAt": 1794314737736,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\render2\\punto2-mobile.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

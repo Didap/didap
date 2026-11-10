@@ -25,25 +25,29 @@ Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
 `media/cityfix/osm/roads.json`, dati OpenStreetMap con licenza ODbL),
 `media/helllo/build.mjs` (dall'illustrazione esportata dal Figma in `media/helllo/figma/`).
 
-## CityFix: le schermate della landing
+## CityFix: le illustrazioni della landing
 
-La scheda di CityFix mostra la landing (repo `cityfix-landing`): il passo 1 e il passo 3 dal
-telefono, il passo 2 e il resoconto dal computer, e i post Instagram della landing nel triple.
-Le schermate stanno in una cornice sul blu di CityFix: per il telefono l'iPhone 17 Pro del
-mockup `9052-01-iphone-17-pro-mockup.psd`, per il computer una finestra del browser.
+La scheda di CityFix usa le illustrazioni animate della landing (repo `cityfix-landing`,
+cartella `motion/`), rifatte per gli slot della scheda. I progetti stanno in
+`media/cityfix/landing/`, uno per slot e formato:
 
-- `python media/cityfix/schermate/telefono.py <psd>` ricava la cornice del telefono
-  (`telefono.png`, fuori dal repo perché il mockup ha una licenza) e dove sta lo schermo
-  (`telefono.json`). Serve `psd-tools[composite]`.
-- Con la landing accesa in locale (`npm run dev` in `cityfix-landing`),
-  `node media/cityfix/schermate/build.mjs` scrive `cityfix-punto1`, `cityfix-punto3`
-  (pair e feature[1]), `cityfix-punto2` (wide) e `cityfix-resoconto` (feature[0]) in WebP.
-- I post (`cityfix-post-*.webp`) vengono da `public/social/` della landing, ritagliati alla
-  misura del triple (822x1080).
+- `punto1` (pair, 1256x1520): la chat del cittadino, più alta, con più messaggi a vista.
+- `punto2` (wide, 2160x1215 ridotto a 1920x1080): il comune e l'impresa affiancati, la card
+  dell'impresa aspetta finché il comune non affida. `punto2-mobile` (1080x1350 ridotto a
+  810x1012): il passaggio dal comune all'impresa come nella landing.
+- `resoconto` (feature[0], 1696x1520): i quattro numeri in fila e il grafico più alto.
+  `resoconto-mobile` (1080x1920 ridotto a 810x1440): numeri due per due e grafico alto.
+- `punto3` (feature[1], 1080x2012 ridotto a 816x1520): la mappa continua sopra e sotto, con
+  quattro segnalazioni in più che si chiudono.
 
-## CityFix: le illustrazioni (ora fuori dalla scheda)
+Check e render come sopra; nella codifica si aggiunge `-vf scale=<slot>:flags=lanczos` per i
+progetti fatti più grandi dello slot. Se le illustrazioni cambiano nella landing, vanno
+riportate qui a mano. I post (`cityfix-post-*.webp`) vengono da `public/social/` della
+landing, ritagliati alla misura del triple (822x1080).
 
-Prima delle schermate la scheda parlava coi disegni: le sorgenti restano in `media/cityfix/`
+## CityFix: i disegni del kit (ora fuori dalla scheda)
+
+Prima delle illustrazioni della landing la scheda parlava coi disegni del kit: le sorgenti restano in `media/cityfix/`
 (`kit.mjs`, `build-illustrazioni.mjs`, `build-clip.mjs`), ma nessuno slot le usa.
 
 ## Da fare (28 ottobre 2026)
@@ -51,8 +55,6 @@ Prima delle schermate la scheda parlava coi disegni: le sorgenti restano in `med
 - Versioni da telefono mancanti: Bin or Deal `ricerca` (wide), `verdi` (feature[0]) e i tre
   triple. Senza, sul telefono parte il video da desktop.
 - CityFix: i dati della mappa dell'hero vengono da OpenStreetMap ma nel clip non c'è il credito.
-- CityFix: sul telefono le schermate da computer (wide e feature[0]) restano piccole; MediaSlot
-  non ha una versione da telefono per le immagini ferme.
 - Bin or Deal: lo stack in pagina viene dal codice (Next.js, Hono, PostgreSQL, Playwright);
   il vecchio corpo markdown dice ancora Clerk, Neon e Upstash.
 - Cruciverba Lab: i testi dicono dieci giochi al giorno (il sito ne ha dieci) e che l'account

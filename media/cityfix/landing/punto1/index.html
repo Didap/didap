@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="it">
+  <!-- Dalla landing di CityFix (motion/view-cittadino), rifatto per la pair della scheda: 1256x1520 -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1256, height=1520" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Dunbar Tall';
+        font-weight: 500;
+        font-style: normal;
+        src: url('assets/fonts/DunbarTall-Medium.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'Dunbar Tall';
+        font-weight: 700;
+        font-style: normal;
+        src: url('assets/fonts/DunbarTall-Bold.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'Urbanist';
+        font-style: normal;
+        font-weight: 100 900;
+        src: url('assets/fonts/urbanist-latin-ext-wght-normal.woff2') format('woff2');
+        unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+      }
+      @font-face {
+        font-family: 'Urbanist';
+        font-style: normal;
+        font-weight: 100 900;
+        src: url('assets/fonts/urbanist-latin-wght-normal.woff2') format('woff2');
+        unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+      }
+
+      :root {
+        --blue: #2b1ce8;
+        --blue-soft: #e8e6f7;
+        --green: #479b3e;
+        --green-soft: #e3f1de;
+        --ink: #0a0a0f;
+        --ink-muted: #52525c;
+        --paper: #f4f4f4;
+        --paper-deep: #e6e6e9;
+        --white: #fefeff;
+        --tall: 'Dunbar Tall', system-ui, sans-serif;
+        --low: 'Urbanist', system-ui, sans-serif;
+        --lift: 0 1px 0 rgba(10, 10, 15, 0.04), 0 18px 36px -24px rgba(10, 10, 15, 0.28);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1256px;
+        height: 1520px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: var(--paper);
+        font-family: var(--low);
+        color: var(--ink);
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+      }
+
+      /* Header: who is talking */
+      .head {
+        position: absolute;
+        left: 120px;
+        right: 120px;
+        top: 82px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .head img {
+        display: block;
+        height: 42px;
+        width: auto;
+      }
+      .head-rule {
+        width: 2px;
+        height: 34px;
+        background: var(--paper-deep);
+      }
+      .head-title {
+        font-family: var(--tall);
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 1;
+        color: var(--ink-muted);
+        padding-top: 4px;
+      }
+
+      /* Conversation viewport (between header and composer) */
+      .chat {
+        position: absolute;
+        left: 120px;
+        right: 120px;
+        top: 186px;
+        height: 1172px;
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 84px, #000 calc(100% - 24px), transparent 100%);
+        mask-image: linear-gradient(to bottom, transparent 0, #000 84px, #000 calc(100% - 24px), transparent 100%);
+      }
+      #conv {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        padding: 84px 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        font-size: 42px;
+        font-weight: 500;
+        line-height: 58px;
+        letter-spacing: -0.005em;
+      }
+      .bubble {
+        max-width: 760px;
+        padding: 26px 34px 28px;
+        border-radius: 38px;
+        white-space: nowrap;
+      }
+      .bubble.bot {
+        align-self: flex-start;
+        background: var(--white);
+        border-bottom-left-radius: 10px;
+        box-shadow: var(--lift);
+        transform-origin: 0% 100%;
+      }
+      .bubble.me {
+        align-self: flex-end;
+        background: var(--blue);
+        color: var(--white);
+        border-bottom-right-radius: 10px;
+        transform-origin: 100% 100%;
+      }
+      .bubble-photo {
+        width: 460px;
+        padding: 0;
+        background: transparent !important;
+      }
+      .photo {
+        position: relative;
+        width: 460px;
+        height: 345px;
+        border-radius: 38px;
+        border-bottom-right-radius: 10px;
+        overflow: hidden;
+        background: #85858e;
+      }
+      .photo img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+      .photo .flash {
+        position: absolute;
+        inset: 0;
+        background: var(--white);
+        opacity: 0;
+      }
+      .chat-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 22px;
+      }
+      .btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 32px 17px;
+        border-radius: 22px;
+        font-family: var(--tall);
+        font-weight: 500;
+        font-size: 36px;
+        line-height: 41px;
+        letter-spacing: 0;
+        background: var(--blue);
+        color: var(--white);
+        overflow: hidden;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--blue);
+        box-shadow: inset 0 0 0 2.5px var(--blue);
+      }
+      .btn .label {
+        position: relative;
+      }
+      .ripple {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 360px;
+        height: 360px;
+        margin: -180px 0 0 -180px;
+        border-radius: 50%;
+        background: rgba(254, 254, 255, 0.38);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .confirm {
+        align-self: stretch;
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 28px 34px 30px;
+        border-radius: 32px;
+        background: var(--green-soft);
+        white-space: nowrap;
+        transform-origin: 50% 100%;
+      }
+      .confirm-check {
+        flex: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--green);
+        display: grid;
+        place-items: center;
+      }
+      .confirm-title {
+        font-family: var(--tall);
+        font-weight: 500;
+        font-size: 38px;
+        line-height: 52px;
+        color: var(--ink);
+      }
+      .confirm-sub {
+        margin-top: 2px;
+        font-size: 32px;
+        font-weight: 500;
+        line-height: 44px;
+        color: var(--ink-muted);
+      }
+
+      /* Composer */
+      .composer {
+        position: absolute;
+        left: 120px;
+        right: 120px;
+        top: 1366px;
+        height: 92px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 12px;
+        border-radius: 46px;
+        /* field text sits after the 68px camera button: ≥80px from the pill edge */
+        background: var(--white);
+        box-shadow: var(--lift);
+      }
+      .icon-btn {
+        flex: none;
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+      }
+      #cam {
+        background: var(--paper);
+        color: var(--ink-muted);
+      }
+      #send {
+        background: var(--paper-deep);
+        color: var(--white);
+      }
+      .field {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        padding-left: 6px;
+        font-size: 36px;
+        font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      #placeholder {
+        color: #8a8a93;
+      }
+      #typed {
+        display: none;
+        color: var(--ink);
+      }
+      #typed span {
+        display: none;
+      }
+      #caret {
+        display: inline-block;
+        width: 3px;
+        height: 40px;
+        margin-left: 3px;
+        background: var(--blue);
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="10"
+      data-width="1256"
+      data-height="1520"
+    >
+      <div id="stage" class="clip" data-start="0" data-duration="10" data-track-index="0" data-track-kind="graphics">
+        <div class="head">
+          <img src="assets/logo.svg" alt="CityFix" />
+          <span class="head-rule"></span>
+          <p class="head-title">Nuova segnalazione</p>
+        </div>
+
+        <div class="chat" data-layout-allow-overflow>
+          <div id="conv">
+            <p id="b0" class="bubble bot">Ciao Giulia!<br />Dove si trova il problema?</p>
+            <p id="b1" class="bubble me">Via Appia 42</p>
+            <p id="b2" class="bubble bot">Scatta una foto del problema.</p>
+            <div id="b3" class="bubble me bubble-photo">
+              <div class="photo">
+                <img src="assets/photos/buca.jpg" alt="" />
+                <span id="flash" class="flash"></span>
+              </div>
+            </div>
+            <div id="b4" class="bubble bot">
+              C’è già una segnalazione simile<br />a 30&nbsp;metri. È la stessa?
+              <span class="chat-actions">
+                <span id="support" class="btn"><span id="ripple" class="ripple"></span><span class="label">Sostieni</span></span>
+                <span id="other" class="btn ghost"><span class="label">La mia è diversa</span></span>
+              </span>
+            </div>
+            <div id="b5" class="confirm">
+              <span class="confirm-check">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fefeff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              </span>
+              <span>
+                <p class="confirm-title">Hai sostenuto la segnalazione</p>
+                <p class="confirm-sub">Ti aggiorniamo a ogni cambio di stato.</p>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <span id="cam" class="icon-btn">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z" />
+              <circle cx="12" cy="12.8" r="3.4" />
+            </svg>
+          </span>
+          <span class="field">
+            <span id="placeholder">Scrivi un messaggio</span>
+            <span id="typed"><span>V</span><span>i</span><span>a</span><span>&nbsp;</span><span>A</span><span>p</span><span>p</span><span>i</span><span>a</span><span>&nbsp;</span><span>4</span><span>2</span></span>
+            <span id="caret"></span>
+          </span>
+          <span id="send" class="icon-btn">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 19V5M6 11l6-6 6 6" />
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Free-floating chat: the conversation stays centred between header and
+      // composer while it fits, then scrolls like a real chat (newest message
+      // on the bottom edge). Bubble heights are fixed by px line-heights and
+      // explicit sizes, so measuring here is deterministic (no font dependency).
+      const EASE = 'power3.out'; // DESIGN.md ease-out
+      const D = 10;
+      const VIEW = 1172 - 24; // .chat height minus its bottom fade
+      const items = ['#b0', '#b1', '#b2', '#b3', '#b4', '#b5'];
+      const later = items.slice(1);
+      const bottoms = items.map((s) => {
+        const el = document.querySelector(s);
+        return el.offsetTop + el.offsetHeight;
+      });
+      // Offset of #conv once item k has arrived: centred while it fits, then bottom-anchored.
+      const offsetFor = (k) => {
+        const b = bottoms[k];
+        return b <= VIEW ? Math.round(VIEW / 2 - b / 2) : VIEW - b;
+      };
+
+      // Opening state (also restored by the reset at the end of the loop).
+      gsap.set(later, { opacity: 0 });
+      gsap.set('#conv', { y: offsetFor(0) });
+
+      const tl = gsap.timeline({ paused: true });
+      tl.set(later, { opacity: 0 }, 0);
+      tl.set('#conv', { opacity: 1, y: offsetFor(0) }, 0);
+
+      const show = (k, at) => {
+        tl.fromTo(
+          items[k],
+          { opacity: 0, y: 22, scale: 0.94 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: EASE, immediateRender: false },
+          at,
+        );
+        // The column glides like a chat scrolling: eased both ways, whole-pixel steps, and
+        // never faster than ~14 px a frame (keeps the photo sharp and the H.264 file small).
+        const dist = Math.abs(offsetFor(k) - offsetFor(k - 1));
+        tl.to('#conv', { y: offsetFor(k), duration: Math.max(0.6, dist / 260), ease: 'sine.inOut', snap: { y: 1 } }, at);
+      };
+      const press = (sel, at) => {
+        tl.fromTo(sel, { scale: 1 }, { scale: 0.88, duration: 0.09, ease: 'power2.out', immediateRender: false }, at);
+        tl.to(sel, { scale: 1, duration: 0.3, ease: EASE }, at + 0.09);
+      };
+
+      // 1. Giulia types the address.
+      tl.set('#placeholder', { display: 'none' }, 0.65);
+      tl.set('#typed', { display: 'inline' }, 0.65);
+      tl.set('#caret', { opacity: 1 }, 0.65);
+      document.querySelectorAll('#typed span').forEach((c, i) => tl.set(c, { display: 'inline' }, 0.78 + i * 0.065));
+      tl.to('#send', { backgroundColor: '#2b1ce8', duration: 0.18, ease: 'power2.out' }, 0.78);
+
+      // 2. Send: the field clears, the message lands in the chat.
+      press('#send', 1.8);
+      tl.set('#typed', { display: 'none' }, 1.9);
+      tl.set('#caret', { opacity: 0 }, 1.9);
+      tl.set('#placeholder', { display: 'inline' }, 1.9);
+      tl.to('#send', { backgroundColor: '#e6e6e9', duration: 0.2, ease: 'power2.out' }, 1.93);
+      show(1, 1.9);
+
+      // 3. Bot asks for a photo.
+      show(2, 2.65);
+
+      // 4. Camera tap, the photo arrives with a brief shutter flash.
+      press('#cam', 3.3);
+      tl.to('#cam', { backgroundColor: '#e8e6f7', color: '#2b1ce8', duration: 0.12, ease: 'power2.out' }, 3.3);
+      tl.to('#cam', { backgroundColor: '#f4f4f4', color: '#52525c', duration: 0.35, ease: EASE }, 3.6);
+      show(3, 3.55);
+      tl.fromTo('#flash', { opacity: 1 }, { opacity: 0, duration: 0.6, ease: 'power2.out', immediateRender: false }, 3.6);
+
+      // 5. Bot offers the similar report 30 m away.
+      show(4, 4.6);
+
+      // 6. Tap on "Sostieni" with a touch ripple.
+      tl.fromTo('#ripple', { scale: 0, opacity: 1 }, { scale: 1, duration: 0.55, ease: 'power2.out', immediateRender: false }, 5.9);
+      tl.to('#ripple', { opacity: 0, duration: 0.3, ease: 'power1.out' }, 6.2);
+      tl.fromTo('#support', { scale: 1 }, { scale: 0.95, duration: 0.1, ease: 'power2.out', immediateRender: false }, 5.9);
+      tl.to('#support', { scale: 1, duration: 0.35, ease: EASE }, 6.0);
+      tl.to('#other', { opacity: 0.35, duration: 0.3, ease: EASE }, 6.25);
+
+      // 7. Confirmation.
+      show(5, 6.5);
+
+      // 8. Reset to the opening frame (seamless loop).
+      tl.to('#conv', { opacity: 0, duration: 0.3, ease: 'power2.in' }, 9.0);
+      tl.set(later, { opacity: 0 }, 9.32);
+      tl.set('#other', { opacity: 1 }, 9.32);
+      tl.set('#conv', { y: offsetFor(0) }, 9.32);
+      tl.to('#conv', { opacity: 1, duration: 0.42, ease: EASE }, 9.35);
+      tl.set({}, {}, D);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

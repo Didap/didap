@@ -1,0 +1,810 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Dunbar Tall";
+      src: url("assets/fonts/DunbarTall-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Dunbar Tall";
+      src: url("assets/fonts/DunbarTall-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Urbanist";
+      font-style: normal;
+      font-weight: 100 900;
+      src: url("assets/fonts/urbanist-latin-ext-wght-normal.woff2") format("woff2");
+      unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "Urbanist";
+      font-style: normal;
+      font-weight: 100 900;
+      src: url("assets/fonts/urbanist-latin-wght-normal.woff2") format("woff2");
+      unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+    }
+
+    #root {
+      /* Brand (motion/BRIEF.md) */
+      --blue: #2b1ce8;
+      --blue-soft: #e8e6f7;
+      --red: #f44747;
+      --green: #479b3e;
+      --green-soft: #e3f1de;
+      --ink: #0a0a0f;
+      --ink-muted: #52525c;
+      --paper: #f4f4f4;
+      --paper-deep: #e6e6e9;
+      --white: #fefeff;
+      /* The app's basemap (cityfix/app src/lib/colors.ts → map) */
+      --water: #e5e0f6;
+      --water-line: #5a4dce;
+      --road-major: #869ef2;
+      --road: #a8baf5;
+      --building: #cad5f9;
+
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--white);
+      font-family: "Urbanist", sans-serif;
+      color: var(--ink);
+    }
+
+    /* ── Basemap ─────────────────────────────────────────── */
+    #map {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 2012px;
+    }
+    .water-edge {
+      fill: none;
+      stroke: var(--water-line);
+      stroke-opacity: 0.6;
+      stroke-width: 78;
+      stroke-linecap: round;
+    }
+    .water {
+      fill: none;
+      stroke: #e8e4f7; /* water at 0.85 over white, solid so it never darkens */
+      stroke-width: 74;
+      stroke-linecap: round;
+    }
+    .casing {
+      stroke: var(--white);
+      stroke-linecap: round;
+      fill: none;
+    }
+    .casing.major { stroke-width: 26; }
+    .casing.minor { stroke-width: 16; }
+    .road {
+      stroke-linecap: round;
+      fill: none;
+    }
+    .road.major { stroke: var(--road-major); stroke-width: 14; }
+    .road.minor { stroke: var(--road); stroke-width: 7; }
+    .bld {
+      fill: none;
+      stroke: var(--building);
+      stroke-width: 2;
+    }
+    .street-name {
+      font-family: "Urbanist", sans-serif;
+      font-weight: 600;
+      font-size: 32px;
+      letter-spacing: 0.01em;
+      fill: var(--blue);
+      stroke: var(--white);
+      stroke-width: 7;
+      stroke-linejoin: round;
+      paint-order: stroke;
+    }
+    .plate rect {
+      fill: var(--white);
+      stroke: rgba(43, 28, 232, 0.28);
+      stroke-width: 1.5;
+    }
+    .plate text {
+      font-family: "Urbanist", sans-serif;
+      font-weight: 600;
+      font-size: 32px;
+      fill: var(--blue);
+    }
+
+    /* The app's blueprint overlay: the brand cross tiled over the map, 22 px at
+       phone scale → 52 px here, opacity 0.22 × fill-opacity 0.45. */
+    #pattern {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.22;
+      background-size: 52px 52px;
+      background-repeat: repeat;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760.33 760.3'><polygon fill='%232B1CE8' fill-opacity='0.45' points='760.33 372.58 484.28 372.58 484.28 354.12 432.22 354.12 432.22 328.09 406.19 328.09 406.19 276.03 387.74 276.03 387.74 0 372.6 0 372.6 276.03 354.14 276.03 354.14 328.09 328.11 328.09 328.11 354.12 276.05 354.12 276.05 372.58 0 372.58 0 387.72 276.05 387.72 276.05 406.17 328.11 406.17 328.11 432.2 354.14 432.2 354.14 484.26 372.6 484.26 372.6 760.3 387.74 760.3 387.74 484.26 406.19 484.26 406.19 432.2 432.22 432.2 432.22 406.17 484.28 406.17 484.28 387.72 760.33 387.72 760.33 372.58'/></svg>");
+    }
+
+    /* ── UI layer (pins, callout, counter): faded for the loop reset ── */
+    #ui {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Pins: the app's teardrop (PIN_OUTLINE, 24×34) with a white border and a
+       white pixel glyph in the head. The anchor sits on the tip. */
+    .pin {
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+    .pin-body {
+      position: absolute;
+      left: calc(var(--s) * -13px);
+      top: calc(var(--s) * -34px);
+      width: calc(var(--s) * 26px);
+      height: calc(var(--s) * 36px);
+      transform-origin: 50% 94.4%;
+    }
+    .pin-body svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.26));
+    }
+    .pin-red { fill: var(--red); stroke: var(--white); stroke-width: 1.15; stroke-linejoin: round; }
+    .pin-green { fill: var(--green); stroke: var(--white); stroke-width: 1.15; stroke-linejoin: round; }
+    .glyph { fill: var(--white); shape-rendering: crispEdges; }
+    .glyph-check { opacity: 0; }
+
+    /* Selection halo behind the chosen pin's head (app: markers-halo, 0.18). */
+    .pin-halo {
+      position: absolute;
+      left: -86px;
+      top: calc(var(--s) * -21.5px - 86px);
+      width: 172px;
+      height: 172px;
+    }
+    .pin-halo span {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      opacity: 0.18;
+    }
+    .halo-red { background: var(--red); }
+    .halo-green { background: var(--green); }
+    #halo-green-wrap { position: absolute; inset: 0; opacity: 0; }
+
+    /* Callout over the chosen report */
+    #callout {
+      position: absolute;
+      left: 390px;
+      top: 540px;
+      width: 400px;
+      padding: 24px 28px 26px;
+      background: var(--white);
+      border-radius: 24px;
+      box-shadow:
+        0 1px 0 var(--paper-deep),
+        0 18px 40px -18px rgba(43, 28, 232, 0.32);
+    }
+    #callout::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -11px;
+      width: 24px;
+      height: 24px;
+      margin-left: -12px;
+      background: var(--white);
+      border-radius: 4px;
+      rotate: 45deg;
+    }
+    .co-title {
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 44px;
+      line-height: 1.1;
+      color: var(--ink);
+    }
+    .co-addr {
+      margin-top: 4px;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--ink-muted);
+    }
+    .co-status {
+      position: relative;
+      margin-top: 16px;
+      height: 54px;
+    }
+    .chip {
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      height: 54px;
+      padding: 0 22px 0 16px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 32px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    #chip-assegnata { background: #fff1d6; color: #8a5a00; } /* landing mocks.css status chips */
+    #chip-completata { background: var(--green-soft); color: #2f6e28; opacity: 0; }
+
+    /* StatusPixels: 2×2 cells, clockwise from top left */
+    .px {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      flex: none;
+    }
+    .px i {
+      position: absolute;
+      width: 11px;
+      height: 11px;
+    }
+    .px i:nth-child(1) { left: 0; top: 0; }
+    .px i:nth-child(2) { right: 0; top: 0; }
+    .px i:nth-child(3) { right: 0; bottom: 0; }
+    .px i:nth-child(4) { left: 0; bottom: 0; }
+    .px .f { background: var(--blue); }
+    .px .e { background: #dddbfb; }
+    .px .c { background: var(--green); }
+
+    /* "Problemi risolti" counter */
+    #counter {
+      position: absolute;
+      left: 48px;
+      top: 48px;
+      padding: 22px 30px 22px 26px;
+      background: var(--white);
+      border-radius: 24px;
+      box-shadow:
+        0 1px 0 var(--paper-deep),
+        0 18px 40px -20px rgba(43, 28, 232, 0.3);
+    }
+    .counter-label {
+      font-weight: 600;
+      font-size: 32px;
+      line-height: 1.2;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .counter-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .counter-row .px { width: 34px; height: 34px; }
+    .counter-row .px i { width: 15px; height: 15px; }
+    #counter-num {
+      display: inline-block;
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 700;
+      font-size: 74px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--blue);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── In-app notification: a sheet over the map ─────────── */
+    #notif {
+      position: absolute;
+      left: 48px;
+      right: 48px;
+      bottom: 40px;
+      padding: 18px 40px 34px;
+      background: var(--white);
+      border-radius: 36px;
+      box-shadow:
+        0 1px 0 var(--paper-deep),
+        0 -10px 60px -24px rgba(43, 28, 232, 0.34);
+    }
+    .grabber {
+      width: 72px;
+      height: 7px;
+      margin: 0 auto 24px;
+      border-radius: 4px;
+      background: var(--paper-deep);
+    }
+    .nt-head {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .nt-icon {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 84px;
+      height: 84px;
+      border-radius: 24px;
+      background: var(--green-soft);
+    }
+    .nt-icon svg { width: 64px; height: 64px; display: block; }
+    .nt-title {
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 42px;
+      line-height: 1.12;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .nt-sub {
+      margin-top: 4px;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--ink-muted);
+    }
+    .nt-points {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 24px;
+    }
+    .pt {
+      padding: 18px 24px 18px;
+      border-radius: 20px;
+      background: var(--paper);
+    }
+    .pt-value {
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 700;
+      font-size: 62px;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+    .pt-unit { font-size: 38px; margin-left: 8px; letter-spacing: 0; }
+    .pt-label {
+      margin-top: 8px;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+    .nt-level { margin-top: 24px; }
+    .lv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 32px;
+      line-height: 1.2;
+    }
+    .lv-name { font-weight: 600; color: var(--ink); }
+    .lv-xp { font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+    .lv-xp b { font-weight: 700; color: var(--blue); }
+    .lv-bar {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .seg {
+      position: relative;
+      height: 20px;
+      border-radius: 5px;
+      background: var(--blue-soft);
+      overflow: hidden;
+    }
+    .seg i {
+      position: absolute;
+      inset: 0;
+      background: var(--blue);
+      opacity: 0;
+    }
+    .seg.lit i { opacity: 1; }
+  </style>
+
+  <div id="root" data-composition-id="chiuso" data-width="1080" data-height="2012" data-layout-allow-overlap>
+    <!-- Stylised city in the app's basemap palette. World coordinates, turned -9°
+         around the centre so the street grid does not read as a spreadsheet. -->
+    <svg id="map" viewBox="0 -466 1080 2012" aria-hidden="true" data-layout-allow-overflow data-layout-allow-occlusion>
+      <g id="world" transform="rotate(-9 540 540)">
+        <!-- River -->
+        <path class="water-edge" d="M -320 830 C -20 750, 280 905, 600 835 S 1120 760, 1420 850" />
+        <path class="water" d="M -320 830 C -20 750, 280 905, 600 835 S 1120 760, 1420 850" />
+        <g id="buildings"></g>
+        <g id="casings"></g>
+        <g id="roads"></g>
+        <!-- Names: street names above their line, neighbourhoods on white plates -->
+        <text class="street-name" x="104" y="402">Via Appia</text>
+        <text class="street-name" x="318" y="408" transform="rotate(-90 318 408)">Via Garibaldi</text>
+        <text class="street-name" x="868" y="408" transform="rotate(-90 868 408)">Viale Mazzini</text>
+        <g class="plate" transform="translate(610 660)" data-layout-allow-occlusion>
+          <rect x="-132" y="-29" width="264" height="58" rx="12" />
+          <text text-anchor="middle" y="11" data-layout-allow-occlusion>Centro storico</text>
+        </g>
+      </g>
+    </svg>
+    <div id="pattern"></div>
+
+    <div id="ui">
+      <!-- Seven other reports in the city -->
+      <div class="pin pin-other" id="pin-d" data-wx="720" data-wy="580" data-glyph="building" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-c" data-wx="330" data-wy="700" data-glyph="trash" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-e" data-wx="990" data-wy="270" data-glyph="tree" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-a" data-wx="130" data-wy="270" data-glyph="bulb" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-h" data-wx="130" data-wy="700" data-glyph="road" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-g" data-wx="880" data-wy="985" data-glyph="trash" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-f" data-wx="520" data-wy="1000" data-glyph="bulb" style="--s: 2.5"></div>
+      <!-- In più per lo slot alto della scheda: la città continua sopra e sotto -->
+      <div class="pin pin-other" id="pin-i" data-wx="330" data-wy="-150" data-glyph="bulb" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-j" data-wx="900" data-wy="-250" data-glyph="trash" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-k" data-wx="160" data-wy="1260" data-glyph="tree" style="--s: 2.5"></div>
+      <div class="pin pin-other" id="pin-l" data-wx="760" data-wy="1400" data-glyph="building" style="--s: 2.5"></div>
+
+      <!-- The chosen report: Buca in strada, Via Appia 42 -->
+      <div class="pin" id="pin-focal" data-wx="610" data-wy="420" data-glyph="road" style="--s: 3.2">
+        <div class="pin-halo" id="halo">
+          <span class="halo-red"></span>
+          <div id="halo-green-wrap"><span class="halo-green"></span></div>
+        </div>
+      </div>
+
+      <div id="callout">
+        <p class="co-title" id="co-title">Buca in strada</p>
+        <p class="co-addr" id="co-addr">Via Appia 42</p>
+        <div class="co-status">
+          <span class="chip" id="chip-assegnata"
+            ><span class="px"><i class="f"></i><i class="f"></i><i class="f"></i><i class="e"></i></span>Assegnata</span
+          >
+          <span class="chip" id="chip-completata"
+            ><span class="px"><i class="c"></i><i class="c"></i><i class="c"></i><i class="c"></i></span>Completata</span
+          >
+        </div>
+      </div>
+
+      <div id="counter">
+        <p class="counter-label">Problemi risolti</p>
+        <div class="counter-row">
+          <span class="px"><i class="c"></i><i class="c"></i><i class="c"></i><i class="c"></i></span>
+          <span id="counter-num">128</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- In-app notification for the person who reported it -->
+    <section id="notif" data-layout-allow-overflow>
+      <div class="grabber"></div>
+      <div class="nt-head">
+        <div class="nt-icon">
+          <svg viewBox="0 0 24 24"><path id="nt-check" fill="#479b3e" shape-rendering="crispEdges" d="" /></svg>
+        </div>
+        <div>
+          <p class="nt-title" id="nt-title">La tua segnalazione è stata completata</p>
+          <p class="nt-sub" id="nt-sub">Buca in strada · Via Appia 42</p>
+        </div>
+      </div>
+      <div class="nt-points">
+        <div class="pt" id="pt-reporter">
+          <p class="pt-value">+25<span class="pt-unit">punti</span></p>
+          <p class="pt-label">a te, che l’hai segnalata</p>
+        </div>
+        <div class="pt" id="pt-supporters">
+          <p class="pt-value">+10<span class="pt-unit">punti</span></p>
+          <p class="pt-label">a chi l’ha sostenuta</p>
+        </div>
+      </div>
+      <div class="nt-level" id="nt-level">
+        <div class="lv-row">
+          <span class="lv-name">Livello 1 · Osservatore</span>
+          <span class="lv-xp"><b id="lv-xp-num">60</b> / 100 punti</span>
+        </div>
+        <div class="lv-bar" id="lv-bar">
+          <span class="seg lit"><i></i></span><span class="seg lit"><i></i></span><span class="seg lit"><i></i></span
+          ><span class="seg lit"><i></i></span><span class="seg lit"><i></i></span><span class="seg lit"><i></i></span
+          ><span class="seg" id="seg-7"><i></i></span><span class="seg" id="seg-8"><i></i></span
+          ><span class="seg"><i></i></span><span class="seg"><i></i></span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      // ── The app's pixel icons (cityfix/app src/components/pixel-icons.ts, 24 grid) ──
+      const ICON = {
+        check:
+          "M18 7h2v1H18zM17 8h2v1H17zM16 9h2v1H16zM15 10h2v1H15zM14 11h2v1H14zM4 12h2v1H4zM13 12h2v1H13zM5 13h2v1H5zM12 13h2v1H12zM6 14h2v1H6zM11 14h2v1H11zM7 15h5v1H7zM8 16h3v1H8zM9 17h1v1H9z",
+        road:
+          "M8 2h2v1H8zM14 2h2v1H14zM8 3h2v1H8zM11 3h2v1H11zM14 3h2v1H14zM8 4h2v1H8zM11 4h2v1H11zM14 4h2v1H14zM7 5h3v1H7zM11 5h2v1H11zM14 5h3v1H14zM7 6h2v1H7zM11 6h2v1H11zM15 6h2v1H15zM7 7h2v1H7zM15 7h2v1H15zM7 8h2v1H7zM15 8h2v1H15zM6 9h3v1H6zM15 9h3v1H15zM6 10h2v1H6zM11 10h2v1H11zM16 10h2v1H16zM6 11h2v1H6zM11 11h2v1H11zM16 11h2v1H16zM6 12h2v1H6zM11 12h2v1H11zM16 12h2v1H16zM6 13h2v1H6zM11 13h2v1H11zM16 13h2v1H16zM5 14h3v1H5zM16 14h3v1H16zM5 15h2v1H5zM17 15h2v1H17zM5 16h2v1H5zM17 16h2v1H17zM5 17h2v1H5zM11 17h2v1H11zM17 17h2v1H17zM4 18h3v1H4zM11 18h2v1H11zM17 18h3v1H17zM4 19h2v1H4zM11 19h2v1H11zM18 19h2v1H18zM4 20h2v1H4zM11 20h2v1H11zM18 20h2v1H18zM4 21h2v1H4zM18 21h2v1H18z",
+        bulb:
+          "M9 1h6v1H9zM8 2h8v1H8zM7 3h3v1H7zM14 3h3v1H14zM6 4h2v1H6zM16 4h2v1H16zM5 5h3v1H5zM16 5h3v1H16zM5 6h2v1H5zM17 6h2v1H17zM5 7h2v1H5zM17 7h2v1H17zM5 8h2v1H5zM17 8h2v1H17zM5 9h2v1H5zM17 9h2v1H17zM6 10h2v1H6zM16 10h2v1H16zM6 11h3v1H6zM15 11h3v1H15zM7 12h3v1H7zM14 12h3v1H14zM8 13h2v1H8zM14 13h2v1H14zM8 14h2v1H8zM14 14h2v1H14zM8 17h8v1H8zM8 18h8v1H8zM9 21h6v1H9zM9 22h6v1H9z",
+        tree:
+          "M11 1h2v1H11zM8 2h8v1H8zM7 3h10v1H7zM6 4h3v1H6zM15 4h3v1H15zM5 5h3v1H5zM16 5h3v1H16zM5 6h2v1H5zM17 6h2v1H17zM4 7h2v1H4zM18 7h2v1H18zM4 8h2v1H4zM18 8h2v1H18zM4 9h2v1H4zM18 9h2v1H18zM4 10h2v1H4zM18 10h2v1H18zM4 11h2v1H4zM18 11h2v1H18zM5 12h2v1H5zM17 12h2v1H17zM5 13h3v1H5zM16 13h3v1H16zM6 14h3v1H6zM15 14h3v1H15zM7 15h10v1H7zM9 16h6v1H9zM11 17h2v1H11zM11 18h2v1H11zM11 19h2v1H11zM11 20h2v1H11zM11 21h2v1H11zM11 22h2v1H11z",
+        trash:
+          "M7 3h10v1H7zM7 4h10v1H7zM2 5h20v1H2zM2 6h20v1H2zM4 7h3v1H4zM17 7h3v1H17zM5 8h2v1H5zM17 8h2v1H17zM5 9h2v1H5zM17 9h2v1H17zM5 10h2v1H5zM17 10h2v1H17zM5 11h2v1H5zM17 11h2v1H17zM5 12h2v1H5zM17 12h2v1H17zM5 13h2v1H5zM17 13h2v1H17zM5 14h2v1H5zM17 14h2v1H17zM5 15h2v1H5zM17 15h2v1H17zM5 16h2v1H5zM17 16h2v1H17zM5 17h2v1H5zM17 17h2v1H17zM5 18h2v1H5zM17 18h2v1H17zM5 19h3v1H5zM16 19h3v1H16zM5 20h14v1H5zM6 21h12v1H6z",
+        building:
+          "M4 3h11v1H4zM3 4h13v1H3zM3 5h2v1H3zM14 5h2v1H14zM3 6h2v1H3zM14 6h2v1H14zM3 7h2v1H3zM7 7h5v1H7zM14 7h2v1H14zM3 8h2v1H3zM7 8h5v1H7zM14 8h6v1H14zM3 9h2v1H3zM14 9h7v1H14zM3 10h2v1H3zM14 10h2v1H14zM19 10h2v1H19zM3 11h2v1H3zM7 11h5v1H7zM14 11h2v1H14zM19 11h2v1H19zM3 12h2v1H3zM7 12h5v1H7zM14 12h2v1H14zM19 12h2v1H19zM3 13h2v1H3zM14 13h2v1H14zM19 13h2v1H19zM3 14h2v1H3zM14 14h2v1H14zM19 14h2v1H19zM3 15h2v1H3zM7 15h5v1H7zM14 15h2v1H14zM19 15h2v1H19zM3 16h2v1H3zM7 16h5v1H7zM14 16h2v1H14zM19 16h2v1H19zM3 17h2v1H3zM14 17h2v1H14zM19 17h2v1H19zM3 18h2v1H3zM14 18h2v1H14zM19 18h2v1H19zM3 19h2v1H3zM14 19h2v1H14zM19 19h2v1H19zM2 20h20v1H2zM2 21h20v1H2z",
+      };
+      const PIN_OUTLINE =
+        "M12 1C6.2 1 1.5 5.7 1.5 11.5 1.5 19 12 33 12 33s10.5-14 10.5-21.5C22.5 5.7 17.8 1 12 1z";
+      const NS = "http://www.w3.org/2000/svg";
+      const root = document.querySelector('[data-composition-id="chiuso"]');
+      const $ = (sel) => root.querySelector(sel);
+
+      // ── Basemap: streets on a grid in world coordinates ──
+      const RIVER_TOP = 748; // blocks above the river stop here
+      const RIVER_BOTTOM = 918; // and start again here
+      const H = [
+        { y: -560, k: "minor" },
+        { y: -400, k: "minor" },
+        { y: -230, k: "minor" },
+        { y: -60, k: "minor" },
+        { y: 130, k: "minor" },
+        { y: 270, k: "minor" },
+        { y: 420, k: "major" }, // Via Appia
+        { y: 580, k: "minor" },
+        { y: 1000, k: "minor" },
+        { y: 1160, k: "minor" },
+        { y: 1320, k: "minor" },
+        { y: 1480, k: "minor" },
+        { y: 1640, k: "minor" },
+        { y: 1800, k: "minor" },
+      ];
+      const V = [
+        { x: -60, k: "minor" },
+        { x: 130, k: "minor" },
+        { x: 330, k: "major" }, // Via Garibaldi
+        { x: 520, k: "minor" },
+        { x: 720, k: "minor" },
+        { x: 880, k: "major" }, // Viale Mazzini
+        { x: 1060, k: "minor" },
+        { x: 1240, k: "minor" },
+      ];
+      const LO = -900;
+      const HI = 1980;
+      const segs = [];
+      H.forEach((r) => segs.push({ k: r.k, x1: LO, y1: r.y, x2: HI, y2: r.y }));
+      V.forEach((r) => {
+        if (r.k === "major") segs.push({ k: r.k, x1: r.x, y1: LO, x2: r.x, y2: HI });
+        else {
+          // Minor streets end at the river banks; only the main roads bridge it.
+          segs.push({ k: r.k, x1: r.x, y1: LO, x2: r.x, y2: RIVER_TOP + 4 });
+          segs.push({ k: r.k, x1: r.x, y1: RIVER_BOTTOM - 4, x2: r.x, y2: HI });
+        }
+      });
+      const casings = $("#casings");
+      const roads = $("#roads");
+      // Minor first, so main roads sit on top where they cross.
+      ["minor", "major"].forEach((kind) =>
+        segs
+          .filter((s) => s.k === kind)
+          .forEach((s) => {
+            ["casing", "road"].forEach((cls) => {
+              const l = document.createElementNS(NS, "line");
+              l.setAttribute("x1", s.x1);
+              l.setAttribute("y1", s.y1);
+              l.setAttribute("x2", s.x2);
+              l.setAttribute("y2", s.y2);
+              l.setAttribute("class", cls + " " + kind);
+              (cls === "casing" ? casings : roads).appendChild(l);
+            });
+          }),
+      );
+
+      // Buildings: outlines in each block (the app draws them as lines), seeded.
+      let seed = 20261103;
+      const rand = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      const half = (k) => (k === "major" ? 13 : 8);
+      const rowsY = [];
+      for (let i = 0; i < H.length - 1; i++) {
+        let top = H[i].y + half(H[i].k) + 12;
+        let bottom = H[i + 1].y - half(H[i + 1].k) - 12;
+        if (H[i].y === 580) bottom = RIVER_TOP - 6;
+        if (H[i + 1].y === 1000) top = RIVER_BOTTOM + 6;
+        rowsY.push([top, bottom]);
+      }
+      rowsY.unshift([LO, H[0].y - 8 - 12]);
+      rowsY.push([H[H.length - 1].y + 8 + 12, HI]);
+      const colsX = [];
+      for (let i = 0; i < V.length - 1; i++) {
+        colsX.push([V[i].x + half(V[i].k) + 12, V[i + 1].x - half(V[i + 1].k) - 12]);
+      }
+      colsX.unshift([LO, V[0].x - 8 - 12]);
+      colsX.push([V[V.length - 1].x + 8 + 12, HI]);
+      // An open square in the old centre, where its name plate stands.
+      const isPiazza = (cx, cy) => cx > 520 && cx < 720 && cy > 580 && cy < 760;
+      const bg = $("#buildings");
+      const addRect = (x, y, w, h) => {
+        if (w < 14 || h < 14) return;
+        const r = document.createElementNS(NS, "rect");
+        r.setAttribute("x", x.toFixed(1));
+        r.setAttribute("y", y.toFixed(1));
+        r.setAttribute("width", w.toFixed(1));
+        r.setAttribute("height", h.toFixed(1));
+        r.setAttribute("class", "bld");
+        bg.appendChild(r);
+      };
+      rowsY.forEach(([y0, y1]) =>
+        colsX.forEach(([x0, x1]) => {
+          if (isPiazza((x0 + x1) / 2, (y0 + y1) / 2)) return;
+          const bh = y1 - y0;
+          const nRows = bh > 110 ? 2 : 1;
+          const gap = 8;
+          for (let r = 0; r < nRows; r++) {
+            const ry0 = y0 + (r * (bh + gap)) / nRows;
+            const rh = bh / nRows - (nRows > 1 ? gap / 2 : 0);
+            let x = x0;
+            while (x < x1 - 14) {
+              const w = Math.min(x1 - x, 34 + rand() * 58);
+              const depth = rh * (0.62 + rand() * 0.38);
+              const y = r === 0 ? ry0 : ry0 + rh - depth; // buildings face their street
+              addRect(x, y, w, nRows > 1 ? depth : rh);
+              x += w + gap;
+            }
+          }
+        }),
+      );
+
+      // ── Pins: world position → screen position (same -9° turn as #world) ──
+      const A = (-9 * Math.PI) / 180;
+      const toScreen = (wx, wy) => {
+        const dx = wx - 540;
+        const dy = wy - 540;
+        return [540 + dx * Math.cos(A) - dy * Math.sin(A), 540 + dx * Math.sin(A) + dy * Math.cos(A)];
+      };
+      const glyphAt = "translate(5.33 4.83) scale(0.5556)"; // 20 px glyph in a 1.5× pin head
+      root.querySelectorAll(".pin").forEach((pin) => {
+        const [sx, sy] = toScreen(+pin.dataset.wx, +pin.dataset.wy);
+        pin.style.left = sx.toFixed(1) + "px";
+        pin.style.top = (sy + 466).toFixed(1) + "px"; // il mondo scende di 466 nello slot alto
+        const body = document.createElement("div");
+        body.className = "pin-body";
+        body.id = pin.id + "-body";
+        body.innerHTML =
+          '<svg viewBox="-1 -1 26 36">' +
+          // Green fills the pin from the centre of its head (a circle clip that grows).
+          '<defs><clipPath id="' + pin.id + '-clip" class="pin-clip"><circle cx="12" cy="11.5" r="0"/></clipPath></defs>' +
+          '<path class="pin-red" d="' + PIN_OUTLINE + '"/>' +
+          '<path class="pin-green" clip-path="url(#' + pin.id + '-clip)" d="' + PIN_OUTLINE + '"/>' +
+          '<path class="glyph glyph-cat" transform="' + glyphAt + '" d="' + ICON[pin.dataset.glyph] + '"/>' +
+          '<path class="glyph glyph-check" transform="' + glyphAt + '" d="' + ICON.check + '"/>' +
+          "</svg>";
+        pin.appendChild(body);
+      });
+      $("#nt-check").setAttribute("d", ICON.check);
+
+      // ── Beats (s) ──
+      const T_HERO = 1.3; // the chosen pin turns green
+      const T_STATUS = 1.75; // callout: Assegnata → Completata
+      const T_COUNT_FOCAL = 2.0; // counter 128 → 129
+      const T_CARD_IN = 2.85; // in-app notification rises
+      const T_PT1 = 3.45;
+      const T_PT2 = 3.7;
+      const T_XP = 4.15; // 60 → 85 punti
+      const XP_DUR = 1.0;
+      const T_CARD_OUT = 6.25;
+      const T_CITY = 6.75; // the other pins turn green, nearest first
+      const CITY_STAGGER = 0.2;
+      const OTHERS = ["#pin-d", "#pin-c", "#pin-e", "#pin-a", "#pin-h", "#pin-g", "#pin-f", "#pin-i", "#pin-k", "#pin-j", "#pin-l"];
+      const T_RESET_OUT = 9.3; // UI fades, state goes back to the opening
+      const T_RESET_SWAP = 9.56;
+      const T_RESET_IN = 9.6;
+
+      const COUNT_START = 128;
+      const countSteps = [T_COUNT_FOCAL].concat(OTHERS.map((_, i) => T_CITY + i * CITY_STAGGER + 0.12));
+      const XP_FROM = 60;
+      const XP_TO = 85;
+      const xpEase = gsap.parseEase("power2.out");
+      // Segment n lights when the points reach n × 10 (litPointSegments, floor).
+      const segTime = (target) => T_XP + (1 - Math.sqrt(1 - (target - XP_FROM) / (XP_TO - XP_FROM))) * XP_DUR;
+
+      const numEl = $("#counter-num");
+      const xpEl = $("#lv-xp-num");
+      function renderTexts(t) {
+        let n = COUNT_START;
+        if (t < T_RESET_SWAP) countSteps.forEach((s) => { if (t >= s) n++; });
+        const ns = String(n);
+        if (numEl.textContent !== ns) numEl.textContent = ns;
+        const p = Math.min(1, Math.max(0, (t - T_XP) / XP_DUR));
+        const xs = String(Math.round(XP_FROM + (XP_TO - XP_FROM) * xpEase(p)));
+        if (xpEl.textContent !== xs) xpEl.textContent = xs;
+      }
+
+      const ease = "power3.out"; // DESIGN.md cubic-bezier(0.22, 1, 0.36, 1)
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial (= final) state, applied immediately
+      gsap.set("#notif", { y: 600 });
+      gsap.set(["#pt-reporter", "#pt-supporters"], { opacity: 0, y: 14 });
+
+      // 0 → 1.3 — opening: the map, seven red reports, the chosen one selected.
+
+      // 1.3 — HERO: Buca in strada turns green, a calm check replaces the glyph.
+      const F = "#pin-focal";
+      tl.to("#pin-focal-clip circle", { attr: { r: 26 }, duration: 0.7, ease: "power2.inOut" }, T_HERO);
+      tl.to("#halo .halo-red", { opacity: 0, duration: 0.25, ease: "power2.in" }, T_HERO);
+      tl.to("#halo-green-wrap", { opacity: 1, duration: 0.4, ease: "power2.out" }, T_HERO + 0.2);
+      tl.fromTo("#halo-green-wrap", { scale: 0.6 }, { scale: 1, duration: 0.9, ease: "expo.out", immediateRender: false }, T_HERO + 0.2);
+      tl.to(F + " .glyph-cat", { opacity: 0, duration: 0.22, ease: "power2.in" }, T_HERO + 0.12);
+      tl.fromTo(
+        F + " .glyph-check",
+        { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, duration: 0.5, ease: "expo.out", immediateRender: false },
+        T_HERO + 0.32,
+      );
+      tl.to(F + "-body", { scale: 1.07, duration: 0.32, ease: "power2.out" }, T_HERO);
+      tl.to(F + "-body", { scale: 1, duration: 0.6, ease: "power2.inOut" }, T_HERO + 0.32);
+
+      // 1.75 — the callout's status follows
+      tl.to("#chip-assegnata", { opacity: 0, duration: 0.16, ease: "power2.in" }, T_STATUS);
+      tl.to("#chip-completata", { opacity: 1, duration: 0.32, ease }, T_STATUS + 0.18);
+
+      // Counter steps: a short settle each time the number changes
+      countSteps.forEach((s) =>
+        tl.fromTo(
+          "#counter-num",
+          { y: 10, opacity: 0.35 },
+          { y: 0, opacity: 1, duration: 0.26, ease, immediateRender: false },
+          s,
+        ),
+      );
+
+      // 2.85 — in-app notification for the reporter
+      tl.to("#notif", { y: 0, duration: 0.75, ease: "expo.out" }, T_CARD_IN);
+      tl.to("#pt-reporter", { opacity: 1, y: 0, duration: 0.45, ease }, T_PT1);
+      tl.to("#pt-supporters", { opacity: 1, y: 0, duration: 0.45, ease }, T_PT2);
+      // Two more segments of the points bar light as 60 → 85
+      tl.to("#seg-7 i", { opacity: 1, duration: 0.25, ease: "power2.out" }, segTime(70));
+      tl.to("#seg-8 i", { opacity: 1, duration: 0.25, ease: "power2.out" }, segTime(80));
+
+      // 6.25 — the sheet goes down
+      tl.to("#notif", { y: 600, duration: 0.45, ease: "power3.in" }, T_CARD_OUT);
+
+      // 6.75 — across the city, the other reports are closed one after another
+      OTHERS.forEach((id, i) => {
+        const t = T_CITY + i * CITY_STAGGER;
+        tl.to(id + "-clip circle", { attr: { r: 26 }, duration: 0.5, ease: "power2.inOut" }, t);
+        tl.to(id + " .glyph-cat", { opacity: 0, duration: 0.18, ease: "power2.in" }, t + 0.08);
+        tl.fromTo(
+          id + " .glyph-check",
+          { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" },
+          { opacity: 1, scale: 1, duration: 0.4, ease: "expo.out", immediateRender: false },
+          t + 0.22,
+        );
+      });
+
+      // 9.3 — loop reset: the UI layer dips out, the opening state returns under it
+      tl.to("#ui", { opacity: 0, duration: 0.24, ease: "power2.in" }, T_RESET_OUT);
+      tl.set(".pin-clip circle", { attr: { r: 0 } }, T_RESET_SWAP);
+      tl.set(".glyph-cat", { opacity: 1 }, T_RESET_SWAP);
+      tl.set(".glyph-check", { opacity: 0, scale: 0.7 }, T_RESET_SWAP);
+      tl.set("#halo-green-wrap", { opacity: 0, scale: 0.6 }, T_RESET_SWAP);
+      tl.set("#halo .halo-red", { opacity: 0.18 }, T_RESET_SWAP);
+      tl.set("#chip-assegnata", { opacity: 1 }, T_RESET_SWAP);
+      tl.set("#chip-completata", { opacity: 0 }, T_RESET_SWAP);
+      tl.set(["#seg-7 i", "#seg-8 i"], { opacity: 0 }, T_RESET_SWAP);
+      tl.set(["#pt-reporter", "#pt-supporters"], { opacity: 0, y: 14 }, T_RESET_SWAP);
+      tl.to("#ui", { opacity: 1, duration: 0.34, ease: "power2.out" }, T_RESET_IN);
+
+      // Hold the opening state to 10.0 — identical to frame 0.
+      tl.set({}, {}, 10);
+
+      tl.eventCallback("onUpdate", () => renderTexts(tl.time()));
+      window.addEventListener("hf-seek", (e) => renderTexts(e.detail.time));
+      renderTexts(0);
+
+      window.__timelines["chiuso"] = tl;
+    })();
+  </script>
+</template>

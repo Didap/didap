@@ -36,3 +36,6 @@ logs
 
 # Cornice iPhone ricavata dal mockup con licenza (media/cityfix/schermate/telefono.py)
 /media/cityfix/schermate/telefono.png
+
+# Report dei check e degli snapshot di HyperFrames
+/media/**/.hyperframes/artifacts/

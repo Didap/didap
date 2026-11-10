@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "historyId": "e017b20b-6d6c-4659-9a14-ec51e00db5ba",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/DunbarTall-Bold.ttf": {
+      "hash": "77d8e4f3e17c74ed514abacd395a4b49a89000bf54f88d4516055c147a5b1d0f",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\77\\77d8e4f3e17c74ed514abacd395a4b49a89000bf54f88d4516055c147a5b1d0f"
+    },
+    "assets/fonts/DunbarTall-Medium.ttf": {
+      "hash": "e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\e4\\e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6"
+    },
+    "assets/fonts/urbanist-latin-ext-wght-normal.woff2": {
+      "hash": "f71047c01398a570cabbd2810cb0893992b3dd2e34c966afa0e54b3f12b6f329",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\f7\\f71047c01398a570cabbd2810cb0893992b3dd2e34c966afa0e54b3f12b6f329"
+    },
+    "assets/fonts/urbanist-latin-wght-normal.woff2": {
+      "hash": "7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\79\\7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb"
+    },
+    "compositions/report.html": {
+      "hash": "4b0bf2a37e4c297f18577efc8bc4766a7cf4d9cf0031ff545b0a3e1c6bbdd132",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\4b\\4b0bf2a37e4c297f18577efc8bc4766a7cf4d9cf0031ff545b0a3e1c6bbdd132"
+    },
+    "hyperframes.json": {
+      "hash": "687e5c4a0a6ff969a5f316158089fb408f0c2d8f989d19e47289f7aa34a18d24",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\68\\687e5c4a0a6ff969a5f316158089fb408f0c2d8f989d19e47289f7aa34a18d24"
+    },
+    "index.html": {
+      "hash": "299bb3717597a2cd97bfab0f68d29c2df4191a6987241e17675e4d15ba6df3e4",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\29\\299bb3717597a2cd97bfab0f68d29c2df4191a6987241e17675e4d15ba6df3e4"
+    },
+    "meta.json": {
+      "hash": "f4e44d901bf19164f18d706c876b386f6a04126c2a2d21e747ab855268df0519",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\e017b20b-6d6c-4659-9a14-ec51e00db5ba\\blobs\\f4\\f4e44d901bf19164f18d706c876b386f6a04126c2a2d21e747ab855268df0519"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "6e9181f4-6fae-4d9d-9d8a-a29ee15c0ddd"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "6e9181f4-6fae-4d9d-9d8a-a29ee15c0ddd",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\landing\\resoconto\\.hyperframes\\artifacts\\checks\\6e9181f4-6fae-4d9d-9d8a-a29ee15c0ddd.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1794314646255,
+        "contentHash": "b108a6371d6e761afe0cf1d075a58fb93946482e0ee3f37ffdba5f8f3ecb6d5a",
+        "revision": null,
+        "inputFingerprint": "cfec9258f8767174a7d9cb41ffaf8d3e2d2aff26e886853570176cbdfffa7249",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "96dcf41f-41ac-41d6-9e89-a0ad7eccb5ce-1"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "96dcf41f-41ac-41d6-9e89-a0ad7eccb5ce-0",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\resoconto\\frame-00-at-0.5s.png",
+        "time": 0.5,
+        "metadata": {
+          "width": 1696,
+          "height": 1520,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314649594,
+        "contentHash": "b3c5efe6ab07ba237503e7569a923b0d6fff1808345d589298dbcdf373524fbd",
+        "revision": null,
+        "inputFingerprint": "cfec9258f8767174a7d9cb41ffaf8d3e2d2aff26e886853570176cbdfffa7249",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "96dcf41f-41ac-41d6-9e89-a0ad7eccb5ce-1",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\resoconto\\frame-01-at-8s.png",
+        "time": 8,
+        "metadata": {
+          "width": 1696,
+          "height": 1520,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314649594,
+        "contentHash": "b3c5efe6ab07ba237503e7569a923b0d6fff1808345d589298dbcdf373524fbd",
+        "revision": null,
+        "inputFingerprint": "cfec9258f8767174a7d9cb41ffaf8d3e2d2aff26e886853570176cbdfffa7249",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "e927ab8c-c96f-484e-8824-8734e28f1b8e",
+      "completedAt": 1794314772468,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\render2\\resoconto.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

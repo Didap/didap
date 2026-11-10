@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "historyId": "d08060c5-9b43-4a79-9a15-30e7a6ec50c1",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/DunbarTall-Bold.ttf": {
+      "hash": "77d8e4f3e17c74ed514abacd395a4b49a89000bf54f88d4516055c147a5b1d0f",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\77\\77d8e4f3e17c74ed514abacd395a4b49a89000bf54f88d4516055c147a5b1d0f"
+    },
+    "assets/fonts/DunbarTall-Medium.ttf": {
+      "hash": "e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\e4\\e4ae7d60339711a39232073741e88b116ff2b9cab23476670dbf21e43fce6cf6"
+    },
+    "assets/fonts/urbanist-latin-ext-wght-normal.woff2": {
+      "hash": "f71047c01398a570cabbd2810cb0893992b3dd2e34c966afa0e54b3f12b6f329",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\f7\\f71047c01398a570cabbd2810cb0893992b3dd2e34c966afa0e54b3f12b6f329"
+    },
+    "assets/fonts/urbanist-latin-wght-normal.woff2": {
+      "hash": "7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\79\\7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb"
+    },
+    "compositions/chiuso.html": {
+      "hash": "ab8ac8383949a5506df46d040b0d519468cbd1339828d34b018d4f63a9fe36d3",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\ab\\ab8ac8383949a5506df46d040b0d519468cbd1339828d34b018d4f63a9fe36d3"
+    },
+    "hyperframes.json": {
+      "hash": "687e5c4a0a6ff969a5f316158089fb408f0c2d8f989d19e47289f7aa34a18d24",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\68\\687e5c4a0a6ff969a5f316158089fb408f0c2d8f989d19e47289f7aa34a18d24"
+    },
+    "index.html": {
+      "hash": "c2aefdf547963ff4246ce86ddf6b73e54c98155a0a214ca0a966e5eaded93f1b",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\c2\\c2aefdf547963ff4246ce86ddf6b73e54c98155a0a214ca0a966e5eaded93f1b"
+    },
+    "meta.json": {
+      "hash": "c6451c40e9742747899e1e06124d26c070964e295c84ab7ef814ed94125de0eb",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\d08060c5-9b43-4a79-9a15-30e7a6ec50c1\\blobs\\c6\\c6451c40e9742747899e1e06124d26c070964e295c84ab7ef814ed94125de0eb"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "d3bde793-06a1-4ff7-9b0f-422e79e65030"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "d3bde793-06a1-4ff7-9b0f-422e79e65030",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\cityfix\\landing\\punto3\\.hyperframes\\artifacts\\checks\\d3bde793-06a1-4ff7-9b0f-422e79e65030.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1794314442111,
+        "contentHash": "4d0faef70b14ce0ad78a25abc9048c6b0c85e40b06ff61cc776315f5539b9927",
+        "revision": null,
+        "inputFingerprint": "ba723097c5b2fa9f6754395c25405098363198d2c49af83832697cbb58d496c1",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "74603694-3c57-4c15-9fc6-c51b6cc884de-3"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "74603694-3c57-4c15-9fc6-c51b6cc884de-0",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\punto3\\frame-00-at-0.5s.png",
+        "time": 0.5,
+        "metadata": {
+          "width": 1080,
+          "height": 2012,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314446005,
+        "contentHash": "26cb1a45f68ca7e1bd50384c9a6ed14ce5ce30334033c07e0eadd7263d03da52",
+        "revision": null,
+        "inputFingerprint": "ba723097c5b2fa9f6754395c25405098363198d2c49af83832697cbb58d496c1",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "74603694-3c57-4c15-9fc6-c51b6cc884de-1",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\punto3\\frame-01-at-4.5s.png",
+        "time": 4.5,
+        "metadata": {
+          "width": 1080,
+          "height": 2012,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314446005,
+        "contentHash": "709728da76e181e2e28d78fd78c817acd38c23be4535dfff9511d46e1d7a9508",
+        "revision": null,
+        "inputFingerprint": "ba723097c5b2fa9f6754395c25405098363198d2c49af83832697cbb58d496c1",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "74603694-3c57-4c15-9fc6-c51b6cc884de-2",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\punto3\\frame-02-at-7.5s.png",
+        "time": 7.5,
+        "metadata": {
+          "width": 1080,
+          "height": 2012,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314446005,
+        "contentHash": "f47933672d03f9c5ee76989b085fa6c80473287cb18d0a7c7562c1b3a05b1d32",
+        "revision": null,
+        "inputFingerprint": "ba723097c5b2fa9f6754395c25405098363198d2c49af83832697cbb58d496c1",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "74603694-3c57-4c15-9fc6-c51b6cc884de-3",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\snap3\\punto3\\frame-03-at-9.9s.png",
+        "time": 9.9,
+        "metadata": {
+          "width": 1080,
+          "height": 2012,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794314446005,
+        "contentHash": "466afd63119e7a74e4d2fe97e7be5e8d5fd0aa06307241c59ff91a7e821ae977",
+        "revision": null,
+        "inputFingerprint": "ba723097c5b2fa9f6754395c25405098363198d2c49af83832697cbb58d496c1",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "5217b391-4614-44cc-a09c-75c09535ccc6",
+      "completedAt": 1794314756433,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\77b6110a-a13f-4a05-96ba-9a1c7eb2c307\\scratchpad\\render2\\punto3.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

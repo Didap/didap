@@ -50,16 +50,24 @@ media:
   pair:
     - src: /covers/cityfix-logo.svg
       alt: Il logo di CityFix
-    - src: /covers/cityfix-punto1.webp
-      alt: "La landing di CityFix sul telefono, al passo del cittadino: in chat invia la foto della buca e sostiene una segnalazione simile a 30 metri"
+    - src: /covers/cityfix-punto1.mp4
+      poster: /covers/cityfix-punto1-poster.webp
+      alt: "La chat dell'app CityFix: Giulia scrive via Appia 42, scatta la foto della buca, l'app le propone una segnalazione simile a 30 metri e lei la sostiene"
   wide:
-    src: /covers/cityfix-punto2.webp
-    alt: "La landing di CityFix sul computer, al passo del Comune e dell'impresa: l'ufficio tecnico affida la buca di via Appia 42 a Edilstrade Rossi, con priorità alta, 480 euro e 3 giorni"
+    src: /covers/cityfix-punto2.mp4
+    poster: /covers/cityfix-punto2-poster.webp
+    srcMobile: /covers/cityfix-punto2-mobile.mp4
+    posterMobile: /covers/cityfix-punto2-mobile-poster.webp
+    alt: "Il backoffice del Comune affida la buca di via Appia 42 a Edilstrade Rossi, con priorità alta, 480 euro e 3 giorni. L'impresa riceve l'incarico, carica le tre foto del lavoro finito e l'intervento risulta completato"
   feature:
-    - src: /covers/cityfix-resoconto.webp
-      alt: "Il resoconto dell'anno sulla landing di CityFix, dal computer: 412 problemi risolti, 87% nei tempi, 6 giorni in media, 1.240 cittadini attivi e i problemi risolti mese per mese. Dati di esempio"
-    - src: /covers/cityfix-punto3.webp
-      alt: "La landing di CityFix sul telefono, al passo della città: sulla mappa la buca di via Appia diventa verde e chi l'ha segnalata riceve 25 punti"
+    - src: /covers/cityfix-resoconto.mp4
+      poster: /covers/cityfix-resoconto-poster.webp
+      srcMobile: /covers/cityfix-resoconto-mobile.mp4
+      posterMobile: /covers/cityfix-resoconto-mobile-poster.webp
+      alt: "Il resoconto dell'anno: i numeri salgono fino a 412 problemi risolti, 87% nei tempi, 6 giorni in media e 1.240 cittadini attivi, poi crescono le barre dei mesi. Dati di esempio"
+    - src: /covers/cityfix-punto3.mp4
+      poster: /covers/cityfix-punto3-poster.webp
+      alt: "La mappa della città: la buca di via Appia diventa verde, il contatore dei problemi risolti sale, a chi l'ha segnalata arrivano 25 punti e poi le altre segnalazioni si chiudono una dopo l'altra"
   triple:
     - src: /covers/cityfix-post-buca.webp
       alt: "Post Instagram: «Una città non è mai finita.» Foto di una buca in via Fulvia, segnalata su CityFix"

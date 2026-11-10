@@ -1,0 +1,876 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Dunbar Tall";
+      src: url("assets/fonts/DunbarTall-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Dunbar Tall";
+      src: url("assets/fonts/DunbarTall-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Urbanist";
+      font-style: normal;
+      font-weight: 100 900;
+      src: url("assets/fonts/urbanist-latin-ext-wght-normal.woff2") format("woff2");
+      unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "Urbanist";
+      font-style: normal;
+      font-weight: 100 900;
+      src: url("assets/fonts/urbanist-latin-wght-normal.woff2") format("woff2");
+      unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+    }
+
+    /* Sized for the landing slot (~520 px wide on desktop, ~350 px on mobile):
+       smallest text 32 px, titles 44 px in this 1080 canvas. */
+    #root {
+      --blue: #2b1ce8;
+      --blue-soft: #e8e6f7;
+      --red: #f44747;
+      --red-deep: #c83434;
+      --red-soft: #fde8e8;
+      --amber-soft: #fff1d6;
+      --amber-ink: #8a5a00;
+      --green-soft: #e3f1de;
+      --green-ink: #2f6e28;
+      --ink: #0a0a0f;
+      --ink-muted: #52525c;
+      --paper: #f4f4f4;
+      --paper-deep: #e6e6e9;
+      --white: #fefeff;
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--paper);
+      font-family: "Urbanist", sans-serif;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- Browser window ---------- */
+    .dk-card {
+      position: absolute;
+      left: 48px;
+      top: 128px;
+      width: 984px;
+      height: 908px;
+      background: var(--white);
+      border-radius: 32px;
+      overflow: hidden;
+      box-shadow:
+        0 2px 0 var(--paper-deep),
+        0 40px 80px -48px rgba(43, 28, 232, 0.38);
+    }
+    .dk-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 984px;
+      height: 84px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 36px;
+      border-bottom: 2px solid var(--paper-deep);
+    }
+    .dk-bar i {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--paper-deep);
+    }
+    .dk-bar span {
+      margin-left: 16px;
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
+
+    .dk-tabs {
+      position: absolute;
+      left: 40px;
+      top: 84px;
+      width: 904px;
+      height: 84px;
+      display: flex;
+      align-items: flex-end;
+      gap: 34px;
+      border-bottom: 2px solid var(--paper-deep);
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
+    .dk-tabs span {
+      padding-bottom: 16px;
+    }
+    .dk-tabs span.is-active {
+      color: var(--blue);
+      font-weight: 600;
+      box-shadow: inset 0 -5px 0 var(--blue);
+    }
+
+    /* ---------- Rows ---------- */
+    .dk-row {
+      position: absolute;
+      left: 40px;
+      width: 904px;
+      height: 178px;
+    }
+    .dk-row-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      background: #efeff2;
+    }
+    .dk-row-bg {
+      position: absolute;
+      left: -16px;
+      right: -16px;
+      top: 10px;
+      bottom: 10px;
+      border-radius: 16px;
+      opacity: 0;
+    }
+    .dk-bg-hover {
+      background: var(--paper);
+    }
+    .dk-bg-late {
+      background: #fdf1f1;
+    }
+    .dk-bg-sel {
+      background: var(--blue-soft);
+    }
+    .dk-cell {
+      position: absolute;
+      top: 0;
+      height: 176px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .dk-c1 {
+      left: 8px;
+      width: 450px;
+    }
+    .dk-c2 {
+      left: 470px;
+      width: 270px;
+    }
+    .dk-c3 {
+      left: 744px;
+      width: 160px;
+      align-items: flex-end;
+    }
+    .dk-title {
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 44px;
+      line-height: 1.15;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .dk-sub {
+      margin-top: 6px;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+    .dk-stack {
+      display: grid;
+    }
+    .dk-stack > * {
+      grid-area: 1 / 1;
+    }
+    .dk-c3 .dk-stack {
+      justify-items: end;
+    }
+    .dk-c2 .dk-stack {
+      justify-items: start;
+    }
+
+    .dk-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 18px 8px 16px;
+      border-radius: 999px;
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .dk-status::before {
+      content: "";
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .dk-status[data-s="inviata"] {
+      background: var(--red-soft);
+      color: var(--red-deep);
+    }
+    .dk-status[data-s="presa"] {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+    .dk-status[data-s="assegnata"] {
+      background: var(--amber-soft);
+      color: var(--amber-ink);
+    }
+    .dk-status[data-s="completata"] {
+      background: var(--green-soft);
+      color: var(--green-ink);
+    }
+
+    .dk-late {
+      display: inline-block;
+      position: relative;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      line-height: 1.15;
+      white-space: nowrap;
+      color: var(--red-deep);
+    }
+    .dk-late-fill {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: var(--red-soft);
+    }
+    .dk-late-txt {
+      position: relative;
+      display: grid;
+    }
+    .dk-late-txt > * {
+      grid-area: 1 / 1;
+    }
+
+    .dk-prio {
+      font-family: "Urbanist", sans-serif;
+      font-weight: 600;
+      font-size: 34px;
+      line-height: 1.15;
+    }
+    .dk-prio.is-mid {
+      color: var(--ink);
+    }
+    .dk-prio.is-high {
+      color: var(--red-deep);
+      opacity: 0;
+    }
+    .dk-note {
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+
+    /* ---------- Assign drawer ---------- */
+    .dk-scrim {
+      position: absolute;
+      left: 0;
+      top: 86px;
+      width: 984px;
+      height: 822px;
+      background: rgba(10, 10, 15, 0.06);
+      opacity: 0;
+    }
+    .dk-drawer {
+      position: absolute;
+      left: 364px;
+      top: 86px;
+      width: 620px;
+      height: 822px;
+      background: var(--white);
+      border-left: 2px solid var(--paper-deep);
+      box-shadow: -30px 0 60px -36px rgba(10, 10, 15, 0.35);
+    }
+    .dk-dr-in {
+      position: absolute;
+      left: 40px;
+      top: 0;
+      width: 540px;
+      height: 822px;
+    }
+    .dk-dr-title {
+      position: absolute;
+      left: 0;
+      top: 34px;
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 44px;
+      line-height: 52px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .dk-dr-close {
+      position: absolute;
+      right: 0;
+      top: 44px;
+      width: 32px;
+      height: 32px;
+    }
+    .dk-dr-close::before,
+    .dk-dr-close::after {
+      content: "";
+      position: absolute;
+      left: 14.5px;
+      top: 2px;
+      width: 3px;
+      height: 28px;
+      border-radius: 2px;
+      background: var(--ink-muted);
+      transform: rotate(45deg);
+    }
+    .dk-dr-close::after {
+      transform: rotate(-45deg);
+    }
+    .dk-dr-sub {
+      position: absolute;
+      left: 0;
+      top: 94px;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 40px;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+    .dk-label {
+      position: absolute;
+      left: 0;
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      line-height: 40px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .dk-seg {
+      position: absolute;
+      left: 0;
+      top: 218px;
+      width: 540px;
+      height: 76px;
+      border-radius: 16px;
+      background: var(--paper);
+    }
+    .dk-seg-pill {
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      width: 170px;
+      height: 66px;
+      border-radius: 12px;
+      background: var(--white);
+      box-shadow: 0 1px 0 var(--paper-deep), 0 4px 10px -6px rgba(10, 10, 15, 0.25);
+    }
+    .dk-seg-opt {
+      position: absolute;
+      top: 0;
+      width: 180px;
+      height: 76px;
+      display: grid;
+      place-items: center;
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      color: var(--ink-muted);
+    }
+    .dk-seg-opt > * {
+      grid-area: 1 / 1;
+    }
+    .dk-seg-opt .is-on {
+      color: var(--ink);
+    }
+    .dk-seg-opt .is-alta {
+      color: var(--red-deep);
+      opacity: 0;
+    }
+
+    .dk-field {
+      position: absolute;
+      height: 80px;
+      border-radius: 14px;
+      background: var(--white);
+      border: 2px solid var(--paper-deep);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      font-size: 34px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .dk-ring {
+      position: absolute;
+      inset: -2px;
+      border-radius: 14px;
+      border: 2px solid var(--blue);
+      box-shadow: 0 0 0 4px rgba(43, 28, 232, 0.12);
+      opacity: 0;
+    }
+    .dk-f-imp {
+      left: 0;
+      top: 378px;
+      width: 540px;
+    }
+    .dk-imp-val {
+      display: grid;
+    }
+    .dk-imp-val > * {
+      grid-area: 1 / 1;
+    }
+    .dk-imp-val .is-ph {
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+    .dk-imp-val .is-val {
+      opacity: 0;
+      font-weight: 600;
+    }
+    .dk-chev {
+      position: absolute;
+      right: 26px;
+      top: 26px;
+      width: 16px;
+      height: 16px;
+      border-right: 3px solid var(--ink-muted);
+      border-bottom: 3px solid var(--ink-muted);
+      transform: rotate(45deg);
+    }
+    .dk-f-amt {
+      left: 0;
+      top: 542px;
+      width: 260px;
+    }
+    .dk-f-due {
+      left: 280px;
+      top: 542px;
+      width: 260px;
+    }
+    .dk-pre {
+      color: var(--ink-muted);
+      font-weight: 500;
+      margin-right: 10px;
+    }
+    .dk-ch {
+      display: none;
+      font-weight: 600;
+    }
+    .dk-caret {
+      display: inline-block;
+      width: 3px;
+      height: 38px;
+      margin-left: 3px;
+      background: var(--blue);
+      opacity: 0;
+    }
+    .dk-suf {
+      margin-left: auto;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    .dk-menu {
+      position: absolute;
+      left: 0;
+      top: 466px;
+      width: 540px;
+      padding: 8px;
+      border-radius: 16px;
+      background: var(--white);
+      box-shadow: 0 0 0 2px var(--paper-deep), 0 24px 40px -20px rgba(10, 10, 15, 0.35);
+      opacity: 0;
+    }
+    .dk-opt {
+      position: relative;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 34px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .dk-opt small {
+      position: relative;
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
+    .dk-opt > span {
+      position: relative;
+    }
+    .dk-opt-hl {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: var(--blue-soft);
+      opacity: 0;
+    }
+
+    .dk-btn {
+      position: absolute;
+      left: 0;
+      top: 676px;
+      width: 540px;
+      height: 88px;
+      border-radius: 14px;
+      background: var(--blue);
+      color: var(--white);
+      display: grid;
+      place-items: center;
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 36px;
+    }
+
+    /* ---------- Cursor ---------- */
+    .dk-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 50px;
+      height: 55px;
+      opacity: 0;
+      transform-origin: 4px 4px;
+    }
+    .dk-cursor svg {
+      display: block;
+      filter: drop-shadow(0 3px 4px rgba(10, 10, 15, 0.25));
+    }
+
+    /* ---------- Screen wrapper + eyebrow (moves as one in the handover) ---------- */
+    .dk-screen {
+      position: absolute;
+      inset: 0;
+    }
+    .dk-eyebrow {
+      position: absolute;
+      left: 48px;
+      top: 44px;
+      height: 60px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 26px 0 20px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-family: "Dunbar Tall", sans-serif;
+      font-weight: 500;
+      font-size: 34px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .dk-eyebrow svg {
+      width: 34px;
+      height: 34px;
+      flex: none;
+    }
+    .dk-eyebrow em {
+      font-style: normal;
+      color: var(--ink);
+    }
+  </style>
+
+  <div id="root" data-composition-id="desk" data-width="1080" data-height="1080">
+    <div class="dk-screen" id="dk-screen">
+    <span class="dk-eyebrow"
+      ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18M5 20V10l7-5 7 5v10M9.5 20v-5h5v5" /></svg
+      >Il comune <em>· Ufficio tecnico</em></span
+    >
+    <div class="dk-card" id="dk-card">
+      <div class="dk-bar"><i></i><i></i><i></i><span>Segnalazioni</span></div>
+
+      <div class="dk-tabs" data-layout-allow-occlusion data-layout-allow-overlap>
+        <span class="is-active">Aperte</span><span data-layout-allow-occlusion>Panoramica</span><span data-layout-allow-occlusion>Resoconto</span>
+      </div>
+
+      <!-- Row 1: late report -->
+      <div class="dk-row" id="dk-r1" data-layout-allow-occlusion data-layout-allow-overlap style="top: 168px">
+        <div class="dk-row-bg dk-bg-late" id="dk-r1-late"></div>
+        <div class="dk-row-line"></div>
+        <div class="dk-cell dk-c1">
+          <span class="dk-title" data-layout-allow-occlusion>Lampione spento</span>
+          <span class="dk-sub" data-layout-allow-occlusion>Via Cappuccini 8</span>
+        </div>
+        <div class="dk-cell dk-c2">
+          <div class="dk-stack"><span data-layout-allow-occlusion class="dk-status" data-s="inviata">Inviata</span></div>
+        </div>
+        <div class="dk-cell dk-c3">
+          <span class="dk-late" id="dk-late">
+            <span class="dk-late-fill"></span>
+            <span class="dk-late-txt"><span data-layout-allow-occlusion>8 giorni</span></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Row 2: the report that gets assigned -->
+      <div class="dk-row" id="dk-r2" data-layout-allow-occlusion data-layout-allow-overlap style="top: 346px">
+        <div class="dk-row-bg dk-bg-hover" id="dk-r2-hover"></div>
+        <div class="dk-row-bg dk-bg-sel" id="dk-r2-sel"></div>
+        <div class="dk-row-line"></div>
+        <div class="dk-cell dk-c1">
+          <span class="dk-title" data-layout-allow-occlusion>Buca in strada</span>
+          <span class="dk-sub dk-stack"
+            ><span id="dk-sub-a">Via Appia 42</span
+            ><span id="dk-sub-b" style="opacity: 0">Edilstrade Rossi · € 480</span></span
+          >
+        </div>
+        <div class="dk-cell dk-c2">
+          <div class="dk-stack">
+            <span data-layout-allow-occlusion class="dk-status" data-s="presa" id="dk-st-presa">Presa in carico</span>
+            <span data-layout-allow-occlusion class="dk-status" data-s="assegnata" id="dk-st-ass" style="opacity: 0">Assegnata</span>
+          </div>
+        </div>
+        <div class="dk-cell dk-c3">
+          <div class="dk-stack">
+            <span data-layout-allow-occlusion class="dk-prio is-mid" id="dk-prio-mid">Media</span>
+            <span data-layout-allow-occlusion class="dk-prio is-high" id="dk-prio-high">Alta</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="dk-row" id="dk-r3" data-layout-allow-occlusion data-layout-allow-overlap style="top: 524px">
+        <div class="dk-row-line"></div>
+        <div class="dk-cell dk-c1">
+          <span class="dk-title" data-layout-allow-occlusion>Rifiuti abbandonati</span>
+          <span class="dk-sub" data-layout-allow-occlusion>Parco Cesare Braico</span>
+        </div>
+        <div class="dk-cell dk-c2">
+          <div class="dk-stack"><span data-layout-allow-occlusion class="dk-status" data-s="assegnata">Assegnata</span></div>
+        </div>
+        <div class="dk-cell dk-c3"><span data-layout-allow-occlusion class="dk-note">Verde Sud</span></div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="dk-row" id="dk-r4" data-layout-allow-occlusion data-layout-allow-overlap style="top: 702px">
+        <div class="dk-cell dk-c1">
+          <span class="dk-title" data-layout-allow-occlusion>Giochi danneggiati</span>
+          <span class="dk-sub" data-layout-allow-occlusion>Piazza Vittoria</span>
+        </div>
+        <div class="dk-cell dk-c2">
+          <div class="dk-stack"><span data-layout-allow-occlusion class="dk-status" data-s="completata">Completata</span></div>
+        </div>
+        <div class="dk-cell dk-c3"><span data-layout-allow-occlusion class="dk-note">nei tempi</span></div>
+      </div>
+
+      <div class="dk-scrim" id="dk-scrim" data-layout-allow-occlusion></div>
+
+      <!-- Assign drawer (off-canvas at rest) -->
+      <div class="dk-drawer" id="dk-drawer" data-layout-allow-occlusion>
+        <div class="dk-dr-in">
+          <span class="dk-dr-title">Affida intervento</span>
+          <span class="dk-dr-close"></span>
+          <span class="dk-dr-sub">Buca in strada · Via Appia 42</span>
+
+          <span class="dk-label" style="top: 170px">Priorità</span>
+          <div class="dk-seg">
+            <div class="dk-seg-pill" id="dk-pill"></div>
+            <span class="dk-seg-opt" style="left: 0"><span>Bassa</span></span>
+            <span class="dk-seg-opt" style="left: 180px"
+              ><span id="dk-seg-mid-on" class="is-on">Media</span
+              ><span id="dk-seg-mid-off" style="opacity: 0">Media</span></span
+            >
+            <span class="dk-seg-opt" style="left: 360px"
+              ><span id="dk-seg-alta-off">Alta</span
+              ><span id="dk-seg-alta-on" class="is-alta">Alta</span></span
+            >
+          </div>
+
+          <span class="dk-label" style="top: 330px">Impresa</span>
+          <div class="dk-field dk-f-imp">
+            <span class="dk-imp-val"
+              ><span class="is-ph" id="dk-imp-ph">Scegli un’impresa</span
+              ><span class="is-val" id="dk-imp-val">Edilstrade Rossi</span></span
+            >
+            <span class="dk-chev"></span>
+            <span class="dk-ring" id="dk-ring-imp"></span>
+          </div>
+
+          <span class="dk-label" style="top: 494px">Importo</span>
+          <span class="dk-label" style="top: 494px; left: 280px">Scadenza</span>
+          <div class="dk-field dk-f-amt">
+            <span class="dk-pre">€</span
+            ><span class="dk-ch" id="dk-a1">4</span><span class="dk-ch" id="dk-a2">8</span
+            ><span class="dk-ch" id="dk-a3">0</span><span class="dk-caret" id="dk-caret-amt"></span>
+            <span class="dk-ring" id="dk-ring-amt"></span>
+          </div>
+          <div class="dk-field dk-f-due">
+            <span class="dk-ch" id="dk-d1">3</span><span class="dk-caret" id="dk-caret-due"></span>
+            <span class="dk-suf">giorni</span>
+            <span class="dk-ring" id="dk-ring-due"></span>
+          </div>
+
+          <div class="dk-btn" id="dk-btn">Affida all’impresa</div>
+
+          <div class="dk-menu" id="dk-menu" data-layout-allow-occlusion data-layout-allow-overlap>
+            <div class="dk-opt">
+              <i class="dk-opt-hl" id="dk-opt-hl"></i><span>Edilstrade Rossi</span><small>Strade</small>
+            </div>
+            <div class="dk-opt"><span>Verde Sud</span><small>Verde</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="dk-cursor" id="dk-cursor">
+      <svg width="50" height="55" viewBox="0 0 40 44" aria-hidden="true">
+        <path
+          d="M3 3 L3 33 L10.5 26 L15.8 38.5 L21 36.3 L15.8 24.2 L26 24.2 Z"
+          fill="#0a0a0f"
+          stroke="#fefeff"
+          stroke-width="2.4"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const OUT = "power3.out"; // ~ cubic-bezier(0.22, 1, 0.36, 1)
+      const MOVE = "power3.inOut";
+      const NI = { immediateRender: false };
+
+      // Fine del giro: la lista sfuma a H2 per il loop (bid.html sfuma insieme)
+      const H2 = 12.8;
+
+      // Cursor tip positions (canvas px). Card origin = (48, 128); drawer content origin = (452, 214).
+      const P = {
+        start: { x: 1000, y: 1040 },
+        row: { x: 270, y: 563 },
+        alta: { x: 902, y: 470 },
+        imp: { x: 760, y: 632 },
+        opt: { x: 700, y: 724 },
+        amt: { x: 600, y: 796 },
+        btn: { x: 740, y: 934 },
+        exit: { x: 1010, y: 1060 },
+      };
+      const TIP = 4; // tip of the 1.25x arrow inside its box
+      const cur = "#dk-cursor";
+      const to = (p, t, d, ease = MOVE) => tl.to(cur, { x: p.x - TIP, y: p.y - TIP, duration: d, ease }, t);
+      const click = (t) => {
+        tl.to(cur, { scale: 0.86, duration: 0.07, ease: "power2.out" }, t);
+        tl.to(cur, { scale: 1, duration: 0.16, ease: OUT }, t + 0.07);
+      };
+
+      // ---- Opening state (t = 0, identical to the last frame) ----
+      tl.set("#dk-screen", { x: 0, opacity: 1 }, 0);
+      tl.set(cur, { x: P.start.x - TIP, y: P.start.y - TIP, scale: 1, opacity: 0 }, 0);
+      tl.set("#dk-drawer", { x: 700 }, 0);
+      tl.set("#dk-pill", { x: 180 }, 0);
+      tl.set("#dk-menu", { y: -8 }, 0);
+      tl.set("#dk-btn", { scale: 1 }, 0);
+
+      // 1) Cursor opens "Buca in strada" (0.6 - 1.9)
+      tl.to(cur, { opacity: 1, duration: 0.2, ease: "none" }, 0.6);
+      to(P.row, 0.6, 0.6);
+      tl.to("#dk-r2-hover", { opacity: 1, duration: 0.15, ease: "none" }, 1.0);
+      click(1.22);
+      tl.to("#dk-r2-sel", { opacity: 1, duration: 0.2, ease: OUT }, 1.26);
+      tl.set("#dk-r2-hover", { opacity: 0 }, 1.46);
+      tl.to("#dk-scrim", { opacity: 1, duration: 0.4, ease: OUT }, 1.3);
+      tl.to("#dk-drawer", { x: 0, duration: 0.6, ease: "expo.out" }, 1.3);
+
+      // 2) Priorità -> Alta (1.95 - 2.8)
+      to(P.alta, 1.95, 0.45);
+      click(2.42);
+      tl.to("#dk-pill", { x: 360, backgroundColor: "#fde8e8", duration: 0.35, ease: OUT }, 2.46);
+      tl.to("#dk-seg-mid-on", { opacity: 0, duration: 0.2, ease: "none" }, 2.46);
+      tl.to("#dk-seg-mid-off", { opacity: 1, duration: 0.2, ease: "none" }, 2.46);
+      tl.to("#dk-seg-alta-off", { opacity: 0, duration: 0.2, ease: "none" }, 2.5);
+      tl.to("#dk-seg-alta-on", { opacity: 1, duration: 0.2, ease: "none" }, 2.5);
+      tl.set("#dk-prio-mid", { opacity: 0 }, 2.5);
+      tl.set("#dk-prio-high", { opacity: 1 }, 2.5);
+
+      // 3) Impresa: Edilstrade Rossi (2.8 - 3.9)
+      to(P.imp, 2.8, 0.42);
+      click(3.24);
+      tl.to("#dk-ring-imp", { opacity: 1, duration: 0.15, ease: "none" }, 3.28);
+      tl.to("#dk-menu", { opacity: 1, y: 0, duration: 0.25, ease: OUT }, 3.3);
+      to(P.opt, 3.42, 0.3);
+      tl.to("#dk-opt-hl", { opacity: 1, duration: 0.12, ease: "none" }, 3.6);
+      click(3.76);
+      tl.to("#dk-menu", { opacity: 0, y: -6, duration: 0.16, ease: "power2.in" }, 3.82);
+      tl.set("#dk-imp-ph", { opacity: 0 }, 3.84);
+      tl.set("#dk-imp-val", { opacity: 1 }, 3.84);
+
+      // 4) Importo € 480, Tab, Scadenza 3 giorni (3.95 - 5.1)
+      to(P.amt, 3.95, 0.36);
+      click(4.33);
+      tl.to("#dk-ring-imp", { opacity: 0, duration: 0.12, ease: "none" }, 4.36);
+      tl.to("#dk-ring-amt", { opacity: 1, duration: 0.12, ease: "none" }, 4.36);
+      tl.set("#dk-caret-amt", { opacity: 1 }, 4.38);
+      tl.set("#dk-a1", { display: "inline" }, 4.5);
+      tl.set("#dk-a2", { display: "inline" }, 4.6);
+      tl.set("#dk-a3", { display: "inline" }, 4.7);
+      tl.set("#dk-caret-amt", { opacity: 0 }, 4.88);
+      tl.to("#dk-ring-amt", { opacity: 0, duration: 0.12, ease: "none" }, 4.88);
+      tl.to("#dk-ring-due", { opacity: 1, duration: 0.12, ease: "none" }, 4.88);
+      tl.set("#dk-caret-due", { opacity: 1 }, 4.88);
+      tl.set("#dk-d1", { display: "inline" }, 5.02);
+
+      // 5) Affida all'impresa (5.15 - 6.0)
+      to(P.btn, 5.15, 0.4);
+      click(5.58);
+      tl.to("#dk-btn", { scale: 0.97, backgroundColor: "#130378", duration: 0.08, ease: "power2.out" }, 5.58);
+      tl.to("#dk-btn", { scale: 1, backgroundColor: "#2b1ce8", duration: 0.2, ease: OUT }, 5.66);
+      tl.to(cur, { opacity: 0, duration: 0.3, ease: "power2.in" }, 5.72);
+      to(P.exit, 5.72, 0.45, "power2.in");
+      tl.to("#dk-drawer", { x: 700, duration: 0.4, ease: "power3.inOut" }, 5.7);
+      tl.to("#dk-scrim", { opacity: 0, duration: 0.35, ease: "power2.inOut" }, 5.74);
+      tl.to("#dk-r2-sel", { opacity: 0, duration: 0.45, ease: "power2.inOut" }, 5.8);
+
+      // 6) Status Presa in carico -> Assegnata (6.1 - 6.6), hold until the handover
+      tl.to("#dk-st-presa", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, 6.1);
+      tl.fromTo("#dk-st-ass", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, ease: OUT, ...NI }, 6.26);
+      tl.to("#dk-sub-a", { opacity: 0, duration: 0.2, ease: "none" }, 6.36);
+      tl.to("#dk-sub-b", { opacity: 1, duration: 0.3, ease: "none" }, 6.42);
+
+      // 7) Nella scheda il comune e l'impresa stanno affiancati: la lista resta su
+      //    "Assegnata" mentre l'impresa lavora, poi sfuma per il loop
+      tl.to("#dk-screen", { opacity: 0, duration: 0.3, ease: "power2.in" }, H2);
+
+      // 8) Sotto la sfumatura: tutto torna allo stato iniziale
+      const R = H2 + 0.35;
+      tl.set("#dk-st-presa", { opacity: 1, y: 0 }, R);
+      tl.set("#dk-st-ass", { opacity: 0, y: 0 }, R);
+      tl.set("#dk-prio-mid", { opacity: 1 }, R);
+      tl.set("#dk-prio-high", { opacity: 0 }, R);
+      tl.set("#dk-sub-a", { opacity: 1 }, R);
+      tl.set("#dk-sub-b", { opacity: 0 }, R);
+      tl.set("#dk-pill", { x: 180, backgroundColor: "#fefeff" }, R);
+      tl.set(["#dk-seg-mid-on", "#dk-seg-alta-off", "#dk-imp-ph"], { opacity: 1 }, R);
+      tl.set(["#dk-seg-mid-off", "#dk-seg-alta-on", "#dk-imp-val", "#dk-opt-hl", "#dk-ring-due", "#dk-caret-due"], { opacity: 0 }, R);
+      tl.set(["#dk-a1", "#dk-a2", "#dk-a3", "#dk-d1"], { display: "none" }, R);
+      tl.set("#dk-menu", { y: -8 }, R);
+      tl.set(cur, { x: P.start.x - TIP, y: P.start.y - TIP, scale: 1, opacity: 0 }, R);
+
+      // 9) Loop: la lista iniziale torna prima dell'ultimo fotogramma
+      tl.to("#dk-screen", { opacity: 1, duration: 0.4, ease: OUT }, R + 0.05);
+
+      window.__timelines["desk"] = tl;
+    })();
+  </script>
+</template>

@@ -1,6 +1,6 @@
 ---
 title: CityFix
-summary: An urban regeneration platform that connects citizens, municipalities and suppliers to report, manage and resolve interventions across the city.
+summary: The system a municipality uses to collect citizens' reports, set priorities and assign the work to local contractors. Every job tracked, from the photo to the finished work.
 role: Cities
 cover: /covers/cityfix.jpg
 url: https://cityfix.io
@@ -16,44 +16,57 @@ order: 3
 status: pilot
 scope: Full-stack design and development
 stack: Expo, Vue 3, NestJS, PostgreSQL
-lede: The citizen reports, the municipality assigns the job, the contractor fixes it. And whoever reported it sees every step.
+lede: From the pothole reported to the pothole fixed. The citizen reports, the municipality assigns the job to a local contractor, and whoever reported it sees every step.
 hero:
   src: /covers/cityfix-hero.mp4
   poster: /covers/cityfix-hero-poster.webp
   srcMobile: /covers/cityfix-hero-mobile.mp4
   posterMobile: /covers/cityfix-hero-mobile-poster.webp
   alt: The map of Brindisi drawn in blue like a technical drawing, with report pins appearing one after another on the streets of the centre
-intro: CityFix is city maintenance in an app. A photo and a location are all it takes to report a pothole, a dead street light or a broken bench.
+intro: "CityFix puts every citizen report on one map: potholes, street lights, litter, public green spaces. The technical office decides what to fix first and assigns the job to a local contractor, with an amount and a deadline."
 challenge:
   title: Eight thousand municipalities, one system.
-  body: Starting in a new city needs no installation. Each municipality sees only its own reports, its own offices and its own contractors.
-model: The app is free for citizens. The municipality pays an annual licence based on its population, with no limits on operators, contractors or reports.
+  body: "Starting in a new municipality needs no installation: the municipality and the contractors work in the browser, citizens in the app. Each municipality sees only its own reports, its own users and its own contractors, isolated row by row in the database."
+features:
+  title: From the report to the finished job.
+  items:
+    - name: Reports in a chat
+      desc: "A few questions, one at a time: where, what, how serious. A photo and the exact location in every report."
+    - name: Fewer duplicates
+      desc: If someone nearby has already reported it, the app suggests it and citizens just back it.
+    - name: Jobs assigned to contractors
+      desc: Priority, amount and deadline. Nearby jobs are assigned in one go, late ones stand out straight away.
+    - name: Photos of the finished work
+      desc: The contractor closes the job with photos and the pin on the map turns green.
+    - name: Points and notices
+      desc: Whoever reports and whoever backs a report earns points. The municipality sends notices even to a single neighbourhood.
+    - name: The year in numbers
+      desc: Spending, problems solved, deadlines met and active citizens, ready for the council.
+    - name: A post for every finished job
+      desc: We tell it together with the municipality on its social channels, with the photos and the street of the job.
+model: "The app is free for citizens. The municipality pays an annual licence based on its population, with no limits on operators, contractors or reports, and the posts about finished jobs are included. The Bandi module, with the grants the municipality can apply for, is activated separately."
 next: bin-or-deal
 media:
   pair:
-    - src: /covers/cityfix-strada.svg
-      alt: "A street drawn in blue with its problems, each with a red pin: a dead street light, a broken bench, an overflowing bin and a pothole. A passer-by looks at their phone"
-    - src: /covers/cityfix-scatta.mp4
-      poster: /covers/cityfix-scatta-poster.webp
-      alt: "A phone frames the pothole and takes the photo. The report fills in with the photo, the location and the type, then it is sent and becomes a pin that lights the first status pixel"
+    - src: /covers/cityfix-logo.svg
+      alt: The CityFix logo
+    - src: /covers/cityfix-punto1.webp
+      alt: "The CityFix landing page on a phone, at the citizen's step: in the chat they send the photo of the pothole and back a similar report 30 metres away"
   wide:
-    src: /covers/cityfix-giro.mp4
-    poster: /covers/cityfix-giro-poster.webp
-    alt: "The life of a report: the citizen photographs the pothole, the report flies to the town hall, the town hall passes it to the contractor, the van arrives and fixes it, the pin turns green and the news goes back to the citizen. At the top the four status pixels light up one by one"
+    src: /covers/cityfix-punto2.webp
+    alt: "The CityFix landing page on a computer, at the municipality and contractor step: the technical office assigns the pothole in via Appia 42 to Edilstrade Rossi, high priority, 480 euros and 3 days"
   feature:
-    - src: /covers/cityfix-comuni.mp4
-      poster: /covers/cityfix-comuni-poster.webp
-      alt: "CityFix in the middle, connected to many municipalities around it. Each one has its own padlock and its own reports, which appear and turn green only inside its tile"
-    - src: /covers/cityfix-passaggi.svg
-      alt: "The four states of a report, one under the other: sent from the phone, taken on by the town hall, assigned to the contractor's van, completed with fresh asphalt and a green pin"
+    - src: /covers/cityfix-resoconto.webp
+      alt: "The yearly report on the CityFix landing page, on a computer: 412 problems solved, 87% on time, 6 days on average, 1,240 active citizens and the problems solved month by month. Sample data"
+    - src: /covers/cityfix-punto3.webp
+      alt: "The CityFix landing page on a phone, at the city's step: on the map the pothole in via Appia turns green and whoever reported it earns 25 points"
   triple:
-    - src: /covers/cityfix-insieme.svg
-      alt: "Three people around the same pothole, each with a thumbs up: the report stays one, with the people who back it"
-    - src: /covers/cityfix-rione.svg
-      alt: "The town hall sends a notice: the waves leave the town hall and the bell reaches only the houses of the circled neighbourhood"
-    - src: /covers/cityfix-riparata.mp4
-      poster: /covers/cityfix-riparata-poster.webp
-      alt: "A contractor's worker photographs the pothole, fills it with a shovel and photographs it again. The two photos, before and after, and the green stamp"
+    - src: /covers/cityfix-post-buca.webp
+      alt: "Instagram post: 'A city is never finished.' Photo of a pothole in via Fulvia, reported on CityFix"
+    - src: /covers/cityfix-post-risolte.webp
+      alt: "Instagram post: 128 reports solved in Brindisi this month"
+    - src: /covers/cityfix-post-si-ripara.webp
+      alt: "Instagram post: 'See it. Report it. It gets fixed.' Photo of damaged paving in an urban park"
 team:
   - barbara
   - william

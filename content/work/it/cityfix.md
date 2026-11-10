@@ -1,6 +1,6 @@
 ---
 title: CityFix
-summary: Piattaforma di rigenerazione urbana che mette in contatto cittadini, comuni e fornitori per segnalare, gestire e risolvere gli interventi sul territorio.
+summary: Il sistema con cui il Comune raccoglie le segnalazioni dei cittadini, decide le priorità e affida i lavori alle imprese del territorio. Ogni intervento tracciato, dalla foto al lavoro finito.
 role: Città
 cover: /covers/cityfix.jpg
 url: https://cityfix.io
@@ -16,44 +16,57 @@ order: 3
 status: pilot
 scope: Design e sviluppo full-stack
 stack: Expo, Vue 3, NestJS, PostgreSQL
-lede: Il cittadino segnala, il Comune affida il lavoro, la ditta ripara. E chi ha segnalato vede ogni passaggio.
+lede: Dalla buca segnalata alla buca chiusa. Il cittadino segnala, il Comune affida il lavoro a un'impresa del territorio, e chi ha segnalato vede ogni passaggio.
 hero:
   src: /covers/cityfix-hero.mp4
   poster: /covers/cityfix-hero-poster.webp
   srcMobile: /covers/cityfix-hero-mobile.mp4
   posterMobile: /covers/cityfix-hero-mobile-poster.webp
   alt: La mappa di Brindisi disegnata in blu come una tavola tecnica, con i pin delle segnalazioni che compaiono uno dopo l'altro sulle strade del centro
-intro: "CityFix è la manutenzione della città in un'app. Bastano una foto e la posizione per segnalare una buca, un lampione spento o una panchina rotta."
+intro: "CityFix mette su un'unica mappa le segnalazioni dei cittadini: buche, lampioni, rifiuti, verde pubblico. L'ufficio tecnico decide cosa sistemare prima e affida il lavoro a un'impresa del territorio, con importo e scadenza."
 challenge:
   title: Ottomila Comuni, un solo sistema.
-  body: Per partire in una nuova città non si installa niente. Ogni Comune vede solo le sue segnalazioni, i suoi uffici e le sue ditte.
-model: Per i cittadini l'app è gratuita. Il Comune paga una licenza annuale in base agli abitanti, senza limiti di operatori, ditte e segnalazioni.
+  body: "Per partire in un nuovo Comune non si installa niente: il Comune e le imprese lavorano dal browser, i cittadini dall'app. Ogni Comune vede solo le sue segnalazioni, i suoi utenti e le sue imprese, isolati riga per riga nel database."
+features:
+  title: Dalla segnalazione al lavoro fatto.
+  items:
+    - name: Segnalazione in chat
+      desc: "Poche domande, una alla volta: dove, cosa, quanto è grave. Foto e posizione esatta in ogni segnalazione."
+    - name: Meno doppioni
+      desc: Se qualcuno ha già segnalato lì vicino, l'app lo propone e basta sostenerlo.
+    - name: Lavori affidati alle imprese
+      desc: Priorità, importo e scadenza. Gli interventi vicini si affidano in una volta, quelli in ritardo si vedono subito.
+    - name: Foto del lavoro finito
+      desc: L'impresa chiude l'intervento con le foto e sulla mappa il punto diventa verde.
+    - name: Punti e avvisi
+      desc: Chi segnala e chi sostiene guadagna punti. Il Comune manda avvisi anche a un solo quartiere.
+    - name: Resoconto dell'anno
+      desc: Spesa, problemi risolti, tempi rispettati e cittadini attivi, pronti per la giunta o il consiglio comunale.
+    - name: Un post per ogni lavoro finito
+      desc: Lo raccontiamo insieme al Comune sui suoi social, con le foto e la via dell'intervento.
+model: "Per i cittadini l'app è gratuita. Il Comune paga una licenza annuale in base agli abitanti, senza limiti di operatori, imprese e segnalazioni, e i post sui lavori finiti sono compresi. Il modulo Bandi, con i finanziamenti a cui il Comune può partecipare, si attiva a parte."
 next: bin-or-deal
 media:
   pair:
-    - src: /covers/cityfix-strada.svg
-      alt: "Una strada disegnata in blu con i suoi problemi, ognuno con un pin rosso: un lampione spento, una panchina rotta, un cestino che trabocca e una buca. Un passante guarda il telefono"
-    - src: /covers/cityfix-scatta.mp4
-      poster: /covers/cityfix-scatta-poster.webp
-      alt: "Un telefono inquadra la buca e scatta. La segnalazione si compila con la foto, la posizione e il tipo, parte e diventa un pin che accende il primo pixel dello stato"
+    - src: /covers/cityfix-logo.svg
+      alt: Il logo di CityFix
+    - src: /covers/cityfix-punto1.webp
+      alt: "La landing di CityFix sul telefono, al passo del cittadino: in chat invia la foto della buca e sostiene una segnalazione simile a 30 metri"
   wide:
-    src: /covers/cityfix-giro.mp4
-    poster: /covers/cityfix-giro-poster.webp
-    alt: "Il giro di una segnalazione: il cittadino fotografa la buca, la segnalazione vola al Comune, il Comune la passa alla ditta, il furgone arriva e ripara, il pin diventa verde e la notizia torna al cittadino. In alto i quattro pixel dello stato si accendono uno a uno"
+    src: /covers/cityfix-punto2.webp
+    alt: "La landing di CityFix sul computer, al passo del Comune e dell'impresa: l'ufficio tecnico affida la buca di via Appia 42 a Edilstrade Rossi, con priorità alta, 480 euro e 3 giorni"
   feature:
-    - src: /covers/cityfix-comuni.mp4
-      poster: /covers/cityfix-comuni-poster.webp
-      alt: "CityFix al centro, collegato a tanti Comuni intorno. Ogni Comune ha il suo lucchetto e le sue segnalazioni, che compaiono e diventano verdi solo dentro il suo riquadro"
-    - src: /covers/cityfix-passaggi.svg
-      alt: "I quattro stati di una segnalazione uno sotto l'altro: inviata dal telefono, presa in carico dal Comune, affidata al furgone della ditta, completata con l'asfalto nuovo e il pin verde"
+    - src: /covers/cityfix-resoconto.webp
+      alt: "Il resoconto dell'anno sulla landing di CityFix, dal computer: 412 problemi risolti, 87% nei tempi, 6 giorni in media, 1.240 cittadini attivi e i problemi risolti mese per mese. Dati di esempio"
+    - src: /covers/cityfix-punto3.webp
+      alt: "La landing di CityFix sul telefono, al passo della città: sulla mappa la buca di via Appia diventa verde e chi l'ha segnalata riceve 25 punti"
   triple:
-    - src: /covers/cityfix-insieme.svg
-      alt: "Tre persone intorno alla stessa buca, ognuna con un pollice in su: la segnalazione resta una sola, con le persone che la sostengono"
-    - src: /covers/cityfix-rione.svg
-      alt: "Il Comune manda un avviso: le onde partono dal municipio e la campanella arriva solo alle case del rione cerchiato"
-    - src: /covers/cityfix-riparata.mp4
-      poster: /covers/cityfix-riparata-poster.webp
-      alt: "Un operaio della ditta fotografa la buca, la riempie con la pala e la fotografa di nuovo. Le due foto, prima e dopo, e il timbro verde"
+    - src: /covers/cityfix-post-buca.webp
+      alt: "Post Instagram: «Una città non è mai finita.» Foto di una buca in via Fulvia, segnalata su CityFix"
+    - src: /covers/cityfix-post-risolte.webp
+      alt: "Post Instagram: 128 segnalazioni risolte a Brindisi questo mese"
+    - src: /covers/cityfix-post-si-ripara.webp
+      alt: "Post Instagram: «Vedi. Segnali. Si ripara.» Foto della pavimentazione rovinata in un parco urbano"
 team:
   - barbara
   - william

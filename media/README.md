@@ -25,9 +25,24 @@ Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
 `media/cityfix/osm/roads.json`, dati OpenStreetMap con licenza ODbL),
 `media/helllo/build.mjs` (dall'illustrazione esportata dal Figma in `media/helllo/figma/`).
 
-## CityFix: le illustrazioni
+## CityFix: le schermate della landing
 
-La scheda di CityFix parla coi disegni, quasi senza testo. I pezzi della città (palazzi,
+La scheda di CityFix mostra la landing (repo `cityfix-landing`): il passo 1 e il passo 3 dal
+telefono, il passo 2 e il resoconto dal computer, e i post Instagram della landing nel triple.
+Le schermate stanno in una cornice sul blu di CityFix: per il telefono l'iPhone 17 Pro del
+mockup `9052-01-iphone-17-pro-mockup.psd`, per il computer una finestra del browser.
+
+- `python media/cityfix/schermate/telefono.py <psd>` ricava la cornice del telefono
+  (`telefono.png`, fuori dal repo perché il mockup ha una licenza) e dove sta lo schermo
+  (`telefono.json`). Serve `psd-tools[composite]`.
+- Con la landing accesa in locale (`npm run dev` in `cityfix-landing`),
+  `node media/cityfix/schermate/build.mjs` scrive `cityfix-punto1`, `cityfix-punto3`
+  (pair e feature[1]), `cityfix-punto2` (wide) e `cityfix-resoconto` (feature[0]) in WebP.
+- I post (`cityfix-post-*.webp`) sono copiati così come sono da `public/social/` della landing.
+
+## CityFix: le illustrazioni (ora fuori dalla scheda)
+
+Prima delle schermate la scheda parlava coi disegni. I pezzi della città (palazzi,
 strada, buca, Comune, furgone, persone, pin e icone a pixel dell'app in `pixel-icons.json`)
 stanno in `media/cityfix/kit.mjs` e servono sia alle tavole ferme sia ai clip:
 

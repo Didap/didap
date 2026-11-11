@@ -14,8 +14,9 @@ import { untypeset } from '#shared/typeset'
 // scritta, il modulo (evento `form`, con la voce e il messaggio: chi la
 // usa decide dove aprirlo). `hello` è la nuvoletta a chat vuota,
 // `suggestions` le voci pronte sotto il campo. `tone="red"` per la
-// chiusura rossa della home: bottoni carta.
-const props = defineProps<{ hello: string, suggestions?: boolean, tone?: 'paper' | 'red' }>()
+// chiusura rossa della home: bottoni carta. `direct`: sotto il campo
+// "Oppure contattaci direttamente", che apre il modulo senza la risposta.
+const props = defineProps<{ hello: string, suggestions?: boolean, tone?: 'paper' | 'red', direct?: boolean }>()
 const emit = defineEmits<{ form: [type: ProjectType | '', message: string] }>()
 
 const { t } = useI18n()
@@ -54,8 +55,10 @@ function restart() {
   nextTick(() => input.value?.focus())
 }
 
+// Quello già scritto a Didi passa al modulo; prima della risposta anche
+// il testo nel campo non ancora inviato
 function openForm() {
-  emit('form', projectTypeFromQuery(topic.value), said.value)
+  emit('form', projectTypeFromQuery(topic.value), said.value || draft.value.trim())
 }
 
 // Il campo cresce con il testo, fino a qualche riga
@@ -211,6 +214,23 @@ watch(draft, () => nextTick(() => {
           </button>
         </li>
       </ul>
+      <!-- Chi non vuole parlare con Didi va dritto al modulo; dopo la
+           risposta lo apre "Compila il modulo" -->
+      <button
+        v-if="direct && !topic"
+        type="button"
+        class="
+          mt-1 self-start rounded-sm text-left text-body underline
+          decoration-[1.5px] underline-offset-4 opacity-80 transition-opacity
+          hover:opacity-100
+          md:pl-6
+          focus-visible:outline-2 focus-visible:outline-offset-4
+          focus-visible:outline-current
+        "
+        @click="openForm"
+      >
+        {{ t('chat.direct') }}
+      </button>
     </form>
 
     <!-- Le strade per sentirci, dopo la risposta -->

@@ -6,6 +6,7 @@ import HomeLogo from '~/components/HomeLogo.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
 import ScreenRail from '~/components/ScreenRail.vue'
 import ScreenHero from '~/components/ScreenHero.vue'
+import type { ProjectType } from '#shared/contact'
 
 // Home a schermate: una pila di schermate a tutto schermo, ognuna copre
 // la precedente salendo dal basso (scroll nativo con lo snap). Apertura
@@ -19,7 +20,13 @@ definePageMeta({ layout: 'screens', splash: false })
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const { openContact } = useContactDialog()
+// Il modulo della chiusura: un foglio dal basso, con quello già scelto o
+// scritto a Didi. Si carica alla prima apertura e poi resta, così
+// chiudendosi finisce la sua animazione
+const drawer = reactive({ mounted: false, open: false, type: '' as ProjectType | '', message: '' })
+function openDrawer(type: ProjectType | '', message: string) {
+  Object.assign(drawer, { mounted: true, open: true, type, message })
+}
 
 useSeoMeta({
   title: 'Didap',
@@ -278,17 +285,25 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
         >
           {{ t('home.outro_title') }}
         </h2>
-        <!-- Didi chiede cosa serve; il modulo si apre sopra, già compilato -->
+        <!-- Didi chiede cosa serve; il modulo sale dal basso, già compilato -->
         <DidiTalk
           class="reveal"
           style="--i: 0"
           tone="red"
+          direct
           :hello="t('chat.ask')"
-          @form="(type, message) => openContact('', type, message)"
+          @form="openDrawer"
         />
         <ScreenLegal />
       </div>
     </section>
+
+    <LazyContactDrawer
+      v-if="drawer.mounted"
+      v-model:open="drawer.open"
+      :project-type="drawer.type"
+      :message="drawer.message"
+    />
   </div>
 </template>
 

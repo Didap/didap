@@ -11,8 +11,9 @@ import { untypeset } from '#shared/typeset'
 // pagina, il titolo del dialog sopra le pagine), lo slot `done` è
 // l'azione dopo l'invio. `product`: arriva da "Avvisami quando esce", il
 // messaggio è già scritto. `projectType`: la voce già scelta con Didi.
-// `message`: quello che il cliente ha già scritto a Didi.
-const props = defineProps<{ titleAs?: Component | string; product?: string; projectType?: ProjectType | ''; message?: string }>()
+// `message`: quello che il cliente ha già scritto a Didi. `untitled`:
+// senza il titolo grande, quando lo porta chi lo apre (il drawer della home).
+const props = defineProps<{ titleAs?: Component | string; product?: string; projectType?: ProjectType | ''; message?: string; untitled?: boolean }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -69,6 +70,7 @@ const field = `
   <div class="flex flex-col gap-16">
     <component
       :is="titleAs ?? 'h1'"
+      v-if="!untitled"
       class="text-display whitespace-pre-line"
     >
       {{ t('contact.title') }}

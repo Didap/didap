@@ -7,22 +7,20 @@ import type { ProjectType } from '#shared/contact'
 // "Lavora con noi": "Chiedi a Didi!" con tre domande, poi Didi che parla
 // (DidiTalk). Il modulo si apre qui sotto, già compilato con quello che
 // il cliente le ha scritto. Chi arriva da "Avvisami quando esce"
-// (`product`), con la voce già scelta (`projectType`) o con un messaggio
-// già scritto a Didi altrove (`message`, la chiusura della home) va
-// dritto al modulo. `titleAs` e lo slot `done` passano come per
+// (`product`) o con la voce già scelta (`projectType`) va dritto al
+// modulo. `titleAs` e lo slot `done` passano come per
 // ContactForm.
 const props = defineProps<{
   titleAs?: Component | string
   product?: string
   projectType?: ProjectType | ''
-  message?: string
 }>()
 
 const { t } = useI18n()
 
-const form = ref(!!(props.product || props.projectType || props.message))
+const form = ref(!!(props.product || props.projectType))
 const formType = ref<ProjectType | ''>(props.projectType ?? '')
-const formMessage = ref(props.message ?? '')
+const formMessage = ref('')
 
 function openForm(type: ProjectType | '', message: string) {
   formType.value = type

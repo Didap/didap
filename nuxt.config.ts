@@ -108,6 +108,10 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Didap - landing aziendale.' },
       ],
       link: [
+        // Favicon: la testa di Didi (public/favicon.svg, .ico per chi non legge l'SVG)
+        { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         // Obviously via Adobe Fonts (kit ctd0ukv)
         { rel: 'preconnect', href: 'https://use.typekit.net', crossorigin: '' },
         { rel: 'stylesheet', href: 'https://use.typekit.net/ctd0ukv.css' },

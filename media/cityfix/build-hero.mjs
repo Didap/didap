@@ -59,7 +59,10 @@ const pinHtml = (p, i) => `
         </div>`;
 
 function page({ id, W, H, mapScale, logoW }) {
-  const mx = (W - MW * mapScale) / 2, my = (H - MH * mapScale) / 2;
+  // #cam keeps the map's full size and scales around its own centre:
+  // centre the unscaled box, or a mapScale below 1 pushes the map off
+  // the frame (it filled only the bottom right quarter on the phone)
+  const mx = (W - MW) / 2, my = (H - MH) / 2;
   const lh = (logoW * 186.23) / 664.14;
   return `<!doctype html>
 <html lang="it">

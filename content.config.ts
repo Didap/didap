@@ -53,6 +53,18 @@ const projectSchema = z.object({
     })
     .optional(),
   model: z.string().optional(),
+  // Un evento a cui partecipare (gli hackathon di CityFix), con il suo
+  // invito: il bottone porta ai contatti
+  event: z
+    .object({
+      label: z.string(),
+      title: z.string(),
+      body: z.string(),
+      items: z.array(namedItem).default([]),
+      cta: z.string(),
+      image: mediaSlot.optional(),
+    })
+    .optional(),
   next: z.string().optional(),
   logo: z.string().optional(),
   // Ci hanno messo le mani: chiavi di shared/team.ts

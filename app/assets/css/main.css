@@ -274,13 +274,26 @@ samp {
 
 /*
   Cursore Didap: la freccia ink sostituisce quello di sistema su tutti
-  gli elementi, anche link/bottoni/input (solo con mouse). Cursore
-  nativo, nessuna animazione. Hotspot sulla punta della freccia.
+  gli elementi, anche link e bottoni (solo con mouse). Cursore nativo,
+  nessuna animazione. Hotspot sulla punta della freccia. Nei campi di
+  testo resta la barra del sistema: dice dove si scrive.
 */
 @media (pointer: fine) {
   *,
   *::before,
   *::after {
+    cursor: url('/cursor.svg?v=2') 7 3, auto !important;
+  }
+
+  textarea,
+  [contenteditable]:not([contenteditable='false']),
+  [contenteditable]:not([contenteditable='false']) *,
+  input:not([type='button'], [type='submit'], [type='reset'], [type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file'], [type='image'], [type='hidden']) {
+    cursor: text !important;
+  }
+
+  textarea:disabled,
+  input:disabled {
     cursor: url('/cursor.svg?v=2') 7 3, auto !important;
   }
 }

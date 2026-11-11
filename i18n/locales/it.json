@@ -3,7 +3,7 @@
     "work": "Prodotti",
     "projects": "Progetti",
     "clients": "Partner",
-    "about": "About",
+    "about": "Chi siamo",
     "contact": "Lavora con noi",
     "cta": "Lavoriamo insieme",
     "main": "Navigazione principale",
@@ -41,10 +41,11 @@
   },
   "work": {
     "kicker": "Lo studio",
-    "title": "PROd by Didap",
+    "title": "I nostri prodotti",
     "intro": "Prodotti che progettiamo, costruiamo e portiamo sul mercato in autonomia. Per il design, per le città, per i mercati.",
-    "search_placeholder": "Cerca un prodotto…",
-    "filter_by": "Filtra:",
+    "search_label": "Cerca",
+    "filter": "Filtra",
+    "search_clear": "Svuota la ricerca",
     "clear_filters": "Cancella filtri",
     "results_count_one": "1 prodotto",
     "results_count_other": "{count} prodotti"
@@ -177,5 +178,17 @@
     "direct": "Oppure contattaci direttamente",
     "restart": "Ricomincia",
     "back": "Torna da Didi"
+  },
+  "error": {
+    "code": "Errore {code}",
+    "not_found": {
+      "title": "Qui non c’è niente",
+      "intro": "La pagina che cerchi è stata spostata o non è mai esistita. Didi conosce la strada di casa."
+    },
+    "generic": {
+      "title": "Qualcosa si è inceppato",
+      "intro": "Il problema è nostro, non tuo. Riprova tra poco, intanto Didi conosce la strada di casa."
+    },
+    "home": "Torna alla home"
   }
 }

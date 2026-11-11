@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useElementSize } from '@vueuse/core'
 import DidapButton from '~/components/DidapButton.vue'
 import { projectTypeFromQuery, type ProjectType } from '#shared/contact'
 import { DIDI_TOPICS, type DidiTopic } from '#shared/didi'
@@ -29,10 +30,14 @@ const red = computed(() => props.tone === 'red')
 const { label: topicLabel, mailto: mailtoFor, whatsapp: whatsappFor } = useDidiContact()
 
 const line = computed(() => (topic.value ? t(`chat.reply.${topic.value}`) : props.hello))
-// Più è lunga, più è piccola: deve stare nella nuvoletta
+// Più è lunga, più è piccola: deve stare nella nuvoletta. Su telefono
+// misure fisse, la nuvoletta è larga quanto lo schermo
 const size = computed(() => {
   const n = line.value.length
-  return n < 40 ? 'text-[max(1.5rem,4.4cqw)]' : n < 80 ? 'text-[max(1.25rem,3.2cqw)]' : 'text-[max(1rem,2.4cqw)]'
+  if (n < 40) return 'text-[1.5rem] md:text-[max(1.5rem,4.4cqw)]'
+  if (n < 60) return 'text-[1.125rem] md:text-[max(1.25rem,3.2cqw)]'
+  if (n < 80) return 'text-base md:text-[max(1.25rem,3.2cqw)]'
+  return 'text-base md:text-[max(1rem,2.4cqw)]'
 })
 
 const mailto = computed(() => (topic.value ? mailtoFor(topic.value, said.value) : ''))
@@ -61,14 +66,29 @@ function openForm() {
   emit('form', projectTypeFromQuery(topic.value), said.value || draft.value.trim())
 }
 
-// Il campo cresce con il testo, fino a qualche riga
-watch(draft, () => nextTick(() => {
+// Il campo cresce con il testo, fino a qualche riga. Vuoto si misura con
+// il placeholder, che su telefono va su due righe e non deve tagliarsi:
+// si rimisura anche quando cambia la larghezza e quando arriva il font
+const placeholder = computed(() => t('chat.placeholder'))
+const { width } = useElementSize(input)
+
+function fit() {
   const el = input.value
   if (!el) return
+  const empty = !el.value
+  if (empty) el.value = el.placeholder
   el.style.height = 'auto'
-  el.style.height = `${Math.min(el.scrollHeight, 180)}px`
-  el.style.overflowY = el.scrollHeight > 180 ? 'auto' : 'hidden'
-}))
+  const h = el.scrollHeight
+  if (empty) el.value = ''
+  el.style.height = `${Math.min(h, 180)}px`
+  el.style.overflowY = h > 180 ? 'auto' : 'hidden'
+}
+
+watch([draft, width, placeholder], () => nextTick(fit))
+onMounted(() => {
+  fit()
+  document.fonts?.ready.then(fit)
+})
 </script>
 
 <template>
@@ -77,13 +97,14 @@ watch(draft, () => nextTick(() => {
     didi-scene @container grid w-[min(100%,1400px,calc((100svh-280px)*2.2))]
     grid-cols-[minmax(0,25.2fr)_minmax(0,74.8fr)]
   ">
-    <!-- La nuvoletta, con la coda verso la bocca di Didi -->
+    <!-- La nuvoletta, con la coda verso la bocca di Didi. Su telefono sta
+         sopra Didi, larga quanto la scena e alta quanto il testo -->
     <div
       class="
-        relative col-span-full row-1 mb-[8%] grid aspect-1010/410
-        place-items-center rounded-[20%/50%] bg-ink px-[11%] py-[9%]
-        text-paper-light
-        md:col-2 md:mb-0
+        relative col-span-full row-1 grid grid-cols-[minmax(0,1fr)]
+        place-items-start rounded-[28px] bg-ink px-5 py-5 text-paper-light
+        md:col-2 md:aspect-1010/410 md:place-items-center
+        md:rounded-[20%/50%] md:px-[11%] md:py-[9%]
       "
       aria-live="polite"
     >
@@ -102,15 +123,37 @@ watch(draft, () => nextTick(() => {
       <p
         v-else
         :key="line"
-        class="said font-wide leading-[1.02] font-bold tracking-[-0.02em]"
+        class="
+          said max-w-full font-wide leading-[1.02] font-bold tracking-[-0.02em]
+          wrap-break-word
+        "
         :class="size"
       >
         {{ line }}
       </p>
+      <!-- Su telefono la coda scende dal bordo sotto fino alla bocca, sul
+           lato destro della testa al 70%: 12px di stacco più il 70% di Didi,
+           alta il 24.5% della scena -->
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
-        class="absolute top-[80.5%] left-[4%] h-[45%] w-[20.8%] text-ink"
+        class="
+          absolute top-[calc(100%-2px)] left-[26.7cqw] h-[calc(14px+17.1cqw)]
+          w-[16cqw] text-ink
+          md:hidden
+        "
+        aria-hidden="true"
+      ><path
+        d="M30 0 100 0 0 100Z"
+        fill="currentColor"
+      /></svg>
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        class="
+          absolute top-[80.5%] left-[4%] hidden h-[45%] w-[20.8%] text-ink
+          md:block
+        "
         aria-hidden="true"
       ><path
         d="M42.9 0 100 27 0 100Z"
@@ -124,8 +167,8 @@ watch(draft, () => nextTick(() => {
       width="218"
       height="200"
       class="
-        didi col-1 row-2 w-full max-w-none self-start
-        md:row-[1/span_2] md:mt-[20.7cqw] md:w-[106%]
+        didi col-1 row-2 mt-3 w-[106%] max-w-none self-start
+        md:row-[1/span_2] md:mt-[20.7cqw]
       "
       :class="{ 'is-thinking': thinking, 'is-talking': topic }"
     >
@@ -158,7 +201,7 @@ watch(draft, () => nextTick(() => {
           rows="1"
           maxlength="2000"
           :aria-label="t('chat.input')"
-          :placeholder="t('chat.placeholder')"
+          :placeholder="placeholder"
           class="
             min-h-11 min-w-0 flex-1 resize-none overflow-hidden bg-transparent
             py-[7px] text-body outline-none
@@ -223,9 +266,9 @@ watch(draft, () => nextTick(() => {
           mt-1 self-start rounded-sm text-left text-body underline
           decoration-[1.5px] underline-offset-4 opacity-80 transition-opacity
           hover:opacity-100
+          focus-visible:outline-2
+          focus-visible:outline-offset-4 focus-visible:outline-current
           md:pl-6
-          focus-visible:outline-2 focus-visible:outline-offset-4
-          focus-visible:outline-current
         "
         @click="openForm"
       >

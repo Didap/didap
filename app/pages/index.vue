@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import DidapButton from '~/components/DidapButton.vue'
 import DidiTalk from '~/components/DidiTalk.vue'
 import HomeBar from '~/components/HomeBar.vue'
@@ -34,7 +35,9 @@ useSeoMeta({
 })
 
 // I prodotti a tutto schermo. `light`: il video in alto è chiaro, la
-// barra va in ink. L'unico invito porta alla scheda
+// barra va in ink. In verticale però sopra il video c'è il poster
+// sfocato e scurito (`screen-backdrop`): lì sono tutti scuri. L'unico
+// invito porta alla scheda
 type Featured = {
   key: string
   slug: string
@@ -47,6 +50,10 @@ const featured: Featured[] = [
   { key: 'helllo', slug: 'helllo', name: 'Helllo', light: true },
   { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', light: true },
 ]
+
+// Sul server vale falso: conta solo da una schermata di prodotto in giù,
+// che arriva dopo l'idratazione
+const portrait = useMediaQuery('(max-aspect-ratio: 1/1)')
 
 const hero = (slug: string) => ({
   src: `/covers/${slug}-hero.mp4`,
@@ -82,7 +89,7 @@ const clientsHover = ref(false)
 // Le schermate, per l'indice a destra e il colore della barra
 const screens = computed(() => [
   { id: 'top', label: 'Didap', light: true },
-  ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light })),
+  ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light && !portrait.value })),
   // Didi sta sul verde dei prodotti (sempre con l'alone), "Lavoriamo
   // insieme" e l'indice sul giallo dei clienti: testo ink, carta quando
   // i clienti diventano neri sotto il puntatore
@@ -137,7 +144,7 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
           />
           <p
             class="
-              reveal font-wide text-[clamp(1.75rem,1rem+3vw,3.5rem)]
+              reveal text-center font-wide text-[clamp(1.75rem,1rem+3vw,3.5rem)]
               leading-none font-bold tracking-[-0.02em]
             "
             style="--i: 1"
@@ -159,9 +166,26 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
             class="
               scroll-cue relative h-[42px] w-[26px] rounded-full border-[1.5px]
               border-current
+              pointer-coarse:hidden
             "
             aria-hidden="true"
           />
+          <!-- Col dito niente rotella: una freccia che scende -->
+          <svg
+            width="26"
+            height="42"
+            viewBox="0 0 26 42"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            class="
+              scroll-arrow hidden
+              pointer-coarse:block
+            "
+          ><path d="M13 6v28M5 26l8 8 8-8" /></svg>
           {{ t('home.scroll_cue') }}
         </a>
       </div>
@@ -329,8 +353,19 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
   100% { opacity: 0; }
 }
 
+/* Su touch la freccia scende piano, con lo stesso passo della rotella */
+.scroll-arrow {
+  animation: arrow 1.8s var(--ease-vintage) infinite;
+}
+
+@keyframes arrow {
+  0%, 100% { transform: translateY(-3px); }
+  50% { transform: translateY(3px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .scroll-cue::after {
+  .scroll-cue::after,
+  .scroll-arrow {
     animation: none;
     opacity: 1;
   }

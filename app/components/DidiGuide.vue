@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventListener } from '@vueuse/core'
+import { useEventListener, useIntersectionObserver, useMediaQuery } from '@vueuse/core'
 import DidapButton from '~/components/DidapButton.vue'
 import { DIDI_TOPICS, type DidiTopic } from '#shared/didi'
 import { untypeset } from '#shared/typeset'
@@ -9,7 +9,9 @@ import { untypeset } from '#shared/typeset'
 // diretto, WhatsApp se c'è il numero e sempre la mail già scritta.
 // "Torna al tuo posto" la fa rotolare fuori a destra e ricadere nella
 // nav dall'alto. Congedata, non torna fino alla prossima visita. Con
-// meno movimento compare e se ne va senza volare.
+// meno movimento compare e se ne va senza volare. Si apre da sé e si
+// richiude quando arriva il footer. Sul telefono resta nella nav: la
+// nuvoletta coprirebbe mezza pagina, e il contatto c'è già nel menu.
 
 const { t } = useI18n()
 const away = useDidiAway()
@@ -36,6 +38,26 @@ const toggler = ref<HTMLButtonElement>()
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 const home = () => document.querySelector<HTMLElement>('[data-didi-home]')
 
+// md di Tailwind: sotto, Didi non lascia la nav
+const wide = useMediaQuery('(min-width: 48rem)')
+const footer = shallowRef<HTMLElement | null>(null)
+
+function footerInView() {
+  const r = footer.value?.getBoundingClientRect()
+  return !!r && r.top < window.innerHeight && r.bottom > 0
+}
+
+// Si apre da sola se il footer non è già lì
+function greet() {
+  if (!footerInView()) open.value = true
+}
+
+// Arriva il footer: si richiude per non coprire i contatti. Riaprirla
+// resta a chi tocca la testa
+useIntersectionObserver(footer, ([entry]) => {
+  if (entry?.isIntersecting && wide.value) fold()
+})
+
 // Si leggono solo con una voce scelta. Il testo tradotto passa da
 // typeset(): nei link va con gli spazi normali
 const message = computed(() => untypeset(t(`didi.message.${topic.value}`)))
@@ -46,9 +68,10 @@ async function arrive() {
   busy = true
   const from = home()?.getBoundingClientRect()
   away.value = true
+  footer.value = document.querySelector('footer')
   await nextTick()
   if (!from?.width || !flyX.value || !flyY.value || still()) {
-    open.value = true
+    greet()
     busy = false
     return
   }
@@ -89,7 +112,7 @@ async function arrive() {
   )
   // La nuvoletta sullo stesso orologio: compare in cima al saltello
   // anche se il primo fotogramma tarda
-  flyY.value.animate([], { duration: peak }).finished.then(() => (open.value = true))
+  flyY.value.animate([], { duration: peak }).finished.then(greet)
   await jump.finished
   busy = false
 }
@@ -145,16 +168,18 @@ function openForm() {
   navigateTo({ path: localePath('/contact'), query: { type: topic.value } })
 }
 
+// Il fuoco torna sulla testa solo se era dentro, sennò resta dov'è
 function fold() {
   if (!open.value) return
+  const focused = dock.value?.contains(document.activeElement)
   open.value = false
-  toggler.value?.focus()
+  if (focused) toggler.value?.focus()
 }
 
 let stopScroll = () => {}
 
 function onScroll() {
-  if (window.scrollY < window.innerHeight * TRIGGER) return
+  if (!wide.value || window.scrollY < window.innerHeight * TRIGGER) return
   // Non sopra la splash e non sulla pagina del modulo, che è già il contatto
   if (document.documentElement.classList.contains('splash') || routeBaseName(route) === 'contact') return
   stopScroll()
@@ -324,7 +349,7 @@ onBeforeUnmount(() => {
         focus-visible:outline-2 focus-visible:outline-ink
       "
       :aria-expanded="open"
-      aria-controls="didi-bubble"
+      :aria-controls="open ? 'didi-bubble' : undefined"
       :aria-label="open ? t('didi.close') : t('didi.open')"
       @click="toggle"
     >

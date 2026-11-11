@@ -37,6 +37,33 @@ const imageSrc = z
 // con `poster` come fotogramma fermo finché non parte
 export const isVideoSrc = (src?: string) => !!src && /\.(mp4|webm)(?:[?#]|$)/i.test(src)
 
+// Il dominio di un link, senza www, per le etichette "Apri dominio.it"
+export function hostOf(url?: string) {
+  if (!url) return ''
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  }
+  catch {
+    return ''
+  }
+}
+
+// Le voci di prodotti e partner: PA su banana e prima di tutte, poi la
+// finanza agevolata su verde, poi le altre
+export type TagTone = 'pa' | 'finance' | 'plain'
+export function tagTone(tag: string): TagTone {
+  const t = tag.trim().toLowerCase()
+  if (t === 'pa') return 'pa'
+  if (t === 'finanza agevolata' || t === 'public funding') return 'finance'
+  return 'plain'
+}
+export const TAG_TITLES: Partial<Record<TagTone, string>> = {
+  pa: 'Pubblica Amministrazione',
+  finance: 'Finanza agevolata · partner strategico',
+}
+const TAG_ORDER: Record<TagTone, number> = { pa: 0, finance: 1, plain: 2 }
+export const compareTags = (a: string, b: string) => TAG_ORDER[tagTone(a)] - TAG_ORDER[tagTone(b)]
+
 export const mediaSlotSchema = z
   .object({
     src: imageSrc.optional(),

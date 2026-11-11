@@ -52,6 +52,16 @@ const legalLinks = computed(() => [
               >
                 {{ l.label }}
               </NuxtLink>
+              <!-- Dopo le schermate della home, la pagina Chi siamo -->
+              <NuxtLink
+                :to="localePath('/about')"
+                class="
+                  text-body transition-colors
+                  hover:text-green
+                "
+              >
+                {{ t('nav.about') }}
+              </NuxtLink>
             </nav>
 
             <nav

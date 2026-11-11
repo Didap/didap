@@ -41,13 +41,13 @@
   },
   "work": {
     "kicker": "Studio",
-    "title": "PROd by Didap",
+    "title": "Our products",
     "intro": "Products we design, build and ship on our own. For design, for cities, for markets.",
-    "search_placeholder": "Search a product…",
-    "filter_by": "Filter:",
+    "search_label": "Search",
+    "filter": "Filter",
+    "search_clear": "Clear search",
     "clear_filters": "Clear filters",
-    "results_count_one": "1 product",
-    "results_count_other": "{count} products"
+    "results_count": "1 product | {count} products"
   },
   "clients": {
     "kicker": "Partners",
@@ -177,5 +177,17 @@
     "direct": "Or contact us directly",
     "restart": "Start over",
     "back": "Back to Didi"
+  },
+  "error": {
+    "code": "Error {code}",
+    "not_found": {
+      "title": "Nothing to see here",
+      "intro": "The page you’re looking for has moved or never existed. Didi knows the way home."
+    },
+    "generic": {
+      "title": "Something got stuck",
+      "intro": "That’s on us, not you. Try again in a moment, meanwhile Didi knows the way home."
+    },
+    "home": "Back to home"
   }
 }

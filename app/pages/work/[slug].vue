@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
+import RichText from '~/components/RichText.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core'
+import { hostOf } from '#shared/product'
 import { TEAM } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
@@ -29,15 +31,7 @@ if (!baseProject.value) {
 
 const nextProject = await useNextProduct(project, overrides)
 
-const host = computed(() => {
-  if (!project.value?.url) return ''
-  try {
-    return new URL(project.value.url).hostname.replace(/^www\./, '')
-  }
-  catch {
-    return ''
-  }
-})
+const host = computed(() => hostOf(project.value?.url))
 
 // Quando la testata esce da sotto la nav (alta 72, 97 da lg), nella nav
 // arriva il logo
@@ -288,12 +282,13 @@ useSeoMeta({
       v-else
       class="page-x"
     >
-      <div class="
-        product-body pb-16
-        lg:pb-28
-      ">
-        <ContentRenderer :value="project" />
-      </div>
+      <RichText
+        :value="project"
+        class="
+          pb-16
+          lg:pb-28
+        "
+      />
     </section>
 
     <!-- Chiusura: stacca dalle immagini se manca il Modello -->
@@ -429,47 +424,3 @@ useSeoMeta({
     </div>
   </article>
 </template>
-
-<style scoped>
-/* Corpo markdown per i prodotti senza scheda strutturata,
-   con gli stili di testo del Figma */
-.product-body :deep(h2) {
-  margin-top: 3.5rem;
-  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.5rem);
-  line-height: 1.08;
-  letter-spacing: -0.01em;
-}
-
-.product-body :deep(h2:first-child) {
-  margin-top: 0;
-}
-
-.product-body :deep(p),
-.product-body :deep(ul) {
-  margin-top: 1.75rem;
-  font-size: clamp(1.0625rem, 0.95rem + 0.4vw, 1.25rem);
-  line-height: 1.5;
-}
-
-.product-body :deep(ul) {
-  border-bottom: 1px solid var(--color-ink);
-}
-
-.product-body :deep(li) {
-  border-top: 1px solid var(--color-ink);
-  padding-block: 1.25rem;
-}
-
-.product-body :deep(a) {
-  text-decoration: underline;
-}
-
-/* Nuxt Content avvolge i titoli in un link ancora */
-.product-body :deep(h2 a) {
-  text-decoration: none;
-}
-
-.product-body :deep(strong) {
-  font-weight: 700;
-}
-</style>

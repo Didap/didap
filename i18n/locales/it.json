@@ -47,8 +47,7 @@
     "filter": "Filtra",
     "search_clear": "Svuota la ricerca",
     "clear_filters": "Cancella filtri",
-    "results_count_one": "1 prodotto",
-    "results_count_other": "{count} prodotti"
+    "results_count": "1 prodotto | {count} prodotti"
   },
   "clients": {
     "kicker": "Partner",

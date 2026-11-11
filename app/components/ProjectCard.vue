@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import type { MediaSlotData } from '~/components/MediaSlot.vue'
-import MediaSlot from '~/components/MediaSlot.vue'
+import { compareTags, TAG_TITLES, tagTone } from '#shared/product'
 import { typeset } from '#shared/typeset'
 
 // Una voce degli elenchi prodotti e partner, come "Prossimo prodotto"
 // della scheda: filetto ink, label verde, immagine, titolo che diventa
 // verde al passaggio. I tag sono pillole come gli stati: PA su banana,
 // finanza agevolata su verde, gli altri a contorno ink.
-// `media`: la testata della scheda (i prodotti), al posto di `cover`
+// `media`: la testata della scheda (i prodotti). Nella card basta il suo
+// fotogramma da telefono (960): un elenco di video in loop pesa troppo
 const props = defineProps<{
   to: string
   title: string
@@ -19,27 +20,15 @@ const props = defineProps<{
   tags?: string[]
 }>()
 
-// Nella card basta la versione da telefono (960), anche su desktop.
-// Senza alt: il titolo della card dice già cos'è
-const cardMedia = computed<MediaSlotData | undefined>(() => {
-  const m = props.media
-  if (!m?.src) return undefined
-  return { src: m.srcMobile ?? m.src, poster: m.posterMobile ?? m.poster }
-})
+const image = computed(() => props.media?.posterMobile ?? props.media?.poster ?? props.cover)
+const meta = computed(() => [props.role, props.year].filter(Boolean).join(' · '))
+const sortedTags = computed(() => [...(props.tags ?? [])].sort(compareTags))
 
-const isPa = (tag: string) => tag.trim().toUpperCase() === 'PA'
-const isFinance = (tag: string) => {
-  const t = tag.trim().toLowerCase()
-  return t === 'finanza agevolata' || t === 'public funding'
-}
-
-const tagWeight = (tag: string) => (isPa(tag) ? 0 : isFinance(tag) ? 1 : 2)
-
-const sortedTags = computed(() =>
-  props.tags?.length
-    ? [...props.tags].sort((a, b) => tagWeight(a) - tagWeight(b))
-    : [],
-)
+const TAG_CLASSES = {
+  pa: 'border-banana bg-banana text-ink',
+  finance: 'border-green bg-green text-paper',
+  plain: 'border-ink text-ink',
+} as const
 </script>
 
 <template>
@@ -52,22 +41,15 @@ const sortedTags = computed(() =>
     "
   >
     <p
-      v-if="role || year"
+      v-if="meta"
       class="text-label text-green"
     >
-      <span v-if="role">{{ role }}</span>
-      <span v-if="role && year"> · </span>
-      <span v-if="year">{{ year }}</span>
+      {{ typeset(meta) }}
     </p>
 
-    <MediaSlot
-      v-if="cardMedia"
-      :media="cardMedia"
-      class="aspect-video w-full"
-    />
     <img
-      v-else-if="cover"
-      :src="cover"
+      v-if="image"
+      :src="image"
       :alt="title"
       loading="lazy"
       decoding="async"
@@ -104,21 +86,9 @@ const sortedTags = computed(() =>
       <li
         v-for="tag in sortedTags"
         :key="tag"
-        :title="
-          isPa(tag)
-            ? 'Pubblica Amministrazione'
-            : isFinance(tag)
-              ? 'Finanza agevolata · partner strategico'
-              : undefined
-        "
+        :title="TAG_TITLES[tagTone(tag)]"
         class="rounded-full border-[1.5px] px-3 py-1 text-label"
-        :class="
-          isPa(tag)
-            ? 'border-banana bg-banana text-ink'
-            : isFinance(tag)
-              ? 'border-green bg-green text-paper'
-              : 'border-ink text-ink'
-        "
+        :class="TAG_CLASSES[tagTone(tag)]"
       >
         {{ tag }}
       </li>

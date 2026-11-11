@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PageIntro from '~/components/PageIntro.vue'
+import RichText from '~/components/RichText.vue'
 
 // Chi siamo: l'apertura delle pagine interne e due paragrafi nella
 // colonna larga.
@@ -20,16 +21,13 @@ useSeoMeta({
 
     <section class="page-x">
       <div class="
-        grid gap-x-6 pb-24
-        lg:grid-cols-[302fr_954fr] lg:pb-30
+        page-grid pb-24
+        lg:pb-30
       ">
-        <div class="
-          flex min-w-0 flex-col gap-7 text-body
-          lg:col-start-2
-        ">
+        <RichText class="lg:col-start-2">
           <p>{{ t('about.body_1') }}</p>
           <p>{{ t('about.body_2') }}</p>
-        </div>
+        </RichText>
       </div>
     </section>
   </div>

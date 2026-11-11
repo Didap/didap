@@ -137,7 +137,6 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
       >
         <div class="
           grid place-items-center gap-[clamp(20px,3vw,40px)] self-center
-          text-center
         ">
           <HomeLogo
             class="w-[min(100%,78vw,1100px)]"

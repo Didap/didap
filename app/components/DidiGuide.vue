@@ -55,7 +55,7 @@ function greet() {
 // Arriva il footer: si richiude per non coprire i contatti. Riaprirla
 // resta a chi tocca la testa
 useIntersectionObserver(footer, ([entry]) => {
-  if (entry?.isIntersecting && wide.value) fold()
+  if (entry?.isIntersecting) fold()
 })
 
 // Si leggono solo con una voce scelta. Il testo tradotto passa da

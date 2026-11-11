@@ -35,7 +35,6 @@ const line = computed(() => (topic.value ? t(`chat.reply.${topic.value}`) : prop
 const size = computed(() => {
   const n = line.value.length
   if (n < 40) return 'text-[1.5rem] md:text-[max(1.5rem,4.4cqw)]'
-  if (n < 60) return 'text-[1.125rem] md:text-[max(1.25rem,3.2cqw)]'
   if (n < 80) return 'text-base md:text-[max(1.25rem,3.2cqw)]'
   return 'text-base md:text-[max(1rem,2.4cqw)]'
 })

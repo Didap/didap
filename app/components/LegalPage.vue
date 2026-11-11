@@ -5,7 +5,7 @@ import RichText from '~/components/RichText.vue'
 // Pagina legale (privacy, cookie): apertura con la data dell'ultimo
 // aggiornamento, poi il testo nella colonna larga con gli stili del
 // markdown, pronto per un'informativa lunga con titoli ed elenchi.
-// Finché il testo vero non c'è, lo slot mostra il segnaposto.
+// Per ora c'è il segnaposto.
 const props = defineProps<{
   page: 'privacy' | 'cookies'
 }>()
@@ -32,16 +32,11 @@ useSeoMeta({
 
     <section class="page-x">
       <div class="
-        grid gap-x-6 pb-24
-        lg:grid-cols-[302fr_954fr] lg:pb-30
+        page-grid pb-24
+        lg:pb-30
       ">
-        <RichText class="
-          min-w-0
-          lg:col-start-2
-        ">
-          <slot>
-            <p>{{ t(`${page}.placeholder`) }}</p>
-          </slot>
+        <RichText class="lg:col-start-2">
+          <p>{{ t(`${page}.placeholder`) }}</p>
         </RichText>
       </div>
     </section>

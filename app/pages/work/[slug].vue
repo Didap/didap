@@ -4,6 +4,7 @@ import MediaSlot from '~/components/MediaSlot.vue'
 import RichText from '~/components/RichText.vue'
 import StatusPill from '~/components/StatusPill.vue'
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core'
+import { hostOf } from '#shared/product'
 import { TEAM } from '#shared/team'
 import { typeset } from '#shared/typeset'
 
@@ -30,15 +31,7 @@ if (!baseProject.value) {
 
 const nextProject = await useNextProduct(project, overrides)
 
-const host = computed(() => {
-  if (!project.value?.url) return ''
-  try {
-    return new URL(project.value.url).hostname.replace(/^www\./, '')
-  }
-  catch {
-    return ''
-  }
-})
+const host = computed(() => hostOf(project.value?.url))
 
 // Quando la testata esce da sotto la nav (alta 72, 97 da lg), nella nav
 // arriva il logo

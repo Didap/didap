@@ -27,8 +27,8 @@ function home() {
   <NuxtLayout name="default">
     <section class="page-x">
       <div class="
-        grid gap-6 border-t-[1.5px] border-ink pt-8 pb-24
-        lg:grid-cols-[302fr_954fr] lg:pb-[136px]
+        page-grid gap-y-6 border-t-[1.5px] border-ink pt-8 pb-24
+        lg:pb-[136px]
       ">
         <div class="
           flex items-start justify-between gap-6

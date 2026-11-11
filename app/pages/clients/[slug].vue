@@ -2,6 +2,7 @@
 import DidapButton from '~/components/DidapButton.vue'
 import MediaSlot from '~/components/MediaSlot.vue'
 import RichText from '~/components/RichText.vue'
+import { hostOf } from '#shared/product'
 import { typeset } from '#shared/typeset'
 
 // Caso cliente, sulla griglia della scheda prodotto: a sinistra il nome
@@ -30,15 +31,7 @@ if (!project.value) {
   })
 }
 
-const host = computed(() => {
-  if (!project.value?.url) return ''
-  try {
-    return new URL(project.value.url).hostname.replace(/^www\./, '')
-  }
-  catch {
-    return ''
-  }
-})
+const host = computed(() => hostOf(project.value?.url))
 
 const meta = computed(() =>
   typeset([project.value?.role, project.value?.year].filter(Boolean).join(' · ')),
@@ -117,15 +110,12 @@ useSeoMeta({
     <!-- Il racconto, nella colonna larga -->
     <section class="page-x">
       <div class="
-        grid gap-x-6 pt-16
-        lg:grid-cols-[302fr_954fr] lg:pt-28
+        page-grid pt-16
+        lg:pt-28
       ">
         <RichText
           :value="project"
-          class="
-            min-w-0
-            lg:col-start-2
-          "
+          class="lg:col-start-2"
         />
       </div>
     </section>

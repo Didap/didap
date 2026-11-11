@@ -47,8 +47,7 @@
     "filter": "Filter",
     "search_clear": "Clear search",
     "clear_filters": "Clear filters",
-    "results_count_one": "1 product",
-    "results_count_other": "{count} products"
+    "results_count": "1 product | {count} products"
   },
   "clients": {
     "kicker": "Partners",

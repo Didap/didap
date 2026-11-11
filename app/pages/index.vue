@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ContactDrawer from '~/components/ContactDrawer.vue'
 import DidapButton from '~/components/DidapButton.vue'
 import DidiTalk from '~/components/DidiTalk.vue'
 import HomeBar from '~/components/HomeBar.vue'
@@ -22,10 +21,11 @@ definePageMeta({ layout: 'screens', splash: false })
 const { t } = useI18n()
 const localePath = useLocalePath()
 // Il modulo della chiusura: un foglio dal basso, con quello già scelto o
-// scritto a Didi
-const drawer = reactive({ open: false, type: '' as ProjectType | '', message: '' })
+// scritto a Didi. Si carica alla prima apertura e poi resta, così
+// chiudendosi finisce la sua animazione
+const drawer = reactive({ mounted: false, open: false, type: '' as ProjectType | '', message: '' })
 function openDrawer(type: ProjectType | '', message: string) {
-  Object.assign(drawer, { open: true, type, message })
+  Object.assign(drawer, { mounted: true, open: true, type, message })
 }
 
 useSeoMeta({
@@ -290,6 +290,7 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
           class="reveal"
           style="--i: 0"
           tone="red"
+          direct
           :hello="t('chat.ask')"
           @form="openDrawer"
         />
@@ -297,7 +298,8 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
       </div>
     </section>
 
-    <ContactDrawer
+    <LazyContactDrawer
+      v-if="drawer.mounted"
       v-model:open="drawer.open"
       :project-type="drawer.type"
       :message="drawer.message"

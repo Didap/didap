@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DialogClose, DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
 import ContactForm from '~/components/ContactForm.vue'
+import CloseButton from '~/components/CloseButton.vue'
 import DidapButton from '~/components/DidapButton.vue'
 import type { ProjectType } from '#shared/contact'
 
@@ -14,24 +15,26 @@ const open = defineModel<boolean>('open', { required: true })
 defineProps<{ projectType?: ProjectType | '', message?: string }>()
 
 const { t } = useI18n()
-const sheetId = useId()
 
 const session = ref(0)
 watch(open, (o) => {
+  clearTimeout(focusTimer)
   if (!o) return
   session.value++
   drag.value = 0
 })
+onBeforeUnmount(() => clearTimeout(focusTimer))
 
 // Il primo campo prende il fuoco quando il foglio è arrivato, così il
 // browser non scorre per mostrarlo. Sul telefono no: la tastiera
-// coprirebbe il foglio mentre sale
+// coprirebbe il foglio mentre sale. Reka lancia l'evento sul foglio
+let focusTimer: ReturnType<typeof setTimeout> | undefined
 function focusFirstField(e: Event) {
   e.preventDefault()
-  const sheet = document.getElementById(sheetId)
-  sheet?.focus({ preventScroll: true })
+  const sheet = e.target as HTMLElement
+  sheet.focus({ preventScroll: true })
   if (!window.matchMedia('(pointer: fine)').matches) return
-  setTimeout(() => sheet?.querySelector<HTMLElement>('input[name="name"]')?.focus({ preventScroll: true }), 600)
+  focusTimer = setTimeout(() => sheet.querySelector<HTMLElement>('input[name="name"]')?.focus({ preventScroll: true }), 600)
 }
 
 // Tirare giù dalla maniglia: il foglio segue il dito; oltre 120px, o con
@@ -68,7 +71,6 @@ function dragEnd(e: PointerEvent) {
     <DialogPortal>
       <DialogOverlay class="veil fixed inset-0 z-50 bg-ink/50" />
       <DialogContent
-        :id="sheetId"
         :aria-describedby="undefined"
         class="
           sheet fixed inset-x-0 bottom-0 z-50 flex max-h-[92svh] flex-col
@@ -105,30 +107,7 @@ function dragEnd(e: PointerEvent) {
               ">
                 {{ t('nav.cta') }}
               </DialogTitle>
-              <DialogClose
-                class="
-                  -mr-2.5 flex size-10 shrink-0 items-center justify-center
-                  rounded-full transition-colors
-                  hover:bg-ink hover:text-paper-light
-                  focus-visible:outline-2 focus-visible:outline-ink
-                "
-                :aria-label="t('contact.close')"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 5l10 10M15 5 5 15"
-                    stroke="currentColor"
-                    stroke-width="1.75"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </DialogClose>
+              <CloseButton />
             </div>
           </div>
         </div>

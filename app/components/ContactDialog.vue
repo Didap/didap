@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DialogClose, DialogContent, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
 import DidiChat from '~/components/DidiChat.vue'
+import CloseButton from '~/components/CloseButton.vue'
 import DidapButton from '~/components/DidapButton.vue'
 
 // "Lavora con noi" a tutto schermo, sopra qualunque pagina: Didi che
@@ -33,30 +34,7 @@ watch(open, (o) => {
             lg:h-[97px]
           ">
             <span class="text-label text-green">{{ t('nav.contact') }}</span>
-            <DialogClose
-              class="
-                -mr-2.5 flex size-10 items-center justify-center rounded-full
-                transition-colors
-                hover:bg-ink hover:text-paper-light
-                focus-visible:outline-2 focus-visible:outline-ink
-              "
-              :aria-label="t('contact.close')"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M5 5l10 10M15 5 5 15"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </DialogClose>
+            <CloseButton />
           </div>
           <div class="
             border-t-[1.5px] border-ink pt-8 pb-24

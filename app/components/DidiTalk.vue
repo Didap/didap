@@ -14,8 +14,9 @@ import { untypeset } from '#shared/typeset'
 // scritta, il modulo (evento `form`, con la voce e il messaggio: chi la
 // usa decide dove aprirlo). `hello` è la nuvoletta a chat vuota,
 // `suggestions` le voci pronte sotto il campo. `tone="red"` per la
-// chiusura rossa della home: bottoni carta.
-const props = defineProps<{ hello: string, suggestions?: boolean, tone?: 'paper' | 'red' }>()
+// chiusura rossa della home: bottoni carta. `direct`: sotto il campo
+// "Oppure contattaci direttamente", che apre il modulo senza la risposta.
+const props = defineProps<{ hello: string, suggestions?: boolean, tone?: 'paper' | 'red', direct?: boolean }>()
 const emit = defineEmits<{ form: [type: ProjectType | '', message: string] }>()
 
 const { t } = useI18n()
@@ -216,7 +217,7 @@ watch(draft, () => nextTick(() => {
       <!-- Chi non vuole parlare con Didi va dritto al modulo; dopo la
            risposta lo apre "Compila il modulo" -->
       <button
-        v-if="!topic"
+        v-if="direct && !topic"
         type="button"
         class="
           mt-1 self-start rounded-sm text-left text-body underline

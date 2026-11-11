@@ -45,6 +45,24 @@ features:
     - name: Un post per ogni lavoro finito
       desc: Lo raccontiamo insieme al Comune sui suoi social, con le foto e la via dell'intervento.
 model: "Per i cittadini l'app è gratuita. Il Comune paga una licenza annuale in base agli abitanti, senza limiti di operatori, imprese e segnalazioni, e i post sui lavori finiti sono compresi. Il modulo Bandi, con i finanziamenti a cui il Comune può partecipare, si attiva a parte."
+event:
+  label: Hackathon
+  title: Partecipa agli hackathon, diventa parte del progetto.
+  body: "CityFix cresce anche con gli hackathon. Il primo è il Safe Mobility Hack, il 16 e 17 novembre 2026, con studentesse e studenti del quarto e quinto anno delle superiori. Le loro idee entrano in Safe Mobility, il nuovo modulo di CityFix. Studenti, scuole e partner possono partecipare a questo e ai prossimi: scriveteci."
+  items:
+    - name: Sicurezza stradale
+      desc: Segnalare un pericolo e avvisare chi si trova vicino.
+    - name: Servizi del territorio e turismo
+      desc: Monumenti, navette e servizi sulla mappa, da scoprire giocando.
+    - name: Impatto sociale
+      desc: Problemi che i cittadini risolvono da soli e proposte di quartiere finanziate insieme.
+  cta: Partecipa
+  # Foto segnaposto finché non ci sono quelle vere: Vitaly Gariev su Unsplash,
+  # https://unsplash.com/photos/diverse-group-of-students-gathered-around-a-laptop-8gAbl776pc0
+  # (Unsplash License: uso commerciale libero, senza attribuzione)
+  image:
+    src: /covers/cityfix-hackathon-placeholder.webp
+    alt: Un gruppo di studenti seduti a un banco dell'aula attorno a un portatile, guardano lo schermo e ridono
 next: bin-or-deal
 media:
   pair:

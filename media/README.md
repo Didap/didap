@@ -18,7 +18,7 @@ Poi la codifica per il sito e il poster:
 
 Misure degli slot (vedi `app/pages/work/[slug].vue`): hero 1920x1152 (telefono 960x576),
 pair 1256x1520, wide 1920x1080 (telefono 810x1012), feature[0] 1696x1520 (telefono 810x1440),
-feature[1] 816x1520, triple 822x1080. Clip da 10 a 14 secondi, in loop, senza audio: `-g 9999`
+feature[1] 816x1520, triple 822x1080, event.image 1920x1080. Clip da 10 a 14 secondi, in loop, senza audio: `-g 9999`
 tiene un solo fotogramma chiave, quello iniziale, e basta al loop.
 
 Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,

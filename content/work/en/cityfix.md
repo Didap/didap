@@ -45,6 +45,24 @@ features:
     - name: A post for every finished job
       desc: We tell it together with the municipality on its social channels, with the photos and the street of the job.
 model: "The app is free for citizens. The municipality pays an annual licence based on its population, with no limits on operators, contractors or reports, and the posts about finished jobs are included. The Bandi module, with the grants the municipality can apply for, is activated separately."
+event:
+  label: Hackathon
+  title: Join the hackathons, become part of the project.
+  body: "CityFix also grows through hackathons. The first is the Safe Mobility Hack, on 16 and 17 November 2026, with fourth- and fifth-year high-school students. Their ideas feed into Safe Mobility, a new CityFix module. Students, schools and partners can take part in this one and the ones to come: write to us."
+  items:
+    - name: Road safety
+      desc: Report a hazard and alert the people nearby.
+    - name: Local services and tourism
+      desc: Monuments, shuttles and services on a map, to explore as a game.
+    - name: Social impact
+      desc: Problems citizens solve themselves, and neighbourhood proposals funded together.
+  cta: Take part
+  # Placeholder photo until the real ones exist: Vitaly Gariev on Unsplash,
+  # https://unsplash.com/photos/diverse-group-of-students-gathered-around-a-laptop-8gAbl776pc0
+  # (Unsplash License: free commercial use, no attribution required)
+  image:
+    src: /covers/cityfix-hackathon-placeholder.webp
+    alt: A group of students sitting at a lecture hall desk around a laptop, looking at the screen and laughing
 next: bin-or-deal
 media:
   pair:

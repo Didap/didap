@@ -301,6 +301,61 @@ useSeoMeta({
       mt-16
       lg:mt-28
     ` : ''">
+      <!-- Evento: l'invito a partecipare, con i suoi temi -->
+      <section
+        v-if="project.event"
+        class="page-x"
+      >
+        <div class="
+          grid gap-8 border-t-[1.5px] border-ink pt-8 pb-24
+          lg:grid-cols-[302fr_954fr] lg:gap-6 lg:pb-30
+        ">
+          <p class="text-label text-green">
+            {{ project.event.label }}
+          </p>
+          <div class="flex flex-col items-start gap-7">
+            <MediaSlot
+              v-if="project.event.image"
+              :media="project.event.image"
+              class="aspect-video w-full"
+            />
+            <h2 class="
+              text-hero
+              lg:pt-6
+            ">
+              {{ typeset(project.event.title) }}
+            </h2>
+            <p class="text-body-medium">
+              {{ typeset(project.event.body) }}
+            </p>
+            <ul
+              v-if="project.event.items?.length"
+              class="w-full"
+            >
+              <li
+                v-for="item in project.event.items"
+                :key="item.name"
+                class="
+                  grid gap-1 border-t border-ink py-5
+                  md:grid-cols-[1fr_2fr] md:gap-6
+                "
+              >
+                <span class="text-body">{{ typeset(item.name) }}</span>
+                <span class="
+                  text-base/normal opacity-70
+                  md:pt-px
+                ">
+                  {{ typeset(item.desc) }}
+                </span>
+              </li>
+            </ul>
+            <DidapButton :to="localePath('/contact')">
+              {{ project.event.cta }}
+            </DidapButton>
+          </div>
+        </div>
+      </section>
+
       <!-- Ci hanno messo le mani -->
       <section
         v-if="team.length"

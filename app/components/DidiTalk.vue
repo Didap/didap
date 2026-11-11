@@ -68,18 +68,30 @@ function openForm() {
 
 // Il campo cresce con il testo, fino a qualche riga. Vuoto si misura con
 // il placeholder, che su telefono va su due righe e non deve tagliarsi:
-// si rimisura anche quando cambia la larghezza e quando arriva il font
+// su una copia nascosta, perché scriverlo nel campo vero ne cancellerebbe
+// la cronologia di annulla. Si rimisura anche quando cambia la larghezza
+// e quando arriva il font
 const placeholder = computed(() => t('chat.placeholder'))
 const { width } = useElementSize(input)
+
+function measure(el: HTMLTextAreaElement) {
+  if (el.value) {
+    el.style.height = 'auto'
+    return el.scrollHeight
+  }
+  const ghost = el.cloneNode() as HTMLTextAreaElement
+  ghost.value = el.placeholder
+  Object.assign(ghost.style, { position: 'absolute', visibility: 'hidden', height: 'auto', width: `${el.offsetWidth}px` })
+  el.after(ghost)
+  const h = ghost.scrollHeight
+  ghost.remove()
+  return h
+}
 
 function fit() {
   const el = input.value
   if (!el) return
-  const empty = !el.value
-  if (empty) el.value = el.placeholder
-  el.style.height = 'auto'
-  const h = el.scrollHeight
-  if (empty) el.value = ''
+  const h = measure(el)
   el.style.height = `${Math.min(h, 180)}px`
   el.style.overflowY = h > 180 ? 'auto' : 'hidden'
 }
@@ -124,7 +136,7 @@ onMounted(() => {
         v-else
         :key="line"
         class="
-          said max-w-full font-wide leading-[1.02] font-bold tracking-[-0.02em]
+          said font-wide leading-[1.02] font-bold tracking-[-0.02em]
           wrap-break-word
         "
         :class="size"

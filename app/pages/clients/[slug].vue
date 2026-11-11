@@ -41,7 +41,7 @@ const host = computed(() => {
 })
 
 const meta = computed(() =>
-  [project.value?.role, project.value?.year].filter(Boolean).join(' · '),
+  typeset([project.value?.role, project.value?.year].filter(Boolean).join(' · ')),
 )
 
 useSeoMeta({
@@ -79,7 +79,7 @@ useSeoMeta({
       ">
         <div class="flex flex-col items-start gap-4">
           <h1 class="text-hero">
-            {{ project.title }}
+            {{ typeset(project.title) }}
           </h1>
           <p
             v-if="meta"

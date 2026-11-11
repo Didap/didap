@@ -66,6 +66,7 @@ function toggleTag(tag: string) {
 
 function clearFilters() {
   search.value = ''
+  searchOpen.value = false
   activeTags.value = new Set()
 }
 
@@ -76,12 +77,6 @@ const hasFilters = computed(
 const isPa = (tag: string) => tag.trim().toUpperCase() === 'PA'
 
 // "Cerca" è un bottone che diventa campo; vuoto e lasciato, torna bottone
-const searchOpen = ref(false)
-const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
-function openSearch() {
-  searchOpen.value = true
-  nextTick(() => searchInput.value?.focus())
-}
 // I due bottoni accanto al titolo, a contorno ink come le voci
 const pill = `
   flex min-h-10 items-center gap-2 rounded-full border-[1.5px] border-ink px-4
@@ -90,9 +85,19 @@ const pill = `
   focus-visible:outline-2 focus-visible:outline-offset-2
   focus-visible:outline-ink
 `
+
+const searchOpen = ref(false)
+const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
+const searchButton = useTemplateRef<HTMLButtonElement>('searchButton')
+function openSearch() {
+  searchOpen.value = true
+  nextTick(() => searchInput.value?.focus())
+}
+// Chiusa da tastiera o con la X, il fuoco torna sul bottone
 function closeSearch() {
   search.value = ''
   searchOpen.value = false
+  nextTick(() => searchButton.value?.focus())
 }
 
 useSeoMeta({
@@ -171,6 +176,7 @@ useSeoMeta({
         </div>
         <button
           v-else
+          ref="searchButton"
           type="button"
           :class="pill"
           @click="openSearch"

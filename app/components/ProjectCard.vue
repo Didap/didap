@@ -23,7 +23,7 @@ const props = defineProps<{
 // Senza alt: il titolo della card dice già cos'è
 const cardMedia = computed<MediaSlotData | undefined>(() => {
   const m = props.media
-  if (!m?.src && !m?.poster) return undefined
+  if (!m?.src) return undefined
   return { src: m.srcMobile ?? m.src, poster: m.posterMobile ?? m.poster }
 })
 
@@ -63,7 +63,7 @@ const sortedTags = computed(() =>
     <MediaSlot
       v-if="cardMedia"
       :media="cardMedia"
-      class="aspect-5/3 w-full"
+      class="aspect-video w-full"
     />
     <img
       v-else-if="cover"

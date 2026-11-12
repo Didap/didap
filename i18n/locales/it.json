@@ -62,6 +62,13 @@
     "body_1": "Lavoriamo full-stack davvero - backend, frontend, infrastruttura, mobile, integrazioni. Niente subappalti sui pezzi che contano: il codice che spediamo lo scriviamo, testiamo e portiamo in produzione noi.",
     "body_2": "Il design vive dentro al codice: pensato per essere costruibile, non solo bello sulle slide. I prodotti crescono con l'uso reale, non con il brief perfetto."
   },
+  "safe_mobility": {
+    "kicker": "Safe Mobility Hack",
+    "title": "Il template per la vostra presentazione.",
+    "intro": "Dieci slide già impostate: completatele con il progetto della vostra squadra e presentatelo il 17 novembre.",
+    "download": "Scarica il template",
+    "file": "PowerPoint, 390 KB. Si apre anche con Keynote e Google Slides."
+  },
   "contact": {
     "title": "Lavoriamo\ninsieme.",
     "intro": "Due righe bastano. Rispondiamo a tutti entro 2 giorni lavorativi.",

@@ -70,6 +70,11 @@ export default defineNuxtConfig({
         'Referrer-Policy': 'no-referrer',
       },
     },
+    // File da scaricare (es. template per eventi, linkati da QR): il
+    // telefono li salva invece di provare ad aprirli, e restano fuori dai motori
+    '/download/**': {
+      headers: { 'Content-Disposition': 'attachment', 'X-Robots-Tag': 'noindex' },
+    },
     // Il token del link d'invito o di reset non deve uscire nel Referer
     '/admin/password': {
       headers: { 'Referrer-Policy': 'no-referrer' },

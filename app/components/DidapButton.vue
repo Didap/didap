@@ -8,11 +8,15 @@ import { NuxtLink } from '#components'
 // `medium`: variante della Nav, label Medium invece che Semibold.
 // `paper`: pillola carta con testo ink, sopra i video e il rosso della
 // home a schermate.
+// `download`: con `href` a un file del sito, il browser lo scarica
+// nella stessa scheda invece di aprirlo. L'attributo resta vuoto: un
+// valore diventerebbe il nome del file salvato ("true").
 const props = defineProps<{
   to?: string
   href?: string
   medium?: boolean
   paper?: boolean
+  download?: boolean
 }>()
 
 const link = computed(() => props.href ?? props.to)
@@ -23,7 +27,8 @@ const link = computed(() => props.href ?? props.to)
     :is="link ? NuxtLink : 'button'"
     :to="link"
     :external="link ? !!href : undefined"
-    :target="href && !/^(mailto:|tel:|#)/.test(href) ? '_blank' : undefined"
+    :target="href && !download && !/^(mailto:|tel:|#)/.test(href) ? '_blank' : undefined"
+    :download="download ? '' : undefined"
     :class="[
       medium ? 'text-label' : 'text-button',
       paper ? `

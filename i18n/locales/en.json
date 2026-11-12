@@ -62,6 +62,13 @@
     "body_1": "We work full-stack for real - backend, frontend, infrastructure, mobile, integrations. No outsourcing on what matters: the code we ship is written, tested and run by us.",
     "body_2": "Design lives inside the code: built to actually ship, not just look good in slides. Products grow through real use, not the perfect brief."
   },
+  "safe_mobility": {
+    "kicker": "Safe Mobility Hack",
+    "title": "The template for your pitch.",
+    "intro": "Ten slides ready to go: fill them in with your team's project and present it on 17 November.",
+    "download": "Download the template",
+    "file": "PowerPoint, 390 KB. Opens in Keynote and Google Slides too."
+  },
   "contact": {
     "title": "Let's work\ntogether.",
     "intro": "A couple of lines will do. We reply to everyone within 2 working days.",

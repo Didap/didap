@@ -196,5 +196,14 @@
       "intro": "That’s on us, not you. Try again in a moment, meanwhile Didi knows the way home."
     },
     "home": "Back to home"
+  },
+  "safemobilityhack": {
+    "kicker": "Safe Mobility Hack",
+    "title": "The kick-off slides.",
+    "intro": "In Italian: who we are, the challenge on street hazards, what to deliver, how we judge and the schedule of the two days.",
+    "download": "Download the PDF",
+    "file": "PDF, 400 KB, 16 slides.",
+    "slide_label": "Slide {n} of {total}",
+    "seo_description": "The kick-off slides of the Didap Safe Mobility Hack: the challenge, the deliverables, the judging criteria and the schedule."
   }
 }

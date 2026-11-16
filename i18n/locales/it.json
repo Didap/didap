@@ -196,5 +196,14 @@
       "intro": "Il problema è nostro, non tuo. Riprova tra poco, intanto Didi conosce la strada di casa."
     },
     "home": "Torna alla home"
+  },
+  "safemobilityhack": {
+    "kicker": "Safe Mobility Hack",
+    "title": "Le slide del kick-off.",
+    "intro": "Chi siamo, la sfida sui pericoli in strada, cosa consegnare, come valutiamo e il programma delle due giornate.",
+    "download": "Scarica il PDF",
+    "file": "PDF, 400 KB, 16 slide.",
+    "slide_label": "Slide {n} di {total}",
+    "seo_description": "Le slide del kick-off del Safe Mobility Hack di Didap: la sfida, la consegna, i criteri di valutazione e il programma."
   }
 }

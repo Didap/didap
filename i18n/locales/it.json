@@ -178,5 +178,13 @@
     "open": "Apri {host}",
     "next": "Prossimo prodotto",
     "placeholder_image": "Immagine"
+  },
+  "safemobilityhack": {
+    "kicker": "Hackathon · 16 e 17 novembre 2026",
+    "title": "Safe Mobility Hack",
+    "intro": "Le slide del kick-off: chi siamo, la sfida sui pericoli in strada, cosa consegnare, come valutiamo e il programma delle due giornate.",
+    "download": "Scarica il PDF",
+    "slide_label": "Slide {n} di {total}",
+    "seo_description": "Le slide del kick-off del Safe Mobility Hack di Didap: la sfida, la consegna, i criteri di valutazione e il programma."
   }
 }

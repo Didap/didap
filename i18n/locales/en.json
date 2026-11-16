@@ -178,5 +178,13 @@
     "open": "Open {host}",
     "next": "Next product",
     "placeholder_image": "Image"
+  },
+  "safemobilityhack": {
+    "kicker": "Hackathon · 16 and 17 November 2026",
+    "title": "Safe Mobility Hack",
+    "intro": "The kick-off slides, in Italian: who we are, the challenge on street hazards, what to deliver, how we judge and the schedule of the two days.",
+    "download": "Download the PDF",
+    "slide_label": "Slide {n} of {total}",
+    "seo_description": "The kick-off slides of the Didap Safe Mobility Hack: the challenge, the deliverables, the judging criteria and the schedule."
   }
 }

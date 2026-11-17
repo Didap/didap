@@ -2,3 +2,5 @@
 */assets/fonts/
 */assets/luca.webp
 */assets/*.mp4
+# Stato locale della CLI di HyperFrames (percorsi della cache di chi renderizza)
+/*/.hyperframes/

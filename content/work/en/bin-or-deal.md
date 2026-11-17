@@ -27,7 +27,7 @@ hero:
 intro: "Bin or Deal searches for a card or a coin on eBay, Vinted, Wallapop and Subito at once. Every listing becomes Deal, Fair or Bin against the catalogue price: instead of 200 listings you look at the 5 green ones."
 challenge:
   title: The right price is not written on the listing.
-  body: "The catalogue reference drops with the stated condition: a played card is worth 62% of a near-mint one. The marketplaces answer at different speeds, so results arrive while the list re-sorts."
+  body: "The catalogue reference drops with the stated condition: a near-mint card is worth 95% of it, a played one 62%. The marketplaces answer at different speeds, so results arrive while the list re-sorts."
 features:
   title: One search, four marketplaces, one verdict.
   items:

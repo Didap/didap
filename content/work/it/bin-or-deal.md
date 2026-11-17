@@ -27,7 +27,7 @@ hero:
 intro: "Bin or Deal cerca una carta o una moneta su eBay, Vinted, Wallapop e Subito insieme. Ogni annuncio diventa Deal, Fair o Bin contro il prezzo del catalogo: invece di 200 annunci si guardano i 5 verdi."
 challenge:
   title: Il prezzo giusto non è scritto sull’annuncio.
-  body: "Il riferimento del catalogo scende con la condizione dichiarata: una carta giocata vale il 62% di una near-mint. I mercati rispondono in tempi diversi, così i risultati arrivano mentre la lista si riordina."
+  body: "Il riferimento del catalogo scende con la condizione dichiarata: una carta near-mint ne vale il 95%, una giocata il 62%. I mercati rispondono in tempi diversi, così i risultati arrivano mentre la lista si riordina."
 features:
   title: Una ricerca, quattro mercati, un verdetto.
   items:

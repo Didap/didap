@@ -3,6 +3,7 @@
 // telefono: index.html, hyperframes.json, meta.json e assets/telefono.png.
 //
 //   node media/telefono/monta.mjs <cartella> --slot pair|feature --ombra "<rgba>" [--durata 10]
+//     [--sfondo "#f4f4f4"] [--fps 24]
 //
 // Poi si renderizza lo schermo (progetto a parte, 1080x2330, con barra di stato e indicatore
 // home) in <cartella>/assets/schermo.mp4 e infine il telefono. Prima di tutto serve
@@ -19,6 +20,10 @@ const { positionals, values } = parseArgs({
     slot: { type: 'string', default: 'pair' },
     ombra: { type: 'string', default: 'rgba(22, 20, 18, 0.28)' },
     durata: { type: 'string', default: '10' },
+    // Il colore della tessera: #f4f4f4 come CityFix, o la carta del marchio
+    sfondo: { type: 'string', default: '#f4f4f4' },
+    // Solo se lo schermo non è a 30 fps (Helllo è a 24): lo scrive in data-fps
+    fps: { type: 'string' },
   },
 })
 const dir = positionals[0]
@@ -36,6 +41,10 @@ const body = { x: 309.88 + dx, y: 100, w: 636.23, h: 1320, r: 91.41 }
 const screen = { x: 326.95 + dx, y: 108.53, w: 603.32, h: 1301.72, r: 85.32 }
 const frameX = 309 + dx // telefono.png è ritagliato sui pixel interi del clip di CityFix
 const d = Number(values.durata)
+if (!(d > 0)) throw new Error(`Durata non valida: ${values.durata}`)
+const fps = values.fps === undefined ? null : Number(values.fps)
+if (fps !== null && !(fps > 0)) throw new Error(`fps non validi: ${values.fps}`)
+const bg = values.sfondo
 const id = path.basename(path.resolve(dir))
 const px = n => `${+n.toFixed(2)}px`
 
@@ -52,8 +61,8 @@ writeFileSync(path.join(dir, 'index.html'), `<!doctype html>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { width: ${W}px; height: ${H}px; overflow: hidden; background: #f4f4f4; }
-      #root { position: relative; width: 100%; height: 100%; background: #f4f4f4; }
+      html, body { width: ${W}px; height: ${H}px; overflow: hidden; background: ${bg}; }
+      #root { position: relative; width: 100%; height: 100%; background: ${bg}; }
       /* L'ombra del telefono: una sagoma con gli angoli del vetro, sotto la cornice */
       #ombra {
         position: absolute; left: ${px(body.x)}; top: ${px(body.y)}; width: ${px(body.w)}; height: ${px(body.h)};
@@ -68,7 +77,7 @@ writeFileSync(path.join(dir, 'index.html'), `<!doctype html>
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="${id}" data-start="0" data-duration="${d}" data-width="${W}" data-height="${H}">
+    <div id="root" data-composition-id="${id}" data-start="0" data-duration="${d}"${fps ? ` data-fps="${fps}"` : ''} data-width="${W}" data-height="${H}">
       <div id="ombra" class="clip" data-start="0" data-duration="${d}" data-track-index="0"></div>
       <div id="schermo" data-layout-allow-overlap>
         <video id="clip" class="clip" data-start="0" data-duration="${d}" data-track-index="1" src="assets/schermo.mp4" muted playsinline></video>
@@ -90,4 +99,4 @@ writeFileSync(path.join(dir, 'hyperframes.json'), `${JSON.stringify({
   authoringSkill: 'hyperframes',
 }, null, 2)}\n`)
 writeFileSync(path.join(dir, 'meta.json'), `${JSON.stringify({ id, name: id })}\n`)
-console.log(`${dir}: telefono ${values.slot} ${W}x${H}, ${d} s`)
+console.log(`${dir}: telefono ${values.slot} ${W}x${H}, ${d} s${fps ? `, ${fps} fps` : ''}, sfondo ${bg}`)

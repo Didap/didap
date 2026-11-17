@@ -78,11 +78,11 @@ Per ogni clip ci sono due progetti: `<clip>-schermo` (1080x2330, le proporzioni 
 con barra di stato e indicatore home come `punto1-schermo` di CityFix) e `<clip>-telefono`,
 scritto da
 
-    node media/telefono/monta.mjs media/<slug>/<clip>-telefono --slot pair|feature --ombra "<rgba>" --durata <s>
+    node media/telefono/monta.mjs media/<slug>/<clip>-telefono --slot pair|feature --ombra "<rgba>" --durata <s> [--sfondo "<colore>"] [--fps 24]
 
 Lo schermo si renderizza in `<clip>-telefono/assets/schermo.mp4`, poi il telefono, poi la
-codifica come sopra. `monta.mjs` mette lo sfondo #f4f4f4 di CityFix: i telefoni di Bin or Deal
-hanno a mano la carta del marchio (#ebe4d3), da rimettere se si rilancia.
+codifica come sopra. Lo sfondo è #f4f4f4 come CityFix: Bin or Deal usa `--sfondo "#ebe4d3"`, la
+carta del marchio. Helllo è a 24 fps: `--fps 24`, e lo stesso nel render.
 
 ## Bin or Deal
 

@@ -1,6 +1,6 @@
 ---
 title: Cruciverba Lab
-summary: "The home of Italian crosswords online. Seven new word games every day in the browser. Today's is free for everyone, the full archive comes with a subscription."
+summary: "The home of Italian crosswords online. Ten new word games every day in the browser. Today's is free for everyone, the full archive comes with a subscription."
 role: Games
 cover: /covers/cruciverba-lab.svg
 url: https://cruciverba-lab.it
@@ -91,8 +91,8 @@ difficulty.
 
 ## What it does
 
-- **Seven games a day** - Cruciverba, Mosaico, Alveare, Nessi, Chiave,
-  Setaccio, Ghigliottina.
+- **Ten games a day** - Cruciverba, Setaccio, Catena, Crittografato, Rulli,
+  Chiave, Nessi, Ghigliottina, Alveare and Mosaico.
 - **Difficulty stated up front** - every crossword is labelled easy, medium
   or hard, and the levels alternate through the week.
 - **Free account** - saves your times, syncs games across phone, tablet and

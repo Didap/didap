@@ -1,6 +1,6 @@
 ---
 title: Cruciverba Lab
-summary: "La casa dei cruciverba online. Sette giochi di parole nuovi ogni giorno, in italiano e nel browser. Quello di oggi è gratis per tutti, l'archivio completo è in abbonamento."
+summary: "La casa dei cruciverba online. Dieci giochi di parole nuovi ogni giorno, in italiano e nel browser. Quello di oggi è gratis per tutti, l'archivio completo è in abbonamento."
 role: Giochi
 cover: /covers/cruciverba-lab.svg
 url: https://cruciverba-lab.it
@@ -91,8 +91,8 @@ pubblicato, ordinato per livello.
 
 ## Cosa fa
 
-- **Sette giochi al giorno** - Cruciverba, Mosaico, Alveare, Nessi, Chiave,
-  Setaccio, Ghigliottina.
+- **Dieci giochi al giorno** - Cruciverba, Setaccio, Catena, Crittografato, Rulli,
+  Chiave, Nessi, Ghigliottina, Alveare e Mosaico.
 - **Difficoltà dichiarata** - ogni cruciverba è etichettato facile, medio o
   difficile, e le difficoltà si alternano nella settimana.
 - **Account gratuito** - salva i tempi, sincronizza le partite fra telefono,

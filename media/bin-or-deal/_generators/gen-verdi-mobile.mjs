@@ -23,8 +23,9 @@ const cards = L.map(([t, p, title, city, cond, price, ref, pct, h, ago], i) => `
               <div class="prow"><div class="price">${price} €</div><div class="ref"><div class="k">rif. cardmarket</div><div class="v">${ref} €</div></div></div>
             </div>
           </article>`).join("");
-const deals = L.map((l, i) => (l[0] === "deal" ? i : -1)).filter((i) => i >= 0);
-const others = L.map((l, i) => (l[0] !== "deal" ? i : -1)).filter((i) => i >= 0);
+const deals = L.flatMap((l, i) => (l[0] === "deal" ? [i] : []));
+const others = L.flatMap((l, i) => (l[0] !== "deal" ? [i] : []));
+const n = (t) => L.filter((l) => l[0] === t).length;
 const html = `<!doctype html>
 <html lang="it">
   <!-- Generato da _generators/gen-verdi-mobile.mjs: il filtro Score per la feature[0] sul
@@ -72,14 +73,14 @@ const html = `<!doctype html>
       <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow>
         <div class="blk"><h3>Score</h3>
           <div class="chips">
-            <div class="chip" id="f-deal"><span class="tag bg-deal">DEAL</span><span class="n">5</span></div>
-            <div class="chip" id="f-fair"><span class="tag bg-fair">FAIR</span><span class="n">2</span></div>
-            <div class="chip" id="f-bin"><span class="tag bg-bin">BIN</span><span class="n">2</span></div>
+            <div class="chip" id="f-deal"><span class="tag bg-deal">DEAL</span><span class="n">${n("deal")}</span></div>
+            <div class="chip" id="f-fair"><span class="tag bg-fair">FAIR</span><span class="n">${n("fair")}</span></div>
+            <div class="chip" id="f-bin"><span class="tag bg-bin">BIN</span><span class="n">${n("bin")}</span></div>
           </div>
         </div>
         <div class="blk"><h3>Marketplace</h3><div class="mk"><span>eBay</span><span>Vinted</span><span>Wallapop</span><span>Subito</span></div></div>
-        <div class="head"><span class="badge deal">DEAL</span><b class="t-soft">5</b><span class="badge fair">FAIR</span><b class="t-soft">2</b><span class="badge bin">BIN</span><b class="t-soft">2</b>
-          <span class="cnt"><span id="cnt-all">9 annunci</span><span id="cnt-deal">5 annunci</span></span></div>
+        <div class="head"><span class="badge deal">DEAL</span><b class="t-soft">${n("deal")}</b><span class="badge fair">FAIR</span><b class="t-soft">${n("fair")}</b><span class="badge bin">BIN</span><b class="t-soft">${n("bin")}</b>
+          <span class="cnt"><span id="cnt-all">${L.length} annunci</span><span id="cnt-deal">${n("deal")} annunci</span></span></div>
         <div class="list">${cards}
         </div>
         <div id="tap"></div>

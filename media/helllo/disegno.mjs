@@ -23,6 +23,10 @@ export const RIGHT_BODY = [31, 32, 33, 34, 35, 36, 37, 38, 46, 47, 48, 49, 50, 5
 export const PILL = [65, 66]; // 64 is the pill's own mask
 export const LETTERS = { h: 57, e: 58, l1: 59, l2: 60, l3: 61, o: 62, x: 63 };
 export const STICKER_L = [LETTERS.l1, LETTERS.l2, LETTERS.l3];
+// The wordmark: the letters of the sticker, turned 6 degrees so they sit on one line
+export const WORDMARK = [LETTERS.h, LETTERS.e, ...STICKER_L, LETTERS.o];
+export const WORDMARK_VB = [11.9, 37.2, 272, 100.2];
+export const TURN = 'rotate(-6 150 95)';
 // The four open eyes, with the centre of each one
 export const EYES = { 17: [119, 330], 18: [176, 330.5], 75: [979, 326], 76: [918, 326] };
 
@@ -93,8 +97,12 @@ export const written = (id, glyphs, measured, first = 0) => {
 };
 
 // Closed eyes at rest: a small smiling arc in place of each open eye
-export const closed = Object.values(EYES).map(([x, y]) =>
-  `<path d="M${x - 8} ${y - 1}Q${x} ${y + 7} ${x + 8} ${y - 1}" stroke="#225AD6" stroke-width="6.4" stroke-linecap="round" fill="none"/>`).join('');
+export const closedEye = ([x, y]) =>
+  `<path d="M${x - 8} ${y - 1}Q${x} ${y + 7} ${x + 8} ${y - 1}" stroke="#225AD6" stroke-width="6.4" stroke-linecap="round" fill="none"/>`;
+export const closed = Object.values(EYES).map(closedEye).join('');
+// The open eyes, each in a .eye group; keep picks them by index (the right person is > 70)
+export const openEyes = (keep = () => true) =>
+  Object.keys(EYES).filter((i) => keep(+i)).map((i) => `<g class="eye">${path_(+i)}</g>`).join('');
 // The sticker's l, each the cord's middle l carried over by its own affine map
 export const cordL = anchors(P[2][0]);
 export const stickerLines = STICKER_L.map((g) => lines.cord[2].map(affine(cordL, anchors(P[g][0]))));

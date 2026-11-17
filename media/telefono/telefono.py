@@ -8,9 +8,10 @@ la Dynamic Island. Scrive telefono.png accanto a sé: è fuori dal repo come la 
 
     python media/telefono/telefono.py
 
-Serve ffmpeg e Chrome (CHROME per un percorso diverso). Le misure sono quelle di
-media/cityfix/landing/punto1/index.html, che usano anche i progetti media/<slug>/telefono-*.
+Serve ffmpeg e Chrome (CHROME per un percorso diverso). Le misure sono in misure.json, quelle di
+media/cityfix/landing/punto1/index.html, e le legge anche monta.mjs.
 """
+import json
 import os
 import subprocess
 import sys
@@ -24,15 +25,17 @@ REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 CLIP = os.path.join(REPO, 'public', 'covers', 'cityfix-punto1.mp4')
 CHROME = os.environ.get('CHROME', r'C:\Program Files\Google\Chrome\Application\chrome.exe')
 
-W, H = 1256, 1520
-# Il telefono in punto1, e lo schermo dentro il telefono
-BODY = dict(x=309.88, y=100.0, w=636.23, h=1320.0, r=91.41)
-# Il vetro che si vede: dentro il bordo nero, misurato sul clip. Lo schermo (326.95, 108.53,
-# 603.32x1301.72 nei progetti) è più grande e il bordo nero ne copre i lati, come nel PSD
-GLASS = dict(x=331.9, y=115.5, w=593.4, h=1287.1, r=89.0)
+OUT = os.path.join(HERE, 'telefono.png')
+
+with open(os.path.join(HERE, 'misure.json'), encoding='utf-8') as f:
+    M = json.load(f)
+W, H = M['tessera']['w'], M['tessera']['h']
+# Il telefono in punto1. Il buco è il vetro che si vede, dentro il bordo nero: lo schermo dei
+# progetti è più grande e il bordo nero ne copre i lati, come nel PSD
+BODY, GLASS = M['body'], M['glass']
 # Dove cercare la Dynamic Island (fotogramma intero)
 ISLAND = (520, 120, 740, 195)
-SHADOW = '0 46px 90px -40px rgba(43, 28, 232, 0.38)'
+SHADOW = M['ombra'] + ' rgba(43, 28, 232, 0.38)'
 
 
 def rounded_sdf(xs, ys, b, inset=0.0):
@@ -82,7 +85,7 @@ alpha[rounded_sdf(xs, ys, BODY) > 6] = 0
 # Lo schermo è un buco, tranne la Dynamic Island
 hole = np.clip(-rounded_sdf(xs, ys, GLASS) + 0.5, 0, 1)
 x0, y0, x1, y1 = ISLAND
-lum = img[..., :3] @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
+lum = img @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
 island = np.zeros_like(hole)
 island[y0:y1, x0:x1] = np.clip((140 - lum[y0:y1, x0:x1]) / 80, 0, 1)
 alpha *= 1 - hole * (1 - island)
@@ -94,5 +97,5 @@ rgba = np.dstack([color, alpha * 255]).round().astype(np.uint8)
 
 bx0, by0 = int(BODY['x']), int(BODY['y'])
 bx1, by1 = int(np.ceil(BODY['x'] + BODY['w'])), int(np.ceil(BODY['y'] + BODY['h']))
-Image.fromarray(rgba).crop((bx0, by0, bx1, by1)).save(os.path.join(HERE, 'telefono.png'))
-print(os.path.join(HERE, 'telefono.png'), bx1 - bx0, 'x', by1 - by0, 'a', bx0, by0)
+Image.fromarray(rgba).crop((bx0, by0, bx1, by1)).save(OUT)
+print(OUT, bx1 - bx0, 'x', by1 - by0, 'a', bx0, by0)

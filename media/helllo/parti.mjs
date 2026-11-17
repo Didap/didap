@@ -22,12 +22,12 @@
 //             write(tl, set, at, duration, back) and fall(tl, sel, at, turn)
 //   file      the content of parti/<src>, which may hold parts itself
 //
-// Fonts (OFL, licences in fonts/) and parti/luca.webp go to assets/ of each project:
+// Fonts (OFL, licences in fonts/) go to assets/ of each project, parti/luca.webp where it is used:
 // assets/fonts/ and the rendered screens are not kept in git (media/helllo/.gitignore).
 // The screens render into their phone, the phone renders last (media/README.md).
 import fs from 'node:fs';
 import path from 'node:path';
-import { here, P, CORD, LEFT_HAND, LEFT_BODY, RIGHT_HAND, RIGHT_BODY, PILL, LETTERS, STICKER_L, EYES, lines, path_, group, curve, joined, written, closed, stickerLines, penScript } from './disegno.mjs';
+import { here, P, CORD, LEFT_HAND, LEFT_BODY, RIGHT_HAND, RIGHT_BODY, PILL, LETTERS, STICKER_L, WORDMARK, WORDMARK_VB, TURN, EYES, lines, path_, group, curve, joined, written, closed, closedEye, openEyes, stickerLines, penScript } from './disegno.mjs';
 
 const PROGETTI = [
   'scopri-schermo', 'match-schermo', 'conversazione', 'conversazione-mobile',
@@ -47,27 +47,27 @@ const PARTI = {
   // with set, the letters are groups <id>-h, -e, -o that can fall and the lll write themselves
   // (the red of the export)
   wordmark: (o) => {
-    if (!o?.set) return `<svg${o?.id ? ` id="${o.id}"` : ''} class="${opt(o, 'class', 'wordmark')}" viewBox="11.9 37.2 272 100.2" fill="currentColor" aria-label="helllo"><g transform="rotate(-6 150 95)">${[LETTERS.h, LETTERS.e, ...STICKER_L, LETTERS.o].map((i) => `<path d="${P[i][0]}"/>`).join('')}</g></svg>`;
+    if (!o?.set) return `<svg${o?.id ? ` id="${o.id}"` : ''} class="${opt(o, 'class', 'wordmark')}" viewBox="${WORDMARK_VB.join(' ')}" fill="currentColor" aria-label="helllo"><g transform="${TURN}">${WORDMARK.map((i) => `<path d="${P[i][0]}"/>`).join('')}</g></svg>`;
     const id = opt(o, 'id', 'wm');
-    return `<svg id="${id}" class="${opt(o, 'class', 'wordmark')}" viewBox="11.9 37.2 272 100.2" fill="none" overflow="visible" aria-label="helllo"><g transform="rotate(-6 150 95)">
-          <g id="${id}-h">${path_(LETTERS.h)}</g><g id="${id}-e">${path_(LETTERS.e)}</g>${written(o.set, STICKER_L, stickerLines, 3)}
-          <g id="${id}-o">${path_(LETTERS.o)}</g></g></svg>`;
+    return `<svg id="${id}" class="${opt(o, 'class', 'wordmark')}" viewBox="${WORDMARK_VB.join(' ')}" fill="none" overflow="visible" aria-label="helllo"><g transform="${TURN}">
+          ${group(id + '-h', [LETTERS.h])}${group(id + '-e', [LETTERS.e])}${written(o.set, STICKER_L, stickerLines, 3)}
+          ${group(id + '-o', [LETTERS.o])}</g></svg>`;
   },
 
   // the three l of the wordmark alone, as in the match badge and the app icon
-  lllmark: (o) => `<svg class="${opt(o, 'class', 'wordmark-lll')}" viewBox="116 30 128 116" fill="currentColor" aria-hidden="true"><g transform="rotate(-6 150 95)">${STICKER_L.map((i) => `<path d="${P[i][0]}"/>`).join('')}</g></svg>`,
+  lllmark: (o) => `<svg class="${opt(o, 'class', 'wordmark-lll')}" viewBox="116 30 128 116" fill="currentColor" aria-hidden="true"><g transform="${TURN}">${STICKER_L.map((i) => `<path d="${P[i][0]}"/>`).join('')}</g></svg>`,
 
   // viewBox around the pill and the letters, with room for the fall
   sticker: (o) => {
     const p = opt(o, 'prefix', 'st'), set = opt(o, 'set', 'sw');
     return `<svg id="${p}" class="${opt(o, 'class', 'sticker')}" viewBox="0 -10 330 165" fill="none" overflow="visible">
-          <g id="${p}-pill">${PILL.map((i) => path_(i)).join('')}</g>
-          <g id="${p}-h">${path_(LETTERS.h)}</g>
-          <g id="${p}-e">${path_(LETTERS.e)}</g>
+          ${group(p + '-pill', PILL)}
+          ${group(p + '-h', [LETTERS.h])}
+          ${group(p + '-e', [LETTERS.e])}
           <g id="${p}-lll">${written(set, STICKER_L, stickerLines, 3)}
           </g>
-          <g id="${p}-o">${path_(LETTERS.o)}</g>
-          <g id="${p}-x">${path_(LETTERS.x)}</g>
+          ${group(p + '-o', [LETTERS.o])}
+          ${group(p + '-x', [LETTERS.x])}
         </svg>`;
   },
 
@@ -79,16 +79,15 @@ const PARTI = {
 
   persone: (o) => {
     const id = opt(o, 'id', 'pp');
-    const eyes = Object.keys(EYES).map((i) => `<g class="eye">${path_(+i)}</g>`).join('');
     // the centre line of the cord from the left phone to the right one, for what runs along it
     const via = curve(joined(lines.cord, 0).flat());
     return `<svg id="${id}" class="${opt(o, 'class', 'persone')}" viewBox="0 80 1118 490" fill="none" overflow="visible">
           <path id="${id}-via" class="line" d="${via}"/>
-          <g id="${id}-filo">${CORD.map((i) => path_(i)).join('')}</g>
+          ${group(id + '-filo', CORD)}
           ${group(id + '-sx', LEFT_BODY)}
           ${group(id + '-dx', RIGHT_BODY)}
           <g id="${id}-chiusi" opacity="0">${closed}</g>
-          <g id="${id}-occhi">${eyes}</g>
+          <g id="${id}-occhi">${openEyes()}</g>
           ${group(id + '-mano-sx', LEFT_HAND)}
           ${group(id + '-mano-dx', RIGHT_HAND)}
         </svg>`;
@@ -97,10 +96,9 @@ const PARTI = {
   // one of the two people alone, head and shoulders, eyes open: who sx (left) or dx (right)
   ritratto: (o) => {
     const dx = opt(o, 'who', 'dx') === 'dx';
-    const eyes = Object.keys(EYES).filter((i) => (+i > 70) === dx).map((i) => `<g class="eye">${path_(+i)}</g>`).join('');
-    // the closed eyes, as in build.mjs, for the same person
-    const chiusi = Object.entries(EYES).filter(([i]) => (+i > 70) === dx).map(([, [x, y]]) =>
-      `<path d="M${x - 8} ${y - 1}Q${x} ${y + 7} ${x + 8} ${y - 1}" stroke="#225AD6" stroke-width="6.4" stroke-linecap="round" fill="none"/>`).join('');
+    const mine = (i) => (i > 70) === dx;
+    const eyes = openEyes(mine);
+    const chiusi = Object.entries(EYES).filter(([i]) => mine(+i)).map(([, p]) => closedEye(p)).join('');
     return `<svg${o?.id ? ` id="${o.id}"` : ''} class="${opt(o, 'class', 'ritratto')}" viewBox="${dx ? '830 176 280 400' : '-6 180 250 345'}" fill="none" overflow="visible">${group(opt(o, 'id', 'rt') + '-corpo', dx ? RIGHT_BODY : LEFT_BODY)}<g class="occhi">${eyes}</g><g class="chiusi" opacity="0">${chiusi}</g></svg>`;
   },
 
@@ -153,10 +151,11 @@ for (const p of PROGETTI) {
   const dir = path.join(here, p);
   const file = path.join(dir, 'index.html');
   if (!fs.existsSync(file)) { console.log(`${p}: manca index.html, salto`); continue; }
-  fs.writeFileSync(file, fill(fs.readFileSync(file, 'utf8')));
+  const html = fill(fs.readFileSync(file, 'utf8'));
+  fs.writeFileSync(file, html);
   fs.mkdirSync(path.join(dir, 'assets/fonts'), { recursive: true });
   for (const f of fs.readdirSync(FONTS)) if (f.endsWith('.woff2')) fs.copyFileSync(path.join(FONTS, f), path.join(dir, 'assets/fonts', f));
-  fs.copyFileSync(path.join(here, 'parti/luca.webp'), path.join(dir, 'assets/luca.webp'));
+  if (html.includes('assets/luca.webp')) fs.copyFileSync(path.join(here, 'parti/luca.webp'), path.join(dir, 'assets/luca.webp'));
   // lo store fa girare gli schermi già renderizzati dentro i telefoni
   if (p === 'store') {
     for (const s of ['scopri', 'match']) {
@@ -171,12 +170,12 @@ for (const p of PROGETTI) {
 // La tessera del logo per la pair[0] della scheda (628x760, come le altre schede): il marchio
 // in carta sul rosso
 {
-  const W = 440, vb = [11.9, 37.2, 272, 100.2], H = +(W * vb[3] / vb[2]).toFixed(2);
+  const W = 440, vb = WORDMARK_VB, H = +(W * vb[3] / vb[2]).toFixed(2);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 628 760">
   <rect width="628" height="760" fill="#E93D29"/>
   <svg x="94" y="${+((760 - H) / 2).toFixed(2)}" width="${W}" height="${H}" viewBox="${vb.join(' ')}" fill="#F9F7F8">
-    <g transform="rotate(-6 150 95)">
-${[LETTERS.h, LETTERS.e, ...STICKER_L, LETTERS.o].map((i) => `      <path d="${P[i][0]}"/>`).join('\n')}
+    <g transform="${TURN}">
+${WORDMARK.map((i) => `      <path d="${P[i][0]}"/>`).join('\n')}
     </g>
   </svg>
 </svg>

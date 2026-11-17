@@ -20,6 +20,8 @@ const chunks = [
   [6.0, ["W1", "W2"]],
 ];
 const P = 98; // passo delle card in px CSS
+// i mercati nell'ordine della pagina
+const PLATS = ["Subito", "Vinted", "eBay", "Wallapop"];
 const art = (h, i) => `<svg class="art" viewBox="0 0 160 200" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g${i}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="hsl(${h},70%,62%)"/><stop offset="1" stop-color="hsl(${h + 30},60%,36%)"/></linearGradient></defs><rect width="160" height="200" fill="url(#g${i})"/><rect x="10" y="10" width="140" height="180" rx="8" fill="none" stroke="rgba(255,255,255,.4)"/><circle cx="80" cy="86" r="42" fill="hsl(${h},90%,82%)" opacity=".7"/></svg>`;
 const cards = Object.entries(C).map(([id, [t, p, title, city, cond, price, ref, pct, h]]) => `
             <article class="card ${t} lc" id="c-${id}">
@@ -37,9 +39,9 @@ const plan = [];
 for (const [t, ids] of chunks) {
   arrived.push(...ids);
   const order = [...arrived].sort((a, b) => C[b][9] - C[a][9]);
-  plan.push([t, ids, order]);
+  plan.push([t, ids, order, C[ids[0]][1]]);
   const cnt = (x) => arrived.filter((i) => C[i][0] === x).length;
-  const left = ["eBay", "Vinted", "Wallapop", "Subito"].filter((p) => !arrived.some((i) => C[i][1] === p));
+  const left = PLATS.filter((p) => !arrived.some((i) => C[i][1] === p));
   states.push({ d: cnt("deal"), f: cnt("fair"), b: cnt("bin"), n: arrived.length, s: left.length ? left.length + (left.length === 1 ? " mercato" : " mercati") + " in arrivo…" : "completata in 4,6 s" });
 }
 const st = (k) => states.map((s, i) => `<span class="sv s${i}">${s[k]}</span>`).join("");
@@ -92,7 +94,7 @@ const html = `<!doctype html>
       <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow>
         <div class="form"><div class="q">charizard base set</div><div class="btn"><span id="b-idle">Bin? Deal?</span><span id="b-busy">Cerco…</span></div></div>
         <div class="mk">
-          ${["Subito", "Vinted", "eBay", "Wallapop"].map((p) => `<div class="mrow"><div class="nm"><span class="dot"><i id="d-${p}"></i></span>${p}</div><div class="st"><span id="w-${p}">attesa</span><span id="k-${p}">${Object.values(C).filter((c) => c[1] === p).length} annunci</span></div></div>`).join("\n          ")}
+          ${PLATS.map((p) => `<div class="mrow"><div class="nm"><span class="dot"><i id="d-${p}"></i></span>${p}</div><div class="st"><span id="w-${p}">attesa</span><span id="k-${p}">${Object.values(C).filter((c) => c[1] === p).length} annunci</span></div></div>`).join("\n          ")}
         </div>
         <div class="head"><span class="badge deal">DEAL</span><span class="num">${st("d")}</span><span class="badge fair">FAIR</span><span class="num">${st("f")}</span><span class="badge bin">BIN</span><span class="num">${st("b")}</span><span style="margin-left:auto" class="num">${st("n")}</span>annunci</div>
         <div class="stat">${st("s")}</div>
@@ -106,7 +108,7 @@ const html = `<!doctype html>
       const plan = ${JSON.stringify(plan)};
       const NS = ${states.length};
       const all = ${JSON.stringify(Object.keys(C))};
-      const plats = ["Subito", "Vinted", "eBay", "Wallapop"];
+      const plats = ${JSON.stringify(PLATS)};
       // t=0: nessun risultato, nessun mercato ha risposto
       tl.set(all.map((i) => "#c-" + i), { opacity: 0, y: 0, x: 0 }, 0);
       tl.set(plats.map((p) => "#d-" + p), { scale: 0 }, 0);
@@ -118,8 +120,7 @@ const html = `<!doctype html>
       // parte la ricerca
       tl.to("#b-idle", { opacity: 0, duration: 0.12 }, 0.6);
       tl.to("#b-busy", { opacity: 1, duration: 0.12 }, 0.65);
-      plan.forEach(([t, ids, order], k) => {
-        const p = { S: "Subito", V: "Vinted", E: "eBay", W: "Wallapop" }[ids[0][0]];
+      plan.forEach(([t, ids, order, p], k) => {
         tl.to("#d-" + p, { scale: 1, duration: 0.3, ease: "back.out(2)" }, t);
         tl.to("#w-" + p, { opacity: 0, duration: 0.15 }, t);
         tl.to("#k-" + p, { opacity: 1, duration: 0.2 }, t + 0.1);

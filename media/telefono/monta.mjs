@@ -8,7 +8,7 @@
 // Poi si renderizza lo schermo (progetto a parte, 1080x2330, con barra di stato e indicatore
 // home) in <cartella>/assets/schermo.mp4 e infine il telefono. Prima di tutto serve
 // telefono.png: python media/telefono/telefono.py
-import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -31,15 +31,21 @@ if (!dir) throw new Error('Manca la cartella del progetto')
 const FRAME = path.join(HERE, 'telefono.png')
 if (!existsSync(FRAME)) throw new Error('Manca telefono.png: prima python media/telefono/telefono.py')
 
+// Le misure di punto1 (la pair), le stesse con cui telefono.py ha ritagliato la cornice
+const M = JSON.parse(readFileSync(path.join(HERE, 'misure.json'), 'utf8'))
 // Slot della scheda (media/README.md): il telefono è alto 1320 in tutti e due, centrato
-const SLOTS = { pair: 1256, feature: 816 }
+const SLOTS = { pair: M.tessera.w, feature: 816 }
 const W = SLOTS[values.slot]
 if (!W) throw new Error(`Slot sconosciuto: ${values.slot}`)
-const H = 1520
-const dx = (W - 1256) / 2 // punto1 è la pair: la feature sposta tutto di -220
-const body = { x: 309.88 + dx, y: 100, w: 636.23, h: 1320, r: 91.41 }
-const screen = { x: 326.95 + dx, y: 108.53, w: 603.32, h: 1301.72, r: 85.32 }
-const frameX = 309 + dx // telefono.png è ritagliato sui pixel interi del clip di CityFix
+const H = M.tessera.h
+const dx = (W - SLOTS.pair) / 2 // la feature sposta tutto di -220
+const body = { ...M.body, x: M.body.x + dx }
+const screen = { ...M.screen, x: M.screen.x + dx }
+// telefono.png è ritagliato sui pixel interi del clip di CityFix
+const frame = {
+  x: Math.floor(M.body.x) + dx, y: Math.floor(M.body.y),
+  w: Math.ceil(M.body.x + M.body.w) - Math.floor(M.body.x), h: Math.ceil(M.body.y + M.body.h) - Math.floor(M.body.y),
+}
 const d = Number(values.durata)
 if (!(d > 0)) throw new Error(`Durata non valida: ${values.durata}`)
 const fps = values.fps === undefined ? null : Number(values.fps)
@@ -66,14 +72,14 @@ writeFileSync(path.join(dir, 'index.html'), `<!doctype html>
       /* L'ombra del telefono: una sagoma con gli angoli del vetro, sotto la cornice */
       #ombra {
         position: absolute; left: ${px(body.x)}; top: ${px(body.y)}; width: ${px(body.w)}; height: ${px(body.h)};
-        border-radius: ${px(body.r)}; box-shadow: 0 46px 90px -40px ${values.ombra};
+        border-radius: ${px(body.r)}; box-shadow: ${M.ombra} ${values.ombra};
       }
       #schermo {
         position: absolute; left: ${px(screen.x)}; top: ${px(screen.y)}; width: ${px(screen.w)}; height: ${px(screen.h)};
         border-radius: ${px(screen.r)}; overflow: hidden; background: #fefeff;
       }
       #clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-      #telefono { position: absolute; left: ${frameX}px; top: 100px; width: 638px; height: 1320px; }
+      #telefono { position: absolute; left: ${frame.x}px; top: ${frame.y}px; width: ${frame.w}px; height: ${frame.h}px; }
     </style>
   </head>
   <body>

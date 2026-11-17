@@ -8,7 +8,7 @@ from schermo import page, masthead
 out = sys.argv[1]
 D = 12.0
 GAME, VIVID, TILE, WASH, BAD = "#a55d0c", "#da6d00", "#fed1ad", "#f6d2b9", "#b83930"
-PAPER, EDGE, MUTE, INK = "#fcfcf9", "#c2bdb5", "#6d6059", "#1f130e"
+PAPER, EDGE, MUTE = "#fcfcf9", "#c2bdb5", "#6d6059"
 # Ghigliottina del 27 ottobre 2026 (la stessa del clip di prima): la parola è TENERE.
 # coppie, indice della giusta, indice scelto (la terza si sbaglia)
 pairs = [("ASSENTE", "PRESENTE", 1, 1), ("STAFFE", "SPERONI", 0, 0), ("QUARESIMA", "BATTESIMO", 1, 0),
@@ -25,6 +25,7 @@ def nb(s):
 
 
 ROW0, STEP, RH = 102, 66, 54
+TOP = ROW0 - 79  # la prima riga dentro il riquadro della lavagna
 XL, XR, CW = 50, 221, 149
 
 css = f"""
@@ -39,7 +40,7 @@ css = f"""
 .cell .s{{position:absolute;left:-.2em;right:-.2em;top:52%;height:2px;background:{BAD};transform-origin:0 50%}}
 .tick{{position:absolute;top:6.4px;right:8px;width:14.4px;height:14.4px;color:{GAME}}}
 .blade{{position:absolute;left:42px;width:336px;height:2px;background:{GAME};transform-origin:0 50%}}
-.solve{{left:20px;right:20px;top:{ROW0 - 79 + 5 * STEP + 52}px;text-align:center}}
+.solve{{left:20px;right:20px;top:{TOP + 5 * STEP + 52}px;text-align:center}}
 .prompt{{font-size:15px;line-height:1.55;color:var(--soft)}}
 .irow{{position:relative;height:52px;margin-top:9px}}
 .inp{{position:absolute;left:0;top:0;width:234px;height:52px;border:1px dashed {GAME};border-radius:12px;background:var(--paper)}}
@@ -51,7 +52,7 @@ css = f"""
 .cut{{position:absolute;left:242px;top:0;width:108px;height:52px;border:1px solid {GAME};border-radius:12px;background:{GAME};
   box-shadow:inset 0 -3px 0 rgba(31,19,14,.26);display:grid;place-items:center;padding-bottom:3px;font-size:12px;letter-spacing:.22em;color:var(--paper);text-transform:uppercase}}
 .meta{{margin-top:10px;font-size:11px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase}}
-.rv{{left:20px;right:20px;top:{ROW0 - 79 + 5 * STEP + 52}px}}
+.rv{{left:20px;right:20px;top:{TOP + 5 * STEP + 52}px}}
 .rv .bl{{position:absolute;left:0;right:0;top:-1px;height:2px;background:{GAME};transform-origin:0 50%}}
 .rv .word{{margin:20px auto 0;width:256px;padding:11px 0;border:1px solid {GAME};box-shadow:inset 0 0 0 1px {GAME};background:{WASH};border-radius:12px;
   font-family:Caprasimo;font-size:30px;line-height:1.1;text-align:center;letter-spacing:.02em}}
@@ -71,18 +72,14 @@ def rows(pre, live):
     # le cinque coppie; pre separa gli id della copia ferma che chiude il loop
     h = []
     for i, (a, b, win, pick) in enumerate(pairs):
-        y = ROW0 - 79 + i * STEP
+        y = TOP + i * STEP
         h.append(f'<span class="n" style="top:{y}px">{i + 1}</span>')
         h.append(f'<span class="or" id="{pre}o{i}" style="top:{y}px;opacity:{1 if i == 0 else 0.45}">o</span>')
         for j, x in enumerate((XL, XR)):
             h.append(f'<span class="cv" id="{pre}v{i}{j}" style="left:{x}px;top:{y}px;opacity:{0 if i == 0 else 1}"></span>')
         for j, (x, wd) in enumerate(((XL, a), (XR, b))):
-            extra = ""
-            if live:
-                extra = (f'<i class="s" id="s{i}{j}" ></i>' if j == pick != win else "")
-                tick = TICK.replace('class="tick"', f'class="tick" id="k{i}{j}" style="opacity:0"') if j == win == pick else ""
-            else:
-                tick = ""
+            extra = f'<i class="s" id="s{i}{j}" ></i>' if live and j == pick != win else ""
+            tick = TICK.replace('class="tick"', f'class="tick" id="k{i}{j}" style="opacity:0"') if live and j == win == pick else ""
             h.append(f'<span class="cell" id="{pre}c{i}{j}" style="left:{x}px;top:{y}px;opacity:{1 if i == 0 else 0}">'
                      f'<span class="w">{wd}{extra}</span>{tick}</span>')
         if live:

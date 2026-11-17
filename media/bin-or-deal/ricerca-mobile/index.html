@@ -133,10 +133,10 @@
     <script>
       const tl = gsap.timeline({ paused: true });
       const P = 98;
-      const plan = [[1.5,["S1","S2"],["S1","S2"]],[2.5,["V1","V2","V3"],["V1","S1","V2","V3","S2"]],[3.5,["E1","E2"],["V1","S1","E1","V2","E2","V3","S2"]],[6,["W1","W2"],["V1","W1","S1","E1","V2","E2","V3","W2","S2"]]];
+      const plan = [[1.5,["S1","S2"],["S1","S2"],"Subito"],[2.5,["V1","V2","V3"],["V1","S1","V2","V3","S2"],"Vinted"],[3.5,["E1","E2"],["V1","S1","E1","V2","E2","V3","S2"],"eBay"],[6,["W1","W2"],["V1","W1","S1","E1","V2","E2","V3","W2","S2"],"Wallapop"]];
       const NS = 5;
       const all = ["S1","S2","V1","V2","V3","E1","E2","W1","W2"];
-      const plats = ["Subito", "Vinted", "eBay", "Wallapop"];
+      const plats = ["Subito","Vinted","eBay","Wallapop"];
       // t=0: nessun risultato, nessun mercato ha risposto
       tl.set(all.map((i) => "#c-" + i), { opacity: 0, y: 0, x: 0 }, 0);
       tl.set(plats.map((p) => "#d-" + p), { scale: 0 }, 0);
@@ -148,8 +148,7 @@
       // parte la ricerca
       tl.to("#b-idle", { opacity: 0, duration: 0.12 }, 0.6);
       tl.to("#b-busy", { opacity: 1, duration: 0.12 }, 0.65);
-      plan.forEach(([t, ids, order], k) => {
-        const p = { S: "Subito", V: "Vinted", E: "eBay", W: "Wallapop" }[ids[0][0]];
+      plan.forEach(([t, ids, order, p], k) => {
         tl.to("#d-" + p, { scale: 1, duration: 0.3, ease: "back.out(2)" }, t);
         tl.to("#w-" + p, { opacity: 0, duration: 0.15 }, t);
         tl.to("#k-" + p, { opacity: 1, duration: 0.2 }, t + 0.1);

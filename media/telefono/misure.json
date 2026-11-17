@@ -1,0 +1,8 @@
+{
+  "nota": "Il telefono di media/cityfix/landing/punto1 nella tessera pair 1256x1520: la cornice (body), lo schermo dei progetti (screen) e il vetro che si vede dentro il bordo nero (glass). Le leggono telefono.py e monta.mjs.",
+  "tessera": { "w": 1256, "h": 1520 },
+  "body": { "x": 309.88, "y": 100, "w": 636.23, "h": 1320, "r": 91.41 },
+  "screen": { "x": 326.95, "y": 108.53, "w": 603.32, "h": 1301.72, "r": 85.32 },
+  "glass": { "x": 331.9, "y": 115.5, "w": 593.4, "h": 1287.1, "r": 89.0 },
+  "ombra": "0 46px 90px -40px"
+}

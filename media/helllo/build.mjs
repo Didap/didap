@@ -14,7 +14,7 @@
 // the cord is a spring (damped, 2.5 Hz, 8° at most, the ends stay put, once).
 import fs from 'node:fs';
 import path from 'node:path';
-import { here, P, PANEL, CORD, LEFT_HAND, LEFT_BODY, RIGHT_HAND, RIGHT_BODY, PILL, LETTERS, STICKER_L, EYES, lines, path_, group, written, closed, stickerLines, penScript } from './disegno.mjs';
+import { here, PANEL, CORD, LEFT_HAND, LEFT_BODY, RIGHT_HAND, RIGHT_BODY, PILL, LETTERS, STICKER_L, lines, path_, group, written, closed, openEyes, stickerLines, penScript } from './disegno.mjs';
 
 const illustration = `
     <svg id="ill" viewBox="0 0 1118 570" fill="none">
@@ -26,7 +26,7 @@ const illustration = `
         ${group('left-body', LEFT_BODY)}
         ${group('right-body', RIGHT_BODY)}
         <g id="eyes-closed">${closed}</g>
-        <g id="eyes-open">${Object.keys(EYES).map((i) => `<g class="eye">${path_(+i)}</g>`).join('')}</g>
+        <g id="eyes-open">${openEyes()}</g>
         ${group('left-hand', LEFT_HAND)}
         ${group('right-hand', RIGHT_HAND)}
         <g id="sticker">

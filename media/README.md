@@ -72,7 +72,8 @@ Come CityFix, ogni scheda mostra lo schermo dell'app dentro l'iPhone 17 Pro negl
 pair[1] (1256x1520) e feature[1] (816x1520), telefono alto 1320. La cornice viene dal clip di
 CityFix, non dal PSD: `python media/telefono/telefono.py` la ricava da
 `public/covers/cityfix-punto1.mp4` (toglie sfondo e ombra, buca lo schermo e lascia la Dynamic
-Island) e scrive `media/telefono/telefono.png`, fuori dal repo come la cornice del mockup.
+Island) e scrive `media/telefono/telefono.png`, fuori dal repo come la cornice del mockup. Le
+misure del telefono stanno in `media/telefono/misure.json`, le leggono tutti e due gli script.
 
 Per ogni clip ci sono due progetti: `<clip>-schermo` (1080x2330, le proporzioni dello schermo,
 con barra di stato e indicatore home come `punto1-schermo` di CityFix) e `<clip>-telefono`,
@@ -129,7 +130,8 @@ Ora tutta la scheda è animata, sempre a 24 fps e con le stesse regole: pair[0] 
 helllo! a Luca, il match), wide `conversazione` e `conversazione-mobile` (1080x1350 ridotto a
 810x1012: le due persone si scrivono, i messaggi corrono nel filo), feature[0] `profilo` e
 `profilo-mobile` (1080x1920 ridotto a 810x1440), feature[1] `match-telefono` (lo schermo
-`match-schermo`: la chat e il colloquio), triple `palette`, `social`, `store`.
+`match-schermo`: la chat e il colloquio), triple `palette`, `social`, `store`. `profilo-mobile`
+si codifica con `-crf 31`: scorre tutto lo schermo e a 28 pesava più del profilo largo.
 
 Prima del check `node media/helllo/parti.mjs` riscrive i blocchi `helllo:*` degli `index.html`
 (marchio, sticker, lll che si scrivono, persone, parti comuni in `media/helllo/parti/`), copia i

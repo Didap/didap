@@ -22,6 +22,9 @@ def grade(p):
     return g[1], f"{g[3] - p} punti e diventi {g[2]}"
 
 
+g0, hint0 = grade(0)
+
+
 # centri delle celle in px css, misurati sul sito a 390 px
 cells = {"nw": (145, 344.5), "ne": (245, 344.5), "w": (95, 431.5), "c": (195, 431.5),
          "e": (295, 431.5), "sw": (145, 518.5), "se": (245, 518.5)}
@@ -79,7 +82,7 @@ h = [f"<style>{css}</style>",
      '</div><div class="r r2">',
      f'<span class="n" style="color:var(--soft)">{icon("sparkles", 14)}<b>0</b></span>',
      '</div></div>',
-     '<p class="a gr"><b id="gr">Uovo</b><i id="gh">50 punti e diventi Larva</i></p>',
+     f'<p class="a gr"><b id="gr">{g0}</b><i id="gh">{hint0}</i></p>',
      '<p class="a sc"><b id="sc">0</b> su 1000</p>']
 for wi, (w, p) in enumerate(words):
     h.append(f'<p class="a plus" id="pl{wi}">+{p}</p>')
@@ -127,7 +130,8 @@ for wi, (w, p) in enumerate(words):
     js.append(f'tl.to(["#del","#ok"],{{opacity:0.45,duration:0.15}},{tc + 0.15:.2f});')
     letters = ",".join(f'"#t{wi}_{k} b"' for k in range(n))
     js.append(f'tl.to([{letters}],{{opacity:0,y:-14,duration:0.3,ease:"power2.in"}},{tc + 0.1:.2f});')
-    js.append(f'tl.set([{",".join(f"{chr(34)}#t{wi}_{k}{chr(34)}" for k in range(n))}],{{maxWidth:0}},{tc + 0.42:.2f});')
+    tiles = ",".join(f'"#t{wi}_{k}"' for k in range(n))
+    js.append(f'tl.set([{tiles}],{{maxWidth:0}},{tc + 0.42:.2f});')
     js.append(f'tl.to("#dot",{{opacity:1,duration:0.15}},{tc + 0.42:.2f});')
     js.append(f'tl.fromTo("#pt{wi}",{{opacity:0,y:4}},{{opacity:1,y:-6,duration:0.25,ease:"power2.out"}},{tc + 0.12:.2f});')
     js.append(f'tl.to("#pt{wi}",{{opacity:0,y:-14,duration:0.3}},{tc + 0.7:.2f});')
@@ -159,14 +163,15 @@ for wi, (w, p) in enumerate(words):
 R = D - 0.9
 allw = ",".join(f'"#f{w} span"' for w in alpha)
 js.append(f'tl.to([{allw}],{{opacity:0,duration:0.3}},{R:.2f});')
-js.append(f'tl.set([{",".join(f"{chr(34)}#f{w}{chr(34)}" for w in alpha)}],{{maxWidth:0}},{R + 0.32:.2f});')
+found = ",".join(f'"#f{w}"' for w in alpha)
+js.append(f'tl.set([{found}],{{maxWidth:0}},{R + 0.32:.2f});')
 js.append(f'tl.to("#empty",{{opacity:1,duration:0.3}},{R + 0.35:.2f});')
 js.append(f'tl.to("#fill",{{xPercent:-100,duration:0.6,ease:"power2.inOut"}},{R:.2f});')
 for s in range(1, 6):
     js.append(f'tl.set("#sc",{{textContent:"{round(score * (1 - s / 5))}"}},{R + s * 0.1:.2f});')
 js.append(f'tl.to(["#gr","#gh"],{{opacity:0,duration:0.2}},{R:.2f});')
-js.append(f'tl.set("#gr",{{textContent:"Uovo"}},{R + 0.22:.2f});')
-js.append(f'tl.set("#gh",{{textContent:"50 punti e diventi Larva"}},{R + 0.22:.2f});')
+js.append(f'tl.set("#gr",{{textContent:"{g0}"}},{R + 0.22:.2f});')
+js.append(f'tl.set("#gh",{{textContent:"{hint0}"}},{R + 0.22:.2f});')
 js.append(f'tl.to(["#gr","#gh"],{{opacity:1,duration:0.25}},{R + 0.25:.2f});')
 js.append(f'tl.set(["#fc","#bk"],{{textContent:"0"}},{R + 0.3:.2f});')
 js.append(f'tl.set({{}},{{}},{D:.2f});')

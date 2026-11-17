@@ -27,7 +27,9 @@ CHROME = os.environ.get('CHROME', r'C:\Program Files\Google\Chrome\Application\c
 W, H = 1256, 1520
 # Il telefono in punto1, e lo schermo dentro il telefono
 BODY = dict(x=309.88, y=100.0, w=636.23, h=1320.0, r=91.41)
-SCREEN = dict(x=326.95, y=108.53, w=603.32, h=1301.72, r=85.32)
+# Il vetro che si vede: dentro il bordo nero, misurato sul clip. Lo schermo (326.95, 108.53,
+# 603.32x1301.72 nei progetti) è più grande e il bordo nero ne copre i lati, come nel PSD
+GLASS = dict(x=331.9, y=115.5, w=593.4, h=1287.1, r=89.0)
 # Dove cercare la Dynamic Island (fotogramma intero)
 ISLAND = (520, 120, 740, 195)
 SHADOW = '0 46px 90px -40px rgba(43, 28, 232, 0.38)'
@@ -78,7 +80,7 @@ alpha = np.maximum(alpha, np.clip(-rounded_sdf(xs, ys, BODY, inset=5), 0, 1))
 alpha[rounded_sdf(xs, ys, BODY) > 6] = 0
 
 # Lo schermo è un buco, tranne la Dynamic Island
-hole = np.clip(-rounded_sdf(xs, ys, SCREEN, inset=1.5) + 0.5, 0, 1)
+hole = np.clip(-rounded_sdf(xs, ys, GLASS) + 0.5, 0, 1)
 x0, y0, x1, y1 = ISLAND
 lum = img[..., :3] @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
 island = np.zeros_like(hole)

@@ -43,3 +43,7 @@ logs
 
 # Report dei check e degli snapshot di HyperFrames
 /media/**/.hyperframes/artifacts/
+# Cornice del telefono ricavata dal clip di CityFix (media/telefono/telefono.py) e schermi renderizzati
+/media/telefono/telefono.png
+/media/**/assets/telefono.png
+/media/**/assets/schermo.mp4

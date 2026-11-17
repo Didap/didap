@@ -49,20 +49,24 @@ media:
   pair:
     - src: /covers/bin-or-deal-logo.svg
       alt: The Bin or Deal logo
-    - src: /covers/bin-or-deal-verdetto.mp4
-      poster: /covers/bin-or-deal-verdetto-poster.webp
-      alt: "The verdict on a Charizard listing: the price goes into the formula against the Cardmarket reference, the score lights up on its threshold and the stamp goes from Deal to Fair to Bin"
+    - src: /covers/bin-or-deal-verdetto-telefono.mp4
+      poster: /covers/bin-or-deal-verdetto-telefono-poster.webp
+      alt: "The Bin or Deal site on a phone: three Charizard listings one after the other, the price goes into the formula against the Cardmarket reference, the matching threshold lights up and the verdict stamp goes from Deal to Fair to Bin"
   wide:
     src: /covers/bin-or-deal-ricerca.mp4
     poster: /covers/bin-or-deal-ricerca-poster.webp
+    srcMobile: /covers/bin-or-deal-ricerca-mobile.mp4
+    posterMobile: /covers/bin-or-deal-ricerca-mobile-poster.webp
     alt: "A search for charizard base set: listings arrive from Subito, Vinted, eBay and finally Wallapop, the Deal, Fair and Bin counters go up and the Deals rise to the top of the list"
   feature:
     - src: /covers/bin-or-deal-verdi.mp4
       poster: /covers/bin-or-deal-verdi-poster.webp
+      srcMobile: /covers/bin-or-deal-verdi-mobile.mp4
+      posterMobile: /covers/bin-or-deal-verdi-mobile-poster.webp
       alt: "The Score filter: one click on Deal switches off Fair and Bin, the other listings disappear and only the green ones are left, then the full list comes back"
-    - src: /covers/bin-or-deal-soglie.mp4
-      poster: /covers/bin-or-deal-soglie-poster.webp
-      alt: "Personalizza Scoring under the 185 € reference: the Deal threshold becomes 170 €, Applica Soglie saves it and a listing goes from Fair to Deal"
+    - src: /covers/bin-or-deal-soglie-telefono.mp4
+      poster: /covers/bin-or-deal-soglie-telefono-poster.webp
+      alt: "Personalizza Scoring on a phone, under the 185 € reference: the Deal threshold becomes 170 € on the keypad, Applica Soglie saves it and a listing goes from Fair to Deal, then Ripristina Default turns it back to Fair"
   triple:
     - src: /covers/bin-or-deal-condizione.mp4
       poster: /covers/bin-or-deal-condizione-poster.webp

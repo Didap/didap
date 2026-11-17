@@ -45,9 +45,9 @@ media:
   pair:
     - src: /covers/fanta-rainbow-logo.svg
       alt: Il logo di Fanta Rainbow
-    - src: /covers/fanta-rainbow-asta.mp4
-      poster: /covers/fanta-rainbow-asta-poster.webp
-      alt: "L'asta live di Fanta Rainbow: le squadre rilanciano su Maignan, la barra del countdown si riempie e riparte a ogni offerta, finché il calciatore è aggiudicato a 64 crediti"
+    - src: /covers/fanta-rainbow-asta-telefono.mp4
+      poster: /covers/fanta-rainbow-asta-telefono-poster.webp
+      alt: "L'asta live sul telefono di chi partecipa: Maignan in asta, il pollice preme Buzz e passa in testa, due squadre rivali rilanciano e l'anello del countdown riparte a ogni offerta, finché scade e sullo schermo compare È tuo a 64 crediti"
   wide:
     src: /covers/fanta-rainbow-gioca.mp4
     poster: /covers/fanta-rainbow-gioca-poster.webp
@@ -60,9 +60,9 @@ media:
       srcMobile: /covers/fanta-rainbow-formazione-mobile.mp4
       posterMobile: /covers/fanta-rainbow-formazione-mobile-poster.webp
       alt: "La formazione su Fanta Rainbow: quattro calciatori portati dai Disponibili ai posti liberi del campo, poi Schiera conferma la formazione della giornata"
-    - src: /covers/fanta-rainbow-stagione.mp4
-      poster: /covers/fanta-rainbow-stagione-poster.webp
-      alt: "La pagina Stagione di Fanta Rainbow: il listino scorre in alto, le quotazioni salgono e scendono con il loro andamento, poi arrivano i risultati della giornata con una partita ancora in corso"
+    - src: /covers/fanta-rainbow-stagione-telefono.mp4
+      poster: /covers/fanta-rainbow-stagione-telefono-poster.webp
+      alt: "La pagina Stagione di Fanta Rainbow sul telefono: il listino scorre in alto, le quotazioni salgono e scendono e i calciatori si sorpassano in classifica, poi un tocco su Partite porta ai risultati della giornata, con un gol nella partita ancora in corso"
   triple:
     - src: /covers/fanta-rainbow-ultimora.mp4
       poster: /covers/fanta-rainbow-ultimora-poster.webp

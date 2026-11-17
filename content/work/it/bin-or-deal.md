@@ -49,20 +49,24 @@ media:
   pair:
     - src: /covers/bin-or-deal-logo.svg
       alt: Il logo di Bin or Deal
-    - src: /covers/bin-or-deal-verdetto.mp4
-      poster: /covers/bin-or-deal-verdetto-poster.webp
-      alt: "Il verdetto su un annuncio di Charizard: il prezzo entra nella formula contro il riferimento Cardmarket, lo score si accende sulla sua soglia e il timbro passa da Deal a Fair a Bin"
+    - src: /covers/bin-or-deal-verdetto-telefono.mp4
+      poster: /covers/bin-or-deal-verdetto-telefono-poster.webp
+      alt: "Il sito di Bin or Deal su un telefono: tre annunci di Charizard uno dopo l’altro, il prezzo entra nella formula contro il riferimento Cardmarket, si accende la soglia giusta e il timbro del verdetto passa da Deal a Fair a Bin"
   wide:
     src: /covers/bin-or-deal-ricerca.mp4
     poster: /covers/bin-or-deal-ricerca-poster.webp
+    srcMobile: /covers/bin-or-deal-ricerca-mobile.mp4
+    posterMobile: /covers/bin-or-deal-ricerca-mobile-poster.webp
     alt: "Una ricerca di charizard base set: gli annunci arrivano da Subito, Vinted, eBay e infine Wallapop, i contatori Deal, Fair e Bin salgono e i Deal salgono in cima alla lista"
   feature:
     - src: /covers/bin-or-deal-verdi.mp4
       poster: /covers/bin-or-deal-verdi-poster.webp
+      srcMobile: /covers/bin-or-deal-verdi-mobile.mp4
+      posterMobile: /covers/bin-or-deal-verdi-mobile-poster.webp
       alt: "Il filtro Score: un clic su Deal spegne Fair e Bin, gli altri annunci spariscono e restano solo i verdi, poi la lista torna intera"
-    - src: /covers/bin-or-deal-soglie.mp4
-      poster: /covers/bin-or-deal-soglie-poster.webp
-      alt: "Personalizza Scoring sotto il riferimento di 185 €: la soglia Deal diventa 170 €, Applica Soglie la salva e un annuncio da Fair passa a Deal"
+    - src: /covers/bin-or-deal-soglie-telefono.mp4
+      poster: /covers/bin-or-deal-soglie-telefono-poster.webp
+      alt: "Personalizza Scoring su un telefono, sotto il riferimento di 185 €: con la tastiera la soglia Deal diventa 170 €, Applica Soglie la salva e un annuncio da Fair passa a Deal, poi Ripristina Default lo riporta a Fair"
   triple:
     - src: /covers/bin-or-deal-condizione.mp4
       poster: /covers/bin-or-deal-condizione-poster.webp

@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="it">
+<!-- Generato da media/cruciverba-lab/scripts/alveare_schermo.py: l'Alveare nella pagina mobile del sito, schermo del telefono 1080x2330 -->
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2330" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var-italic.woff2') format('woff2');font-weight:100 900;font-style:italic}
+:root{--paper:#fcfcf9;--ink:#1f130e;--soft:#473a33;--mute:#6d6059;--hair:#dad7d2;--edge:#c2bdb5;--skirt:rgba(31,19,14,.13)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:2330px;overflow:hidden;background:var(--paper)}
+#root{position:relative;width:100%;height:100%;background:var(--paper);color:var(--ink);font-family:Piazzolla,serif}
+/* barra di stato e indicatore home, come gli schermi di CityFix */
+.status{position:absolute;left:0;right:0;top:0;height:150px;padding:24px 88px 0;display:flex;align-items:center;justify-content:space-between;font-family:Inter,sans-serif;font-weight:600;font-size:44px;color:var(--ink);background:var(--paper)}
+.bars{display:flex;gap:4px;align-items:flex-end}
+.bars i{width:8px;border-radius:2px;background:var(--ink)}
+.home{position:absolute;left:50%;bottom:22px;width:370px;height:14px;margin-left:-185px;border-radius:7px;background:var(--ink)}
+/* la pagina del sito in px css, ingrandita sullo schermo */
+#page{position:absolute;left:0;top:150px;width:390px;height:787.22px;transform:scale(2.76923);transform-origin:0 0;overflow:hidden}
+.a{position:absolute}
+.ic{display:block}
+.mark{width:24px;height:24px;display:block}
+.mast{left:0;right:0;top:0;height:78px;border-bottom:1px solid var(--hair)}
+.mast .row{position:absolute;left:0;right:0;top:0;height:48px}
+.mast .tool{position:absolute;left:0;right:0;top:48px;height:29px;border-top:1px solid var(--hair)}
+.badge{position:absolute;left:127px;top:15px;width:41px;height:18px}
+.badge i{position:absolute;inset:0;border:1px solid var(--hair);background:var(--paper)}
+.badge b{position:absolute;inset:0;border:1px solid var(--ink);background:var(--paper);font-family:Caprasimo;font-weight:400;font-size:12px;line-height:16px;text-align:center}
+.tname{position:absolute;left:20px;top:7px;font-family:Caprasimo;font-size:13px;line-height:14px}
+.pips{position:absolute;top:10px;display:flex;gap:3.5px}
+.pips i{width:6.7px;height:6.7px;border:1px solid;border-radius:1.5px}
+.help{position:absolute;right:20px;top:3px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:Caprasimo;font-size:12px}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="13" data-width="1080" data-height="2330">
+<div id="stage" class="clip" data-start="0" data-duration="13" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap data-layout-allow-overflow>
+<div id="page">
+<style>
+.strip{left:20px;right:20px;top:102px;height:82px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.strip .r{position:absolute;left:0;right:0;height:40px;display:flex;align-items:center}
+.strip .r2{top:40px;border-top:1px solid var(--hair)}
+.strip .n{position:absolute;left:0;top:0;height:40px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mute)}
+.strip .n b{font-weight:400;color:var(--ink)}
+.empty{position:absolute;left:68px;right:0;top:0;height:40px;display:flex;align-items:center;font-style:italic;font-size:14px;color:var(--mute);white-space:nowrap}
+.found{position:absolute;left:68px;right:0;top:0;height:40px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.fw{display:inline-block;max-width:0;overflow:hidden;flex:none}
+.fw span{display:inline-block;margin-right:12px;font-size:14px;letter-spacing:.08em;color:var(--soft);border-bottom:1.5px dotted var(--edge);line-height:18px}
+.gr{left:20px;top:200px;display:flex;align-items:baseline;gap:8px}
+.gr b{font-family:Caprasimo;font-weight:400;font-size:20px;line-height:20px;color:#896f09}
+.gr i{font-size:12px;color:var(--mute)}
+.sc{right:20px;top:204px;font-size:13px;color:var(--mute)}
+.sc b{font-weight:400;color:var(--ink)}
+.plus{right:96px;top:203px;font-family:Caprasimo;font-size:14px;color:#896f09;opacity:0}
+.jar{left:20px;top:228px;width:350px;height:14px;border-radius:999px;background:#fde89a;box-shadow:inset 0 0 0 1px rgba(137,111,9,.35);overflow:hidden}
+.fill{position:absolute;inset:0;border-radius:999px;background:#f8c20d}
+.tick{position:absolute;top:4.5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#c7b05f}
+.typed{left:0;right:0;top:250px;height:36px;display:flex;justify-content:center;align-items:flex-end;font-family:Caprasimo;font-size:28px;line-height:1;letter-spacing:.06em}
+.tl{display:inline-block;max-width:0;overflow:hidden;flex:none}
+.tl b{display:inline-block;font-weight:400}
+.dot{left:0;right:0;top:250px;height:36px;display:flex;justify-content:center;align-items:flex-end;font-family:Caprasimo;font-size:28px;line-height:1;color:rgba(109,96,89,.4)}
+.pts{left:252px;top:262px;font-size:11px;color:#896f09;opacity:0}
+.cell{position:absolute;width:96px;height:111px;margin:-55.5px 0 0 -48px;clip-path:url(#hx);background:#fde89a;display:grid;place-items:center;font-family:Caprasimo;font-size:28.8px}
+.cell.c{background:#f8c20d}
+.btn{position:absolute;top:589px;height:44px;border:1px solid var(--edge);border-radius:9.6px;background:var(--paper);box-shadow:inset 0 -2px 0 var(--skirt);display:grid;place-items:center;color:var(--ink)}
+.btn.ok{border-color:#896f09;background:#896f09;color:var(--paper);font-size:12px;letter-spacing:.22em;text-transform:uppercase;box-shadow:inset 0 -2px 0 rgba(31,19,14,.26);padding-bottom:2px}
+.msg{left:0;right:0;top:638px;text-align:center;font-size:14px;color:#896f09;opacity:0}
+.rule{left:20px;right:20px;top:677px;height:1px;background:var(--hair)}
+.fb{left:0;top:694px;width:390px;height:36px}
+.fb p{position:absolute;right:162px;top:9px;font-style:italic;font-size:13px;color:var(--mute);white-space:nowrap}
+.fb .k{position:absolute;top:0;width:36px;height:36px;border:1px solid var(--edge);border-radius:9.6px;display:grid;place-items:center;color:var(--soft)}
+.book{left:16px;top:722px;width:48px;height:48px;border:1px solid var(--ink);border-radius:9.6px;background:var(--paper);display:grid;place-items:center;
+  box-shadow:inset 0 -2px 0 var(--skirt),0 8px 18px -10px rgba(31,19,14,.55)}
+.bdg{position:absolute;right:-6.4px;top:-6.4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#896f09;color:var(--paper);font-size:11px;font-weight:700;line-height:18px;text-align:center}
+</style>
+<svg width="0" height="0" style="position:absolute"><defs><clipPath id="hx" clipPathUnits="objectBoundingBox"><path d="M0.4 0.05Q0.5 0 0.6 0.05L0.9 0.2Q1 0.25 1 0.35L1 0.65Q1 0.75 0.9 0.8L0.6 0.95Q0.5 1 0.4 0.95L0.1 0.8Q0 0.75 0 0.65L0 0.35Q0 0.25 0.1 0.2Z"/></clipPath></defs></svg>
+<div class="a mast">
+<div class="row" style="color:var(--ink)">
+<span style="position:absolute;left:20px;top:14px"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></span>
+<span style="position:absolute;left:54px;top:12px"><svg class="mark" viewBox="0 0 64 64"><g transform="rotate(-7 32 32)"><rect x="7" y="7" width="50" height="50" rx="4" fill="#1f130e"/><rect x="25.67" y="10" width="12.67" height="12.67" fill="#fcfcf9"/><rect x="41.33" y="10" width="12.67" height="12.67" fill="#fcfcf9"/><rect x="10" y="25.67" width="12.67" height="12.67" fill="#fcfcf9"/><rect x="25.67" y="25.67" width="12.67" height="12.67" fill="#e93f29"/><rect x="41.33" y="25.67" width="12.67" height="12.67" fill="#fcfcf9"/><rect x="10" y="41.33" width="12.67" height="12.67" fill="#fcfcf9"/><rect x="25.67" y="41.33" width="12.67" height="12.67" fill="#fcfcf9"/></g></svg></span>
+<span style="position:absolute;left:92px;top:14px"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/><path d="M8 17h.01"/><path d="M12 17h.01"/><path d="M16 17h.01"/></svg></span>
+<span class="badge"><i style="transform:translate(4px,4px)"></i><i style="transform:translate(2px,2px)"></i><b>+112</b></span>
+<span style="position:absolute;left:290px;top:14px;color:var(--soft)"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/><path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/><path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/></svg></span>
+<span style="position:absolute;left:338px;top:14px;color:var(--soft)"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg></span>
+</div>
+<div class="tool">
+<span class="tname" style="color:#896f09">Alveare</span>
+<span class="pips" style="left:82px;color:#b68c00"><i style="background:#b68c00"></i><i style="background:#b68c00"></i><i style="background:transparent"></i><i style="background:transparent"></i><i style="background:transparent"></i></span>
+<span class="help" style="background:#fae39f">?</span>
+</div>
+</div>
+<div class="a strip"><div class="r">
+<span class="n" style="color:var(--soft)"><svg class="ic " width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><b id="fc">0</b></span>
+<p class="empty" id="empty">Ancora nessuna. Comincia da una parola corta.</p>
+<div class="found"><span class="fw" id="fBOZZOLO"><span>BOZZOLO</span></span><span class="fw" id="fMOBILE"><span>MOBILE</span></span><span class="fw" id="fMOLLE"><span>MOLLE</span></span><span class="fw" id="fOLIO"><span>OLIO</span></span><span class="fw" id="fZOLLE"><span>ZOLLE</span></span></div>
+</div><div class="r r2">
+<span class="n" style="color:var(--soft)"><svg class="ic " width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg><b>0</b></span>
+</div></div>
+<p class="a gr"><b id="gr">Uovo</b><i id="gh">50 punti e diventi Larva</i></p>
+<p class="a sc"><b id="sc">0</b> su 1000</p>
+<p class="a plus" id="pl0">+6</p>
+<p class="a plus" id="pl1">+30</p>
+<p class="a plus" id="pl2">+30</p>
+<p class="a plus" id="pl3">+35</p>
+<p class="a plus" id="pl4">+41</p>
+<div class="a jar"><div class="fill" id="fill"></div><i class="tick" style="left:5%"></i><i class="tick" style="left:10%"></i><i class="tick" style="left:20%"></i><i class="tick" style="left:30%"></i><i class="tick" style="left:40%"></i><i class="tick" style="left:50%"></i><i class="tick" style="left:60%"></i><i class="tick" style="left:70%"></i></div>
+<p class="a dot" id="dot">·</p>
+<p class="a typed"><span class="tl" id="t0_0"><b style="">O</b></span><span class="tl" id="t0_1"><b style="color:#896f09">L</b></span><span class="tl" id="t0_2"><b style="">I</b></span><span class="tl" id="t0_3"><b style="">O</b></span><span class="tl" id="t1_0"><b style="">M</b></span><span class="tl" id="t1_1"><b style="">O</b></span><span class="tl" id="t1_2"><b style="color:#896f09">L</b></span><span class="tl" id="t1_3"><b style="color:#896f09">L</b></span><span class="tl" id="t1_4"><b style="">E</b></span><span class="tl" id="t2_0"><b style="">Z</b></span><span class="tl" id="t2_1"><b style="">O</b></span><span class="tl" id="t2_2"><b style="color:#896f09">L</b></span><span class="tl" id="t2_3"><b style="color:#896f09">L</b></span><span class="tl" id="t2_4"><b style="">E</b></span><span class="tl" id="t3_0"><b style="">M</b></span><span class="tl" id="t3_1"><b style="">O</b></span><span class="tl" id="t3_2"><b style="">B</b></span><span class="tl" id="t3_3"><b style="">I</b></span><span class="tl" id="t3_4"><b style="color:#896f09">L</b></span><span class="tl" id="t3_5"><b style="">E</b></span><span class="tl" id="t4_0"><b style="">B</b></span><span class="tl" id="t4_1"><b style="">O</b></span><span class="tl" id="t4_2"><b style="">Z</b></span><span class="tl" id="t4_3"><b style="">Z</b></span><span class="tl" id="t4_4"><b style="">O</b></span><span class="tl" id="t4_5"><b style="color:#896f09">L</b></span><span class="tl" id="t4_6"><b style="">O</b></span></p>
+<p class="a pts" id="pt0">+6</p>
+<p class="a pts" id="pt1">+30</p>
+<p class="a pts" id="pt2">+30</p>
+<p class="a pts" id="pt3">+35</p>
+<p class="a pts" id="pt4">+41</p>
+<div class="cell c" id="hL" style="left:195px;top:431.5px">L</div>
+<div class="cell" id="hZ" style="left:145px;top:344.5px">Z</div>
+<div class="cell" id="hB" style="left:245px;top:344.5px">B</div>
+<div class="cell" id="hE" style="left:295px;top:431.5px">E</div>
+<div class="cell" id="hI" style="left:245px;top:518.5px">I</div>
+<div class="cell" id="hM" style="left:145px;top:518.5px">M</div>
+<div class="cell" id="hO" style="left:95px;top:431.5px">O</div>
+<div class="btn" style="left:48px;width:45px"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg></div>
+<div class="btn" id="del" style="left:105px;width:45px;opacity:.45"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 0-1.344.519l-6.328 5.74a1 1 0 0 0 0 1.481l6.328 5.741A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/><path d="m12 9 6 6"/><path d="m18 9-6 6"/></svg></div>
+<div class="btn" style="left:163px;width:45px"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg></div>
+<div class="btn ok" id="ok" style="left:220px;width:122px;opacity:.45">Conferma</div>
+<p class="a msg" id="m0">Bene! +6</p>
+<p class="a msg" id="m1">Bella! +30</p>
+<p class="a msg" id="m2">Bella! +30</p>
+<p class="a msg" id="m3">Bella! +35</p>
+<p class="a msg" id="m4">Bella! +41</p>
+<div class="a rule"></div>
+<div class="a fb"><p>Ti è piaciuto il gioco di oggi?</p><span class="k" style="left:238px"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg></span><span class="k" style="left:280px"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg></span></div>
+<div class="a book"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"/></svg><span class="bdg" id="bk">0</span></div>
+</div>
+<div class="status"><span>9:41</span><span class="bars"><i style="height: 11px"></i><i style="height: 17px"></i><i style="height: 22px"></i><i style="height: 28px"></i></span></div>
+<div class="home"></div>
+</div>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl=gsap.timeline({paused:true});
+tl.set("#fill",{xPercent:-100},0);
+tl.to("#dot",{opacity:0,duration:0.08},0.50);
+tl.to(["#del","#ok"],{opacity:1,duration:0.12},0.50);
+tl.set("#t0_0",{maxWidth:40},0.50);
+tl.fromTo("#t0_0 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},0.50);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},0.46);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},0.54);
+tl.set("#t0_1",{maxWidth:40},0.70);
+tl.fromTo("#t0_1 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},0.70);
+tl.to("#hL",{scale:0.93,backgroundColor:"#e2ac00",duration:0.07,ease:"power2.out"},0.66);
+tl.to("#hL",{scale:1,backgroundColor:"#f8c20d",duration:0.1,ease:"power2.out"},0.74);
+tl.set("#t0_2",{maxWidth:40},0.90);
+tl.fromTo("#t0_2 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},0.90);
+tl.to("#hI",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},0.86);
+tl.to("#hI",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},0.94);
+tl.set("#t0_3",{maxWidth:40},1.10);
+tl.fromTo("#t0_3 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},1.10);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},1.06);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},1.14);
+tl.to("#ok",{y:3,duration:0.06},1.45);
+tl.to("#ok",{y:0,duration:0.12},1.52);
+tl.to(["#del","#ok"],{opacity:0.45,duration:0.15},1.60);
+tl.to(["#t0_0 b","#t0_1 b","#t0_2 b","#t0_3 b"],{opacity:0,y:-14,duration:0.3,ease:"power2.in"},1.55);
+tl.set(["#t0_0","#t0_1","#t0_2","#t0_3"],{maxWidth:0},1.87);
+tl.to("#dot",{opacity:1,duration:0.15},1.87);
+tl.fromTo("#pt0",{opacity:0,y:4},{opacity:1,y:-6,duration:0.25,ease:"power2.out"},1.57);
+tl.to("#pt0",{opacity:0,y:-14,duration:0.3},2.15);
+tl.fromTo("#m0",{opacity:0,y:4},{opacity:1,y:0,duration:0.2,ease:"power2.out"},1.57);
+tl.to("#m0",{opacity:0,duration:0.2},2.35);
+tl.to("#fOLIO",{maxWidth:120,duration:0.5,ease:"power2.out"},1.65);
+tl.fromTo("#fOLIO span",{opacity:0},{opacity:1,duration:0.3},1.75);
+tl.to("#empty",{opacity:0,duration:0.15},1.60);
+tl.set("#fc",{textContent:"1"},1.65);
+tl.set("#bk",{textContent:"1"},1.65);
+tl.set("#bk",{scale:0.6},1.65);
+tl.to("#bk",{scale:1,duration:0.26,ease:"back.out(2.5)"},1.66);
+tl.fromTo("#pl0",{opacity:0,y:4},{opacity:1,y:0,duration:0.2},1.60);
+tl.to("#pl0",{opacity:0,y:-6,duration:0.25},2.30);
+tl.set("#sc",{textContent:"1"},1.66);
+tl.set("#sc",{textContent:"2"},1.72);
+tl.set("#sc",{textContent:"4"},1.78);
+tl.set("#sc",{textContent:"5"},1.84);
+tl.set("#sc",{textContent:"6"},1.90);
+tl.to("#fill",{xPercent:-99.4,duration:0.5,ease:"power3.out"},1.60);
+tl.set("#gr",{textContent:"Uovo"},1.90);
+tl.set("#gh",{textContent:"44 punti e diventi Larva"},1.90);
+tl.to("#dot",{opacity:0,duration:0.08},2.30);
+tl.to(["#del","#ok"],{opacity:1,duration:0.12},2.30);
+tl.set("#t1_0",{maxWidth:40},2.30);
+tl.fromTo("#t1_0 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},2.30);
+tl.to("#hM",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},2.26);
+tl.to("#hM",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},2.34);
+tl.set("#t1_1",{maxWidth:40},2.50);
+tl.fromTo("#t1_1 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},2.50);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},2.46);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},2.54);
+tl.set("#t1_2",{maxWidth:40},2.70);
+tl.fromTo("#t1_2 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},2.70);
+tl.to("#hL",{scale:0.93,backgroundColor:"#e2ac00",duration:0.07,ease:"power2.out"},2.66);
+tl.to("#hL",{scale:1,backgroundColor:"#f8c20d",duration:0.1,ease:"power2.out"},2.74);
+tl.set("#t1_3",{maxWidth:40},2.90);
+tl.fromTo("#t1_3 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},2.90);
+tl.to("#hL",{scale:0.93,backgroundColor:"#e2ac00",duration:0.07,ease:"power2.out"},2.86);
+tl.to("#hL",{scale:1,backgroundColor:"#f8c20d",duration:0.1,ease:"power2.out"},2.94);
+tl.set("#t1_4",{maxWidth:40},3.10);
+tl.fromTo("#t1_4 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},3.10);
+tl.to("#hE",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},3.06);
+tl.to("#hE",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},3.14);
+tl.to("#ok",{y:3,duration:0.06},3.45);
+tl.to("#ok",{y:0,duration:0.12},3.52);
+tl.to(["#del","#ok"],{opacity:0.45,duration:0.15},3.60);
+tl.to(["#t1_0 b","#t1_1 b","#t1_2 b","#t1_3 b","#t1_4 b"],{opacity:0,y:-14,duration:0.3,ease:"power2.in"},3.55);
+tl.set(["#t1_0","#t1_1","#t1_2","#t1_3","#t1_4"],{maxWidth:0},3.87);
+tl.to("#dot",{opacity:1,duration:0.15},3.87);
+tl.fromTo("#pt1",{opacity:0,y:4},{opacity:1,y:-6,duration:0.25,ease:"power2.out"},3.57);
+tl.to("#pt1",{opacity:0,y:-14,duration:0.3},4.15);
+tl.fromTo("#m1",{opacity:0,y:4},{opacity:1,y:0,duration:0.2,ease:"power2.out"},3.57);
+tl.to("#m1",{opacity:0,duration:0.2},4.35);
+tl.to("#fMOLLE",{maxWidth:120,duration:0.5,ease:"power2.out"},3.65);
+tl.fromTo("#fMOLLE span",{opacity:0},{opacity:1,duration:0.3},3.75);
+tl.set("#fc",{textContent:"2"},3.65);
+tl.set("#bk",{textContent:"2"},3.65);
+tl.set("#bk",{scale:0.6},3.65);
+tl.to("#bk",{scale:1,duration:0.26,ease:"back.out(2.5)"},3.66);
+tl.fromTo("#pl1",{opacity:0,y:4},{opacity:1,y:0,duration:0.2},3.60);
+tl.to("#pl1",{opacity:0,y:-6,duration:0.25},4.30);
+tl.set("#sc",{textContent:"12"},3.66);
+tl.set("#sc",{textContent:"18"},3.72);
+tl.set("#sc",{textContent:"24"},3.78);
+tl.set("#sc",{textContent:"30"},3.84);
+tl.set("#sc",{textContent:"36"},3.90);
+tl.to("#fill",{xPercent:-96.4,duration:0.5,ease:"power3.out"},3.60);
+tl.set("#gr",{textContent:"Uovo"},3.90);
+tl.set("#gh",{textContent:"14 punti e diventi Larva"},3.90);
+tl.to("#dot",{opacity:0,duration:0.08},4.30);
+tl.to(["#del","#ok"],{opacity:1,duration:0.12},4.30);
+tl.set("#t2_0",{maxWidth:40},4.30);
+tl.fromTo("#t2_0 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},4.30);
+tl.to("#hZ",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},4.26);
+tl.to("#hZ",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},4.34);
+tl.set("#t2_1",{maxWidth:40},4.50);
+tl.fromTo("#t2_1 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},4.50);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},4.46);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},4.54);
+tl.set("#t2_2",{maxWidth:40},4.70);
+tl.fromTo("#t2_2 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},4.70);
+tl.to("#hL",{scale:0.93,backgroundColor:"#e2ac00",duration:0.07,ease:"power2.out"},4.66);
+tl.to("#hL",{scale:1,backgroundColor:"#f8c20d",duration:0.1,ease:"power2.out"},4.74);
+tl.set("#t2_3",{maxWidth:40},4.90);
+tl.fromTo("#t2_3 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},4.90);
+tl.to("#hL",{scale:0.93,backgroundColor:"#e2ac00",duration:0.07,ease:"power2.out"},4.86);
+tl.to("#hL",{scale:1,backgroundColor:"#f8c20d",duration:0.1,ease:"power2.out"},4.94);
+tl.set("#t2_4",{maxWidth:40},5.10);
+tl.fromTo("#t2_4 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},5.10);
+tl.to("#hE",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},5.06);
+tl.to("#hE",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},5.14);
+tl.to("#ok",{y:3,duration:0.06},5.45);
+tl.to("#ok",{y:0,duration:0.12},5.52);
+tl.to(["#del","#ok"],{opacity:0.45,duration:0.15},5.60);
+tl.to(["#t2_0 b","#t2_1 b","#t2_2 b","#t2_3 b","#t2_4 b"],{opacity:0,y:-14,duration:0.3,ease:"power2.in"},5.55);
+tl.set(["#t2_0","#t2_1","#t2_2","#t2_3","#t2_4"],{maxWidth:0},5.87);
+tl.to("#dot",{opacity:1,duration:0.15},5.87);
+tl.fromTo("#pt2",{opacity:0,y:4},{opacity:1,y:-6,duration:0.25,ease:"power2.out"},5.57);
+tl.to("#pt2",{opacity:0,y:-14,duration:0.3},6.15);
+tl.fromTo("#m2",{opacity:0,y:4},{opacity:1,y:0,duration:0.2,ease:"power2.out"},5.57);
+tl.to("#m2",{opacity:0,duration:0.2},6.35);
+tl.to("#fZOLLE",{maxWidth:120,duration:0.5,ease:"power2.out"},5.65);
+tl.fromTo("#fZOLLE span",{opacity:0},{opacity:1,duration:0.3},5.75);
+tl.set("#fc",{textContent:"3"},5.65);
+tl.set("#bk",{textContent:"3"},5.65);
+tl.set("#bk",{scale:0.6},5.65);
+tl.to("#bk",{scale:1,duration:0.26,ease:"back.out(2.5)"},5.66);
+tl.fromTo("#pl2",{opacity:0,y:4},{opacity:1,y:0,duration:0.2},5.60);
+tl.to("#pl2",{opacity:0,y:-6,duration:0.25},6.30);
+tl.set("#sc",{textContent:"42"},5.66);
+tl.set("#sc",{textContent:"48"},5.72);
+tl.set("#sc",{textContent:"54"},5.78);
+tl.set("#sc",{textContent:"60"},5.84);
+tl.set("#sc",{textContent:"66"},5.90);
+tl.to("#fill",{xPercent:-93.4,duration:0.5,ease:"power3.out"},5.60);
+tl.set("#gr",{textContent:"Larva"},5.90);
+tl.set("#gh",{textContent:"34 punti e diventi Operaia"},5.90);
+tl.to("#gr",{scale:1.15,duration:0.14,yoyo:true,repeat:1,transformOrigin:"0% 80%"},5.90);
+tl.to("#dot",{opacity:0,duration:0.08},6.30);
+tl.to(["#del","#ok"],{opacity:1,duration:0.12},6.30);
+tl.set("#t3_0",{maxWidth:40},6.30);
+tl.fromTo("#t3_0 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},6.30);
+tl.to("#hM",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},6.26);
+tl.to("#hM",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},6.34);
+tl.set("#t3_1",{maxWidth:40},6.50);
+tl.fromTo("#t3_1 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},6.50);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},6.46);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},6.54);
+tl.set("#t3_2",{maxWidth:40},6.70);
+tl.fromTo("#t3_2 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},6.70);
+tl.to("#hB",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},6.66);
+tl.to("#hB",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},6.74);
+tl.set("#t3_3",{maxWidth:40},6.90);
+tl.fromTo("#t3_3 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},6.90);
+tl.to("#hI",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},6.86);
+tl.to("#hI",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},6.94);
+tl.set("#t3_4",{maxWidth:40},7.10);
+tl.fromTo("#t3_4 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},7.10);
+tl.to("#hL",{scale:0.93,backgroundColor:"#e2ac00",duration:0.07,ease:"power2.out"},7.06);
+tl.to("#hL",{scale:1,backgroundColor:"#f8c20d",duration:0.1,ease:"power2.out"},7.14);
+tl.set("#t3_5",{maxWidth:40},7.30);
+tl.fromTo("#t3_5 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},7.30);
+tl.to("#hE",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},7.26);
+tl.to("#hE",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},7.34);
+tl.to("#ok",{y:3,duration:0.06},7.65);
+tl.to("#ok",{y:0,duration:0.12},7.72);
+tl.to(["#del","#ok"],{opacity:0.45,duration:0.15},7.80);
+tl.to(["#t3_0 b","#t3_1 b","#t3_2 b","#t3_3 b","#t3_4 b","#t3_5 b"],{opacity:0,y:-14,duration:0.3,ease:"power2.in"},7.75);
+tl.set(["#t3_0","#t3_1","#t3_2","#t3_3","#t3_4","#t3_5"],{maxWidth:0},8.07);
+tl.to("#dot",{opacity:1,duration:0.15},8.07);
+tl.fromTo("#pt3",{opacity:0,y:4},{opacity:1,y:-6,duration:0.25,ease:"power2.out"},7.77);
+tl.to("#pt3",{opacity:0,y:-14,duration:0.3},8.35);
+tl.fromTo("#m3",{opacity:0,y:4},{opacity:1,y:0,duration:0.2,ease:"power2.out"},7.77);
+tl.to("#m3",{opacity:0,duration:0.2},8.55);
+tl.to("#fMOBILE",{maxWidth:120,duration:0.5,ease:"power2.out"},7.85);
+tl.fromTo("#fMOBILE span",{opacity:0},{opacity:1,duration:0.3},7.95);
+tl.set("#fc",{textContent:"4"},7.85);
+tl.set("#bk",{textContent:"4"},7.85);
+tl.set("#bk",{scale:0.6},7.85);
+tl.to("#bk",{scale:1,duration:0.26,ease:"back.out(2.5)"},7.86);
+tl.fromTo("#pl3",{opacity:0,y:4},{opacity:1,y:0,duration:0.2},7.80);
+tl.to("#pl3",{opacity:0,y:-6,duration:0.25},8.50);
+tl.set("#sc",{textContent:"73"},7.86);
+tl.set("#sc",{textContent:"80"},7.92);
+tl.set("#sc",{textContent:"87"},7.98);
+tl.set("#sc",{textContent:"94"},8.04);
+tl.set("#sc",{textContent:"101"},8.10);
+tl.to("#fill",{xPercent:-89.9,duration:0.5,ease:"power3.out"},7.80);
+tl.set("#gr",{textContent:"Operaia"},8.10);
+tl.set("#gh",{textContent:"99 punti e diventi Nutrice"},8.10);
+tl.to("#gr",{scale:1.15,duration:0.14,yoyo:true,repeat:1,transformOrigin:"0% 80%"},8.10);
+tl.to("#dot",{opacity:0,duration:0.08},8.50);
+tl.to(["#del","#ok"],{opacity:1,duration:0.12},8.50);
+tl.set("#t4_0",{maxWidth:40},8.50);
+tl.fromTo("#t4_0 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},8.50);
+tl.to("#hB",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},8.46);
+tl.to("#hB",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},8.54);
+tl.set("#t4_1",{maxWidth:40},8.70);
+tl.fromTo("#t4_1 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},8.70);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},8.66);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},8.74);
+tl.set("#t4_2",{maxWidth:40},8.90);
+tl.fromTo("#t4_2 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},8.90);
+tl.to("#hZ",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},8.86);
+tl.to("#hZ",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},8.94);
+tl.set("#t4_3",{maxWidth:40},9.10);
+tl.fromTo("#t4_3 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},9.10);
+tl.to("#hZ",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},9.06);
+tl.to("#hZ",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},9.14);
+tl.set("#t4_4",{maxWidth:40},9.30);
+tl.fromTo("#t4_4 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},9.30);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},9.26);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},9.34);
+tl.set("#t4_5",{maxWidth:40},9.50);
+tl.fromTo("#t4_5 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},9.50);
+tl.to("#hL",{scale:0.93,backgroundColor:"#e2ac00",duration:0.07,ease:"power2.out"},9.46);
+tl.to("#hL",{scale:1,backgroundColor:"#f8c20d",duration:0.1,ease:"power2.out"},9.54);
+tl.set("#t4_6",{maxWidth:40},9.70);
+tl.fromTo("#t4_6 b",{opacity:0,y:8},{opacity:1,y:0,duration:0.14,ease:"power3.out"},9.70);
+tl.to("#hO",{scale:0.93,backgroundColor:"#efd99e",duration:0.07,ease:"power2.out"},9.66);
+tl.to("#hO",{scale:1,backgroundColor:"#fde89a",duration:0.1,ease:"power2.out"},9.74);
+tl.to("#ok",{y:3,duration:0.06},10.05);
+tl.to("#ok",{y:0,duration:0.12},10.12);
+tl.to(["#del","#ok"],{opacity:0.45,duration:0.15},10.20);
+tl.to(["#t4_0 b","#t4_1 b","#t4_2 b","#t4_3 b","#t4_4 b","#t4_5 b","#t4_6 b"],{opacity:0,y:-14,duration:0.3,ease:"power2.in"},10.15);
+tl.set(["#t4_0","#t4_1","#t4_2","#t4_3","#t4_4","#t4_5","#t4_6"],{maxWidth:0},10.47);
+tl.to("#dot",{opacity:1,duration:0.15},10.47);
+tl.fromTo("#pt4",{opacity:0,y:4},{opacity:1,y:-6,duration:0.25,ease:"power2.out"},10.17);
+tl.to("#pt4",{opacity:0,y:-14,duration:0.3},10.75);
+tl.fromTo("#m4",{opacity:0,y:4},{opacity:1,y:0,duration:0.2,ease:"power2.out"},10.17);
+tl.to("#m4",{opacity:0,duration:0.2},11.80);
+tl.to("#fBOZZOLO",{maxWidth:120,duration:0.5,ease:"power2.out"},10.25);
+tl.fromTo("#fBOZZOLO span",{opacity:0},{opacity:1,duration:0.3},10.35);
+tl.set("#fc",{textContent:"5"},10.25);
+tl.set("#bk",{textContent:"5"},10.25);
+tl.set("#bk",{scale:0.6},10.25);
+tl.to("#bk",{scale:1,duration:0.26,ease:"back.out(2.5)"},10.26);
+tl.fromTo("#pl4",{opacity:0,y:4},{opacity:1,y:0,duration:0.2},10.20);
+tl.to("#pl4",{opacity:0,y:-6,duration:0.25},10.90);
+tl.set("#sc",{textContent:"109"},10.26);
+tl.set("#sc",{textContent:"117"},10.32);
+tl.set("#sc",{textContent:"126"},10.38);
+tl.set("#sc",{textContent:"134"},10.44);
+tl.set("#sc",{textContent:"142"},10.50);
+tl.to("#fill",{xPercent:-85.8,duration:0.5,ease:"power3.out"},10.20);
+tl.set("#gr",{textContent:"Operaia"},10.50);
+tl.set("#gh",{textContent:"58 punti e diventi Nutrice"},10.50);
+tl.to(["#fBOZZOLO span","#fMOBILE span","#fMOLLE span","#fOLIO span","#fZOLLE span"],{opacity:0,duration:0.3},12.10);
+tl.set(["#fBOZZOLO","#fMOBILE","#fMOLLE","#fOLIO","#fZOLLE"],{maxWidth:0},12.42);
+tl.to("#empty",{opacity:1,duration:0.3},12.45);
+tl.to("#fill",{xPercent:-100,duration:0.6,ease:"power2.inOut"},12.10);
+tl.set("#sc",{textContent:"114"},12.20);
+tl.set("#sc",{textContent:"85"},12.30);
+tl.set("#sc",{textContent:"57"},12.40);
+tl.set("#sc",{textContent:"28"},12.50);
+tl.set("#sc",{textContent:"0"},12.60);
+tl.to(["#gr","#gh"],{opacity:0,duration:0.2},12.10);
+tl.set("#gr",{textContent:"Uovo"},12.32);
+tl.set("#gh",{textContent:"50 punti e diventi Larva"},12.32);
+tl.to(["#gr","#gh"],{opacity:1,duration:0.25},12.35);
+tl.set(["#fc","#bk"],{textContent:"0"},12.40);
+tl.set({},{},13.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

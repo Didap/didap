@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "historyId": "51263218-6434-465c-ad0e-0e8eef1d0c70",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/schermo.mp4.log": {
+      "hash": "00cbfb3f20c9dd5f1324fe2f152ad54daa291872987d85af5e4f3636f891d949",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\51263218-6434-465c-ad0e-0e8eef1d0c70\\blobs\\00\\00cbfb3f20c9dd5f1324fe2f152ad54daa291872987d85af5e4f3636f891d949"
+    },
+    "assets/telefono.png": {
+      "hash": "f5a243102ae36a6ba685edb82d2f900da9aeb9a398e3338d4a20a6dcffed3e80",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\51263218-6434-465c-ad0e-0e8eef1d0c70\\blobs\\f5\\f5a243102ae36a6ba685edb82d2f900da9aeb9a398e3338d4a20a6dcffed3e80"
+    },
+    "hyperframes.json": {
+      "hash": "35a6d4ea79ebe911f0d81705f7aace5d8ff0316b745b0311d56af50c9c237cb7",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\51263218-6434-465c-ad0e-0e8eef1d0c70\\blobs\\35\\35a6d4ea79ebe911f0d81705f7aace5d8ff0316b745b0311d56af50c9c237cb7"
+    },
+    "index.html": {
+      "hash": "473e3061799995b78a7cc65e3bd273471b2bfd079ef1e74678b3ab51f943f360",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\51263218-6434-465c-ad0e-0e8eef1d0c70\\blobs\\47\\473e3061799995b78a7cc65e3bd273471b2bfd079ef1e74678b3ab51f943f360"
+    },
+    "meta.json": {
+      "hash": "1121396c69c0266387c8b6b52224bddc654c67d69b19f429ddc7be9a7b4c0e14",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\51263218-6434-465c-ad0e-0e8eef1d0c70\\blobs\\11\\1121396c69c0266387c8b6b52224bddc654c67d69b19f429ddc7be9a7b4c0e14"
+    },
+    "assets/schermo.mp4": {
+      "hash": "d8a55bc23993dbdf2116d76cb027c3650111f7336c7d2b1df386192a9c314f86",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\51263218-6434-465c-ad0e-0e8eef1d0c70\\blobs\\d8\\d8a55bc23993dbdf2116d76cb027c3650111f7336c7d2b1df386192a9c314f86"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "64a076a6-3840-4343-ba4f-9e8519399428",
+      "completedAt": 1794911491700,
+      "output": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\out\\scopri.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
+}

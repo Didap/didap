@@ -45,9 +45,9 @@ media:
   pair:
     - src: /covers/cruciverba-lab-logo.svg
       alt: "The Cruciverba Lab mark, a tilted crossword grid with a red centre square"
-    - src: /covers/cruciverba-lab-alveare.mp4
-      poster: /covers/cruciverba-lab-alveare-poster.webp
-      alt: "Alveare: letters are tapped in the hexagonal cells around the required L, words come in one after another and the found-words counter climbs"
+    - src: /covers/cruciverba-lab-alveare-telefono.mp4
+      poster: /covers/cruciverba-lab-alveare-telefono-poster.webp
+      alt: "Alveare on a phone: letters are tapped in the hexagonal cells around the required L, OLIO, MOLLE, ZOLLE, MOBILE and BOZZOLO join the found words, the score climbs and the rank goes from Uovo to Larva and then Operaia"
   wide:
     src: /covers/cruciverba-lab-classifica.mp4
     poster: /covers/cruciverba-lab-classifica-poster.webp
@@ -60,9 +60,9 @@ media:
       srcMobile: /covers/cruciverba-lab-oggi-mobile.mp4
       posterMobile: /covers/cruciverba-lab-oggi-mobile-poster.webp
       alt: "The ten games of the day, each in its own colour: they get done one after another and the Fatti oggi counter climbs to 10 out of 10"
-    - src: /covers/cruciverba-lab-ghigliottina.mp4
-      poster: /covers/cruciverba-lab-ghigliottina-poster.webp
-      alt: "Ghigliottina: five pairs of words, for each one the right word is picked, then the word that links them all arrives, TENERE"
+    - src: /covers/cruciverba-lab-ghigliottina-telefono.mp4
+      poster: /covers/cruciverba-lab-ghigliottina-telefono-poster.webp
+      alt: "Ghigliottina on a phone: five pairs of words are uncovered one at a time and one word is picked from each, the wrong pick gets struck through, then TENERE, the word that links them all, is typed in and the links appear below"
   triple:
     - src: /covers/cruciverba-lab-chiave.mp4
       poster: /covers/cruciverba-lab-chiave-poster.webp

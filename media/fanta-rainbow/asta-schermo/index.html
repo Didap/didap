@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="it">
+  <!-- Il telefono di chi partecipa all'asta live di Fanta Rainbow: la console del buzz del repo
+       Rainbow (app/components/auction/buzz/Console.vue, lot/Panel.vue, CountdownRing.vue,
+       SoldAnimation.vue, ScreenHeat.vue), coi colori e i font dell'app. 1080x2330 come gli schermi
+       di CityFix: va dentro asta-telefono. L'app è disegnata in px CSS a 400 di larghezza
+       (zoom 2.7). Font: Archivo (OFL, in assets/fonts), Thunder fuori dal repo (.gitignore). -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=2330" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Archivo';
+        font-style: normal;
+        font-weight: 100 900;
+        src: url('assets/fonts/archivo-latin-wght-normal.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Thunder';
+        font-weight: 500;
+        src: url('assets/fonts/thunder-medium.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Thunder';
+        font-weight: 700;
+        src: url('assets/fonts/thunder-bold.woff2') format('woff2');
+      }
+
+      :root {
+        --pitch-950: #05100c;
+        --raised: #10261d;
+        --ink: #f0f0f0;
+        --muted: #93a29b;
+        --green: #19dd76;
+        --orange: #f68f51;
+        --amber: #fbbf24;
+        --heat: #ff8a3d;
+        --sans: 'Archivo', system-ui, sans-serif;
+        --display: 'Thunder', sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 2330px;
+        overflow: hidden;
+        background: var(--pitch-950);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: var(--pitch-950);
+        font-family: var(--sans);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+      }
+      .tnum {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* L'app a misura di telefono: 400 px CSS di larghezza, come un iPhone */
+      #app {
+        position: absolute;
+        inset: 0;
+        zoom: 2.7;
+        overflow: hidden;
+        background-color: var(--pitch-950);
+        background-image: radial-gradient(1200px 600px at 50% -10%, #123024 0%, transparent 60%);
+        background-repeat: no-repeat;
+      }
+      main {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 56px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 12px;
+      }
+
+      /* Testata: squadra, persona, reparti e crediti */
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .head .mark {
+        width: 24px;
+        height: 24px;
+        flex: none;
+      }
+      .head .who {
+        min-width: 0;
+        flex: 1;
+      }
+      .team {
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 700;
+      }
+      .xs {
+        font-size: 12px;
+        line-height: 16px;
+      }
+      .credits {
+        text-align: right;
+      }
+      #credits {
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 700;
+        color: var(--green);
+      }
+      .cap {
+        font-size: 10px;
+        line-height: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(240, 240, 240, 0.35);
+        white-space: nowrap;
+      }
+
+      /* Il pannello del lotto (variante phone) */
+      .panel {
+        position: relative;
+        padding: 16px;
+        background: rgba(16, 38, 29, 0.7);
+        box-shadow:
+          0 0 0 1px rgba(240, 240, 240, 0.1),
+          0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .role {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        font-size: 9.6px;
+        line-height: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        background: rgba(246, 143, 81, 0.15);
+        color: var(--orange);
+        box-shadow: 0 0 0 1px rgba(246, 143, 81, 0.25);
+      }
+      .role svg {
+        width: 1.15em;
+        height: 1.15em;
+      }
+      .club {
+        font-size: 11.2px;
+        line-height: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .market {
+        padding: 2px 8px;
+        font-size: 9.6px;
+        line-height: 14px;
+        background: rgba(25, 221, 118, 0.1);
+        color: var(--green);
+        box-shadow: 0 0 0 1px rgba(25, 221, 118, 0.2);
+      }
+      .name {
+        margin-top: 8px;
+        font-size: 30.4px;
+        line-height: 0.95;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+      .bidline {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 8px 24px;
+      }
+      .label {
+        font-size: 9.6px;
+        line-height: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .bid-hot {
+        position: relative;
+        display: inline-block;
+        font-size: 32px;
+      }
+      #figure {
+        position: relative;
+        z-index: 1;
+        display: inline-block;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--heat);
+        transform-origin: 30% 60%;
+      }
+      .fire {
+        position: absolute;
+        inset: 0;
+      }
+      .flame {
+        position: absolute;
+        bottom: 58%;
+        transform-origin: 50% 100%;
+        opacity: 0;
+      }
+      .flame svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        transform-origin: 50% 100%;
+      }
+      .flare {
+        position: absolute;
+        bottom: 62%;
+        width: 0.07em;
+        height: 0.07em;
+        border-radius: 9999px;
+        background: #ffd08a;
+        box-shadow: 0 0 0.08em rgba(255, 170, 60, 0.9);
+        opacity: 0;
+      }
+      .lead {
+        width: 100%;
+      }
+      .leader {
+        font-size: 15.2px;
+        line-height: 1.1;
+        font-weight: 600;
+      }
+      .leader .tu {
+        margin-left: 8px;
+        font-size: 0.7em;
+        font-weight: 400;
+        color: var(--green);
+      }
+      .owner {
+        font-size: 9.6px;
+        line-height: 1.25;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      /* Il countdown ad anello */
+      .ringbox {
+        display: flex;
+        justify-content: center;
+      }
+      #ring {
+        position: relative;
+        width: 199px;
+        height: 199px;
+      }
+      #ring svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+      }
+      .ring-in {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #secs {
+        font-size: 31px;
+        line-height: 1;
+        font-weight: 700;
+        color: var(--green);
+      }
+      .ring-in .cap2 {
+        margin-top: 4px;
+        font-size: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      /* Il buzz: verde quando si può, spento quando si è già in testa */
+      #buzz {
+        position: relative;
+        height: 148px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-weight: 700;
+      }
+      #buzz-on,
+      #buzz-off {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #buzz-on {
+        background: var(--green);
+        color: var(--pitch-950);
+        box-shadow: 0 0 60px -15px rgba(25, 221, 118, 0.6);
+      }
+      #buzz-off {
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(240, 240, 240, 0.25);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        font-size: 18px;
+        line-height: 28px;
+        opacity: 0;
+      }
+      .buzz-word {
+        display: block;
+        font-size: 36px;
+        line-height: 1;
+        letter-spacing: -0.025em;
+      }
+      .buzz-sub {
+        display: block;
+        margin-top: 8px;
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 600;
+        opacity: 0.7;
+      }
+      #lock {
+        position: absolute;
+        bottom: 8px;
+        left: 24px;
+        right: 24px;
+        height: 2px;
+        transform-origin: 0 50%;
+        background: rgba(5, 16, 12, 0.4);
+      }
+      #touch {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 46px;
+        height: 46px;
+        margin: -23px 0 0 -23px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.42);
+        box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
+        opacity: 0;
+        z-index: 3;
+      }
+
+      /* Offerta scritta e massimale */
+      .bidrow {
+        display: flex;
+        gap: 8px;
+      }
+      .field {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        height: 52px;
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        font-size: 14px;
+        color: rgba(240, 240, 240, 0.25);
+      }
+      .btn {
+        flex: none;
+        display: flex;
+        align-items: center;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 700;
+        color: rgba(240, 240, 240, 0.2);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+      }
+      .btn.narrow {
+        padding: 12px 16px;
+      }
+      /* Il calore dell'offerta su tutto lo schermo (calore 3: oltre 50 crediti) */
+      .screen-hot {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        pointer-events: none;
+      }
+      #vignetta {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(60% 55% at 8% 100%, rgba(255, 110, 30, 0.22) 0%, transparent 70%),
+          radial-gradient(60% 55% at 92% 100%, rgba(255, 110, 30, 0.22) 0%, transparent 70%),
+          linear-gradient(to top, rgba(255, 85, 10, 0.16) 0%, transparent 22%);
+        opacity: 0.65;
+      }
+      .screen-flare {
+        position: absolute;
+        bottom: 0;
+        border-radius: 9999px;
+        background: #ffb765;
+        box-shadow: 0 0 8px rgba(255, 150, 50, 0.8);
+        opacity: 0;
+      }
+
+      /* «È TUO!»: il sipario della vendita, variante phone */
+      #sold {
+        position: absolute;
+        inset: 0;
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.75);
+        opacity: 0;
+      }
+      #rays {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 520px;
+        height: 520px;
+        margin: -260px 0 0 -260px;
+        border-radius: 50%;
+        background: repeating-conic-gradient(from 0deg, rgba(25, 221, 118, 0.28) 0deg 9deg, transparent 9deg 24deg);
+        opacity: 0;
+      }
+      #sold-card {
+        position: relative;
+        text-align: center;
+      }
+      .sold-title {
+        font-family: var(--display);
+        font-weight: 500;
+        font-size: 56px;
+        line-height: 1;
+        color: var(--green);
+      }
+      .sold-name {
+        margin-top: 12px;
+        font-size: 28px;
+        line-height: 1.25;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+      .sold-line {
+        margin-top: 12px;
+        font-size: 16px;
+        line-height: 24px;
+        color: rgba(240, 240, 240, 0.7);
+      }
+      .sold-line b {
+        color: var(--ink);
+      }
+      .sold-line b.g {
+        color: var(--green);
+      }
+      .sold-owner {
+        margin-top: 4px;
+        font-size: 12px;
+        line-height: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .sold-left {
+        margin-top: 8px;
+        font-size: 12.8px;
+        color: var(--muted);
+      }
+
+      /* Barra di stato e indicatore home del telefono, sul fondo scuro */
+      .status {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 150px;
+        padding: 24px 88px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 44px;
+        color: #ffffff;
+        z-index: 80;
+      }
+      .bars {
+        display: flex;
+        gap: 4px;
+        align-items: flex-end;
+      }
+      .bars i {
+        width: 8px;
+        border-radius: 2px;
+        background: #ffffff;
+      }
+      .home {
+        position: absolute;
+        left: 50%;
+        bottom: 22px;
+        width: 370px;
+        height: 14px;
+        margin-left: -185px;
+        border-radius: 7px;
+        background: #ffffff;
+        z-index: 80;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="14" data-width="1080" data-height="2330">
+      <div id="stage" class="clip" data-start="0" data-duration="14" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow data-layout-allow-overlap>
+        <div id="app">
+          <main>
+            <header class="head">
+              <svg class="mark" viewBox="0 0 516.43 502.2" fill="#19DD76" aria-hidden="true">
+                <rect x="0" y="0" width="516.43" height="250" />
+                <path d="M257.2,502.2c-28.16,0-56.2-3.96-83.36-11.76-56.74-16.3-126.87-50.69-168.38-96.83l-5.45-6.06v-165.15l21.28.03c22.16.04,108.93,1.61,309.73,2.33h.23c58.83.21,121.98.33,163.97.4l21.22.03v162.38l-5.43,6.06c-41.54,46.29-111.65,79.56-168.33,96.23-27.85,8.19-56.61,12.34-85.46,12.34h-.01Z" />
+              </svg>
+              <div class="who">
+                <div class="team">Atletico Bar Sport</div>
+                <div class="xs" style="color: rgba(240, 240, 240, 0.45)">Giulia</div>
+                <div class="xs tnum" style="color: rgba(240, 240, 240, 0.4)">P 2/3 · D 5/8 · C 4/8 · A 2/6</div>
+              </div>
+              <div class="credits">
+                <div id="credits" class="tnum">212</div>
+                <div id="credits-cap" class="cap">crediti</div>
+              </div>
+            </header>
+
+            <section class="panel">
+              <div>
+                <div class="tags">
+                  <span class="role">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <rect x="6.9" y="4.6" width="2.6" height="6.2" rx="1.3" />
+                      <rect x="10" y="3.2" width="2.6" height="7.6" rx="1.3" />
+                      <rect x="13.1" y="4" width="2.6" height="6.8" rx="1.3" />
+                      <rect x="16.2" y="5.8" width="2.6" height="5" rx="1.3" />
+                      <rect x="4" y="8.8" width="2.7" height="7" rx="1.35" transform="rotate(-25 5.35 15.8)" />
+                      <path fill-rule="evenodd" d="M9.3 8.6H16.4A2.4 2.4 0 0 1 18.8 11V14.6A2.4 2.4 0 0 1 16.4 17H9.3A2.4 2.4 0 0 1 6.9 14.6V11A2.4 2.4 0 0 1 9.3 8.6ZM15.52 17.22 18.92 13.82 18.28 13.18 14.88 16.58Z" />
+                      <rect x="7.6" y="18.4" width="10.5" height="3.4" rx="1.1" />
+                    </svg>
+                    <span>P</span>
+                  </span>
+                  <span class="club">Milan</span>
+                  <span class="market tnum">altre leghe ~58</span>
+                </div>
+                <h2 class="name">Maignan</h2>
+                <div class="bidline">
+                  <div>
+                    <div class="label">Offerta</div>
+                    <div class="bid-hot">
+                      <span class="fire" aria-hidden="true">
+                        <span class="flame" style="left: 6%; width: 0.306em; height: 0.414em"><svg viewBox="0 0 24 32"><path d="M12 0C15 8 22 11 22 20a10 10 0 1 1-20 0C2 11 9 8 12 0Z" fill="#ff6a1f" /><path d="M12 9c2 5 6 7 6 11.5a6 6 0 1 1-12 0C6 16 10 14 12 9Z" fill="#ffc94d" /></svg></span>
+                        <span class="flame" style="left: 28%; width: 0.374em; height: 0.506em"><svg viewBox="0 0 24 32"><path d="M12 0C15 8 22 11 22 20a10 10 0 1 1-20 0C2 11 9 8 12 0Z" fill="#ff6a1f" /><path d="M12 9c2 5 6 7 6 11.5a6 6 0 1 1-12 0C6 16 10 14 12 9Z" fill="#ffc94d" /></svg></span>
+                        <span class="flame" style="left: 50%; width: 0.272em; height: 0.368em"><svg viewBox="0 0 24 32"><path d="M12 0C15 8 22 11 22 20a10 10 0 1 1-20 0C2 11 9 8 12 0Z" fill="#ff6a1f" /><path d="M12 9c2 5 6 7 6 11.5a6 6 0 1 1-12 0C6 16 10 14 12 9Z" fill="#ffc94d" /></svg></span>
+                        <span class="flame" style="left: 68%; width: 0.408em; height: 0.552em"><svg viewBox="0 0 24 32"><path d="M12 0C15 8 22 11 22 20a10 10 0 1 1-20 0C2 11 9 8 12 0Z" fill="#ff6a1f" /><path d="M12 9c2 5 6 7 6 11.5a6 6 0 1 1-12 0C6 16 10 14 12 9Z" fill="#ffc94d" /></svg></span>
+                        <span class="flame" style="left: 88%; width: 0.306em; height: 0.414em"><svg viewBox="0 0 24 32"><path d="M12 0C15 8 22 11 22 20a10 10 0 1 1-20 0C2 11 9 8 12 0Z" fill="#ff6a1f" /><path d="M12 9c2 5 6 7 6 11.5a6 6 0 1 1-12 0C6 16 10 14 12 9Z" fill="#ffc94d" /></svg></span>
+                        <span class="flare" style="left: 20%"></span>
+                        <span class="flare" style="left: 55%"></span>
+                        <span class="flare" style="left: 85%"></span>
+                      </span>
+                      <span id="figure" class="tnum">58</span>
+                    </div>
+                  </div>
+                  <div class="lead">
+                    <div class="label">In testa</div>
+                    <div id="leader" class="leader">Real Divano</div>
+                    <div id="owner" class="owner">Marco</div>
+                  </div>
+                </div>
+              </div>
+              <div class="ringbox">
+                <div id="ring">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7" />
+                    <circle id="arc" cx="50" cy="50" r="46" fill="none" stroke="#19dd76" stroke-width="7" stroke-linecap="round" stroke-dasharray="289.03" stroke-dashoffset="0" />
+                  </svg>
+                  <div class="ring-in">
+                    <span id="secs" class="tnum">5</span>
+                    <span class="cap2">secondi</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div id="buzz">
+              <div id="buzz-on">
+                <span class="buzz-word">BUZZ</span>
+                <span class="buzz-sub tnum">rilancia a <span id="next">59</span></span>
+                <span id="lock"></span>
+              </div>
+              <div id="buzz-off">Sei già in testa</div>
+              <span id="touch"></span>
+            </div>
+
+            <div class="bidrow">
+              <div class="field tnum">da&nbsp;<span id="from">59</span>&nbsp;a 201</div>
+              <span class="btn">Offri</span>
+              <span class="btn narrow">Fino a</span>
+            </div>
+
+          </main>
+
+          <div class="screen-hot" aria-hidden="true">
+            <div id="vignetta"></div>
+            <span class="screen-flare" style="left: 6%; width: 6.4px; height: 6.4px"></span>
+            <span class="screen-flare" style="left: 15%; width: 4.5px; height: 4.5px"></span>
+            <span class="screen-flare" style="left: 27%; width: 7.4px; height: 7.4px"></span>
+            <span class="screen-flare" style="left: 38%; width: 5.1px; height: 5.1px"></span>
+            <span class="screen-flare" style="left: 52%; width: 6.4px; height: 6.4px"></span>
+            <span class="screen-flare" style="left: 63%; width: 4.8px; height: 4.8px"></span>
+            <span class="screen-flare" style="left: 74%; width: 7px; height: 7px"></span>
+            <span class="screen-flare" style="left: 85%; width: 5.4px; height: 5.4px"></span>
+            <span class="screen-flare" style="left: 94%; width: 6.1px; height: 6.1px"></span>
+          </div>
+
+          <div id="sold" role="status">
+            <div id="rays"></div>
+            <div id="sold-card">
+              <div class="sold-title">È TUO!</div>
+              <div class="sold-name">Maignan</div>
+              <div class="sold-line">a <b>Atletico Bar Sport</b> per <b class="g tnum">64</b> crediti</div>
+              <div class="sold-owner">Giulia</div>
+              <div class="sold-left tnum">gliene restano 148</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status">
+          <span>9:41</span>
+          <span class="bars"><i style="height: 11px"></i><i style="height: 17px"></i><i style="height: 22px"></i><i style="height: 28px"></i></span>
+        </div>
+        <div class="home"></div>
+      </div>
+    </div>
+
+    <script>
+      // Tutto è funzione del tempo della timeline: niente timer, niente casualità.
+      const D = 14;
+      const COUNT = 5; // countdown del lotto in secondi
+      const CIRC = 289.03;
+      const tl = gsap.timeline({ paused: true });
+
+      // Le animazioni cicliche dell'app (fiamme, braci, respiro): un ciclo in una timeline a parte,
+      // fatta scorrere dalla principale. Periodi che dividono D, così il loop non salta.
+      const ciclo = (periodo, ritardo, costruisci) => {
+        const sub = gsap.timeline({ paused: true });
+        costruisci(sub);
+        sub.set({}, {}, periodo);
+        sub.repeat(Math.ceil(D / periodo) + 2);
+        const fase = (periodo - (ritardo % periodo)) % periodo;
+        tl.fromTo(sub, { totalTime: fase }, { totalTime: fase + D, duration: D, ease: 'none' }, 0);
+      };
+
+      // Fiamme dietro la cifra (calore 3)
+      const FONT = 32;
+      const FIAMME = [
+        { d: 1.1667, r: 0.1 },
+        { d: 1.0, r: 0.5 },
+        { d: 1.1667, r: 0 },
+        { d: 0.9333, r: 0.3 },
+        { d: 1.2727, r: 0.65 },
+      ];
+      document.querySelectorAll('.flame').forEach((el, i) => {
+        const { d, r } = FIAMME[i];
+        ciclo(d, r, (s) => {
+          s.fromTo(el, { y: 0.18 * FONT, scale: 0.5, opacity: 0 }, { opacity: 0.95, y: 0.18 * FONT - 0.5 * 0.22 * FONT, scale: 0.61, duration: d * 0.22, ease: 'power1.in' }, 0);
+          s.to(el, { y: -0.32 * FONT, scale: 1, opacity: 0.75, duration: d * 0.38, ease: 'power1.in' }, d * 0.22);
+          s.to(el, { y: -0.75 * FONT, scale: 0.35, opacity: 0, duration: d * 0.4, ease: 'power1.in' }, d * 0.6);
+        });
+        const svg = el.querySelector('svg');
+        ciclo(0.35, i * 0.07, (s) => {
+          s.fromTo(svg, { scaleX: 1, scaleY: 1 }, { scaleX: 0.92, scaleY: 1.14, duration: 0.105, ease: 'sine.inOut' }, 0);
+          s.to(svg, { scaleX: 1.07, scaleY: 0.9, duration: 0.0875, ease: 'sine.inOut' }, 0.105);
+          s.to(svg, { scaleX: 0.95, scaleY: 1.06, duration: 0.0875, ease: 'sine.inOut' }, 0.1925);
+          s.to(svg, { scaleX: 1, scaleY: 1, duration: 0.07, ease: 'sine.inOut' }, 0.28);
+        });
+      });
+      const SCINTILLE = [
+        { d: 1.5556, r: 0.2, x: 0.25 },
+        { d: 2.0, r: 0.8, x: -0.2 },
+        { d: 1.75, r: 0.5, x: 0.15 },
+      ];
+      document.querySelectorAll('.flare').forEach((el, i) => {
+        const { d, r, x } = SCINTILLE[i];
+        ciclo(d, r, (s) => {
+          s.fromTo(el, { x: 0, y: 0.1 * FONT, scale: 1, opacity: 0 }, { opacity: 0.95, x: x * FONT * 0.18, y: 0.1 * FONT - 1.6 * FONT * 0.18, scale: 0.87, duration: d * 0.18, ease: 'power2.out' }, 0);
+          s.to(el, { x: x * FONT, y: -1.5 * FONT, scale: 0.3, opacity: 0, duration: d * 0.82, ease: 'power2.out' }, d * 0.18);
+        });
+      });
+
+      // La cifra pulsa di luce
+      ciclo(0.9333, 0, (s) => {
+        const a = '0 0 0.12em rgba(255,138,61,0.6), 0 0 0.3em rgba(255,70,0,0.4)';
+        const b = '0 0 0.2em rgba(255,138,61,0.6), 0 0 0.55em rgba(255,70,0,0.4)';
+        s.fromTo('#figure', { textShadow: a }, { textShadow: b, duration: 0.4667, ease: 'sine.inOut' }, 0);
+        s.to('#figure', { textShadow: a, duration: 0.4667, ease: 'sine.inOut' }, 0.4667);
+      });
+
+      // Lo schermo che scotta: il respiro della vignetta e le braci dal bordo basso
+      ciclo(1.75, 0, (s) => {
+        s.fromTo('#vignetta', { opacity: 0.65 }, { opacity: 1, duration: 0.875, ease: 'sine.inOut' }, 0);
+        s.to('#vignetta', { opacity: 0.65, duration: 0.875, ease: 'sine.inOut' }, 0.875);
+      });
+      const VH = 863;
+      const BRACI = [
+        [2.8, 0], [2.8, 1.2], [3.5, 0.5], [2.8, 2.1], [3.5, 0.9], [2.8, 1.7], [3.5, 0.3], [2.8, 1.4], [3.5, 2.4],
+      ];
+      document.querySelectorAll('.screen-flare').forEach((el, i) => {
+        const [d, r] = BRACI[i];
+        ciclo(d, r, (s) => {
+          s.fromTo(el, { x: 0, y: 8, scale: 1, opacity: 0 }, { opacity: 0.85, x: 2.5, y: 8 - 0.2 * 0.38 * VH, scale: 0.95, duration: d * 0.12, ease: 'power2.out' }, 0);
+          s.to(el, { x: 12.8, y: -0.38 * VH, scale: 0.7, opacity: 0.4, duration: d * 0.48, ease: 'power2.out' }, d * 0.12);
+          s.to(el, { x: -8, y: -0.62 * VH, scale: 0.3, opacity: 0, duration: d * 0.4, ease: 'power2.out' }, d * 0.6);
+        });
+      });
+
+      // Il countdown: anello e secondi (decimi sotto i 5, ambra sotto i 3)
+      const secondi = (ms) => (ms / 1000 < 5 ? (ms / 1000).toFixed(1) : String(Math.ceil(ms / 1000)));
+      const corsa = (da, a) => {
+        tl.set('#arc', { strokeDashoffset: 0, stroke: '#19dd76' }, da);
+        tl.set('#secs', { color: '#19dd76' }, da);
+        const fine = Math.min(a, da + COUNT);
+        tl.fromTo('#arc', { strokeDashoffset: 0 }, { strokeDashoffset: (CIRC * (fine - da)) / COUNT, duration: fine - da, ease: 'none', immediateRender: false }, da);
+        for (let k = 0; da + k * 0.1 < fine - 0.001; k++) {
+          tl.set('#secs', { textContent: secondi(COUNT * 1000 - k * 100) }, da + k * 0.1);
+        }
+        if (fine === da + COUNT) {
+          tl.set('#secs', { textContent: '0.0' }, fine);
+          const urgente = da + COUNT - 3;
+          tl.set(['#arc'], { stroke: '#fbbf24' }, urgente);
+          tl.set('#secs', { color: '#fbbf24' }, urgente);
+          for (let t = urgente; t < fine; t += 0.6) {
+            tl.fromTo('#ring', { scale: 1 }, { scale: 1.04, duration: 0.3, ease: 'sine.inOut', immediateRender: false }, t);
+            tl.to('#ring', { scale: 1, duration: 0.3, ease: 'sine.inOut' }, t + 0.3);
+          }
+        }
+      };
+
+      // Le offerte: chi, quanto, quando. Io sono Atletico Bar Sport (Giulia, 212 crediti).
+      const OFFERTE = [
+        { t: 0, bid: 58, team: 'Real Divano', owner: 'Marco', me: false },
+        { t: 1.2, bid: 59, team: 'Atletico Bar Sport', owner: 'Giulia', me: true },
+        { t: 2.3, bid: 60, team: 'Longobarda', owner: 'Luca', me: false },
+        { t: 3.3, bid: 61, team: 'Atletico Bar Sport', owner: 'Giulia', me: true },
+        { t: 4.3, bid: 63, team: 'Real Divano', owner: 'Marco', me: false },
+        { t: 5.3, bid: 64, team: 'Atletico Bar Sport', owner: 'Giulia', me: true },
+      ];
+      const MIEI = 212;
+      const stato = (o, at) => {
+        tl.set('#figure', { textContent: String(o.bid) }, at);
+        tl.set('#leader', { innerHTML: o.me ? `${o.team}<span class="tu">(tu)</span>` : o.team, color: o.me ? '#19dd76' : '#f0f0f0' }, at);
+        tl.set('#owner', { textContent: o.owner }, at);
+        tl.set('#credits', { textContent: String(o.me ? MIEI - o.bid : MIEI), color: o.me ? '#fbbf24' : '#19dd76' }, at);
+        tl.set('#credits-cap', { textContent: o.me ? `se lo prendi · ${MIEI}` : 'crediti' }, at);
+        tl.set('#next', { textContent: String(o.bid + 1) }, at);
+        tl.set('#from', { textContent: String(o.bid + 1) }, at);
+        tl.set('#buzz-on', { opacity: o.me ? 0 : 0.6 }, at);
+        tl.set('#buzz-off', { opacity: o.me ? 1 : 0 }, at);
+      };
+
+      OFFERTE.forEach((o, i) => {
+        const fine = i + 1 < OFFERTE.length ? OFFERTE[i + 1].t : D;
+        stato(o, o.t);
+        if (i > 0) {
+          // La cifra nuova si fa vedere
+          tl.fromTo('#figure', { scale: 1.12 }, { scale: 1, duration: 0.3, ease: 'power3.out', immediateRender: false }, o.t);
+          tl.fromTo('#leader', { opacity: 0.35 }, { opacity: 1, duration: 0.3, ease: 'power2.out', immediateRender: false }, o.t);
+        }
+        corsa(o.t, fine);
+        if (o.me) {
+          // Il tocco del pollice: il bottone si abbassa, la richiesta parte
+          const tap = o.t - 0.22;
+          tl.fromTo('#touch', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.1, ease: 'power2.out', immediateRender: false }, tap);
+          tl.to('#touch', { scale: 1.25, opacity: 0, duration: 0.35, ease: 'power1.out' }, tap + 0.2);
+          tl.fromTo('#buzz-on', { scale: 1 }, { scale: 0.97, opacity: 0.8, duration: 0.08, ease: 'power2.out', immediateRender: false }, tap);
+          tl.set('#buzz-on', { scale: 1 }, o.t);
+        } else {
+          // Rilancio di un rivale: un respiro di un secondo prima di poter rispondere
+          tl.fromTo('#lock', { scaleX: 1 }, { scaleX: 0, duration: 1, ease: 'none', immediateRender: false }, o.t);
+          tl.set('#buzz-on', { opacity: 1 }, o.t + 1);
+          tl.set('#lock', { scaleX: 0 }, o.t + 1);
+        }
+      });
+
+      // Il countdown arriva a zero: «È TUO!»
+      const VENDUTO = OFFERTE[OFFERTE.length - 1].t + COUNT; // 10.3
+      // Il lotto è chiuso: l'anello lascia il pannello
+      tl.set('#ring', { opacity: 0 }, VENDUTO + 0.1);
+      tl.fromTo('#sold', { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power1.out', immediateRender: false }, VENDUTO);
+      tl.fromTo('#rays', { scale: 0.35, rotation: 0, opacity: 0 }, { scale: 0.35 + 1.25 * 0.25, rotation: 7, opacity: 0.5, duration: 0.35, ease: 'power3.out', immediateRender: false }, VENDUTO);
+      tl.to('#rays', { scale: 1.6, rotation: 28, opacity: 0, duration: 1.05, ease: 'power3.out' }, VENDUTO + 0.35);
+      tl.fromTo('#sold-card', { scale: 0.82, y: 26, opacity: 0 }, { scale: 1.04, y: -4, opacity: 1, duration: 0.3, ease: 'power3.out', immediateRender: false }, VENDUTO);
+      tl.to('#sold-card', { scale: 1, y: 0, duration: 0.25, ease: 'power2.out' }, VENDUTO + 0.3);
+
+      // Sotto il sipario si torna al primo fotogramma, poi il sipario se ne va (loop pulito)
+      tl.to('#sold-card', { opacity: 0, scale: 0.97, duration: 0.35, ease: 'power2.in' }, 12.55);
+      const RITORNO = 12.95;
+      tl.set('#ring', { opacity: 1 }, RITORNO);
+      stato(OFFERTE[0], RITORNO);
+      tl.set('#arc', { strokeDashoffset: 0, stroke: '#19dd76' }, RITORNO);
+      tl.set('#secs', { textContent: '5', color: '#19dd76' }, RITORNO);
+      tl.set('#lock', { scaleX: 1 }, RITORNO);
+      tl.to('#sold', { opacity: 0, duration: 0.8, ease: 'power2.inOut' }, 13.0);
+      tl.set({}, {}, D);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

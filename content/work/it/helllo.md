@@ -42,25 +42,36 @@ model: "Per chi cerca la prima occasione, anche senza esperienza, e per le azien
 next: fanta-rainbow
 media:
   pair:
-    - src: /covers/helllo-scopri.webp
-      alt: "La schermata Scopri di Helllo: il profilo di Luca, 24 anni, Junior Graphic Designer a Brindisi, con i bottoni per passare, salvare o dire helllo!"
-    - src: /covers/helllo-match.webp
-      alt: "Il match su Helllo: Luca e Studio Nord si sono scelti a vicenda, con le domande rompighiaccio pronte e il bottone per fissare un colloquio"
+    - src: /covers/helllo-logo.svg
+      alt: Il logo di Helllo
+    - src: /covers/helllo-scopri.mp4
+      poster: /covers/helllo-scopri-poster.webp
+      alt: "Un telefono con la schermata Scopri di Helllo: Marta passa, arriva Luca, 24 anni, Junior Graphic Designer a Brindisi, e Studio Nord gli dice helllo. Sale il match: le carte cadono, le tre l si scrivono ed è un helllo, con le domande rompighiaccio pronte"
   wide:
-    src: /covers/helllo-illustrazione.webp
-    alt: L’illustrazione di Helllo con due persone al telefono, unite dalle tre l rosse del marchio scritte in un unico tratto
+    src: /covers/helllo-conversazione.mp4
+    poster: /covers/helllo-conversazione-poster.webp
+    srcMobile: /covers/helllo-conversazione-mobile.mp4
+    posterMobile: /covers/helllo-conversazione-mobile-poster.webp
+    alt: "Le due persone dell’illustrazione di Helllo si scrivono dopo il match: Luca chiede se può mandare il portfolio, Studio Nord risponde e ogni messaggio corre lungo il filo delle tre l rosse da un telefono all’altro, finché il colloquio è fissato per giovedì alle 10:30"
   feature:
-    - src: /covers/helllo-profilo.webp
-      alt: "Il profilo di Luca su Helllo: cosa cerca, cosa sapere di lui, le competenze, il suo green flag sul lavoro e un progetto di cui va fiero"
-    - src: /covers/helllo-icona.webp
-      alt: L’icona dell’app Helllo con le tre l rosse, sopra un ritratto illustrato in rosso e blu
+    - src: /covers/helllo-profilo.mp4
+      poster: /covers/helllo-profilo-poster.webp
+      srcMobile: /covers/helllo-profilo-mobile.mp4
+      posterMobile: /covers/helllo-profilo-mobile-poster.webp
+      alt: "Il profilo di Luca su Helllo che si compone: cosa cerca, cosa sapere di lui, il suo green flag sul lavoro, le competenze e un progetto di cui va fiero, poi la colonna scorre fino al bottone helllo!"
+    - src: /covers/helllo-match.mp4
+      poster: /covers/helllo-match-poster.webp
+      alt: "Un telefono con il match fra Luca e Studio Nord: Luca tocca una domanda rompighiaccio, si apre la chat, manda il portfolio e sceglie l’orario del colloquio proposto da Studio Nord, giovedì alle 10:30"
   triple:
-    - src: /covers/helllo-palette.webp
-      alt: "La palette di Helllo, rosso, blu, celeste, crema e blu notte, con i caratteri Hanken Grotesk, Poligrapher Grotesk e Pacifico"
-    - src: /covers/helllo-social.webp
-      alt: "Un post di Helllo sulla supergrafica blu delle tre l: Il lavoro inizia con un ciao."
-    - src: /covers/helllo-store.webp
-      alt: "Due schermate di Helllo per lo store: Scegli chi ti piace. Di’ Helllo. e Vi scegliete in due? Parlate subito."
+    - src: /covers/helllo-palette.mp4
+      poster: /covers/helllo-palette-poster.webp
+      alt: "La palette di Helllo: il marchio si scrive, poi entrano rosso, blu, celeste, crema e blu notte con i loro codici e i caratteri Hanken Grotesk, Poligrapher Grotesk e Pacifico"
+    - src: /covers/helllo-social.mp4
+      poster: /covers/helllo-social-poster.webp
+      alt: "Un post di Helllo: la supergrafica blu delle tre l si scrive, poi il marchio, la frase Il lavoro inizia con un ciao e una persona che apre gli occhi"
+    - src: /covers/helllo-store.mp4
+      poster: /covers/helllo-store-poster.webp
+      alt: "Due schermate di Helllo per lo store, Scegli chi ti piace. Di’ Helllo. e Vi scegliete in due? Parlate subito., con dentro l’app che si muove"
 team:
   - barbara
   - william

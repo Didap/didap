@@ -1,0 +1,317 @@
+{
+  "version": 1,
+  "historyId": "98122051-3c40-4659-a3f9-2c30d6702cad",
+  "currentRevision": "97bd92dd-1069-42e7-bf00-7d3f37ab50d2",
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/hanken-grotesk-latin-wght-italic.woff2": {
+      "hash": "bb432642d7e97d11bd8f7adbcb79dc69b772211c9b6eae5251a969496674d299",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\bb\\bb432642d7e97d11bd8f7adbcb79dc69b772211c9b6eae5251a969496674d299"
+    },
+    "assets/fonts/hanken-grotesk-latin-wght-normal.woff2": {
+      "hash": "e9201eddf1d41d0b62253295d869ce3cf65768f7102b797f02c7f8c876b4a9d5",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\e9\\e9201eddf1d41d0b62253295d869ce3cf65768f7102b797f02c7f8c876b4a9d5"
+    },
+    "assets/fonts/pacifico-latin-400-normal.woff2": {
+      "hash": "99ec044ad9040a708e38f90ebd5984ca03fc46afeee26d5c77c4769c66ed89e2",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\99\\99ec044ad9040a708e38f90ebd5984ca03fc46afeee26d5c77c4769c66ed89e2"
+    },
+    "assets/luca.webp": {
+      "hash": "d5f3c9ffc624b32dda2be42201b160832a9e541d27dd76c336b5704e44bd2687",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\d5\\d5f3c9ffc624b32dda2be42201b160832a9e541d27dd76c336b5704e44bd2687"
+    },
+    "hyperframes.json": {
+      "hash": "c7a3009d23e471acfb1ca9ec252ea16a0ca4dfe55e3b3b9d7089c8f0764f4a43",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\c7\\c7a3009d23e471acfb1ca9ec252ea16a0ca4dfe55e3b3b9d7089c8f0764f4a43"
+    },
+    "index.html": {
+      "hash": "a13598ce746d6a5e8152b25aaac3a4ae04a48a251d1782be1ac686a38e4be179",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\a1\\a13598ce746d6a5e8152b25aaac3a4ae04a48a251d1782be1ac686a38e4be179"
+    },
+    "meta.json": {
+      "hash": "9fcdb9541472ac0629ef29eb88392bd84340708e973f8786c8f47e6bff3785f8",
+      "content": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\9f\\9fcdb9541472ac0629ef29eb88392bd84340708e973f8786c8f47e6bff3785f8"
+    }
+  },
+  "revisions": {
+    "97bd92dd-1069-42e7-bf00-7d3f37ab50d2": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1794911199530,
+      "endedAt": 1794911199533,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\fa\\facbcb27c64d676d91d0dbe41d7ccea1449f951705385f549c4a0952ad980983",
+          "after": "C:\\Users\\aless\\.cache\\hyperframes\\history\\98122051-3c40-4659-a3f9-2c30d6702cad\\blobs\\a1\\a13598ce746d6a5e8152b25aaac3a4ae04a48a251d1782be1ac686a38e4be179"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "4b3190a0-7b66-416a-b869-a8ab4214267c"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "020ff8d6-dcc0-4056-bad0-16a0fa75e380",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\helllo\\scopri-schermo\\.hyperframes\\artifacts\\checks\\020ff8d6-dcc0-4056-bad0-16a0fa75e380.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 45000,
+            "cache": true,
+            "contrast": true,
+            "craft": true,
+            "strict": false,
+            "snapshots": false,
+            "safeZones": [
+              "tiktok",
+              "reels",
+              "shorts"
+            ],
+            "browserGpuMode": "auto",
+            "includeUnmounted": false
+          }
+        },
+        "createdAt": 1794911025460,
+        "contentHash": "c6be7f24009f52fe2b0112f92382fca9adc67873d76c931968aff47fb9d6110b",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "id": "4b3190a0-7b66-416a-b869-a8ab4214267c",
+        "scope": "project",
+        "report": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\helllo\\scopri-schermo\\.hyperframes\\artifacts\\checks\\4b3190a0-7b66-416a-b869-a8ab4214267c.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 45000,
+            "cache": true,
+            "contrast": true,
+            "craft": true,
+            "strict": false,
+            "snapshots": false,
+            "safeZones": [
+              "tiktok",
+              "reels",
+              "shorts"
+            ],
+            "browserGpuMode": "auto",
+            "includeUnmounted": false
+          }
+        },
+        "createdAt": 1794911086149,
+        "contentHash": "c6be7f24009f52fe2b0112f92382fca9adc67873d76c931968aff47fb9d6110b",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "97bd92dd-1069-42e7-bf00-7d3f37ab50d2",
+      "id": "7fa12cb6-389f-436e-b856-91faa2236037-1"
+    },
+    "revisions": {
+      "97bd92dd-1069-42e7-bf00-7d3f37ab50d2": [
+        {
+          "scope": "full",
+          "id": "7fa12cb6-389f-436e-b856-91faa2236037-0",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc2\\frame-00-at-0.5s.png",
+          "time": 0.5,
+          "metadata": {
+            "width": 1080,
+            "height": 2330,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794911205480,
+          "contentHash": "bd79022965fa9eca6e88bf1e78305fb58085b3a05ea308644f919bea2a8f9be4",
+          "revision": "97bd92dd-1069-42e7-bf00-7d3f37ab50d2",
+          "inputFingerprint": "3b1a16473a4806ef7192b1509e554cad0c457fbcb500e827b896f8867cd2c82a",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "7fa12cb6-389f-436e-b856-91faa2236037-1",
+          "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc2\\frame-01-at-8.5s.png",
+          "time": 8.5,
+          "metadata": {
+            "width": 1080,
+            "height": 2330,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794911205481,
+          "contentHash": "a7d24cb64970cadc4e33884d00f3c7ebdff6156d2c74e6efe0de9ef38a798eb6",
+          "revision": "97bd92dd-1069-42e7-bf00-7d3f37ab50d2",
+          "inputFingerprint": "3b1a16473a4806ef7192b1509e554cad0c457fbcb500e827b896f8867cd2c82a",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "3b880c03-0000-4f85-90e9-04b2c5a8e9c0-0",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc1\\frame-00-at-0.5s.png",
+        "time": 0.5,
+        "metadata": {
+          "width": 1080,
+          "height": 2330,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794911104296,
+        "contentHash": "f626c45b5c881f7941b95314578a9e51c272f95279139e07f218fc5e04daad25",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "3b880c03-0000-4f85-90e9-04b2c5a8e9c0-1",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc1\\frame-01-at-1.6s.png",
+        "time": 1.6,
+        "metadata": {
+          "width": 1080,
+          "height": 2330,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794911104296,
+        "contentHash": "ea3b28f04bc13ddaed3eb0a570dda0a9900675906b9e80d0c8851e95c7926ca0",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "3b880c03-0000-4f85-90e9-04b2c5a8e9c0-2",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc1\\frame-02-at-3s.png",
+        "time": 3,
+        "metadata": {
+          "width": 1080,
+          "height": 2330,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794911104296,
+        "contentHash": "7bdeb853150e3fb7ac4deb9093487bd88c9e9b31cefd7d51e58e98220707f810",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "3b880c03-0000-4f85-90e9-04b2c5a8e9c0-3",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc1\\frame-03-at-5.4s.png",
+        "time": 5.4,
+        "metadata": {
+          "width": 1080,
+          "height": 2330,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794911104296,
+        "contentHash": "d8dad3d247c652bf6e2343f882971ab43cbc7aa892b14fac66a4e9ddc5f2f22a",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "3b880c03-0000-4f85-90e9-04b2c5a8e9c0-4",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc1\\frame-04-at-6.4s.png",
+        "time": 6.4,
+        "metadata": {
+          "width": 1080,
+          "height": 2330,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794911104297,
+        "contentHash": "75a6525a5471ce53966794026afaa765666287f6f63681bde6a52ee9f265db1f",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "3b880c03-0000-4f85-90e9-04b2c5a8e9c0-5",
+        "image": "C:\\Users\\aless\\AppData\\Local\\Temp\\claude\\ebd0125371e82c12\\b98fc106-2ae9-49c1-9787-e55f255e122a\\scratchpad\\sc1\\frame-05-at-9s.png",
+        "time": 9,
+        "metadata": {
+          "width": 1080,
+          "height": 2330,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1794911104297,
+        "contentHash": "fae372653af9a31e6942eb554e3a07cf6fe23cd24f877c2453be76c73dd2b66c",
+        "revision": null,
+        "inputFingerprint": "0721b97c68f68ccdaaa07152ccac8db1f565336e575d3610508f96ce9420b52a",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "6f3bbeb4-d313-4878-8fab-45e700b97fad",
+      "completedAt": 1794911445382,
+      "output": "C:\\Users\\aless\\Documents\\GitHub\\didap\\media\\helllo\\scopri-telefono\\assets\\schermo.mp4",
+      "status": "completed",
+      "revision": "97bd92dd-1069-42e7-bf00-7d3f37ab50d2"
+    },
+    "retainedRevisions": [
+      "97bd92dd-1069-42e7-bf00-7d3f37ab50d2"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

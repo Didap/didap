@@ -45,9 +45,9 @@ media:
   pair:
     - src: /covers/cruciverba-lab-logo.svg
       alt: "Il marchio di Cruciverba Lab, una griglia di cruciverba inclinata con la casella centrale rossa"
-    - src: /covers/cruciverba-lab-alveare.mp4
-      poster: /covers/cruciverba-lab-alveare-poster.webp
-      alt: "L'Alveare: le lettere si toccano nelle celle esagonali intorno alla L obbligatoria, le parole entrano una dopo l'altra e il contatore delle parole trovate sale"
+    - src: /covers/cruciverba-lab-alveare-telefono.mp4
+      poster: /covers/cruciverba-lab-alveare-telefono-poster.webp
+      alt: "L'Alveare sul telefono: si toccano le lettere nelle celle esagonali intorno alla L obbligatoria, OLIO, MOLLE, ZOLLE, MOBILE e BOZZOLO entrano fra le parole trovate, il punteggio sale e il grado passa da Uovo a Larva e poi a Operaia"
   wide:
     src: /covers/cruciverba-lab-classifica.mp4
     poster: /covers/cruciverba-lab-classifica-poster.webp
@@ -60,9 +60,9 @@ media:
       srcMobile: /covers/cruciverba-lab-oggi-mobile.mp4
       posterMobile: /covers/cruciverba-lab-oggi-mobile-poster.webp
       alt: "I dieci giochi del giorno, ciascuno con il suo colore: si chiudono uno dopo l'altro e il contatore Fatti oggi sale fino a 10 su 10"
-    - src: /covers/cruciverba-lab-ghigliottina.mp4
-      poster: /covers/cruciverba-lab-ghigliottina-poster.webp
-      alt: "La Ghigliottina: cinque coppie di parole, per ognuna si sceglie quella giusta, poi arriva la parola che le lega tutte, TENERE"
+    - src: /covers/cruciverba-lab-ghigliottina-telefono.mp4
+      poster: /covers/cruciverba-lab-ghigliottina-telefono-poster.webp
+      alt: "La Ghigliottina sul telefono: cinque coppie di parole si scoprono una alla volta e per ognuna si sceglie, la scelta sbagliata viene barrata, poi si scrive TENERE, la parola che le lega tutte, e sotto compaiono i legami"
   triple:
     - src: /covers/cruciverba-lab-chiave.mp4
       poster: /covers/cruciverba-lab-chiave-poster.webp

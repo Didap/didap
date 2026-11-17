@@ -1,0 +1,88 @@
+      /* Comune ai due schermi del telefono (scopri-schermo, match-schermo): 1080x2330, le
+         misure del Figma per 1.875, i colori della palette di Helllo. */
+      :root {
+        --rosso: #e93d29;
+        --blu: #225ad6;
+        --celeste: #a8c8f9;
+        --crema: #f4e9e9;
+        --notte: #132a6b;
+        --carta: #f9f7f8;
+        --bianco: #ffffff;
+        --testo: 'Hanken Grotesk', system-ui, sans-serif;
+        --corsivo: 'Pacifico', cursive;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 2330px; overflow: hidden; background: var(--bianco); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bianco); font-family: var(--testo); color: var(--notte); }
+      #stage { position: absolute; inset: 0; }
+      .line { display: none; }
+      svg { display: block; }
+
+      /* Barra di stato e indicatore home (come lo schermo di CityFix) */
+      .status {
+        position: absolute; left: 0; right: 0; top: 0; height: 150px; padding: 24px 88px 0;
+        display: flex; align-items: center; justify-content: space-between;
+        font-weight: 600; font-size: 44px; color: var(--notte); z-index: 50;
+      }
+      .bars { display: flex; gap: 4px; align-items: flex-end; }
+      .bars i { width: 8px; border-radius: 2px; background: var(--notte); }
+      .home { position: absolute; left: 50%; bottom: 22px; width: 370px; height: 14px; margin-left: -185px; border-radius: 7px; background: var(--notte); z-index: 50; }
+
+      /* Il match: È un helllo! */
+      .match { position: absolute; inset: 0; background: var(--carta); overflow: hidden; }
+      .chiudi {
+        position: absolute; left: 56px; top: 172px; width: 108px; height: 108px; border-radius: 50%;
+        box-shadow: inset 0 0 0 3.5px var(--notte); display: grid; place-items: center;
+      }
+      .match .fondo { position: absolute; left: 0; right: 0; top: 560px; height: 740px; overflow: hidden; }
+      .match .fondo .lll { position: absolute; left: -40px; top: -10px; width: 1160px; height: auto; }
+      .match .sticker { position: absolute; left: 140px; top: 206px; width: 800px; height: auto; }
+      .match .carta {
+        position: absolute; width: 430px; height: 556px; top: 650px;
+      }
+      .match .carta > div { position: absolute; inset: 0; border-radius: 52px; overflow: hidden; }
+      #m-luca { left: 92px; transform: rotate(-7deg); }
+      #m-luca > div { background: var(--rosso); box-shadow: inset 0 0 0 4px var(--rosso); }
+      #m-luca img { position: absolute; left: 4px; right: 4px; top: 4px; width: calc(100% - 8px); height: 410px; object-fit: cover; border-radius: 48px 48px 0 0; }
+      #m-luca span { position: absolute; left: 44px; bottom: 44px; font-size: 44px; font-weight: 500; color: var(--bianco); }
+      #m-nord { left: 560px; transform: rotate(5deg); }
+      #m-nord > div { background: var(--blu); }
+      #m-nord .sn {
+        position: absolute; left: 44px; top: 50px; width: 150px; height: 150px; border-radius: 50%; background: var(--bianco);
+        display: grid; place-items: center; font-size: 46px; font-weight: 500; color: var(--blu);
+      }
+      #m-nord b { position: absolute; left: 44px; bottom: 112px; font-size: 46px; font-weight: 500; color: var(--bianco); }
+      #m-nord small { position: absolute; left: 44px; bottom: 56px; font-size: 36px; font-weight: 400; color: var(--bianco); }
+      .badge {
+        position: absolute; left: 448px; top: 828px; width: 184px; height: 184px; border-radius: 50%;
+        background: var(--rosso); box-shadow: 0 0 0 9px var(--bianco); display: grid; place-items: center;
+      }
+      .badge .wordmark-lll { width: 112px; height: auto; color: var(--bianco); }
+      .ruolo-pill {
+        position: absolute; left: 50%; top: 1158px; height: 100px; padding: 0 44px; margin-left: -290px; width: 580px;
+        border-radius: 50px; background: var(--bianco); box-shadow: 0 10px 30px -14px rgba(19, 42, 107, 0.3);
+        display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 40px; font-weight: 500; color: var(--notte); white-space: nowrap;
+      }
+      .scelti {
+        position: absolute; left: 0; right: 0; top: 1316px; text-align: center;
+        font-weight: 800; font-style: italic; font-size: 72px; line-height: 90px; letter-spacing: -0.01em; color: var(--rosso);
+      }
+      .scelti span { display: block; }
+      .rompi { position: absolute; left: 60px; right: 60px; top: 1530px; display: flex; flex-wrap: wrap; justify-content: center; gap: 22px 22px; }
+      .chip {
+        display: inline-flex; align-items: center; height: 96px; padding: 0 40px; border-radius: 48px;
+        background: var(--blu); color: var(--bianco); font-size: 38px; font-weight: 500; white-space: nowrap;
+      }
+      .campo {
+        position: absolute; left: 44px; right: 44px; top: 1784px; height: 144px; border-radius: 72px; background: var(--celeste);
+        display: flex; align-items: center; justify-content: space-between; padding: 0 16px 0 52px; font-size: 42px; color: var(--notte);
+      }
+      .invia { width: 112px; height: 112px; border-radius: 50%; background: var(--blu); display: grid; place-items: center; }
+      .fissa {
+        position: absolute; left: 44px; right: 44px; top: 1976px; height: 158px; border-radius: 79px; background: var(--rosso);
+        display: flex; align-items: center; justify-content: center; gap: 26px; font-size: 46px; font-weight: 500; color: var(--bianco);
+      }
+      .continua {
+        position: absolute; left: 0; right: 0; top: 2178px; text-align: center; font-size: 42px; font-weight: 500; color: var(--notte);
+        text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 10px;
+      }

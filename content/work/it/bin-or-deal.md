@@ -4,6 +4,7 @@ summary: Aggregatore di offerte sui marketplace europei per collezionisti, con s
 role: Marketplace
 cover: /covers/bin-or-deal.jpg
 url: https://www.binordeal.com
+logo: /covers/bin-or-deal-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -23,17 +24,17 @@ hero:
   srcMobile: /covers/bin-or-deal-hero-mobile.mp4
   posterMobile: /covers/bin-or-deal-hero-mobile-poster.webp
   alt: "Il titolo Bin. or Deal? su carta da giornale, con il nastro degli ultimi verdetti che scorre in alto e in basso e un timbro che diventa Deal, Fair e poi Bin"
-intro: "Bin or Deal risponde alla domanda di ogni collezionista davanti a un annuncio: è un affare o no? Si cerca una carta o una moneta una volta sola e la ricerca parte insieme su eBay, Vinted, Wallapop e Subito. Ogni annuncio trovato viene confrontato con il prezzo del catalogo specializzato, Cardmarket per le carte e Numista per le monete, e diventa Deal, Fair o Bin. Invece di scorrere 200 annunci si guardano i 5 verdi."
+intro: "Bin or Deal cerca una carta o una moneta su eBay, Vinted, Wallapop e Subito insieme. Ogni annuncio diventa Deal, Fair o Bin contro il prezzo del catalogo: invece di 200 annunci si guardano i 5 verdi."
 challenge:
   title: Il prezzo giusto non è scritto sull’annuncio.
-  body: "Ogni annuncio viene confrontato con il riferimento del catalogo, corretto per la condizione dichiarata: una carta near-mint vale il 95% del riferimento, una giocata il 62%. Lo score è lo scarto da quel prezzo. I mercati rispondono in tempi diversi, quindi i risultati arrivano in streaming e si riordinano per score mentre arrivano. Nessun annuncio resta salvato sui nostri server."
+  body: "Il riferimento del catalogo scende con la condizione dichiarata: una carta giocata vale il 62% di una near-mint. I mercati rispondono in tempi diversi, così i risultati arrivano mentre la lista si riordina."
 features:
   title: Una ricerca, quattro mercati, un verdetto.
   items:
     - name: Ricerca aggregata
       desc: eBay, Vinted, Wallapop e Subito in una sola query, in parallelo.
     - name: Prezzo di riferimento
-      desc: Cardmarket per le carte, Numista per le monete. Se il match è sbagliato si cambia.
+      desc: "Cardmarket per le carte, Numista per le monete."
     - name: Deal, Fair o Bin
       desc: Almeno il 18% sotto il riferimento è Deal, oltre l’8% sopra è Bin.
     - name: Condizione nel conto
@@ -41,8 +42,8 @@ features:
     - name: Soglie personali
       desc: Per ogni prodotto si fissano i propri prezzi di Deal e di Bin.
     - name: Filtri da collezionista
-      desc: Score, mercato, prezzo, e le lotterie escluse in automatico.
-model: "Due piani previsti. Free: 10 ricerche al giorno con un account. Pro a 4,99 € al mese: ricerche illimitate, filtri avanzati, alert ed export CSV. Le ricerche partono solo quando l’utente le chiede."
+      desc: "Score, mercato e prezzo. Le lotterie restano fuori."
+model: "Due piani previsti. Free con 10 ricerche al giorno, Pro a 4,99 € al mese con ricerche illimitate, alert ed export CSV."
 next: cruciverba-lab
 media:
   pair:

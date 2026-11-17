@@ -19,10 +19,10 @@ hero:
   srcMobile: /covers/helllo-hero-mobile.mp4
   posterMobile: /covers/helllo-hero-mobile-poster.webp
   alt: "Due persone alzano il telefono e le tre l rosse del marchio si scrivono in un solo tratto da un telefono all’altro, come il filo di un vecchio telefono: i due aprono gli occhi e compare la scritta È un helllo!"
-intro: "Helllo mette in contatto chi cerca lavoro e le aziende che assumono. Chi cerca lavoro scorre le offerte, l’azienda scorre le persone: se tutti e due dicono Helllo, è un match e la chat si apre subito, con le domande rompighiaccio già pronte. Niente candidature nel vuoto, niente «le faremo sapere»."
+intro: "Helllo mette in contatto chi cerca lavoro e le aziende che assumono. Se tutti e due dicono Helllo è un match, e la chat si apre con le domande rompighiaccio già pronte."
 challenge:
   title: Tre l, un solo filo.
-  body: "Il nome doveva essere un saluto, ma «Hello» non si poteva registrare. La terza l ha risolto il marchio ed è diventata l’idea: le lll sono scritte in un unico tratto, come il cavo di un vecchio telefono che collega due persone. Lo stesso segno fa da logo, da supergrafica e da animazione: quando c’è un match, le lll si scrivono da un telefono all’altro."
+  body: "«Hello» non si poteva registrare, così la terza l è diventata l’idea: le lll in un solo tratto, come il filo di un vecchio telefono. Lo stesso segno fa da logo, da supergrafica e da animazione del match."
 features:
   title: Dal primo ciao al colloquio.
   items:
@@ -37,8 +37,8 @@ features:
     - name: Profili verificati
       desc: Le aziende sanno che sei tu, tu sai che l’azienda è vera.
     - name: Per le aziende
-      desc: Conosci le persone prima del curriculum, e fissa il colloquio dalla chat.
-model: Pensata per chi è fuori da scuola e lavoro e cerca la prima occasione, anche senza esperienza, e per le aziende che vogliono conoscere le persone prima dei documenti. Diamo del tu a tutti, frasi brevi, una cosa per volta.
+      desc: "Conosci le persone prima del curriculum e fissi il colloquio in chat."
+model: "Per chi cerca la prima occasione, anche senza esperienza, e per le aziende che vogliono conoscere le persone prima dei documenti. Diamo del tu a tutti, una cosa per volta."
 next: fanta-rainbow
 media:
   pair:

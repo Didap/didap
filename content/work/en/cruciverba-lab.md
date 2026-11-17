@@ -4,6 +4,7 @@ summary: "The home of Italian crosswords online. Seven new word games every day 
 role: Games
 cover: /covers/cruciverba-lab.svg
 url: https://cruciverba-lab.it
+logo: /covers/cruciverba-lab-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -19,26 +20,26 @@ hero:
   srcMobile: /covers/cruciverba-lab-hero-mobile.mp4
   posterMobile: /covers/cruciverba-lab-hero-mobile-poster.webp
   alt: "The crossword of the day under the Cruciverba Lab masthead: the active clue lights up in the Across list and its answer goes into the grid letter by letter, one row after another"
-intro: "Cruciverba Lab is our Italian puzzle publication online. Every morning there is a new crossword and nine other short games: Setaccio, Catena, Crittografato, Rulli, Chiave, Nessi, Ghigliottina, Alveare and Mosaico. On Mondays the Maxi arrives too, a 17×17 grid that lasts the whole week. You play from your phone or your computer, with no app and no sign-up."
+intro: "Cruciverba Lab is our Italian puzzle publication online. Every morning a new crossword and nine short games, on Mondays the Maxi, a 17×17 grid that lasts the whole week."
 challenge:
   title: One grid a day, written in Italian.
-  body: "A program crosses the grid, because crossing words is geometry. We write the clues together with a language model schooled on the conventions of the Italian crossword, then we reread them before they go out: we fix them, and sometimes throw them out and start again. No games translated from another language."
+  body: "A program crosses the grid. We write the clues with a language model schooled on the Italian crossword and reread them one by one before they go out."
 features:
   title: Ten minutes a day, every day.
   items:
     - name: Ten games a day
-      desc: They change at midnight, Italian time. The day's game is the same for everyone.
+      desc: "They change at midnight and are the same for everyone."
     - name: Difficulty stated up front
-      desc: Every crossword is easy, medium or hard, and the levels alternate through the week.
+      desc: "Easy, medium or hard, alternating through the week."
     - name: Free account
-      desc: Checks and closes your games, saves your times, opens the leaderboard and the streak.
+      desc: "Saves your times, opens the leaderboard and the streak."
     - name: Daily and monthly leaderboard
-      desc: Every game adds points to the same leaderboard. Only the day's games count.
+      desc: "Every game of the day adds points to the same leaderboard."
     - name: The archive
-      desc: "With Premium, every past day of every game, and every Maxi already out."
+      desc: "With Premium, every past day and every Maxi."
     - name: More hints, the streak holds
-      desc: On the crossword hints go from four to ten a day. One day off does not reset the streak.
-model: "Freemium, with no ads. Today's games stay free for everyone. Premium opens the archive at 4.99 € a month or 39.99 € a year, with the first 7 days free. Leaderboard points are the same for everyone: Premium is worth nothing extra."
+      desc: "From four to ten hints a day on the crossword. One day off does not reset the streak."
+model: "Freemium, with no ads. Premium opens the archive at 4.99 € a month or 39.99 € a year, with 7 days free. Leaderboard points are the same for everyone."
 next: helllo
 media:
   pair:

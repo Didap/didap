@@ -4,6 +4,7 @@ summary: An aggregator of European marketplace listings for collectors, with aut
 role: Marketplace
 cover: /covers/bin-or-deal.jpg
 url: https://www.binordeal.com
+logo: /covers/bin-or-deal-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -23,17 +24,17 @@ hero:
   srcMobile: /covers/bin-or-deal-hero-mobile.mp4
   posterMobile: /covers/bin-or-deal-hero-mobile-poster.webp
   alt: "The Bin. or Deal? headline on newsprint, with the tape of the latest verdicts running along the top and bottom and a stamp that turns Deal, Fair and then Bin"
-intro: "Bin or Deal answers the question every collector asks in front of a listing: is it a deal or not? You search for a card or a coin once and the search runs at the same time on eBay, Vinted, Wallapop and Subito. Every listing found is compared with the price of the specialised catalogue, Cardmarket for cards and Numista for coins, and becomes Deal, Fair or Bin. Instead of scrolling through 200 listings you look at the 5 green ones."
+intro: "Bin or Deal searches for a card or a coin on eBay, Vinted, Wallapop and Subito at once. Every listing becomes Deal, Fair or Bin against the catalogue price: instead of 200 listings you look at the 5 green ones."
 challenge:
   title: The right price is not written on the listing.
-  body: "Every listing is compared with the catalogue reference, corrected for the stated condition: a near-mint card is worth 95% of the reference, a played one 62%. The score is the gap from that price. The marketplaces answer at different speeds, so results stream in and re-sort by score as they arrive. No listing is kept on our servers."
+  body: "The catalogue reference drops with the stated condition: a played card is worth 62% of a near-mint one. The marketplaces answer at different speeds, so results arrive while the list re-sorts."
 features:
   title: One search, four marketplaces, one verdict.
   items:
     - name: Aggregated search
       desc: eBay, Vinted, Wallapop and Subito in one query, in parallel.
     - name: Reference price
-      desc: Cardmarket for cards, Numista for coins. If the match is wrong, you change it.
+      desc: "Cardmarket for cards, Numista for coins."
     - name: Deal, Fair or Bin
       desc: At least 18% below the reference is a Deal, more than 8% above is a Bin.
     - name: Condition counts
@@ -41,8 +42,8 @@ features:
     - name: Your own thresholds
       desc: For each product you set your own Deal and Bin prices.
     - name: Filters for collectors
-      desc: Score, marketplace, price, and lotteries left out automatically.
-model: "Two plans are planned. Free: 10 searches a day with an account. Pro at 4.99 € a month: unlimited searches, advanced filters, alerts and CSV export. Searches only run when the user asks for them."
+      desc: "Score, marketplace and price. Lotteries stay out."
+model: "Two plans are planned. Free with 10 searches a day, Pro at 4.99 € a month with unlimited searches, alerts and CSV export."
 next: cruciverba-lab
 media:
   pair:

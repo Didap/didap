@@ -4,6 +4,7 @@ summary: Live fantasy football auctions. The house keeps the books, players open
 role: Fantasy football
 cover: /covers/fanta-rainbow.svg
 url: https://fantarainbow.com
+logo: /covers/fanta-rainbow-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -19,10 +20,10 @@ hero:
   srcMobile: /covers/fanta-rainbow-hero-mobile.mp4
   posterMobile: /covers/fanta-rainbow-hero-mobile-poster.webp
   alt: The Fanta Rainbow logo in the middle of a floodlit football goal at night, its net moving in the wind
-intro: Fanta Rainbow is the bank of a fantasy football auction. The organiser creates the auction, picks the team names and gets a personal link for each one. On auction night the board runs on the big screen and everyone else is on their phone. Whoever bids last before the countdown runs out takes the player.
+intro: "Fanta Rainbow is the bank of a fantasy football auction. The board runs on the big screen, everyone else bids from their phone with their own link."
 challenge:
   title: No timers on the server.
-  body: "Every bid writes the lot’s deadline. The first request that finds it in the past assigns the player. Two bids in the same instant never overwrite each other: the second is replayed on the updated bid. Everyone sees the same countdown on the same second, even those who are not in the room."
+  body: "Every bid writes the lot’s deadline and the first request that finds it past assigns the player. Two bids in the same instant never overwrite each other, and everyone sees the same countdown."
 features:
   title: From auction night to the whole season.
   items:
@@ -31,14 +32,14 @@ features:
     - name: Bids from the phone
       desc: "No app and no sign-up: open your own link and raise."
     - name: Synced countdown
-      desc: The client corrects the drift against the server clock.
+      desc: "The same second on every phone."
     - name: Squad rules enforced
-      desc: Full position, bid rejected. The last sale can be undone.
+      desc: "Full position, bid rejected."
     - name: List import
       desc: The official Fantacalcio.it CSV, as it is.
     - name: The whole season
       desc: League, line-ups, goals, Rainbow credits and a sticker album.
-model: "One-off league credit: 10 € per league, unlimited teams, only the organiser pays. No subscription and no per-player cost. Finished leagues stay readable and export to JSON."
+model: "One-off league credit: 10 € per league, unlimited teams, only the organiser pays. No subscription and no per-player cost."
 next: cityfix
 media:
   pair:

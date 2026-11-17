@@ -19,10 +19,10 @@ hero:
   srcMobile: /covers/helllo-hero-mobile.mp4
   posterMobile: /covers/helllo-hero-mobile-poster.webp
   alt: "Two people pick up their phones and the three red l of the logo write themselves in one stroke from one phone to the other, like an old phone cord: they open their eyes and the words È un helllo! appear"
-intro: "Helllo connects people looking for work with the companies that are hiring. Job seekers browse the openings, companies browse the people: if both say Helllo, it’s a match and the chat opens straight away, with icebreaker questions ready to go. No applications sent into the void, no “we’ll let you know”."
+intro: "Helllo connects people looking for work with the companies that are hiring. If both say Helllo it’s a match, and the chat opens with icebreaker questions ready to go."
 challenge:
   title: Three l’s, one single thread.
-  body: "The name had to be a greeting, but “Hello” couldn’t be registered. The third l solved the trademark and became the idea: the lll are written in one single stroke, like the cord of an old phone connecting two people. The same mark works as logo, supergraphic and animation: when there’s a match, the lll write themselves from one phone to the other."
+  body: "“Hello” couldn’t be registered, so the third l became the idea: the lll in one single stroke, like the cord of an old phone. The same mark works as logo, supergraphic and match animation."
 features:
   title: From the first hello to the interview.
   items:
@@ -37,8 +37,8 @@ features:
     - name: Verified profiles
       desc: Companies know it’s you, you know the company is real.
     - name: For companies
-      desc: Meet people before their résumé, and book the interview from the chat.
-model: Made for people who are out of school and out of work and looking for their first chance, even without experience, and for companies that want to meet people before their paperwork. Friendly tone with everyone, short sentences, one thing at a time.
+      desc: "Meet people before their résumé and book the interview in the chat."
+model: "For people looking for their first chance, even without experience, and for companies that want to meet people before their paperwork. Friendly with everyone, one thing at a time."
 next: fanta-rainbow
 media:
   pair:

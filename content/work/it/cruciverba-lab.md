@@ -4,6 +4,7 @@ summary: "La casa dei cruciverba online. Sette giochi di parole nuovi ogni giorn
 role: Giochi
 cover: /covers/cruciverba-lab.svg
 url: https://cruciverba-lab.it
+logo: /covers/cruciverba-lab-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -19,26 +20,26 @@ hero:
   srcMobile: /covers/cruciverba-lab-hero-mobile.mp4
   posterMobile: /covers/cruciverba-lab-hero-mobile-poster.webp
   alt: "Il cruciverba del giorno sotto la testata di Cruciverba Lab: la definizione attiva si accende fra le Orizzontali e la risposta entra nella griglia lettera per lettera, una riga dopo l'altra"
-intro: "Cruciverba Lab è la nostra testata di enigmistica online. Ogni mattina escono un cruciverba nuovo e altri nove giochi brevi: Setaccio, Catena, Crittografato, Rulli, Chiave, Nessi, Ghigliottina, Alveare e Mosaico. Il lunedì arriva anche il Maxi, una griglia 17×17 che dura tutta la settimana. Si gioca dal telefono o dal computer, senza app e senza registrarsi."
+intro: "Cruciverba Lab è la nostra testata di enigmistica online. Ogni mattina un cruciverba nuovo e nove giochi brevi, il lunedì il Maxi, una griglia 17×17 che dura tutta la settimana."
 challenge:
   title: Una griglia al giorno, scritta in italiano.
-  body: "La griglia la incrocia un programma, perché incrociare parole è geometria. Le definizioni le scriviamo a quattro mani con un modello linguistico istruito sulle convenzioni del cruciverba italiano, poi le rileggiamo prima della pubblicazione: si correggono, a volte si buttano e si ricomincia. Niente giochi tradotti da un'altra lingua."
+  body: "La griglia la incrocia un programma. Le definizioni le scriviamo con un modello linguistico istruito sul cruciverba italiano e le rileggiamo una per una prima che escano."
 features:
   title: Dieci minuti al giorno, ogni giorno.
   items:
     - name: Dieci giochi al giorno
-      desc: Cambiano a mezzanotte, ora italiana. La partita del giorno è la stessa per tutti.
+      desc: "Cambiano a mezzanotte e sono uguali per tutti."
     - name: Difficoltà dichiarata
-      desc: Ogni cruciverba è facile, medio o difficile, e le difficoltà si alternano nella settimana.
+      desc: "Facile, medio o difficile, alternati nella settimana."
     - name: Account gratuito
-      desc: Verifica e chiude le partite, salva i tempi, apre la classifica e la serie.
+      desc: "Salva i tempi, apre la classifica e la serie."
     - name: Classifica del giorno e del mese
-      desc: Ogni gioco porta punti alla stessa classifica. Contano solo i giochi del giorno.
+      desc: "Ogni gioco del giorno porta punti alla stessa classifica."
     - name: La raccolta
-      desc: "Con Premium ogni giornata passata di ogni gioco, e tutti i Maxi già usciti."
+      desc: "Con Premium tutte le giornate passate e tutti i Maxi."
     - name: Più aiuti, la serie regge
-      desc: Sul cruciverba gli aiuti passano da quattro a dieci al giorno. Un giorno di pausa non azzera la serie.
-model: "Freemium, senza pubblicità. I giochi di oggi restano gratis per tutti. Premium apre la raccolta a 4,99 € al mese o 39,99 € all'anno, con i primi 7 giorni gratis. I punti in classifica sono uguali per tutti: Premium non vale niente di più."
+      desc: "Da quattro a dieci aiuti al giorno sul cruciverba. Un giorno di pausa non azzera la serie."
+model: "Freemium, senza pubblicità. Premium apre la raccolta a 4,99 € al mese o 39,99 € all’anno, con 7 giorni gratis. In classifica i punti sono uguali per tutti."
 next: helllo
 media:
   pair:

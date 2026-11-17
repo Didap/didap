@@ -4,6 +4,7 @@ summary: L'asta di fantacalcio live. Il banco tiene i conti, i partecipanti apro
 role: Fantacalcio
 cover: /covers/fanta-rainbow.svg
 url: https://fantarainbow.com
+logo: /covers/fanta-rainbow-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -19,10 +20,10 @@ hero:
   srcMobile: /covers/fanta-rainbow-hero-mobile.mp4
   posterMobile: /covers/fanta-rainbow-hero-mobile-poster.webp
   alt: Il logo di Fanta Rainbow al centro di una porta da calcio illuminata di notte, con la rete mossa dal vento
-intro: Fanta Rainbow è il banco di un’asta di fantacalcio. L’organizzatore crea l’asta, sceglie i nomi delle squadre e riceve un link personale per ciascuna. La sera dell’asta il tabellone gira sul grande schermo e tutti gli altri sono al telefono. Chi offre per ultimo prima che scada il countdown si prende il giocatore.
+intro: "Fanta Rainbow è il banco di un’asta di fantacalcio. Il tabellone gira sul grande schermo, tutti gli altri rilanciano dal telefono con il proprio link."
 challenge:
   title: Nessun timer sul server.
-  body: "Ogni offerta scrive la scadenza del lotto. La prima richiesta che la trova nel passato assegna il giocatore. Due offerte nello stesso istante non si sovrascrivono mai: la seconda viene rigiocata sull’offerta aggiornata. Tutti vedono lo stesso countdown sullo stesso secondo, anche chi non è nella stanza."
+  body: "Ogni offerta scrive la scadenza del lotto e la prima richiesta che la trova passata assegna il giocatore. Due offerte nello stesso istante non si sovrascrivono mai, e il countdown è lo stesso per tutti."
 features:
   title: Dalla sera dell’asta a tutta la stagione.
   items:
@@ -31,14 +32,14 @@ features:
     - name: Offerte dal telefono
       desc: "Nessuna app e nessuna registrazione: si apre il proprio link e si rilancia."
     - name: Countdown sincronizzato
-      desc: Il client corregge lo scarto con l’orologio del server.
+      desc: "Lo stesso secondo su ogni telefono."
     - name: Regole di rosa garantite
-      desc: Reparto pieno, offerta rifiutata. L’ultima vendita si può annullare.
+      desc: "Reparto pieno, offerta rifiutata."
     - name: Import del listone
       desc: Il CSV ufficiale di Fantacalcio.it così com’è.
     - name: La stagione intera
       desc: Lega, formazioni, obiettivi, crediti Rainbow e album di figurine.
-model: "Un credito lega una tantum: 10 € per lega, squadre illimitate, paga solo l’organizzatore. Nessun abbonamento e nessun costo per partecipante. Le leghe concluse restano leggibili e si esportano in JSON."
+model: "Un credito lega una tantum: 10 € per lega, squadre illimitate, paga solo l’organizzatore. Nessun abbonamento e nessun costo per partecipante."
 next: cityfix
 media:
   pair:

@@ -4,6 +4,7 @@ summary: Live fantasy football auctions. The house keeps the books, players open
 role: Fantasy football
 cover: /covers/fanta-rainbow.svg
 url: https://fantarainbow.com
+logo: /covers/fanta-rainbow-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -19,10 +20,10 @@ hero:
   srcMobile: /covers/fanta-rainbow-hero-mobile.mp4
   posterMobile: /covers/fanta-rainbow-hero-mobile-poster.webp
   alt: The Fanta Rainbow logo in the middle of a floodlit football goal at night, its net moving in the wind
-intro: Fanta Rainbow is the bank of a fantasy football auction. The organiser creates the auction, picks the team names and gets a personal link for each one. On auction night the board runs on the big screen and everyone else is on their phone. Whoever bids last before the countdown runs out takes the player.
+intro: "Fanta Rainbow is the bank of a fantasy football auction. The board runs on the big screen, everyone else bids from their phone with their own link."
 challenge:
   title: No timers on the server.
-  body: "Every bid writes the lot’s deadline. The first request that finds it in the past assigns the player. Two bids in the same instant never overwrite each other: the second is replayed on the updated bid. Everyone sees the same countdown on the same second, even those who are not in the room."
+  body: "Every bid writes the lot’s deadline and the first request that finds it past assigns the player. Two bids in the same instant never overwrite each other, and everyone sees the same countdown."
 features:
   title: From auction night to the whole season.
   items:
@@ -31,22 +32,22 @@ features:
     - name: Bids from the phone
       desc: "No app and no sign-up: open your own link and raise."
     - name: Synced countdown
-      desc: The client corrects the drift against the server clock.
+      desc: "The same second on every phone."
     - name: Squad rules enforced
-      desc: Full position, bid rejected. The last sale can be undone.
+      desc: "Full position, bid rejected."
     - name: List import
       desc: The official Fantacalcio.it CSV, as it is.
     - name: The whole season
       desc: League, line-ups, goals, Rainbow credits and a sticker album.
-model: "One-off league credit: 10 € per league, unlimited teams, only the organiser pays. No subscription and no per-player cost. Finished leagues stay readable and export to JSON."
+model: "One-off league credit: 10 € per league, unlimited teams, only the organiser pays. No subscription and no per-player cost."
 next: cityfix
 media:
   pair:
     - src: /covers/fanta-rainbow-logo.svg
       alt: The Fanta Rainbow logo
-    - src: /covers/fanta-rainbow-asta.mp4
-      poster: /covers/fanta-rainbow-asta-poster.webp
-      alt: "A Fanta Rainbow live auction: teams outbid each other on Maignan, the countdown bar fills and resets on every bid until the player goes for 64 credits"
+    - src: /covers/fanta-rainbow-asta-telefono.mp4
+      poster: /covers/fanta-rainbow-asta-telefono-poster.webp
+      alt: "The live auction on a participant's phone: Maignan is on the block, a thumb presses Buzz to take the lead, two rival teams raise and the countdown ring restarts on every bid, until it runs out and the screen says È tuo at 64 credits"
   wide:
     src: /covers/fanta-rainbow-gioca.mp4
     poster: /covers/fanta-rainbow-gioca-poster.webp
@@ -59,9 +60,9 @@ media:
       srcMobile: /covers/fanta-rainbow-formazione-mobile.mp4
       posterMobile: /covers/fanta-rainbow-formazione-mobile-poster.webp
       alt: "Setting a lineup on Fanta Rainbow: four players moved from the available list to the open spots on the pitch, then Schiera confirms the lineup for the matchday"
-    - src: /covers/fanta-rainbow-stagione.mp4
-      poster: /covers/fanta-rainbow-stagione-poster.webp
-      alt: "The Fanta Rainbow season page: the price ticker scrolls along the top, player prices move up and down with their trend lines, then the matchday results arrive with one game still live"
+    - src: /covers/fanta-rainbow-stagione-telefono.mp4
+      poster: /covers/fanta-rainbow-stagione-telefono-poster.webp
+      alt: "The Fanta Rainbow season page on a phone: the price ticker scrolls along the top, prices rise and fall and players overtake each other in the list, then a tap on Partite opens the matchday results, with a goal in the game still live"
   triple:
     - src: /covers/fanta-rainbow-ultimora.mp4
       poster: /covers/fanta-rainbow-ultimora-poster.webp

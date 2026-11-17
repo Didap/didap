@@ -1,9 +1,10 @@
 ---
 title: Cruciverba Lab
-summary: "The home of Italian crosswords online. Seven new word games every day in the browser. Today's is free for everyone, the full archive comes with a subscription."
+summary: "The home of Italian crosswords online. Ten new word games every day in the browser. Today's is free for everyone, the full archive comes with a subscription."
 role: Games
 cover: /covers/cruciverba-lab.svg
 url: https://cruciverba-lab.it
+logo: /covers/cruciverba-lab-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -19,34 +20,34 @@ hero:
   srcMobile: /covers/cruciverba-lab-hero-mobile.mp4
   posterMobile: /covers/cruciverba-lab-hero-mobile-poster.webp
   alt: "The crossword of the day under the Cruciverba Lab masthead: the active clue lights up in the Across list and its answer goes into the grid letter by letter, one row after another"
-intro: "Cruciverba Lab is our Italian puzzle publication online. Every morning there is a new crossword and nine other short games: Setaccio, Catena, Crittografato, Rulli, Chiave, Nessi, Ghigliottina, Alveare and Mosaico. On Mondays the Maxi arrives too, a 17×17 grid that lasts the whole week. You play from your phone or your computer, with no app and no sign-up."
+intro: "Cruciverba Lab is our Italian puzzle publication online. Every morning a new crossword and nine short games, on Mondays the Maxi, a 17×17 grid that lasts the whole week."
 challenge:
   title: One grid a day, written in Italian.
-  body: "A program crosses the grid, because crossing words is geometry. We write the clues together with a language model schooled on the conventions of the Italian crossword, then we reread them before they go out: we fix them, and sometimes throw them out and start again. No games translated from another language."
+  body: "A program crosses the grid. We write the clues with a language model schooled on the Italian crossword and reread them one by one before they go out."
 features:
   title: Ten minutes a day, every day.
   items:
     - name: Ten games a day
-      desc: They change at midnight, Italian time. The day's game is the same for everyone.
+      desc: "They change at midnight and are the same for everyone."
     - name: Difficulty stated up front
-      desc: Every crossword is easy, medium or hard, and the levels alternate through the week.
+      desc: "Easy, medium or hard, alternating through the week."
     - name: Free account
-      desc: Checks and closes your games, saves your times, opens the leaderboard and the streak.
+      desc: "Saves your times, opens the leaderboard and the streak."
     - name: Daily and monthly leaderboard
-      desc: Every game adds points to the same leaderboard. Only the day's games count.
+      desc: "Every game of the day adds points to the same leaderboard."
     - name: The archive
-      desc: "With Premium, every past day of every game, and every Maxi already out."
+      desc: "With Premium, every past day and every Maxi."
     - name: More hints, the streak holds
-      desc: On the crossword hints go from four to ten a day. One day off does not reset the streak.
-model: "Freemium, with no ads. Today's games stay free for everyone. Premium opens the archive at 4.99 € a month or 39.99 € a year, with the first 7 days free. Leaderboard points are the same for everyone: Premium is worth nothing extra."
+      desc: "From four to ten hints a day on the crossword. One day off does not reset the streak."
+model: "Freemium, with no ads. Premium opens the archive at 4.99 € a month or 39.99 € a year, with 7 days free. Leaderboard points are the same for everyone."
 next: helllo
 media:
   pair:
     - src: /covers/cruciverba-lab-logo.svg
       alt: "The Cruciverba Lab mark, a tilted crossword grid with a red centre square"
-    - src: /covers/cruciverba-lab-alveare.mp4
-      poster: /covers/cruciverba-lab-alveare-poster.webp
-      alt: "Alveare: letters are tapped in the hexagonal cells around the required L, words come in one after another and the found-words counter climbs"
+    - src: /covers/cruciverba-lab-alveare-telefono.mp4
+      poster: /covers/cruciverba-lab-alveare-telefono-poster.webp
+      alt: "Alveare on a phone: letters are tapped in the hexagonal cells around the required L, OLIO, MOLLE, ZOLLE, MOBILE and BOZZOLO join the found words, the score climbs and the rank goes from Uovo to Larva and then Operaia"
   wide:
     src: /covers/cruciverba-lab-classifica.mp4
     poster: /covers/cruciverba-lab-classifica-poster.webp
@@ -59,9 +60,9 @@ media:
       srcMobile: /covers/cruciverba-lab-oggi-mobile.mp4
       posterMobile: /covers/cruciverba-lab-oggi-mobile-poster.webp
       alt: "The ten games of the day, each in its own colour: they get done one after another and the Fatti oggi counter climbs to 10 out of 10"
-    - src: /covers/cruciverba-lab-ghigliottina.mp4
-      poster: /covers/cruciverba-lab-ghigliottina-poster.webp
-      alt: "Ghigliottina: five pairs of words, for each one the right word is picked, then the word that links them all arrives, TENERE"
+    - src: /covers/cruciverba-lab-ghigliottina-telefono.mp4
+      poster: /covers/cruciverba-lab-ghigliottina-telefono-poster.webp
+      alt: "Ghigliottina on a phone: five pairs of words are uncovered one at a time and one word is picked from each, the wrong pick gets struck through, then TENERE, the word that links them all, is typed in and the links appear below"
   triple:
     - src: /covers/cruciverba-lab-chiave.mp4
       poster: /covers/cruciverba-lab-chiave-poster.webp
@@ -90,8 +91,8 @@ difficulty.
 
 ## What it does
 
-- **Seven games a day** - Cruciverba, Mosaico, Alveare, Nessi, Chiave,
-  Setaccio, Ghigliottina.
+- **Ten games a day** - Cruciverba, Setaccio, Catena, Crittografato, Rulli,
+  Chiave, Nessi, Ghigliottina, Alveare and Mosaico.
 - **Difficulty stated up front** - every crossword is labelled easy, medium
   or hard, and the levels alternate through the week.
 - **Free account** - saves your times, syncs games across phone, tablet and

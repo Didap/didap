@@ -38,7 +38,8 @@ for text, font, colour, gap in runs:
     gs = font.getGlyphSet()
     d = []
     for g, adv in glyphs(text, font):
-        pen = SVGPathPen(gs)
+        # due decimali bastano a 104 px per em e dimezzano il file
+        pen = SVGPathPen(gs, ntos=lambda v: ('%.2f' % v).rstrip('0').rstrip('.'))
         tp = TransformPen(pen, (s, 0, 0, -s, x0 + x * s, base))
         gs[g].draw(tp)
         d.append(pen.getCommands())

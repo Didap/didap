@@ -4,6 +4,7 @@ summary: An aggregator of European marketplace listings for collectors, with aut
 role: Marketplace
 cover: /covers/bin-or-deal.jpg
 url: https://www.binordeal.com
+logo: /covers/bin-or-deal-wordmark.svg
 tags:
   - web app
   - SaaS
@@ -23,17 +24,17 @@ hero:
   srcMobile: /covers/bin-or-deal-hero-mobile.mp4
   posterMobile: /covers/bin-or-deal-hero-mobile-poster.webp
   alt: "The Bin. or Deal? headline on newsprint, with the tape of the latest verdicts running along the top and bottom and a stamp that turns Deal, Fair and then Bin"
-intro: "Bin or Deal answers the question every collector asks in front of a listing: is it a deal or not? You search for a card or a coin once and the search runs at the same time on eBay, Vinted, Wallapop and Subito. Every listing found is compared with the price of the specialised catalogue, Cardmarket for cards and Numista for coins, and becomes Deal, Fair or Bin. Instead of scrolling through 200 listings you look at the 5 green ones."
+intro: "Bin or Deal searches for a card or a coin on eBay, Vinted, Wallapop and Subito at once. Every listing becomes Deal, Fair or Bin against the catalogue price: instead of 200 listings you look at the 5 green ones."
 challenge:
   title: The right price is not written on the listing.
-  body: "Every listing is compared with the catalogue reference, corrected for the stated condition: a near-mint card is worth 95% of the reference, a played one 62%. The score is the gap from that price. The marketplaces answer at different speeds, so results stream in and re-sort by score as they arrive. No listing is kept on our servers."
+  body: "The catalogue reference drops with the stated condition: a near-mint card is worth 95% of it, a played one 62%. The marketplaces answer at different speeds, so results arrive while the list re-sorts."
 features:
   title: One search, four marketplaces, one verdict.
   items:
     - name: Aggregated search
       desc: eBay, Vinted, Wallapop and Subito in one query, in parallel.
     - name: Reference price
-      desc: Cardmarket for cards, Numista for coins. If the match is wrong, you change it.
+      desc: "Cardmarket for cards, Numista for coins."
     - name: Deal, Fair or Bin
       desc: At least 18% below the reference is a Deal, more than 8% above is a Bin.
     - name: Condition counts
@@ -41,27 +42,31 @@ features:
     - name: Your own thresholds
       desc: For each product you set your own Deal and Bin prices.
     - name: Filters for collectors
-      desc: Score, marketplace, price, and lotteries left out automatically.
-model: "Two plans are planned. Free: 10 searches a day with an account. Pro at 4.99 € a month: unlimited searches, advanced filters, alerts and CSV export. Searches only run when the user asks for them."
+      desc: "Score, marketplace and price. Lotteries stay out."
+model: "Two plans are planned. Free with 10 searches a day, Pro at 4.99 € a month with unlimited searches, alerts and CSV export."
 next: cruciverba-lab
 media:
   pair:
     - src: /covers/bin-or-deal-logo.svg
       alt: The Bin or Deal logo
-    - src: /covers/bin-or-deal-verdetto.mp4
-      poster: /covers/bin-or-deal-verdetto-poster.webp
-      alt: "The verdict on a Charizard listing: the price goes into the formula against the Cardmarket reference, the score lights up on its threshold and the stamp goes from Deal to Fair to Bin"
+    - src: /covers/bin-or-deal-verdetto-telefono.mp4
+      poster: /covers/bin-or-deal-verdetto-telefono-poster.webp
+      alt: "The Bin or Deal site on a phone: three Charizard listings one after the other, the price goes into the formula against the Cardmarket reference, the matching threshold lights up and the verdict stamp goes from Deal to Fair to Bin"
   wide:
     src: /covers/bin-or-deal-ricerca.mp4
     poster: /covers/bin-or-deal-ricerca-poster.webp
+    srcMobile: /covers/bin-or-deal-ricerca-mobile.mp4
+    posterMobile: /covers/bin-or-deal-ricerca-mobile-poster.webp
     alt: "A search for charizard base set: listings arrive from Subito, Vinted, eBay and finally Wallapop, the Deal, Fair and Bin counters go up and the Deals rise to the top of the list"
   feature:
     - src: /covers/bin-or-deal-verdi.mp4
       poster: /covers/bin-or-deal-verdi-poster.webp
+      srcMobile: /covers/bin-or-deal-verdi-mobile.mp4
+      posterMobile: /covers/bin-or-deal-verdi-mobile-poster.webp
       alt: "The Score filter: one click on Deal switches off Fair and Bin, the other listings disappear and only the green ones are left, then the full list comes back"
-    - src: /covers/bin-or-deal-soglie.mp4
-      poster: /covers/bin-or-deal-soglie-poster.webp
-      alt: "Personalizza Scoring under the 185 € reference: the Deal threshold becomes 170 €, Applica Soglie saves it and a listing goes from Fair to Deal"
+    - src: /covers/bin-or-deal-soglie-telefono.mp4
+      poster: /covers/bin-or-deal-soglie-telefono-poster.webp
+      alt: "Personalizza Scoring on a phone, under the 185 € reference: the Deal threshold becomes 170 € on the keypad, Applica Soglie saves it and a listing goes from Fair to Deal, then Ripristina Default turns it back to Fair"
   triple:
     - src: /covers/bin-or-deal-condizione.mp4
       poster: /covers/bin-or-deal-condizione-poster.webp

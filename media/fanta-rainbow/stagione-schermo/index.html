@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="it">
+  <!-- La pagina Stagione di Fanta Rainbow sul telefono, tema chiaro: dal repo Rainbow
+       (pages/season/index.vue, season/Board.vue, Quotes.vue, Matches.vue, prices/Ticker.vue,
+       site/TabBar.vue). 1080x2330 come gli schermi di CityFix: va dentro stagione-telefono. La pagina
+       è disegnata in px CSS a 400 di larghezza (zoom 2.7). Font: Archivo (OFL, in assets/fonts),
+       Thunder fuori dal repo (.gitignore). Gli stemmi sono scudetti coi colori del club, non i loghi. -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=2330" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Archivo';
+        font-style: normal;
+        font-weight: 100 900;
+        src: url('assets/fonts/archivo-latin-wght-normal.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Thunder';
+        font-weight: 500;
+        src: url('assets/fonts/thunder-medium.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Thunder';
+        font-weight: 600;
+        src: url('assets/fonts/thunder-semi-bold.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Thunder';
+        font-weight: 700;
+        src: url('assets/fonts/thunder-bold.woff2') format('woff2');
+      }
+
+      :root {
+        --ground: #f4f6f1;
+        --ink: #0f0f0f;
+        --card: #d9d9d9;
+        --blue: #2823e8;
+        --green: #19dd76;
+        --green-deep: #0c743e;
+        --coral: #f10163;
+        --coral-deep: #b5004a;
+        --sans: 'Archivo', system-ui, sans-serif;
+        --thunder: 'Thunder', sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 2330px;
+        overflow: hidden;
+        background: var(--ground);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: var(--ground);
+        font-family: var(--sans);
+        color: #16241c;
+        -webkit-font-smoothing: antialiased;
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+      }
+      .tnum {
+        font-variant-numeric: tabular-nums;
+      }
+      .th {
+        font-family: var(--thunder);
+      }
+
+      /* La pagina a misura di telefono: 400 px CSS di larghezza */
+      #app {
+        position: absolute;
+        inset: 0;
+        zoom: 2.7;
+        overflow: hidden;
+        background: var(--ground);
+      }
+      /* Quello che scorre sta sotto la barra di stato, mai dietro */
+      #view {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 56px;
+        bottom: 0;
+        overflow: hidden;
+      }
+      #page {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+
+      /* Il listino che scorre in testa */
+      .ticker {
+        height: 36px;
+        display: flex;
+        border-bottom: 1px solid rgba(15, 15, 15, 0.1);
+        background: rgba(15, 15, 15, 0.02);
+        font-size: 13px;
+      }
+      .tk-cap {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border-right: 1px solid rgba(15, 15, 15, 0.1);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .tk-stop {
+        flex: none;
+        width: 36px;
+        display: grid;
+        place-items: center;
+        border-right: 1px solid rgba(15, 15, 15, 0.1);
+        color: rgba(15, 15, 15, 0.65);
+      }
+      .tk-strip {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+      }
+      #track {
+        display: flex;
+        width: max-content;
+        height: 100%;
+      }
+      #track ul {
+        display: flex;
+        height: 100%;
+        list-style: none;
+      }
+      #track li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        border-right: 1px solid rgba(15, 15, 15, 0.1);
+        white-space: nowrap;
+      }
+      #track .n {
+        font-weight: 500;
+      }
+      #track .c {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(15, 15, 15, 0.65);
+      }
+      #track .q {
+        font-weight: 600;
+      }
+      .up {
+        color: var(--green-deep);
+      }
+      .down {
+        color: var(--coral-deep);
+      }
+
+      /* Il titolo nella porta */
+      .head {
+        padding: 32px 16px 0;
+      }
+      .goalposts {
+        position: relative;
+        display: block;
+        font-family: var(--thunder);
+        font-weight: 600;
+        font-size: 42px;
+        line-height: 1;
+        text-transform: uppercase;
+        color: var(--ink);
+        white-space: nowrap;
+        padding: 8.5px 12.8px 0;
+      }
+      .goalposts::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 10.9px;
+        border: 4.92px solid var(--ink);
+        border-bottom: 0;
+      }
+
+      .board {
+        padding: 24px 16px 0;
+      }
+      .chips {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: center;
+        padding: 8px 16px;
+        font-family: var(--thunder);
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 600;
+        text-transform: uppercase;
+        background: rgba(15, 15, 15, 0.06);
+        color: rgba(15, 15, 15, 0.65);
+        white-space: nowrap;
+      }
+      .chip.on {
+        background: var(--blue);
+        color: #f0f0f0;
+      }
+      .halves {
+        position: relative;
+        display: flex;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .halves .chip {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+      }
+      .chip .on-ground {
+        position: absolute;
+        inset: 0;
+        background: var(--blue);
+        opacity: 0;
+      }
+      .chip .lbl {
+        position: relative;
+      }
+
+      /* Le due metà, una schermata ciascuna */
+      .strip-view {
+        position: relative;
+        width: 368px;
+        overflow: visible;
+      }
+      #strip {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .half {
+        flex: none;
+        width: 368px;
+      }
+      .half-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .half-head h2 {
+        font-family: var(--thunder);
+        font-size: 28.8px;
+        line-height: 1;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .half-head p {
+        font-size: 12px;
+        line-height: 16px;
+        color: rgba(15, 15, 15, 0.6);
+      }
+      .search {
+        position: relative;
+        margin-top: 16px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        padding-left: 36px;
+        background: var(--card);
+        font-family: var(--thunder);
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 500;
+        color: rgba(0, 0, 0, 0.6);
+      }
+      .search svg {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        color: rgba(0, 0, 0, 0.5);
+      }
+      .filters {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+      }
+      .roles {
+        display: flex;
+        gap: 6px;
+      }
+      .select {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        background: var(--card);
+        font-family: var(--thunder);
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 500;
+        color: #000;
+        text-transform: none;
+      }
+
+      /* Le dieci più care */
+      .list {
+        position: relative;
+        margin-top: 16px;
+        box-shadow: 0 0 0 1px rgba(15, 15, 15, 0.1);
+        height: 434px;
+      }
+      .ranks {
+        position: absolute;
+        left: 12px;
+        top: 0;
+        width: 20px;
+        z-index: 2;
+      }
+      .ranks span {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        height: 62px;
+        font-size: 12px;
+        color: rgba(15, 15, 15, 0.4);
+      }
+      .row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 62px;
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr) auto;
+        grid-template-rows: auto auto;
+        align-items: center;
+        column-gap: 12px;
+        row-gap: 2px;
+        padding: 10px 12px;
+        font-size: 14px;
+        background: var(--ground);
+        border-top: 1px solid rgba(15, 15, 15, 0.1);
+      }
+      .row:first-child {
+        border-top-color: transparent;
+      }
+      .row .flash {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+      }
+      .row .flash.g {
+        background: rgba(25, 221, 118, 0.16);
+      }
+      .row .flash.r {
+        background: rgba(241, 1, 99, 0.12);
+      }
+      .row .nm {
+        position: relative;
+        grid-column: 2;
+        grid-row: 1;
+        font-family: var(--thunder);
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--ink);
+      }
+      .row .qt {
+        position: relative;
+        grid-column: 3;
+        grid-row: 1;
+        text-align: right;
+        font-family: var(--thunder);
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .row .cl {
+        position: relative;
+        grid-column: 2;
+        grid-row: 2;
+        font-size: 12px;
+        line-height: 16px;
+        color: rgba(15, 15, 15, 0.6);
+      }
+      .row .tr {
+        position: relative;
+        grid-column: 3;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 2px 0;
+      }
+      .row .tr svg {
+        width: 56px;
+        height: 20px;
+        flex: none;
+      }
+      .row .mv {
+        width: 40px;
+        text-align: right;
+        flex: none;
+      }
+      .still {
+        display: inline-block;
+        width: 14px;
+        height: 3px;
+        background: var(--blue);
+        vertical-align: middle;
+      }
+
+      /* La giornata */
+      .matches {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        list-style: none;
+      }
+      .match {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px 12px;
+        background: var(--card);
+        color: #000;
+      }
+      .when {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--thunder);
+        font-size: 16px;
+        line-height: 1;
+        font-weight: 500;
+        color: rgba(0, 0, 0, 0.6);
+      }
+      .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        color: var(--coral-deep);
+      }
+      .live .dot {
+        position: relative;
+        width: 6px;
+        height: 6px;
+      }
+      .live .dot i {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: var(--coral);
+      }
+      .teams {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--thunder);
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .teams .side {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .teams .side.away {
+        justify-content: flex-end;
+      }
+      .teams svg {
+        width: 16px;
+        height: 16px;
+        flex: none;
+      }
+      .score {
+        position: relative;
+        flex: none;
+        min-width: 30px;
+        text-align: center;
+        color: var(--blue);
+        font-style: italic;
+      }
+      .more {
+        margin-top: 16px;
+        text-align: right;
+        font-family: var(--thunder);
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--blue);
+      }
+
+      /* La barra delle sezioni del telefono, col filo arcobaleno */
+      .tabbar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 106px;
+        padding-bottom: 34px;
+        background: #000;
+        display: flex;
+        align-items: stretch;
+        justify-content: space-around;
+        padding-left: 4px;
+        padding-right: 4px;
+        z-index: 40;
+      }
+      .tabbar::before {
+        content: '';
+        position: absolute;
+        inset: -1px 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, #19dd76, #18c7ef, #2823e8, #f68f51, #f10163);
+      }
+      .tab {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px 0 4px;
+        font-family: var(--thunder);
+        font-size: 18px;
+        line-height: 1;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
+        color: rgba(240, 240, 240, 0.6);
+      }
+      .tab.lit {
+        color: var(--green);
+      }
+      .tab .ico {
+        width: 56px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+      }
+      .tab .ico svg {
+        width: 24px;
+        height: 24px;
+      }
+      .tab.raised {
+        justify-content: flex-end;
+        color: #f0f0f0;
+      }
+      .play {
+        position: absolute;
+        top: -36px;
+        left: 50%;
+        width: 72px;
+        height: 72px;
+        margin-left: -36px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        box-shadow: 0 0 0 4px #000;
+        background:
+          radial-gradient(at 0% 0%, #fe0643, rgb(254 6 67 / 0) 62%),
+          radial-gradient(at 100% 0%, #0bde70, rgb(11 222 112 / 0) 62%),
+          radial-gradient(at 0% 100%, #11c9f5, rgb(17 201 245 / 0) 62%),
+          radial-gradient(at 100% 100%, #5300e3, rgb(83 0 227 / 0) 62%),
+          #dc944e;
+      }
+      .play svg {
+        width: 72px;
+        height: 72px;
+      }
+
+      #touch {
+        position: absolute;
+        width: 44px;
+        height: 44px;
+        margin: -22px 0 0 -22px;
+        border-radius: 50%;
+        background: rgba(15, 15, 15, 0.22);
+        box-shadow: 0 0 0 1.5px rgba(15, 15, 15, 0.28);
+        opacity: 0;
+        z-index: 50;
+      }
+
+      /* Barra di stato e indicatore home del telefono */
+      .status {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 151px;
+        padding: 24px 88px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 44px;
+        color: var(--ink);
+        background: var(--ground);
+        z-index: 80;
+      }
+      .bars {
+        display: flex;
+        gap: 4px;
+        align-items: flex-end;
+      }
+      .bars i {
+        width: 8px;
+        border-radius: 2px;
+        background: var(--ink);
+      }
+      .home {
+        position: absolute;
+        left: 50%;
+        bottom: 22px;
+        width: 370px;
+        height: 14px;
+        margin-left: -185px;
+        border-radius: 7px;
+        background: #ffffff;
+        z-index: 80;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1080" data-height="2330">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow data-layout-allow-overlap>
+        <div id="app">
+          <div id="view">
+            <div id="page">
+              <section class="ticker" aria-label="Listino">
+                <span class="tk-cap">Serie A
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"><path d="m9 18 6-6-6-6" /></svg>
+                </span>
+                <span class="tk-stop">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg>
+                </span>
+                <div class="tk-strip">
+                  <div id="track">
+                    <ul>
+                      <li><span class="n">Caqueret</span><span class="c">Como</span><span class="q tnum">8</span><span class="q tnum up">+2</span></li>
+                      <li><span class="n">Malen</span><span class="c">Roma</span><span class="q tnum">33</span><span class="q tnum down">-1</span></li>
+                      <li><span class="n">Šutalo</span><span class="c">Lazio</span><span class="q tnum">8</span><span class="q tnum up">+2</span></li>
+                      <li><span class="n">Paz N.</span><span class="c">Como</span><span class="q tnum">32</span><span class="q tnum up">+3</span></li>
+                      <li><span class="n">Pobega</span><span class="c">Bologna</span><span class="q tnum">8</span><span class="q tnum up">+2</span></li>
+                      <li><span class="n">Martinez L.</span><span class="c">Inter</span><span class="q tnum">34</span><span class="q tnum down">-1</span></li>
+                      <li><span class="n">Sohm</span><span class="c">Venezia</span><span class="q tnum">7</span><span class="q tnum up">+2</span></li>
+                    </ul>
+                    <ul aria-hidden="true">
+                      <li><span class="n">Caqueret</span><span class="c">Como</span><span class="q tnum">8</span><span class="q tnum up">+2</span></li>
+                      <li><span class="n">Malen</span><span class="c">Roma</span><span class="q tnum">33</span><span class="q tnum down">-1</span></li>
+                      <li><span class="n">Šutalo</span><span class="c">Lazio</span><span class="q tnum">8</span><span class="q tnum up">+2</span></li>
+                      <li><span class="n">Paz N.</span><span class="c">Como</span><span class="q tnum">32</span><span class="q tnum up">+3</span></li>
+                      <li><span class="n">Pobega</span><span class="c">Bologna</span><span class="q tnum">8</span><span class="q tnum up">+2</span></li>
+                      <li><span class="n">Martinez L.</span><span class="c">Inter</span><span class="q tnum">34</span><span class="q tnum down">-1</span></li>
+                      <li><span class="n">Sohm</span><span class="c">Venezia</span><span class="q tnum">7</span><span class="q tnum up">+2</span></li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <div class="head">
+                <h1 class="goalposts">Quotazioni e risultati<br />della stagione</h1>
+              </div>
+
+              <section class="board">
+                <nav class="chips">
+                  <span class="chip on">Serie A</span>
+                  <span class="chip">Champions League</span>
+                </nav>
+
+                <div id="halves" class="halves">
+                  <span id="tab-q" class="chip"><span class="on-ground" style="opacity: 1"></span><span class="lbl" style="color: #f0f0f0">Quotazioni</span></span>
+                  <span id="tab-m" class="chip"><span class="on-ground"></span><span class="lbl">Partite</span></span>
+                </div>
+
+                <div class="strip-view">
+                  <div id="strip">
+                    <section class="half">
+                      <header class="half-head">
+                        <h2>Quotazioni</h2>
+                        <p class="tnum">Ultimo aggiornamento: giornata 7.</p>
+                      </header>
+                      <div class="search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                        Cerca un nome
+                      </div>
+                      <div class="filters">
+                        <span class="roles">
+                          <span class="chip on">Tutti</span>
+                          <span class="chip">P</span>
+                          <span class="chip">D</span>
+                          <span class="chip">C</span>
+                          <span class="chip">A</span>
+                        </span>
+                        <span class="select">Tutte <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6" /></svg></span>
+                        <span class="select">Quotazione <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6" /></svg></span>
+                      </div>
+                      <div class="list">
+                        <div class="ranks tnum"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div>
+                        <div id="rows"></div>
+                      </div>
+                    </section>
+
+                    <section class="half">
+                      <header class="half-head">
+                        <h2>Partite</h2>
+                        <p class="tnum">Giornata 7</p>
+                      </header>
+                      <ul class="matches" id="matches"></ul>
+                      <p class="more">Tutte le giornate</p>
+                    </section>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <nav class="tabbar" aria-label="Sezioni">
+            <span class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span>Home</span>
+            <span class="tab lit"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19L8 13L11.5 17.5L14.41 12.64" /><circle cx="17.5" cy="7.5" r="2.5" /></svg></span>Stagione</span>
+            <span class="tab raised">
+              <span class="play">
+                <svg viewBox="0 0 243.61 243.61" fill="currentColor" aria-hidden="true"><g transform="translate(41.41 41.41) scale(0.66)"><path d="M93.59,65.52v38.95h25.24v37.85h-25.24v77.08h-43.61V27.39h70.49v38.13h-26.88Z" /><path d="M183.71,27.39h-52c.93,52.38,1.72,104.75,2.38,157.13,7.88,8.39,11.93,12.38,20.23,19.94.16-23.89.24-35.78.37-59.47,1.21,1.12,1.82,1.68,3.03,2.81,3.21,25.48,4.75,38.73,7.74,66.11,9.18,7.67,13.89,11.27,23.49,17.98-4.36-28.43-6.56-42.19-11.05-68.56,8.96,1.82,13.49-5.31,13.71-16.03.68-33.01,1.35-66.02,2.01-99.04.18-9.14-3.88-17.03-9.91-20.87ZM168.99,146.08c-5.76-2.89-8.61-4.4-14.26-7.52.16-29.81.3-59.63.4-89.44,6.02.64,9.04.95,15.08,1.53-.39,31.81-.79,63.62-1.22,95.43Z" /></g></svg>
+              </span>
+              Gioca
+            </span>
+            <span class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 15.5V7A2 2 0 0 1 10.5 5H17.5A2 2 0 0 1 19.5 7V17A2 2 0 0 1 17.5 19H8.5" /><path d="M8.5 19H5A1.5 1.5 0 0 1 3.5 17.5V11.5A1.5 1.5 0 0 1 5 10" /><path d="M12 9h4.5M12 12.5h4.5M12 16h3" /></svg></span>Gazzetta</span>
+            <span class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5 20a7 7 0 0 1 14 0" /></svg></span>Accedi</span>
+          </nav>
+
+          <span id="touch"></span>
+        </div>
+
+        <div class="status">
+          <span>9:41</span>
+          <span class="bars"><i style="height: 11px"></i><i style="height: 17px"></i><i style="height: 22px"></i><i style="height: 28px"></i></span>
+        </div>
+        <div class="home"></div>
+      </div>
+    </div>
+
+    <script>
+      // Tutto è funzione del tempo della timeline: niente timer, niente casualità.
+      const D = 12;
+      const ROW = 62;
+      const STRIP = 384; // una metà più lo spazio fra le due
+
+      // Le quotazioni: serie della stagione (sei giornate), prezzo e variazione da inizio stagione
+      const QUOTE = [
+        { id: 'mar', nome: 'Martinez L.', club: 'Inter · A', q: 34, mv: -1, serie: [35, 36, 35, 34, 35, 34] },
+        { id: 'dim', nome: 'Dimarco', club: 'Inter · D', q: 33, mv: 1, serie: [32, 32, 33, 33, 33, 33], dopo: { q: 35, mv: 3, p: 35 } },
+        { id: 'mal', nome: 'Malen', club: 'Roma · A', q: 33, mv: -1, serie: [34, 34, 35, 35, 34, 33], dopo: { q: 32, mv: -2, p: 32 } },
+        { id: 'paz', nome: 'Paz N.', club: 'Como · C', q: 32, mv: 3, serie: [29, 29, 30, 31, 31, 32], dopo: { q: 33, mv: 4, p: 33 } },
+        { id: 'thu', nome: 'Thuram M.', club: 'Inter · A', q: 31, mv: 2, serie: [29, 29, 30, 30, 31, 31], dopo: { q: 32, mv: 3, p: 32 } },
+        { id: 'pul', nome: 'Pulisic', club: 'Milan · C', q: 30, mv: 1, serie: [29, 30, 30, 29, 30, 30] },
+        { id: 'kea', nome: 'Kean', club: 'Fiorentina · A', q: 29, mv: 0, serie: [29, 30, 30, 29, 29, 29] },
+      ];
+      // La serie come la disegna sparkline(): 100x30, minimo in basso
+      const linea = (s) => {
+        const lo = Math.min(...s) - 1;
+        const hi = Math.max(...s) + 1;
+        return s.map((v, i) => `${((i / (s.length - 1)) * 100).toFixed(1)},${(28 - ((v - lo) / (hi - lo)) * 26).toFixed(1)}`).join(' ');
+      };
+      const tinta = (mv) => (mv > 0 ? '#0c743e' : mv < 0 ? '#b5004a' : 'rgba(15,15,15,0.4)');
+      // Il segno sta in uno span a parte: GSAP leggerebbe «+3» come un numero e perderebbe il più
+      const segno = (mv) => (mv > 0 ? '+' : mv < 0 ? '-' : '');
+      const rows = document.getElementById('rows');
+      QUOTE.forEach((r, i) => {
+        const el = document.createElement('div');
+        el.className = 'row';
+        el.id = `r-${r.id}`;
+        el.style.top = `${i * ROW}px`;
+        const mv = r.mv === 0 ? '<span class="still"></span>' : `<span class="sg">${segno(r.mv)}</span><span class="vl">${Math.abs(r.mv)}</span>`;
+        el.innerHTML = `<span class="flash g"></span><span class="flash r"></span><span class="nm">${r.nome}</span><p class="qt tnum">${r.q}</p><span class="cl">${r.club}</span><span class="tr"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="${linea(r.serie)}" fill="none" stroke="${tinta(r.mv)}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg><span class="mv tnum" style="color:${r.mv === 0 ? 'rgba(15,15,15,0.65)' : tinta(r.mv)}">${mv}</span></span>`;
+        rows.appendChild(el);
+      });
+
+      // Le partite della giornata 7: stemmi a due colori, punteggi che arrivano
+      const scudo = (a, b) => `<svg viewBox="0 0 16 16"><path d="M2 2h12v6c0 3.5-2.8 5.6-6 6.5C4.8 13.6 2 11.5 2 8z" fill="${a}"/><path d="M8 2h6v6c0 3.5-2.8 5.6-6 6.5z" fill="${b}"/><path d="M2 2h12v6c0 3.5-2.8 5.6-6 6.5C4.8 13.6 2 11.5 2 8z" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.8"/></svg>`;
+      const PARTITE = [
+        { quando: 'ven 16 ott, 20:45', casa: ['Frosinone', '#f6d000', '#1b4fa0'], fuori: ['Sassuolo', '#0b8a3e', '#111'], gol: '4:2' },
+        { quando: 'sab 17 ott, 15:00', casa: ['Venezia', '#f07b1c', '#0b6b3a'], fuori: ['Napoli', '#1e9ad6', '#1e9ad6'], gol: '1:0' },
+        { quando: 'sab 17 ott, 20:45', casa: ['Roma', '#8e1f2f', '#f0bc42'], fuori: ['Genoa', '#c8102e', '#0f2a5c'], gol: '2:0' },
+        { quando: 'dom 18 ott, 18:00', casa: ['Milan', '#d6001c', '#111'], fuori: ['Atalanta', '#1c4c9c', '#111'], gol: '2:2', live: true },
+        { quando: 'dom 18 ott, 20:45', casa: ['Inter', '#0a3d91', '#111'], fuori: ['Como', '#2a5db0', '#f4f4f4'], gol: '-:-' },
+      ];
+      const ul = document.getElementById('matches');
+      PARTITE.forEach((m, i) => {
+        const li = document.createElement('li');
+        li.className = 'match';
+        const live = m.live ? '<span class="live"><span class="dot"><i id="ping"></i><i></i></span>LIVE</span>' : '';
+        li.innerHTML = `<span class="when tnum">${live}<span>${m.quando}</span></span><span class="teams"><span class="side">${scudo(m.casa[1], m.casa[2])}<span>${m.casa[0]}</span></span><span id="s-${i}" class="score tnum">-:-</span><span class="side away"><span>${m.fuori[0]}</span>${scudo(m.fuori[1], m.fuori[2])}</span></span>`;
+        ul.appendChild(li);
+      });
+
+      // La pagina sale finché i bottoni delle due metà arrivano sotto la barra di stato. Le altezze
+      // sopra sono fisse (interlinee in px, titolo su due righe), quindi la misura non dipende dai font.
+      const halves = document.getElementById('halves');
+      const SCROLL = halves.offsetTop - 10;
+      const TAB_Y = 56 + halves.offsetTop - SCROLL + halves.offsetHeight / 2;
+      const TAB_X = (i) => 16 + (i ? 0.75 : 0.25) * halves.offsetWidth + (i ? 1.5 : -1.5);
+
+      const tl = gsap.timeline({ paused: true });
+
+      // Il listino in testa scorre di una copia esatta in 12 secondi: il loop non salta
+      tl.fromTo('#track', { xPercent: 0 }, { xPercent: -50, duration: D, ease: 'none' }, 0);
+
+      // Il pallino LIVE pulsa (animate-ping, un secondo)
+      for (let t = 0; t < D; t += 1) {
+        tl.fromTo('#ping', { scale: 1, opacity: 0.75 }, { scale: 2, opacity: 0, duration: 0.75, ease: 'power1.out', immediateRender: false }, t);
+      }
+
+      // Il pollice: un tocco dove serve
+      const tocco = (x, y, t) => {
+        tl.set('#touch', { left: x, top: y }, t);
+        tl.fromTo('#touch', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.1, ease: 'power2.out', immediateRender: false }, t);
+        tl.to('#touch', { scale: 1.25, opacity: 0, duration: 0.35, ease: 'power1.out' }, t + 0.2);
+      };
+
+      // 1. Il pollice porta su la pagina, fino alla lista
+      tl.fromTo('#page', { y: 0 }, { y: -SCROLL, duration: 0.9, ease: 'power2.inOut', immediateRender: false }, 0.7);
+
+      // 2. Le quotazioni si muovono: chi sale, chi scende, chi sorpassa
+      const cambia = (r, t) => {
+        const el = `#r-${r.id}`;
+        const d = r.dopo;
+        tl.set(`${el} .qt`, { textContent: String(d.q) }, t);
+        tl.set(`${el} .sg`, { textContent: segno(d.mv) }, t);
+        tl.set(`${el} .vl`, { textContent: String(Math.abs(d.mv)) }, t);
+        tl.set(`${el} .mv`, { color: tinta(d.mv) }, t);
+        tl.to(`${el} polyline`, { attr: { points: linea([...r.serie.slice(0, 5), d.p]) }, duration: 0.5, ease: 'power2.out' }, t);
+        tl.fromTo(`${el} .qt`, { scale: 1.18 }, { scale: 1, duration: 0.35, ease: 'power3.out', immediateRender: false }, t);
+        const f = `${el} .flash.${d.mv > r.mv ? 'g' : 'r'}`;
+        tl.fromTo(f, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: 'power1.out', immediateRender: false }, t);
+        tl.to(f, { opacity: 0, duration: 0.9, ease: 'power1.inOut' }, t + 0.9);
+      };
+      const torna = (r, t) => {
+        const el = `#r-${r.id}`;
+        tl.set(`${el} .qt`, { textContent: String(r.q) }, t);
+        tl.set(`${el} .sg`, { textContent: segno(r.mv) }, t);
+        tl.set(`${el} .vl`, { textContent: String(Math.abs(r.mv)) }, t);
+        tl.set(`${el} .mv`, { color: tinta(r.mv) }, t);
+        tl.set(`${el} polyline`, { attr: { points: linea(r.serie) } }, t);
+      };
+      const scambia = (a, b, t) => {
+        // a scende di una riga, b sale: le righe si danno il posto
+        tl.to(`#r-${a}`, { y: `+=${ROW}`, duration: 0.5, ease: 'power2.inOut' }, t);
+        tl.to(`#r-${b}`, { y: `-=${ROW}`, duration: 0.5, ease: 'power2.inOut' }, t);
+      };
+      const [mar, dim, mal, paz, thu] = QUOTE;
+      cambia(dim, 1.9);
+      scambia('mar', 'dim', 2.5);
+      cambia(mal, 3.0);
+      cambia(paz, 3.5);
+      scambia('mal', 'paz', 4.0);
+      cambia(thu, 4.6);
+
+      // 3. Tocco su Partite: la striscia passa alla giornata
+      tocco(TAB_X(1), TAB_Y, 5.7);
+      tl.to('#tab-m .on-ground', { opacity: 1, duration: 0.15 }, 5.8);
+      tl.to('#tab-q .on-ground', { opacity: 0, duration: 0.15 }, 5.8);
+      tl.to('#tab-m .lbl', { color: '#f0f0f0', duration: 0.15 }, 5.8);
+      tl.to('#tab-q .lbl', { color: 'rgba(15,15,15,0.65)', duration: 0.15 }, 5.8);
+      tl.to('#strip', { x: -STRIP, duration: 0.6, ease: 'power3.inOut' }, 5.85);
+
+      // Sotto, fuori vista, la lista torna come all'inizio
+      [dim, mal, paz, thu].forEach((r) => torna(r, 6.6));
+      tl.set(['#r-mar', '#r-dim', '#r-mal', '#r-paz', '#r-thu'], { y: 0 }, 6.6);
+
+      // 4. I risultati arrivano uno dopo l'altro, poi il gol nella partita in corso
+      PARTITE.forEach((m, i) => {
+        if (m.gol === '-:-') return;
+        const t = 6.55 + i * 0.3;
+        tl.set(`#s-${i}`, { textContent: m.gol }, t);
+        tl.fromTo(`#s-${i}`, { scale: 1.35, opacity: 0.4 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power3.out', immediateRender: false }, t);
+      });
+      tl.set('#s-3', { textContent: '3:2' }, 8.3);
+      tl.fromTo('#s-3', { scale: 1.5 }, { scale: 1, duration: 0.45, ease: 'back.out(2.2)', immediateRender: false }, 8.3);
+
+      // 5. Tocco su Quotazioni: si torna alla lista, poi la pagina scende in cima
+      tocco(TAB_X(0), TAB_Y, 9.4);
+      tl.to('#tab-q .on-ground', { opacity: 1, duration: 0.15 }, 9.5);
+      tl.to('#tab-m .on-ground', { opacity: 0, duration: 0.15 }, 9.5);
+      tl.to('#tab-q .lbl', { color: '#f0f0f0', duration: 0.15 }, 9.5);
+      tl.to('#tab-m .lbl', { color: 'rgba(15,15,15,0.65)', duration: 0.15 }, 9.5);
+      tl.to('#strip', { x: 0, duration: 0.6, ease: 'power3.inOut' }, 9.55);
+      PARTITE.forEach((m, i) => tl.set(`#s-${i}`, { textContent: '-:-' }, 10.3));
+      tl.to('#page', { y: 0, duration: 0.9, ease: 'power2.inOut' }, 10.45);
+      tl.set({}, {}, D);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

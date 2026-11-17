@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="it">
+  <!-- Il profilo di Luca sul telefono, 1080x1920 (ridotto a 810x1440): le stesse sezioni di
+       profilo in una colonna sola, che scorre dall'inizio fino al bottone helllo!.
+       I blocchi helllo:* li riscrive media/helllo/parti.mjs. -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* helllo:fonts */
+      @font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 100 900; src: url('assets/fonts/hanken-grotesk-latin-wght-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Hanken Grotesk'; font-style: italic; font-weight: 100 900; src: url('assets/fonts/hanken-grotesk-latin-wght-italic.woff2') format('woff2'); }
+      @font-face { font-family: 'Pacifico'; font-style: normal; font-weight: 400; src: url('assets/fonts/pacifico-latin-400-normal.woff2') format('woff2'); }
+      /* /helllo:fonts */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #132a6b; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #132a6b; font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+      #stage { position: absolute; inset: 0; }
+      svg { display: block; }
+      /* helllo:file {"src":"profilo.css"} */      /* Il profilo di Luca (helllo-profilo), comune a profilo e profilo-mobile. Le misure sono in
+         em: 1em è il corpo del testo grande, 40px sul desktop. */
+      .pannello { position: absolute; background: #225ad6; border-radius: 1.6em; overflow: hidden; color: #132a6b; }
+      .rullo { position: absolute; left: 0; right: 0; top: 0; padding: 0.55em; display: flex; flex-direction: column; gap: 0.45em; }
+      .sez { border-radius: 0.72em; padding: 0.8em 0.85em 0.9em; }
+      .bianca { background: #ffffff; }
+      .rossa { background: #e93d29; color: #ffffff; }
+      .celeste { background: #a8c8f9; }
+      .etichetta { font-size: 0.6em; line-height: 1.4; font-weight: 500; }
+      .rossa .etichetta { color: #f9d6d1; }
+      .grande { font-size: 1em; line-height: 1.25; letter-spacing: -0.005em; }
+      .grande em { font-family: 'Pacifico', cursive; font-style: normal; font-size: 0.86em; padding: 0 0.06em; }
+      .testa-p { display: flex; align-items: center; justify-content: space-between; padding: 0.25em 0.2em 0.1em 0.2em; color: #ffffff; }
+      .testa-p p { font-size: 1.05em; }
+      .testa-p b { font-weight: 600; }
+      .testa-p svg { display: inline-block; vertical-align: middle; margin-left: 0.2em; }
+      .tondo-r { width: 1.6em; height: 1.6em; border-radius: 50%; background: #e93d29; display: grid; place-items: center; }
+      .cerco h4 { font-size: 1em; font-weight: 600; margin-bottom: 0.55em; }
+      .riga { display: flex; align-items: center; gap: 0.6em; padding: 0.42em 0 0.46em; border-bottom: 0.05em solid #132a6b; }
+      .riga:last-child { border-bottom: 0; padding-bottom: 0.1em; }
+      .riga svg { width: 0.9em; height: 0.9em; flex: none; }
+      .riga small { display: block; font-size: 0.56em; line-height: 1.4; }
+      .riga span { display: block; font-size: 0.74em; line-height: 1.3; white-space: nowrap; }
+      .sapere .etichetta { margin-bottom: 0.15em; }
+      .flag-b .grande { margin-top: 0.35em; }
+      .chips { display: flex; flex-wrap: wrap; gap: 0.36em; margin-top: 0.5em; }
+      .chips span { height: 1.5em; padding: 0 0.6em; border-radius: 0.75em; background: #a8c8f9; display: inline-flex; align-items: center; font-size: 0.7em; font-weight: 500; white-space: nowrap; }
+      .meglio .grande { margin-top: 0.35em; }
+      .foto-p { position: relative; margin-top: 0.5em; height: 7.9em; border-radius: 0.6em; overflow: hidden; background: #f4e9e9; }
+      .foto-p img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .progetto p.titolo { margin-top: 0.5em; font-size: 0.74em; line-height: 1.35; }
+      .progetto p.anno { margin-top: 0.15em; font-size: 0.74em; line-height: 1.35; color: #5b6488; }
+      .tasti-p { display: flex; align-items: center; justify-content: center; gap: 0.5em; padding: 0.3em 0 0.5em; }
+      .tasti-p .t { width: 2.1em; height: 2.1em; border-radius: 50%; background: #ffffff; display: grid; place-items: center; }
+      .tasti-p .h { height: 2.1em; padding: 0 1.1em; border-radius: 1.05em; background: #e93d29; color: #ffffff; display: flex; align-items: center; gap: 0.06em; }
+      .tasti-p .h .wordmark { width: 2.6em; height: auto; }
+      .tasti-p .h b { font-size: 0.95em; font-weight: 700; }
+      .testa-p p svg { width: 0.62em; height: 0.62em; }
+      .tondo-r svg { width: 0.8em; height: 0.8em; }
+      .tasti-p .t svg { width: 0.95em; height: 0.95em; }
+/* /helllo:file */
+      .pannello { font-size: 58px; width: 960px; left: 60px; top: 100px; height: 1720px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-fps="24" data-width="1080" data-height="1920">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow>
+        <div id="pa" class="pannello">
+          <div id="ra" class="rullo">
+            <!-- helllo:file {"src":"profilo-a.html"} -->
+            <!-- La prima metà del profilo di Luca: chi è, cosa cerca, cosa sapere di lui -->
+            <div id="p-testa" class="testa-p">
+              <p><b>Luca</b> 24<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></p>
+              <span class="tondo-r"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg></span>
+            </div>
+            <div id="p-cerco" class="sez celeste cerco">
+              <h4>Cerco</h4>
+              <p class="grande"><span class="w">Il</span> <em class="w">primo</em> <span class="w">lavoro</span> <span class="w">vero.</span> <span class="w">Full</span> <span class="w">time,</span> <span class="w">va</span> <span class="w">bene</span> <span class="w">anche</span> <span class="w">uno</span> <span class="w">stage</span> <span class="w">retribuito.</span></p>
+            </div>
+            <div id="p-sapere" class="sez bianca sapere">
+              <p class="etichetta">Da sapere su di me</p>
+              <div class="riga"><svg viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.5" /><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18" /></svg><div><small>Ruolo</small><span>Junior Graphic Designer</span></div></div>
+              <div class="riga"><svg viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.5L12 5l9.5 4.5L12 14z" /><path d="M6.5 11.5v4.2c1.6 1.5 3.4 2.3 5.5 2.3s3.9-.8 5.5-2.3v-4.2M21.5 9.5v5" /></svg><div><small>Formazione</small><span>Diploma · Liceo Artistico</span></div></div>
+              <div class="riga"><svg viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M8 3v4M16 3v4M3.5 10h17" /></svg><div><small>Esperienza</small><span>1 anno · 2 stage in agenzia</span></div></div>
+              <div class="riga"><svg viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z" /><circle cx="12" cy="9.8" r="2.4" /></svg><div><small>Città</small><span>Brindisi · disposto a trasferirmi</span></div></div>
+              <div class="riga"><svg viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></svg><div><small>Disponibilità</small><span>Da subito · full time o part time</span></div></div>
+              <div class="riga"><svg viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6h9M8 4v2M10.5 6c-.6 3.6-2.8 6.4-6 8M6 9c1 2.2 2.8 3.8 5 4.8" /><path d="M12.5 20l4-9.5 4 9.5M14 16.5h5" /></svg><div><small>Lingue</small><span>Italiano, Inglese B2</span></div></div>
+              <div class="riga"><svg viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16.5v-4l2-5h12l2 5v4z" /><path d="M4 12.5h16" /><circle cx="7.5" cy="16.5" r="1.8" /><circle cx="16.5" cy="16.5" r="1.8" /></svg><div><small>Patente</small><span>B · automunito</span></div></div>
+            </div>
+<!-- /helllo:file -->
+            <!-- helllo:file {"src":"profilo-b.html"} -->
+            <!-- La seconda metà del profilo di Luca: green flag, competenze, un progetto -->
+            <div id="p-flag-b" class="sez rossa flag-b"><p class="etichetta">Il mio green flag sul lavoro</p><p class="grande"><span class="r">Consegno prima della</span> <span class="r">scadenza e chiedo</span> <span class="r">feedback senza</span> <span class="r">offendermi.</span></p></div>
+            <div id="p-comp" class="sez bianca">
+              <p class="etichetta">Competenze</p>
+              <div class="chips"><span>Illustrator</span><span>Figma</span><span>After Effects</span><span>Branding</span><span>Motion design</span><span>Social media</span><span>Fotografia</span></div>
+            </div>
+            <div id="p-meglio" class="sez rossa meglio">
+              <p class="etichetta">Lavoro meglio quando…</p>
+              <p class="grande">Ho un brief chiaro e una squadra che si parla.</p>
+            </div>
+            <div id="p-prog" class="sez bianca progetto">
+              <p class="etichetta">Un progetto di cui vado fiero</p>
+              <div class="foto-p"><img id="p-foto" src="assets/luca.webp" alt="" /></div>
+              <p class="titolo">Identità per un festival di quartiere</p>
+              <p class="anno">Logo, poster e social · 2025</p>
+            </div>
+            <div id="p-tasti" class="tasti-p">
+              <span class="t"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></span>
+              <span id="p-helllo" class="h"><!-- helllo:wordmark --><svg class="wordmark" viewBox="11.9 37.2 272 100.2" fill="currentColor" aria-label="helllo"><g transform="rotate(-6 150 95)"><path d="M56.4209 89.643L52.6058 125.893L40.0774 124.58L43.6528 90.5533C44.2951 84.4781 40.7867 81.3446 36.5403 80.8943C32.2843 80.4439 24.5967 84.066 23.8394 91.3008C22.4687 105.435 21.3184 122.606 21.3184 122.606L8.43533 121.255C8.43533 121.255 11.4931 99.9824 13.0364 85.3309C14.5797 70.6794 15.1453 57.3982 16.1326 48.0649L29.0156 49.4161C29.0156 49.4161 27.549 63.3681 26.3029 70.2003C25.6127 73.9662 24.3666 78.4987 22.5549 81.7854C26.255 76.8601 33.6263 68.9642 43.2407 69.9703C52.855 70.9765 57.552 79.6198 56.488 89.6526H56.4304L56.4209 89.643Z"/><path d="M115.142 109.948L75.2853 105.761C75.5633 112.095 80.4711 117.307 86.8647 117.978L88.4464 118.141C92.3189 118.544 96.0094 117.212 98.7125 114.644L111.375 119.368C106.285 127.158 97.1884 131.969 87.2865 130.934L85.2927 130.723C71.2881 129.247 60.4947 118.007 62.2968 100.893C64.0989 83.7786 77.2216 73.3242 91.1783 74.7903L93.1721 75.0011C106.947 76.448 117.251 89.4801 115.66 104.601L115.094 110.015L115.161 109.958L115.142 109.948ZM103.122 102.023C104.004 93.6676 99.6328 88.4548 90.4306 87.487C81.2284 86.5192 77.1258 90.5534 76.2247 99.1967L103.132 102.023H103.122Z"/><path d="M164.738 116.129C165.179 117.001 165.294 118.199 165.141 119.665C164.844 122.482 163.971 124.581 162.457 125.96C159.073 129.343 155.459 132.045 151.615 134.067C147.839 136.099 143.65 136.846 139.183 136.377C134.716 135.907 128.715 132.429 126.309 126.487C123.903 120.546 123.194 113.177 124.124 104.266C125.063 95.3542 127.163 86.088 130.546 75.3653C133.93 64.633 138.157 55.5968 143.334 48.1992C148.51 40.8016 154.041 37.4094 160.041 38.0418C166.042 38.6743 165.927 40.265 167.489 43.5709C169.1 46.8864 169.579 51.438 168.956 57.3025C168.084 65.6296 164.767 75.0587 158.968 85.5993C153.159 96.1304 145.72 106.374 136.652 116.33C136.825 119.253 137.429 121.39 138.416 122.741C139.403 124.092 140.812 124.83 142.634 125.021C145.519 125.328 148.126 124.772 150.475 123.354C152.823 121.936 155.881 119.416 159.715 115.784C160.645 114.874 161.69 114.509 162.696 114.615C163.693 114.72 164.297 115.199 164.738 116.138V116.129ZM150.149 56.4401C147.484 62.0266 144.953 69.0505 142.519 77.5693C140.084 86.0305 138.33 94.2043 137.381 102.1C143.247 94.4151 148.05 86.6246 151.913 78.6712C155.718 70.7178 157.98 63.3586 158.699 56.5646C159.418 49.7611 158.536 48.4867 156.6 48.2854C154.664 48.0842 152.823 50.8535 150.216 56.4496H150.158L150.149 56.4401Z"/><path d="M198.623 119.684C199.055 120.556 199.17 121.754 199.016 123.22C198.719 126.037 197.856 128.136 196.361 129.525C193.025 132.908 189.459 135.62 185.683 137.651C181.964 139.692 177.842 140.44 173.451 139.98C169.052 139.52 163.166 136.051 160.808 130.11C158.45 124.169 157.76 116.809 158.699 107.898C159.639 98.9861 161.719 89.7199 165.074 78.9876C168.429 68.2553 172.589 59.2096 177.698 51.8024C182.807 44.3951 188.252 40.9934 194.147 41.6163C200.052 42.2391 199.937 43.8298 201.461 47.1261C203.042 50.4321 203.502 54.9837 202.879 60.8481C202.007 69.1753 198.729 78.6139 193.006 89.1546C187.274 99.6952 179.941 109.948 170.998 119.924C171.161 122.846 171.755 124.983 172.723 126.325C173.691 127.676 175.081 128.414 176.874 128.596C179.711 128.893 182.28 128.337 184.59 126.919C186.9 125.501 189.92 122.971 193.696 119.339C194.607 118.429 195.642 118.065 196.629 118.161C197.617 118.266 198.202 118.745 198.633 119.675L198.623 119.684ZM184.369 60.0336C181.733 65.6298 179.241 72.6537 176.826 81.1724C174.42 89.6337 172.675 97.8075 171.726 105.713C177.506 98.0183 182.241 90.2182 186.066 82.2648C189.824 74.3018 192.067 66.9521 192.776 60.1486C193.495 53.3451 192.632 52.0707 190.725 51.8694C188.817 51.6682 187.006 54.4471 184.427 60.0432H184.369V60.0336Z"/><path d="M223.162 128.663C223.987 128.749 224.639 129.295 225.07 130.282C225.501 131.269 225.607 132.476 225.473 133.76C225.166 136.693 223.862 138.925 221.562 140.468C217.603 143.075 213.28 144.157 208.64 143.678C201.949 142.979 197.368 139.644 194.904 133.76C192.373 127.867 191.616 120.431 192.556 111.462C193.495 102.493 195.594 93.2843 198.978 82.5616C202.362 71.8293 206.579 62.7931 211.746 55.3955C216.922 47.9979 222.434 44.6057 228.425 45.2381C234.416 45.8706 234.31 47.4612 235.863 50.7576C237.474 54.0731 237.943 58.6247 237.33 64.4892C236.458 72.8163 233.151 82.2454 227.351 92.786C221.61 103.327 214.19 113.513 205.132 123.411C205.295 126.334 205.966 128.481 207.116 129.899C208.276 131.326 209.915 132.093 212.081 132.313C214.257 132.543 214.641 132.227 216.242 131.681C217.842 131.135 219.29 130.339 220.699 129.362C221.533 128.739 222.338 128.471 223.105 128.548L223.153 128.672L223.162 128.663ZM218.609 63.6363C215.944 69.2229 213.423 76.2468 210.989 84.7656C208.554 93.2268 206.809 101.401 205.86 109.297C211.717 101.611 216.51 93.8209 220.373 85.8675C224.178 77.9046 226.431 70.5548 227.15 63.7609C227.869 56.9574 226.987 55.6829 225.051 55.4817C223.114 55.2805 221.274 58.0498 218.676 63.6459H218.619L218.609 63.6363Z"/><path d="M281.673 121.37L281.376 124.159C279.852 138.638 266.786 149.083 252.274 147.559L251.747 147.502C237.234 145.978 226.623 133.042 228.147 118.563L228.444 115.774C229.968 101.295 243.043 90.7354 257.556 92.259L258.083 92.3165C272.595 93.8401 283.187 106.891 281.673 121.37ZM269.039 119.866C269.978 110.906 264.457 102.924 256.76 102.119C249.063 101.314 241.998 107.974 241.059 116.934L240.781 119.55C239.841 128.509 245.363 136.491 253.06 137.306C260.757 138.111 267.822 131.451 268.761 122.491L269.039 119.875V119.866Z"/></g></svg><!-- /helllo:wordmark --><b>!</b></span>
+              <span class="t"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#132a6b" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h11v17l-5.5-4-5.5 4z" /></svg></span>
+            </div>
+<!-- /helllo:file -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* helllo:file {"src":"profilo.js"} */
+      // Il profilo che entra, comune a profilo e profilo-mobile. o: pannelli (i contenitori blu),
+      // rullo (la colonna che scorre), corsa (di quanto sale), scorre [inizio, durata], esce.
+      const profiloEntra = (tl, o) => {
+        const EASE = 'expo.out';
+        const entra = (sel, at, dy = 40) => {
+          gsap.set(sel, { opacity: 0 });
+          tl.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: 0.7, ease: EASE, immediateRender: false }, at);
+        };
+        const parole = (sel, at, passo) => {
+          const w = document.querySelectorAll(sel);
+          gsap.set(w, { opacity: 0 });
+          w.forEach((el, i) => tl.fromTo(el, { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.16, ease: 'power4.out', immediateRender: false }, at + i * passo));
+        };
+        o.pannelli.forEach((p, i) => entra(p, 0.2 + i * 0.2, 80));
+        entra('#p-testa', 0.55, 20);
+        entra('#p-cerco', 0.75);
+        parole('#p-cerco .w', 1.0, 0.06);
+        document.querySelectorAll('#p-sapere, #p-sapere .riga').forEach((el, i) => entra(el, 1.5 + i * 0.09, 24));
+        entra('#p-flag-b', 2.45);
+        parole('#p-flag-b .r', 2.6, 0.1);
+        entra('#p-comp', 3.0);
+        document.querySelectorAll('#p-comp .chips span').forEach((el, i) => {
+          gsap.set(el, { opacity: 0 });
+          tl.fromTo(el, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.45, ease: EASE, immediateRender: false }, 3.2 + i * 0.07);
+        });
+        entra('#p-meglio', 3.8);
+        entra('#p-prog', 4.3);
+        gsap.set('#p-foto', { clipPath: 'inset(100% 0% 0% 0%)' });
+        tl.fromTo('#p-foto', { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.out', immediateRender: false }, 4.5);
+        entra('#p-tasti', 4.8, 24);
+        // La colonna scorre fino ai bottoni, poi helllo!
+        tl.fromTo(o.rullo, { y: 0 }, { y: -o.corsa, duration: o.scorre[1], ease: 'sine.inOut', immediateRender: false }, o.scorre[0]);
+        const premi = o.scorre[0] + o.scorre[1] + 0.35;
+        tl.fromTo('#p-helllo', { scale: 1 }, { scale: 0.9, duration: 0.1, ease: 'power2.out', immediateRender: false }, premi);
+        tl.to('#p-helllo', { scale: 1, duration: 0.35, ease: EASE }, premi + 0.1);
+        // Esce tutto e si torna al fondo vuoto del primo fotogramma
+        o.pannelli.forEach((p, i) => tl.to(p, { opacity: 0, y: 50, duration: 0.45, ease: 'power3.in' }, o.esce + i * 0.1));
+        tl.set(o.rullo, { y: 0 }, o.esce + 0.8);
+        tl.set({}, {}, 12);
+      };
+/* /helllo:file */
+      const tl = gsap.timeline({ paused: true });
+      const corsa = Math.max(0, document.getElementById('ra').offsetHeight - 1720 + 20);
+      profiloEntra(tl, { pannelli: ['#pa'], rullo: '#ra', corsa, scorre: [3.0, 6.0], esce: 10.7 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

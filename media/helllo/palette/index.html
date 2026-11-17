@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="it">
+  <!-- La palette di Helllo per il triple della scheda, 822x1080, dal Figma (helllo-palette): il
+       marchio si scrive, i cinque colori entrano uno per uno, poi i caratteri. Poligrapher Grotesk
+       ha una licenza commerciale: qui c'è solo il nome, l'esempio Aa passa da Hanken Grotesk a
+       Pacifico. I blocchi helllo:* li riscrive media/helllo/parti.mjs. -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=822, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* helllo:fonts */
+      @font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 100 900; src: url('assets/fonts/hanken-grotesk-latin-wght-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Hanken Grotesk'; font-style: italic; font-weight: 100 900; src: url('assets/fonts/hanken-grotesk-latin-wght-italic.woff2') format('woff2'); }
+      @font-face { font-family: 'Pacifico'; font-style: normal; font-weight: 400; src: url('assets/fonts/pacifico-latin-400-normal.woff2') format('woff2'); }
+      /* /helllo:fonts */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 822px; height: 1080px; overflow: hidden; background: #f9f7f8; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #f9f7f8; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: #132a6b; }
+      #stage { position: absolute; inset: 0; }
+      .line { display: none; }
+      #wm { position: absolute; left: 46px; top: 92px; width: 230px; height: auto; }
+      #wm-h, #wm-e, #wm-o, #pw { opacity: 0; }
+      #pw-pen { --pw: 0; }
+      .barra { position: absolute; left: 46px; width: 730px; height: 98px; }
+      .barra i { position: absolute; inset: 0; border-radius: 22px; }
+      .barra p { position: absolute; left: 38px; top: 0; height: 98px; display: flex; align-items: center; gap: 18px; font-size: 32px; font-weight: 500; white-space: nowrap; }
+      .barra b { font-weight: 500; }
+      .barra span { display: inline-block; }
+      .chiaro { color: #ffffff; }
+      #tipi { position: absolute; left: 46px; top: 864px; height: 120px; width: 730px; }
+      .aa { position: absolute; left: 0; top: 0; font-size: 100px; line-height: 120px; color: #132a6b; }
+      #aa1 { font-weight: 700; letter-spacing: -0.02em; }
+      #aa2 { font-family: 'Pacifico', cursive; font-size: 82px; opacity: 0; }
+      .nomi { position: absolute; left: 196px; top: 14px; font-size: 32px; line-height: 46px; }
+      .nomi span { transition: none; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-fps="24" data-width="822" data-height="1080">
+      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow>
+        <!-- helllo:wordmark {"set":"pw","id":"wm"} --><svg id="wm" class="wordmark" viewBox="11.9 37.2 272 100.2" fill="none" overflow="visible" aria-label="helllo"><g transform="rotate(-6 150 95)">
+          <g id="wm-h"><path d="M56.4209 89.643L52.6058 125.893L40.0774 124.58L43.6528 90.5533C44.2951 84.4781 40.7867 81.3446 36.5403 80.8943C32.2843 80.4439 24.5967 84.066 23.8394 91.3008C22.4687 105.435 21.3184 122.606 21.3184 122.606L8.43533 121.255C8.43533 121.255 11.4931 99.9824 13.0364 85.3309C14.5797 70.6794 15.1453 57.3982 16.1326 48.0649L29.0156 49.4161C29.0156 49.4161 27.549 63.3681 26.3029 70.2003C25.6127 73.9662 24.3666 78.4987 22.5549 81.7854C26.255 76.8601 33.6263 68.9642 43.2407 69.9703C52.855 70.9765 57.552 79.6198 56.488 89.6526H56.4304L56.4209 89.643Z" fill="#F34D39"/></g><g id="wm-e"><path d="M115.142 109.948L75.2853 105.761C75.5633 112.095 80.4711 117.307 86.8647 117.978L88.4464 118.141C92.3189 118.544 96.0094 117.212 98.7125 114.644L111.375 119.368C106.285 127.158 97.1884 131.969 87.2865 130.934L85.2927 130.723C71.2881 129.247 60.4947 118.007 62.2968 100.893C64.0989 83.7786 77.2216 73.3242 91.1783 74.7903L93.1721 75.0011C106.947 76.448 117.251 89.4801 115.66 104.601L115.094 110.015L115.161 109.958L115.142 109.948ZM103.122 102.023C104.004 93.6676 99.6328 88.4548 90.4306 87.487C81.2284 86.5192 77.1258 90.5534 76.2247 99.1967L103.132 102.023H103.122Z" fill="#F34D39"/></g>
+      <path class="line" data-set="pw" data-joint="136.23 114.87" d="M142.63 102.87C143 102.2 144.2 100.3 145.08 99.01C145.9 97.7 146.9 96.5 147.72 95.2C148.6 93.9 149.4 92.6 150.22 91.3C151 90 151.8 88.7 152.62 87.34C153.4 86 154.1 84.6 154.85 83.28C155.6 81.9 156.3 80.5 156.96 79.13C157.6 77.7 158.3 76.3 158.87 74.85C159.5 73.4 160.1 72 160.58 70.53C161.1 69.1 161.6 67.6 162.02 66.07C162.4 64.6 162.8 63.1 163.12 61.53C163.4 60 163.7 58.5 163.82 56.89C164 55.3 164.1 53.7 164.01 52.17C163.9 50.6 163.8 48.9 163.2 47.5C162.6 46.1 161.6 44.6 160.41 43.97C159.2 43.3 157.4 43.3 156.06 43.49C154.7 43.7 153.3 44.4 152.14 45.28C151 46.1 149.9 47.5 148.99 48.67C148 49.9 147.3 51.3 146.46 52.6C145.7 53.9 144.9 55.3 144.25 56.71C143.6 58.1 142.9 59.5 142.27 60.93C141.6 62.4 141 63.8 140.45 65.24C139.9 66.7 139.3 68.2 138.82 69.63C138.3 71.1 137.8 72.5 137.31 74.02C136.8 75.5 136.4 77 135.95 78.49C135.5 80 135.1 81.5 134.72 82.97C134.3 84.5 133.9 86 133.56 87.48C133.2 89 132.9 90.5 132.56 92.01C132.3 93.5 132 95 131.72 96.58C131.5 98.1 131.2 99.6 130.99 101.19C130.8 102.7 130.5 104.3 130.53 105.83C130.5 107.4 131 109 131.03 110.49C131 112 130.5 113.5 130.44 115.04C130.4 116.6 130.5 118.2 130.76 119.73C131 121.3 131.4 122.8 132.11 124.2C132.8 125.6 133.7 127.1 134.83 128.08C136 129.1 137.5 129.8 139.01 130.27C140.5 130.7 142.2 130.8 143.84 130.7C145.5 130.6 147.1 130.2 148.69 129.68C150.2 129.1 152.4 127.8 153.13 127.42"/><path class="line" data-set="pw" data-joint="170.59 118.47" d="M153.13 127.42C157.1 123.9 172.5 110.6 176.91 106.46C181.3 102.3 178.5 103.9 179.32 102.6C180.2 101.3 181.1 100.1 181.93 98.79C182.8 97.5 183.6 96.2 184.39 94.88C185.2 93.6 186 92.2 186.76 90.91C187.5 89.6 188.2 88.2 188.96 86.85C189.7 85.5 190.4 84.1 191.04 82.7C191.7 81.3 192.3 79.9 192.93 78.42C193.5 77 194.1 75.6 194.62 74.09C195.1 72.6 195.6 71.1 196.04 69.63C196.5 68.1 196.8 66.6 197.14 65.09C197.4 63.6 197.7 62 197.83 60.45C198 58.9 198.1 57.3 198.03 55.73C197.9 54.2 197.8 52.4 197.24 51.06C196.7 49.7 195.7 48.2 194.5 47.54C193.3 46.9 191.6 46.8 190.22 47.06C188.9 47.3 187.5 48 186.36 48.87C185.2 49.7 184.2 51 183.26 52.26C182.3 53.5 181.5 54.8 180.76 56.19C180 57.5 179.3 58.9 178.58 60.31C177.9 61.7 177.2 63.1 176.62 64.53C176 66 175.4 67.4 174.83 68.84C174.3 70.3 173.7 71.8 173.21 73.23C172.7 74.7 172.2 76.2 171.72 77.63C171.2 79.1 170.8 80.6 170.38 82.1C170 83.6 169.6 85.1 169.16 86.58C168.8 88.1 168.4 89.6 168.02 91.09C167.7 92.6 167.3 94.1 167.02 95.62C166.7 97.1 166.4 98.7 166.18 100.19C165.9 101.7 165.7 103.3 165.46 104.8C165.3 106.3 165 107.9 165 109.44C165 111 165.5 112.6 165.48 114.1C165.5 115.6 164.9 117.1 164.9 118.65C164.9 120.2 164.9 121.8 165.2 123.34C165.5 124.9 165.9 126.4 166.52 127.81C167.2 129.2 168.1 130.7 169.19 131.68C170.3 132.7 171.8 133.4 173.29 133.86C174.8 134.3 176.5 134.4 178.04 134.29C179.6 134.2 181.3 133.8 182.82 133.26C184.3 132.7 186.5 131.4 187.19 130.99"/><path class="line" data-set="pw" data-joint="204.29 122.05" d="M187.19 130.99C191 127.4 205.9 113.8 210.1 109.53C214.3 105.3 211.5 106.8 212.27 105.45C213 104.1 213.8 102.7 214.6 101.38C215.4 100 216.1 98.6 216.81 97.24C217.5 95.9 218.3 94.5 218.96 93.06C219.7 91.7 220.3 90.2 220.97 88.82C221.6 87.4 222.3 86 222.89 84.5C223.5 83 224.1 81.6 224.67 80.1C225.2 78.6 225.8 77.2 226.28 75.69C226.8 74.2 227.3 72.7 227.69 71.19C228.1 69.7 228.5 68.2 228.84 66.67C229.2 65.2 229.5 63.6 229.68 62.11C229.9 60.6 230.1 59 230.11 57.57C230.1 56.1 230.1 54.4 229.75 53.23C229.4 52 228.7 50.8 227.75 50.31C226.8 49.9 225.4 50.1 224.32 50.54C223.2 51 222.1 51.9 221.11 52.89C220.1 53.9 219.2 55.3 218.4 56.65C217.6 58 216.9 59.4 216.16 60.81C215.5 62.2 214.8 63.7 214.16 65.1C213.5 66.5 212.9 68 212.33 69.46C211.7 70.9 211.2 72.4 210.64 73.88C210.1 75.4 209.6 76.9 209.07 78.34C208.6 79.8 208.1 81.3 207.61 82.79C207.1 84.3 206.7 85.8 206.27 87.28C205.8 88.8 205.4 90.3 205.02 91.76C204.6 93.3 204.2 94.8 203.83 96.27C203.5 97.8 203.1 99.3 202.77 100.76C202.4 102.3 202.1 103.8 201.82 105.27C201.5 106.8 201.2 108.3 200.97 109.8C200.7 111.3 200.4 112.8 200.32 114.32C200.2 115.8 200.5 117.2 200.43 118.7C200.3 120.2 199.8 121.7 199.7 123.14C199.6 124.6 199.5 126.2 199.66 127.59C199.8 129 200 130.4 200.47 131.64C200.9 132.9 201.5 134.1 202.39 134.92C203.2 135.7 204.4 136.2 205.57 136.34C206.7 136.5 208.1 136.3 209.38 135.98C210.7 135.6 212 135 213.29 134.22C214.6 133.4 215.8 132.4 216.95 131.33C218.1 130.3 219.2 129.1 220.25 127.88C221.3 126.7 222.3 125.5 223.07 124.17C223.9 122.9 224.6 120.7 224.96 120.04"/>
+      <clipPath id="in-pw"><path d="M164.738 116.129C165.179 117.001 165.294 118.199 165.141 119.665C164.844 122.482 163.971 124.581 162.457 125.96C159.073 129.343 155.459 132.045 151.615 134.067C147.839 136.099 143.65 136.846 139.183 136.377C134.716 135.907 128.715 132.429 126.309 126.487C123.903 120.546 123.194 113.177 124.124 104.266C125.063 95.3542 127.163 86.088 130.546 75.3653C133.93 64.633 138.157 55.5968 143.334 48.1992C148.51 40.8016 154.041 37.4094 160.041 38.0418C166.042 38.6743 165.927 40.265 167.489 43.5709C169.1 46.8864 169.579 51.438 168.956 57.3025C168.084 65.6296 164.767 75.0587 158.968 85.5993C153.159 96.1304 145.72 106.374 136.652 116.33C136.825 119.253 137.429 121.39 138.416 122.741C139.403 124.092 140.812 124.83 142.634 125.021C145.519 125.328 148.126 124.772 150.475 123.354C152.823 121.936 155.881 119.416 159.715 115.784C160.645 114.874 161.69 114.509 162.696 114.615C163.693 114.72 164.297 115.199 164.738 116.138V116.129ZM150.149 56.4401C147.484 62.0266 144.953 69.0505 142.519 77.5693C140.084 86.0305 138.33 94.2043 137.381 102.1C143.247 94.4151 148.05 86.6246 151.913 78.6712C155.718 70.7178 157.98 63.3586 158.699 56.5646C159.418 49.7611 158.536 48.4867 156.6 48.2854C154.664 48.0842 152.823 50.8535 150.216 56.4496H150.158L150.149 56.4401Z"/><path d="M198.623 119.684C199.055 120.556 199.17 121.754 199.016 123.22C198.719 126.037 197.856 128.136 196.361 129.525C193.025 132.908 189.459 135.62 185.683 137.651C181.964 139.692 177.842 140.44 173.451 139.98C169.052 139.52 163.166 136.051 160.808 130.11C158.45 124.169 157.76 116.809 158.699 107.898C159.639 98.9861 161.719 89.7199 165.074 78.9876C168.429 68.2553 172.589 59.2096 177.698 51.8024C182.807 44.3951 188.252 40.9934 194.147 41.6163C200.052 42.2391 199.937 43.8298 201.461 47.1261C203.042 50.4321 203.502 54.9837 202.879 60.8481C202.007 69.1753 198.729 78.6139 193.006 89.1546C187.274 99.6952 179.941 109.948 170.998 119.924C171.161 122.846 171.755 124.983 172.723 126.325C173.691 127.676 175.081 128.414 176.874 128.596C179.711 128.893 182.28 128.337 184.59 126.919C186.9 125.501 189.92 122.971 193.696 119.339C194.607 118.429 195.642 118.065 196.629 118.161C197.617 118.266 198.202 118.745 198.633 119.675L198.623 119.684ZM184.369 60.0336C181.733 65.6298 179.241 72.6537 176.826 81.1724C174.42 89.6337 172.675 97.8075 171.726 105.713C177.506 98.0183 182.241 90.2182 186.066 82.2648C189.824 74.3018 192.067 66.9521 192.776 60.1486C193.495 53.3451 192.632 52.0707 190.725 51.8694C188.817 51.6682 187.006 54.4471 184.427 60.0432H184.369V60.0336Z"/><path d="M223.162 128.663C223.987 128.749 224.639 129.295 225.07 130.282C225.501 131.269 225.607 132.476 225.473 133.76C225.166 136.693 223.862 138.925 221.562 140.468C217.603 143.075 213.28 144.157 208.64 143.678C201.949 142.979 197.368 139.644 194.904 133.76C192.373 127.867 191.616 120.431 192.556 111.462C193.495 102.493 195.594 93.2843 198.978 82.5616C202.362 71.8293 206.579 62.7931 211.746 55.3955C216.922 47.9979 222.434 44.6057 228.425 45.2381C234.416 45.8706 234.31 47.4612 235.863 50.7576C237.474 54.0731 237.943 58.6247 237.33 64.4892C236.458 72.8163 233.151 82.2454 227.351 92.786C221.61 103.327 214.19 113.513 205.132 123.411C205.295 126.334 205.966 128.481 207.116 129.899C208.276 131.326 209.915 132.093 212.081 132.313C214.257 132.543 214.641 132.227 216.242 131.681C217.842 131.135 219.29 130.339 220.699 129.362C221.533 128.739 222.338 128.471 223.105 128.548L223.153 128.672L223.162 128.663ZM218.609 63.6363C215.944 69.2229 213.423 76.2468 210.989 84.7656C208.554 93.2268 206.809 101.401 205.86 109.297C211.717 101.611 216.51 93.8209 220.373 85.8675C224.178 77.9046 226.431 70.5548 227.15 63.7609C227.869 56.9574 226.987 55.6829 225.051 55.4817C223.114 55.2805 221.274 58.0498 218.676 63.6459H218.619L218.609 63.6363Z"/></clipPath>
+      <g id="pw-pen" clip-path="url(#in-pw)" stroke="#F34D39" stroke-linecap="round"></g>
+      <g id="pw"><path d="M164.738 116.129C165.179 117.001 165.294 118.199 165.141 119.665C164.844 122.482 163.971 124.581 162.457 125.96C159.073 129.343 155.459 132.045 151.615 134.067C147.839 136.099 143.65 136.846 139.183 136.377C134.716 135.907 128.715 132.429 126.309 126.487C123.903 120.546 123.194 113.177 124.124 104.266C125.063 95.3542 127.163 86.088 130.546 75.3653C133.93 64.633 138.157 55.5968 143.334 48.1992C148.51 40.8016 154.041 37.4094 160.041 38.0418C166.042 38.6743 165.927 40.265 167.489 43.5709C169.1 46.8864 169.579 51.438 168.956 57.3025C168.084 65.6296 164.767 75.0587 158.968 85.5993C153.159 96.1304 145.72 106.374 136.652 116.33C136.825 119.253 137.429 121.39 138.416 122.741C139.403 124.092 140.812 124.83 142.634 125.021C145.519 125.328 148.126 124.772 150.475 123.354C152.823 121.936 155.881 119.416 159.715 115.784C160.645 114.874 161.69 114.509 162.696 114.615C163.693 114.72 164.297 115.199 164.738 116.138V116.129ZM150.149 56.4401C147.484 62.0266 144.953 69.0505 142.519 77.5693C140.084 86.0305 138.33 94.2043 137.381 102.1C143.247 94.4151 148.05 86.6246 151.913 78.6712C155.718 70.7178 157.98 63.3586 158.699 56.5646C159.418 49.7611 158.536 48.4867 156.6 48.2854C154.664 48.0842 152.823 50.8535 150.216 56.4496H150.158L150.149 56.4401Z" fill="#F34D39"/><path d="M198.623 119.684C199.055 120.556 199.17 121.754 199.016 123.22C198.719 126.037 197.856 128.136 196.361 129.525C193.025 132.908 189.459 135.62 185.683 137.651C181.964 139.692 177.842 140.44 173.451 139.98C169.052 139.52 163.166 136.051 160.808 130.11C158.45 124.169 157.76 116.809 158.699 107.898C159.639 98.9861 161.719 89.7199 165.074 78.9876C168.429 68.2553 172.589 59.2096 177.698 51.8024C182.807 44.3951 188.252 40.9934 194.147 41.6163C200.052 42.2391 199.937 43.8298 201.461 47.1261C203.042 50.4321 203.502 54.9837 202.879 60.8481C202.007 69.1753 198.729 78.6139 193.006 89.1546C187.274 99.6952 179.941 109.948 170.998 119.924C171.161 122.846 171.755 124.983 172.723 126.325C173.691 127.676 175.081 128.414 176.874 128.596C179.711 128.893 182.28 128.337 184.59 126.919C186.9 125.501 189.92 122.971 193.696 119.339C194.607 118.429 195.642 118.065 196.629 118.161C197.617 118.266 198.202 118.745 198.633 119.675L198.623 119.684ZM184.369 60.0336C181.733 65.6298 179.241 72.6537 176.826 81.1724C174.42 89.6337 172.675 97.8075 171.726 105.713C177.506 98.0183 182.241 90.2182 186.066 82.2648C189.824 74.3018 192.067 66.9521 192.776 60.1486C193.495 53.3451 192.632 52.0707 190.725 51.8694C188.817 51.6682 187.006 54.4471 184.427 60.0432H184.369V60.0336Z" fill="#F34D39"/><path d="M223.162 128.663C223.987 128.749 224.639 129.295 225.07 130.282C225.501 131.269 225.607 132.476 225.473 133.76C225.166 136.693 223.862 138.925 221.562 140.468C217.603 143.075 213.28 144.157 208.64 143.678C201.949 142.979 197.368 139.644 194.904 133.76C192.373 127.867 191.616 120.431 192.556 111.462C193.495 102.493 195.594 93.2843 198.978 82.5616C202.362 71.8293 206.579 62.7931 211.746 55.3955C216.922 47.9979 222.434 44.6057 228.425 45.2381C234.416 45.8706 234.31 47.4612 235.863 50.7576C237.474 54.0731 237.943 58.6247 237.33 64.4892C236.458 72.8163 233.151 82.2454 227.351 92.786C221.61 103.327 214.19 113.513 205.132 123.411C205.295 126.334 205.966 128.481 207.116 129.899C208.276 131.326 209.915 132.093 212.081 132.313C214.257 132.543 214.641 132.227 216.242 131.681C217.842 131.135 219.29 130.339 220.699 129.362C221.533 128.739 222.338 128.471 223.105 128.548L223.153 128.672L223.162 128.663ZM218.609 63.6363C215.944 69.2229 213.423 76.2468 210.989 84.7656C208.554 93.2268 206.809 101.401 205.86 109.297C211.717 101.611 216.51 93.8209 220.373 85.8675C224.178 77.9046 226.431 70.5548 227.15 63.7609C227.869 56.9574 226.987 55.6829 225.051 55.4817C223.114 55.2805 221.274 58.0498 218.676 63.6459H218.619L218.609 63.6363Z" fill="#F34D39"/></g>
+          <g id="wm-o"><path d="M281.673 121.37L281.376 124.159C279.852 138.638 266.786 149.083 252.274 147.559L251.747 147.502C237.234 145.978 226.623 133.042 228.147 118.563L228.444 115.774C229.968 101.295 243.043 90.7354 257.556 92.259L258.083 92.3165C272.595 93.8401 283.187 106.891 281.673 121.37ZM269.039 119.866C269.978 110.906 264.457 102.924 256.76 102.119C249.063 101.314 241.998 107.974 241.059 116.934L240.781 119.55C239.841 128.509 245.363 136.491 253.06 137.306C260.757 138.111 267.822 131.451 268.761 122.491L269.039 119.875V119.866Z" fill="#F34D39"/></g></g></svg><!-- /helllo:wordmark -->
+        <div class="barra chiaro" style="top: 236px"><i style="background: #e93d29"></i><p><b>Rosso</b><span class="hex">#E93D29</span></p></div>
+        <div class="barra chiaro" style="top: 354px"><i style="background: #225ad6"></i><p><b>Blu</b><span class="hex">#225AD6</span></p></div>
+        <div class="barra" style="top: 472px"><i style="background: #a8c8f9"></i><p><b>Celeste</b><span class="hex">#A8C8F9</span></p></div>
+        <div class="barra" style="top: 590px"><i style="background: #f4e9e9"></i><p><b>Crema</b><span class="hex">#F4E9E9</span></p></div>
+        <div class="barra chiaro" style="top: 708px"><i style="background: #132a6b"></i><p><b>Blu notte</b><span class="hex">#132A6B</span></p></div>
+        <div id="tipi">
+          <p id="aa1" class="aa">Aa</p>
+          <p id="aa2" class="aa">Aa</p>
+          <p class="nomi"><span id="n1">Hanken Grotesk</span><br /><span id="n2">Poligrapher Grotesk</span> · <span id="n3">Pacifico</span></p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* helllo:pen {"sets":{"pw":{"px":8,"step":0.25,"reach":9,"margin":1}}} */
+      const SETS = {
+        pw: { px: 8, step: 0.25, reach: 9, margin: 1 },
+      };
+      const NS = 'http://www.w3.org/2000/svg';
+      for (const [id, o] of Object.entries(SETS)) {
+        // [x, y, arc length, line], and where each l starts (joints)
+        const pts = [];
+        const joints = [];
+        let total = 0;
+        [...document.querySelectorAll('.line[data-set="' + id + '"]')].forEach((line, n) => {
+          const L = line.getTotalLength();
+          for (let a = 0; a <= L; a += o.step) { const q = line.getPointAtLength(a); pts.push([q.x, q.y, total + a, n]); }
+          if (n) joints.push(line.dataset.joint.split(' ').map(Number));
+          total += L;
+        });
+        // The glyphs, to measure them
+        const g = document.getElementById(id);
+        const b = g.getBBox();
+        const x0 = b.x - 2, y0 = b.y - 2, W = Math.ceil((b.width + 4) * o.px), H = Math.ceil((b.height + 4) * o.px);
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(o.px, 0, 0, o.px, -x0 * o.px, -y0 * o.px);
+        for (const glyph of g.children) ctx.fill(new Path2D(glyph.getAttribute('d')));
+        const fill = ctx.getImageData(0, 0, W, H).data;
+        const inside = (x, y) => {
+          const px = Math.floor((x - x0) * o.px), py = Math.floor((y - y0) * o.px);
+          return px >= 0 && py >= 0 && px < W && py < H && fill[4 * (py * W + px) + 3] > 127;
+        };
+        // Half width of the stroke on each side of the line, at each point: [left, right,
+        // normal x, normal y], the smallest one nearby, so where strokes touch it keeps
+        // its own width
+        const side = pts.map((q, i) => {
+          const a = pts[Math.max(0, i - 2)], c = pts[Math.min(pts.length - 1, i + 2)];
+          const n = Math.hypot(c[0] - a[0], c[1] - a[1]) || 1, nx = (a[1] - c[1]) / n, ny = (c[0] - a[0]) / n;
+          let l = 0, r = 0;
+          while (l < o.reach && inside(q[0] - nx * l, q[1] - ny * l)) l += 0.25;
+          while (r < o.reach && inside(q[0] + nx * r, q[1] + ny * r)) r += 0.25;
+          return [l, r, nx, ny];
+        });
+        const near = Math.round(o.reach * 0.6 / o.step);
+        const around = (w, i) => w.slice(Math.max(0, i - near), i + near + 1);
+        const nib = [0, 1].map((h) => side.map((_, i) => Math.min(...around(side, i).map((q) => q[h]))));
+        // Where one l runs into the next the strokes cross and the measure is wrong: there
+        // the stroke arriving keeps the width it had up to the next line, which narrows
+        // evenly, across the bottom of the l and up, to the width it has after the crossing
+        const joint = (q) => joints.some(([jx, jy]) => Math.hypot(q[0] - jx, q[1] - jy) < o.reach * 2);
+        for (let i = 0; i < pts.length; i++) {
+          if (!joint(pts[i])) continue;
+          let j = i;
+          while (j + 1 < pts.length && joint(pts[j + 1])) j++;
+          const after = pts[Math.min(pts.length - 1, j + 1)];
+          let up = i;
+          while (up <= j && pts[up][3] !== after[3]) up++;
+          for (const w of nib) {
+            const a = w[Math.max(0, i - 1)], c = w[Math.min(pts.length - 1, j + 1)];
+            for (let k = i; k <= j; k++) w[k] = k < up ? a : a + (c - a) * (k - up + 1) / (j - up + 2);
+          }
+          i = j;
+        }
+        // eased along the line, so the pen does not change size in steps
+        const size = nib.map((w) => w.map((_, i) => {
+          const span = around(w, i);
+          return span.reduce((t, v) => t + v, 0) / span.length;
+        }));
+        // The pen: from each point to the next, a round stroke centred between the two
+        // edges, a little wider than the glyph (the glyphs clip it). It shows once the
+        // writing passes its point, fading in over one unit, which softens the tip.
+        const at = (i) => {
+          const [x, y] = pts[i], [l, r] = [size[0][i], size[1][i]], [, , nx, ny] = side[i];
+          return [x + nx * (r - l) / 2, y + ny * (r - l) / 2, (l + r) / 2];
+        };
+        const penGroup = document.getElementById(id + '-pen');
+        const T = (total + o.margin).toFixed(2);
+        for (let i = 0; i < pts.length - 1; i++) {
+          const [x1, y1, h1] = at(i), [x2, y2, h2] = at(i + 1);
+          const seg = document.createElementNS(NS, 'line');
+          seg.setAttribute('x1', x1.toFixed(2)); seg.setAttribute('y1', y1.toFixed(2));
+          seg.setAttribute('x2', x2.toFixed(2)); seg.setAttribute('y2', y2.toFixed(2));
+          seg.setAttribute('stroke-width', (h1 + h2 + 2).toFixed(2));
+          seg.style.opacity = 'clamp(0, var(--' + id + ') * ' + T + ' - ' + pts[i][2].toFixed(2) + ', 1)';
+          penGroup.appendChild(seg);
+        }
+      }
+      // every pen starts with nothing written
+      for (const id of Object.keys(SETS)) gsap.set('#' + id + '-pen', { ['--' + id]: 0 });
+      // Ease 55% out, 85% in: cubic-bezier(0.55, 0, 0.15, 1) (Brand Guidelines 20)
+      const bezier = (x1, y1, x2, y2) => (t) => {
+        const f = (a, b, s) => 3 * a * s * (1 - s) ** 2 + 3 * b * s * s * (1 - s) + s ** 3;
+        let lo = 0, hi = 1, s = t;
+        for (let i = 0; i < 24; i++) { if (f(x1, x2, s) < t) lo = s; else hi = s; s = (lo + hi) / 2; }
+        return f(y1, y2, s);
+      };
+      const pen = bezier(0.55, 0, 0.15, 1);
+      const FRAME = 1 / 24;
+      // A set written from 0 to 1 (or back), then the glyphs take over from the pen
+      const write = (tl, id, at, duration, back = false) => {
+        if (!back) tl.set('#' + id + '-pen', { opacity: 1 }, at);
+        tl.fromTo('#' + id + '-pen', { ['--' + id]: back ? 1 : 0 }, { ['--' + id]: back ? 0 : 1, duration, ease: pen, immediateRender: false }, at);
+        if (back) return;
+        tl.to('#' + id, { opacity: 1, duration: 0.15, ease: 'none' }, at + duration);
+        tl.set('#' + id + '-pen', { opacity: 0 }, at + duration + 0.2);
+      };
+      // The letters fall whole: 30 degrees and 20% higher, in 5 frames, no bounce. Works on
+      // svg groups (turning on the bottom centre of the box) and on html elements.
+      const fall = (tl, sel, at, turn) => {
+        const el = document.querySelector(sel);
+        const svg = el instanceof SVGElement;
+        const box = svg ? el.getBBox() : { x: 0, y: 0, width: el.offsetWidth, height: el.offsetHeight };
+        const pivot = svg ? { svgOrigin: (box.x + box.width / 2) + ' ' + (box.y + box.height) } : { transformOrigin: '50% 100%' };
+        tl.set(sel, { opacity: 1 }, at);
+        tl.fromTo(sel, { y: -0.2 * box.height, rotation: turn, ...pivot }, { y: 0, rotation: 0, duration: 5 * FRAME, ease: 'power3.in', immediateRender: false }, at);
+      };
+      /* /helllo:pen */
+      const D = 12;
+      const EASE = 'expo.out';
+      const tl = gsap.timeline({ paused: true });
+
+      // Le cifre dei codici, una per una
+      const hex = [];
+      document.querySelectorAll('.hex').forEach((h) => {
+        h.innerHTML = [...h.textContent].map((c) => '<span>' + c + '</span>').join('');
+        hex.push([...h.children]);
+      });
+      const barre = [...document.querySelectorAll('.barra')];
+      gsap.set(barre.map((b) => b.querySelector('i')), { scaleX: 0, transformOrigin: '0% 50%' });
+      gsap.set(barre.map((b) => b.querySelector('b')), { opacity: 0 });
+      gsap.set(hex.flat(), { opacity: 0 });
+      gsap.set(['#aa1', '.nomi'], { opacity: 0 });
+
+      // 0.3: il marchio, le lettere cadono e le lll si scrivono
+      fall(tl, '#wm-h', 0.3, 30);
+      fall(tl, '#wm-e', 0.4, -30);
+      write(tl, 'pw', 0.55, 1.4);
+      fall(tl, '#wm-o', 1.85, 30);
+
+      // 1.1: i colori, da sinistra, e i loro codici
+      barre.forEach((b, i) => {
+        const at = 1.1 + i * 0.14;
+        tl.fromTo(b.querySelector('i'), { scaleX: 0 }, { scaleX: 1, duration: 0.8, ease: EASE, immediateRender: false }, at);
+        tl.fromTo(b.querySelector('b'), { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.4, ease: EASE, immediateRender: false }, at + 0.3);
+        hex[i].forEach((c, k) => tl.set(c, { opacity: 1 }, at + 0.5 + k * 0.035));
+      });
+
+      // 2.5: i caratteri
+      tl.fromTo('#aa1', { opacity: 0, filter: 'blur(8px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out', immediateRender: false }, 2.5);
+      tl.fromTo('.nomi', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out', immediateRender: false }, 2.6);
+      // 5.0: Aa in Pacifico, poi di nuovo in Hanken Grotesk; il nome acceso è quello in uso
+      const scambia = (at, a, b, acceso) => {
+        tl.to(a, { opacity: 0, filter: 'blur(6px)', duration: 0.15, ease: 'power2.in' }, at);
+        tl.fromTo(b, { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.18, ease: 'power4.out', immediateRender: false }, at + 0.12);
+        tl.to(['#n1', '#n2', '#n3'], { opacity: 0.4, duration: 0.25, ease: 'power2.out' }, at);
+        tl.to(acceso, { opacity: 1, duration: 0.25, ease: 'power2.out' }, at);
+      };
+      scambia(4.4, '#aa1', '#aa2', '#n3');
+      scambia(6.9, '#aa2', '#aa1', '#n1');
+      tl.to(['#n1', '#n2', '#n3'], { opacity: 1, duration: 0.3, ease: 'power2.out' }, 8.6);
+
+      // 10.4: si torna al foglio vuoto
+      tl.to(['#tipi', '#wm'], { opacity: 0, duration: 0.3, ease: 'power2.in' }, 10.4);
+      barre.slice().reverse().forEach((b, i) => {
+        const at = 10.5 + i * 0.08;
+        tl.to([b.querySelector('b'), ...hex[barre.length - 1 - i]], { opacity: 0, duration: 0.2, ease: 'power2.in' }, at);
+        tl.to(b.querySelector('i'), { scaleX: 0, transformOrigin: '100% 50%', duration: 0.45, ease: 'power3.in' }, at);
+      });
+      tl.set(['#aa1', '.nomi'], { opacity: 0 }, 11.5);
+      tl.set(['#tipi', '#wm'], { opacity: 1 }, 11.5);
+      tl.set(['#wm-h', '#wm-e', '#wm-o', '#pw'], { opacity: 0 }, 11.5);
+      tl.set(barre.map((b) => b.querySelector('i')), { transformOrigin: '0% 50%' }, 11.5);
+      tl.set({}, {}, D);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

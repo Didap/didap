@@ -96,10 +96,11 @@
   - hero     Obviously Wide Bold 40 / 1.08 / -1%
   - intro    Obviously Wide Bold 24 / 1.5
 */
-/* Sotto i 390 di schermo i titoli scendono con la colonna (--col-px, un
-   pixel della colonna da 350) e restano nelle proporzioni dei 390: le
-   parole che typeset() lega tra loro non escono dalla riga su un telefono
-   stretto. Da 390 in su il tetto è sempre sopra la clamp e non conta */
+/* Sotto i 390 di schermo i titoli scendono con la colonna e restano nelle
+   proporzioni dei 390: le parole che typeset() lega tra loro non escono
+   dalla riga su un telefono stretto. Il tetto è var(--col-px) per il
+   minimo della clamp in px (52 = 3.25rem): se cambia il minimo, cambia
+   anche lui. Da 390 in su il tetto è sopra la clamp e non conta */
 @utility text-display {
   font-family: var(--font-display);
   font-size: min(clamp(3.25rem, 8.9vw, 8rem), var(--col-px) * 52);
@@ -261,8 +262,8 @@
 }
 
 @layer base {
-  /* Margine laterale di page-x da telefono, e un pixel della colonna che
-     resta dentro a 390 di schermo (350): la misura dei titoli stretti */
+  /* Margine di page-x da telefono; --col-px è 1/350 della colonna, che a
+     390 di schermo è larga 350 */
   :root {
     --page-gutter: 1.25rem;
     --col-px: calc((100vw - 2 * var(--page-gutter)) / 350);

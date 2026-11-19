@@ -58,16 +58,15 @@ const hasStory = computed(
 // Le immagini finiscono a filo: il blocco dopo stacca
 const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model)
 
-// Il nome scende di corpo solo se è più largo del suo riquadro: in
-// Obviously una lettera è al massimo 0.66em, quindi il nome sta in
-// 100 / (0.66 x lettere) cqi. I nomi corti restano in Body.
-const team = computed(() =>
-  (project.value?.team ?? []).map(key => ({
-    key,
-    ...TEAM[key],
-    fit: `min(1em, ${(100 / (0.66 * TEAM[key].name.length)).toFixed(1)}cqi)`,
-  })),
-)
+const team = computed(() => (project.value?.team ?? []).map(key => ({ key, ...TEAM[key] })))
+
+// I nomi scendono di corpo, tutti insieme, solo se il più lungo è più
+// largo del suo riquadro: in Obviously una lettera è al massimo 0.66em,
+// quindi un nome sta in 100 / (0.66 x lettere) cqi
+const nameSize = computed(() => {
+  const longest = Math.max(...team.value.map(m => m.name.length))
+  return `min(1em, ${(100 / (0.66 * longest)).toFixed(1)}cqi)`
+})
 
 useSeoMeta({
   title: () => `${project.value?.title} - Didap`,
@@ -394,7 +393,7 @@ useSeoMeta({
                   :class="m.width"
                 >
               </div>
-              <p :style="{ fontSize: m.fit }">
+              <p :style="{ fontSize: nameSize }">
                 {{ m.name }}
               </p>
             </li>

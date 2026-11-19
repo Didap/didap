@@ -60,6 +60,14 @@ const storyEndsOnImages = computed(() => hasStory.value && !project.value?.model
 
 const team = computed(() => (project.value?.team ?? []).map(key => ({ key, ...TEAM[key] })))
 
+// I nomi scendono di corpo, tutti insieme, solo se il più lungo è più
+// largo del suo riquadro: in Obviously una lettera è al massimo 0.66em,
+// quindi un nome sta in 100 / (0.66 x lettere) cqi
+const nameSize = computed(() => {
+  const longest = Math.max(...team.value.map(m => m.name.length))
+  return `min(1em, ${(100 / (0.66 * longest)).toFixed(1)}cqi)`
+})
+
 useSeoMeta({
   title: () => `${project.value?.title} - Didap`,
   description: () => project.value?.lede || project.value?.summary,
@@ -370,7 +378,7 @@ useSeoMeta({
             <li
               v-for="m in team"
               :key="m.key"
-              class="flex min-w-0 flex-col gap-3"
+              class="@container flex min-w-0 flex-col gap-3 text-body"
             >
               <div
                 class="
@@ -385,7 +393,7 @@ useSeoMeta({
                   :class="m.width"
                 >
               </div>
-              <p class="text-body">
+              <p :style="{ fontSize: nameSize }">
                 {{ m.name }}
               </p>
             </li>
@@ -415,9 +423,14 @@ useSeoMeta({
           ">
             {{ nextProject.title }}
           </span>
+          <!-- Da telefono la striscia taglierebbe la testata: tiene le sue
+               proporzioni -->
           <MediaSlot
             :media="nextProject.hero ?? { color: 'ink' }"
-            class="aspect-1280/480 w-full"
+            class="
+              aspect-1440/864 w-full
+              sm:aspect-1280/480
+            "
           />
         </NuxtLink>
       </section>

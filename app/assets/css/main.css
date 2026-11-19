@@ -96,9 +96,14 @@
   - hero     Obviously Wide Bold 40 / 1.08 / -1%
   - intro    Obviously Wide Bold 24 / 1.5
 */
+/* Sotto i 390 di schermo i titoli scendono con la colonna e restano nelle
+   proporzioni dei 390: le parole che typeset() lega tra loro non escono
+   dalla riga su un telefono stretto. Il tetto è var(--col-px) per il
+   minimo della clamp in px (52 = 3.25rem): se cambia il minimo, cambia
+   anche lui. Da 390 in su il tetto è sopra la clamp e non conta */
 @utility text-display {
   font-family: var(--font-display);
-  font-size: clamp(3.25rem, 8.9vw, 8rem);
+  font-size: min(clamp(3.25rem, 8.9vw, 8rem), var(--col-px) * 52);
   font-weight: 900;
   line-height: 0.92;
   letter-spacing: -0.03em;
@@ -106,7 +111,7 @@
 
 @utility text-title {
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.5rem);
+  font-size: min(clamp(1.75rem, 1.1rem + 2vw, 2.5rem), var(--col-px) * 28);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.01em;
@@ -114,7 +119,7 @@
 
 @utility text-hero {
   font-family: var(--font-wide);
-  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.5rem);
+  font-size: min(clamp(1.75rem, 1.1rem + 2vw, 2.5rem), var(--col-px) * 28);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.01em;
@@ -123,7 +128,7 @@
 /* Testo di apertura della scheda prodotto: Obviously Wide Bold 24 / 1.5 */
 @utility text-intro {
   font-family: var(--font-wide);
-  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.5rem);
+  font-size: min(clamp(1.25rem, 1rem + 0.8vw, 1.5rem), var(--col-px) * 20);
   font-weight: 700;
   line-height: 1.5;
 }
@@ -161,7 +166,7 @@
   margin-inline: auto;
   width: 100%;
   max-width: 90rem;
-  padding-inline: 1.25rem;
+  padding-inline: var(--page-gutter);
 
   @media (width >= 48rem) {
     padding-inline: 2.5rem;
@@ -257,6 +262,13 @@
 }
 
 @layer base {
+  /* Margine di page-x da telefono; --col-px è 1/350 della colonna, che a
+     390 di schermo è larga 350 */
+  :root {
+    --page-gutter: 1.25rem;
+    --col-px: calc((100vw - 2 * var(--page-gutter)) / 350);
+  }
+
   html,
   body {
     background: var(--color-paper);

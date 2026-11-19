@@ -655,11 +655,10 @@ samp {
 /* Le schermate delle pagine a schermate (la home,
    composables/useScreens). Fuori dai layer come gli stili scoped da cui
    vengono: vincono sulle utility. Ogni schermata è alta quanto lo
-   schermo e si posa con lo snap. Ognuna ha il suo contesto di
-   sovrapposizione: la successiva, dopo nel DOM, sta sopra.
-   Alta quanto lo schermo di adesso (dvh): su iPhone, quando Safari
-   rimpicciolisce le sue barre, con svh la schermata restava più bassa e
-   in fondo spuntava l'inizio della successiva */
+   schermo di adesso (dvh: con svh, quando Safari su iPhone rimpicciolisce
+   le barre, in fondo spuntava la successiva) e si posa con lo snap.
+   Ognuna ha il suo contesto di sovrapposizione: la successiva, dopo nel
+   DOM, sta sopra */
 .screen {
   position: relative;
   isolation: isolate;

@@ -656,11 +656,14 @@ samp {
    composables/useScreens). Fuori dai layer come gli stili scoped da cui
    vengono: vincono sulle utility. Ogni schermata è alta quanto lo
    schermo e si posa con lo snap. Ognuna ha il suo contesto di
-   sovrapposizione: la successiva, dopo nel DOM, sta sopra */
+   sovrapposizione: la successiva, dopo nel DOM, sta sopra.
+   Alta quanto lo schermo di adesso (dvh): su iPhone, quando Safari
+   rimpicciolisce le sue barre, con svh la schermata restava più bassa e
+   in fondo spuntava l'inizio della successiva */
 .screen {
   position: relative;
   isolation: isolate;
-  height: 100svh;
+  height: 100dvh;
   overflow: hidden;
   scroll-margin-top: 0;
   scroll-snap-align: start;
@@ -678,11 +681,11 @@ samp {
 @media (max-width: 859px) {
   .screen {
     height: auto;
-    min-height: 100svh;
+    min-height: 100dvh;
   }
 
   .screen-inner {
-    min-height: 100svh;
+    min-height: 100dvh;
   }
 }
 

@@ -96,9 +96,13 @@
   - hero     Obviously Wide Bold 40 / 1.08 / -1%
   - intro    Obviously Wide Bold 24 / 1.5
 */
+/* Sotto i 390 di schermo (350 di colonna, con i 20 di margine) i titoli
+   scendono con la colonna e restano nelle proporzioni dei 390: le parole
+   che typeset() lega tra loro non escono dalla riga su un telefono
+   stretto. Da 390 in su il tetto è sempre sopra la clamp e non conta */
 @utility text-display {
   font-family: var(--font-display);
-  font-size: clamp(3.25rem, 8.9vw, 8rem);
+  font-size: min(clamp(3.25rem, 8.9vw, 8rem), (100vw - 2.5rem) * 52 / 350);
   font-weight: 900;
   line-height: 0.92;
   letter-spacing: -0.03em;
@@ -106,7 +110,7 @@
 
 @utility text-title {
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.5rem);
+  font-size: min(clamp(1.75rem, 1.1rem + 2vw, 2.5rem), (100vw - 2.5rem) * 28 / 350);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.01em;
@@ -114,7 +118,7 @@
 
 @utility text-hero {
   font-family: var(--font-wide);
-  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.5rem);
+  font-size: min(clamp(1.75rem, 1.1rem + 2vw, 2.5rem), (100vw - 2.5rem) * 28 / 350);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.01em;
@@ -123,7 +127,7 @@
 /* Testo di apertura della scheda prodotto: Obviously Wide Bold 24 / 1.5 */
 @utility text-intro {
   font-family: var(--font-wide);
-  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.5rem);
+  font-size: min(clamp(1.25rem, 1rem + 0.8vw, 1.5rem), (100vw - 2.5rem) * 20 / 350);
   font-weight: 700;
   line-height: 1.5;
 }

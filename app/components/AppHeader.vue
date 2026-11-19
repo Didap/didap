@@ -50,7 +50,7 @@ function closeMenuOnLink(e: MouseEvent) {
   >
     <div
       class="
-        page-x grid h-[72px] grid-cols-[auto_1fr_auto] items-center gap-6
+        page-x grid h-[72px] grid-cols-[auto_1fr] items-center gap-6
         lg:h-[97px] lg:grid-cols-[1fr_auto_1fr]
       "
     >
@@ -143,7 +143,7 @@ function closeMenuOnLink(e: MouseEvent) {
         <button
           type="button"
           class="
-            -mr-2 flex size-10 items-center justify-center
+            -mr-2 flex size-10 shrink-0 items-center justify-center
             lg:hidden
           "
           :aria-expanded="menuOpen"

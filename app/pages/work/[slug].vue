@@ -367,10 +367,12 @@ useSeoMeta({
             grid grid-cols-3 gap-x-6 gap-y-8
             sm:grid-cols-5
           ">
+            <!-- Il nome scende di corpo solo se è più largo del riquadro
+                 (Alessandro su tre colonne da telefono) -->
             <li
               v-for="m in team"
               :key="m.key"
-              class="flex min-w-0 flex-col gap-3"
+              class="@container flex min-w-0 flex-col gap-3 text-body"
             >
               <div
                 class="
@@ -385,7 +387,7 @@ useSeoMeta({
                   :class="m.width"
                 >
               </div>
-              <p class="text-body">
+              <p class="text-[length:min(1em,15cqi)]">
                 {{ m.name }}
               </p>
             </li>
@@ -415,9 +417,14 @@ useSeoMeta({
           ">
             {{ nextProject.title }}
           </span>
+          <!-- Da telefono la striscia taglierebbe la testata: tiene le sue
+               proporzioni -->
           <MediaSlot
             :media="nextProject.hero ?? { color: 'ink' }"
-            class="aspect-1280/480 w-full"
+            class="
+              aspect-1440/864 w-full
+              sm:aspect-1280/480
+            "
           />
         </NuxtLink>
       </section>

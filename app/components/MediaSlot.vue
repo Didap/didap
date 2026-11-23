@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useIntersectionObserver, useMediaQuery } from '@vueuse/core'
 import { isVideoSrc } from '#shared/product'
 
 // Media/Immagine del Figma: immagine a riempimento se c'è `src`,
@@ -40,30 +41,46 @@ const MOBILE = '(max-width: 639px)'
 const poster = ref(props.media?.poster)
 
 // Il video non si scarica finché non sta per entrare nello schermo
-// (preload none, fino ad allora si vede il poster) e si ferma quando
-// esce: una pagina con molti slot non li scarica tutti insieme.
-// Il server può non scrivere l'attributo `muted`, e senza il browser
-// blocca l'autoplay: prima di partire si rimette muto.
+// (preload none, fino ad allora si vede il poster): a 200px comincia a
+// caricarsi, così arrivato in vista parte subito. Gira solo mentre è
+// in vista e si ferma quando esce: una pagina con molti slot ne
+// decodifica solo quelli sullo schermo. Il server può non scrivere
+// l'attributo `muted`, e senza il browser blocca l'autoplay: prima di
+// partire si rimette muto.
 const video = useTemplateRef<HTMLVideoElement>('video')
-let observer: IntersectionObserver | null = null
-onMounted(() => {
+const still = useMediaQuery('(prefers-reduced-motion: reduce)')
+
+const { stop: stopNear } = useIntersectionObserver(video, ([entry]) => {
+  if (!entry?.isIntersecting || still.value || !video.value) return
+  video.value.preload = 'auto'
+  stopNear()
+}, { rootMargin: '200px 0px' })
+
+useIntersectionObserver(video, ([entry]) => {
   const el = video.value
-  if (!el) return
+  if (!el || still.value) return
+  if (entry?.isIntersecting) el.play().catch(() => {})
+  else el.pause()
+})
+
+onMounted(() => {
+  if (video.value) video.value.muted = true
   if (props.media?.posterMobile && window.matchMedia(MOBILE).matches) {
     poster.value = props.media.posterMobile
   }
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  el.muted = true
-  observer = new IntersectionObserver(
-    ([entry]) => {
-      if (entry?.isIntersecting) el.play().catch(() => {})
-      else el.pause()
-    },
-    { rootMargin: '200px 0px' },
-  )
-  observer.observe(el)
 })
-onBeforeUnmount(() => observer?.disconnect())
+
+// Lasciando la pagina il video rende subito il decoder: con la
+// navigazione tra le schede quelli vecchi non restano a occuparlo
+// finché il browser non li raccoglie
+onBeforeUnmount(() => {
+  const el = video.value
+  if (!el) return
+  el.pause()
+  el.removeAttribute('src')
+  el.querySelectorAll('source').forEach(s => s.remove())
+  el.load()
+})
 </script>
 
 <template>

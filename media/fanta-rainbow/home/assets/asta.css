@@ -1,0 +1,554 @@
+/* Le illustrazioni dell'asta (asta.js) nello stile nuovo dell'app Fanta Rainbow: fondo nero,
+   blu elettrico, banda lime, etichette bianche con l'ombra piena sfalsata, titoli condensati
+   in corsivo (Barlow Condensed al posto di Thunder), il tasto tondo con l'anello arcobaleno e
+   la pillola rosa del countdown. Stesso file in home/ e home-mobile/: `data-forma` sceglie la
+   carta, `"stretto"` per il desktop e `"largo"` per il telefono; le misure stanno nelle
+   variabili su #asta, in index.html. */
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("fonts/archivo-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: italic;
+  font-weight: 700;
+  src: url("fonts/barlow-condensed-latin-700-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: italic;
+  font-weight: 800;
+  src: url("fonts/barlow-condensed-latin-800-italic.woff2") format("woff2");
+}
+
+#asta {
+  --blu: #2b2be0;
+  --blu-ombra: #15159c;
+  --lime: #6edb7e;
+  --acqua: #2fe3c6;
+  --rosa: #ff4d6d;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  font-family: "Archivo", sans-serif;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+#asta .tnum {
+  font-variant-numeric: tabular-nums;
+}
+.posto {
+  position: absolute;
+}
+/* Il titolo dell'app: condensato, corsivo, maiuscolo */
+.nome,
+.cifra,
+.secondi,
+.ruolo,
+.biglietto,
+.maglia,
+.posto-cl,
+.tel-testa,
+.tel-nome,
+.tel-cifra,
+.tasto-on,
+.riga b,
+.gettone,
+.meno {
+  font-family: "Barlow Condensed", sans-serif;
+  font-style: italic;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.etichetta {
+  background: #fff;
+  color: var(--blu);
+  box-shadow: 6px 6px 0 var(--blu-ombra);
+}
+.stemma {
+  display: inline-block;
+  flex: none;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 2px;
+}
+
+/* --- La carta del lotto */
+#posto-carta {
+  width: var(--carta-w);
+}
+.raggi {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--raggi);
+  height: var(--raggi);
+  margin: calc(var(--raggi) / -2) 0 0 calc(var(--raggi) / -2);
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(110, 219, 126, 0.3) 0deg 5deg, transparent 5deg 12deg, rgba(43, 43, 224, 0.45) 12deg 17deg, transparent 17deg 24deg);
+  -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 66%);
+  mask-image: radial-gradient(circle, #000 20%, transparent 66%);
+  opacity: 0;
+}
+.carta {
+  position: relative;
+  width: var(--carta-w);
+  overflow: hidden;
+  border: 3px solid var(--acqua);
+  border-radius: 16px;
+  background: var(--blu);
+  box-shadow: 10px 10px 0 var(--blu-ombra);
+  transform-origin: 50% 50%;
+}
+.carta.venduto {
+  border-color: var(--lime);
+  box-shadow: 10px 10px 0 var(--lime);
+}
+.banda {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--banda);
+  padding: 0 16px;
+  background: var(--lime);
+}
+.ruolo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  padding: 0 0.3em;
+  font-size: calc(var(--banda) * 0.56);
+  line-height: 1.25;
+  background: #000;
+  color: #fff;
+}
+.biglietto {
+  position: relative;
+  padding: 0 0.55em;
+  font-size: calc(var(--banda) * 0.5);
+  line-height: 1.35;
+  text-transform: none;
+  color: var(--blu);
+  background: #fff;
+  /* Il bordo dentellato del biglietto */
+  -webkit-mask: radial-gradient(circle at 0 50%, transparent 0.22em, #000 0.23em) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 0.22em, #000 0.23em) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle at 0 50%, transparent 0.22em, #000 0.23em) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 0.22em, #000 0.23em) right / 51% 100% no-repeat;
+}
+.maglia {
+  margin-left: auto;
+  padding: 0 0.4em;
+  font-size: calc(var(--banda) * 0.56);
+  line-height: 1.2;
+  color: #000;
+  box-shadow: inset 0 0 0 2px #000;
+}
+.corpo {
+  display: grid;
+  padding: 16px 18px 20px;
+}
+[data-forma="stretto"] .corpo {
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "nome nome"
+    "off anello"
+    "cl cl";
+  gap: 14px 12px;
+  align-items: center;
+}
+[data-forma="largo"] .corpo {
+  grid-template-columns: 1fr auto auto;
+  grid-template-areas:
+    "nome off anello"
+    "cl off anello";
+  gap: 12px 30px;
+  align-items: center;
+}
+.nome {
+  grid-area: nome;
+  font-size: var(--nome);
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.offerta {
+  grid-area: off;
+  display: flex;
+}
+.offerta-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.04em 0.22em 0 0.14em;
+  transform-origin: 30% 55%;
+}
+.offerta .moneta {
+  width: calc(var(--cifra) * 0.34);
+  height: calc(var(--cifra) * 0.34);
+}
+.cifra {
+  min-width: 1.15em;
+  font-size: var(--cifra);
+  line-height: 1;
+  color: var(--blu);
+}
+.carta.venduto .offerta-in {
+  background: var(--lime);
+  box-shadow: 6px 6px 0 #000;
+}
+.carta.venduto .cifra {
+  color: #000;
+}
+.anello {
+  grid-area: anello;
+  position: relative;
+  width: var(--anello);
+  height: var(--anello);
+}
+.anello svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.secondi,
+.anello-spunta {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.secondi {
+  font-size: calc(var(--anello) * 0.34);
+}
+.anello-spunta {
+  color: var(--lime);
+  opacity: 0;
+}
+.anello-spunta svg {
+  width: 50%;
+  height: 50%;
+}
+/* La classifica dei rilanci: righe piene, la prima verde, la seconda bianca, la terza nera */
+.classifica {
+  grid-area: cl;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.posto-cl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--riga);
+  padding: 0 14px 0 10px;
+}
+.posto-cl b {
+  width: 0.8em;
+  font-size: calc(var(--riga) * 0.9);
+  line-height: 1;
+  font-weight: 800;
+}
+.cl-in {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+.cl-nome {
+  overflow: hidden;
+  font-size: calc(var(--riga) * 0.52);
+  font-weight: 700;
+  text-transform: none;
+  white-space: nowrap;
+}
+.cl-cifra {
+  font-size: calc(var(--riga) * 0.68);
+}
+#cl-0 {
+  background: var(--lime);
+  color: #000;
+}
+#cl-1 {
+  background: #fff;
+  color: var(--blu);
+}
+#cl-2 {
+  background: #000;
+  color: #fff;
+}
+.posto-cl.vuoto {
+  opacity: 0.3;
+}
+.posto-cl.vuoto b {
+  visibility: hidden;
+}
+
+/* --- I telefoni dei giocatori */
+.tel {
+  position: absolute;
+  left: -80px;
+  top: -160px;
+  width: 160px;
+  height: 320px;
+  padding: 5px;
+  border-radius: 28px;
+  background: #121212;
+  box-shadow:
+    0 0 0 1.5px rgba(255, 255, 255, 0.32),
+    8px 8px 0 var(--blu);
+  transform-origin: 50% 50%;
+}
+.tel.vince {
+  box-shadow:
+    0 0 0 3px var(--lime),
+    8px 8px 0 var(--lime);
+}
+.schermo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 23px;
+  background: #000;
+}
+.isola {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 44px;
+  height: 12px;
+  margin-left: -22px;
+  border-radius: 6px;
+  background: #1c1c1c;
+}
+.tel-testa {
+  position: absolute;
+  top: 26px;
+  left: 10px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.tel-asta {
+  position: absolute;
+  inset: 0;
+}
+.tel-lotto {
+  position: absolute;
+  top: 48px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tel-lotto .ruolo {
+  font-size: 13px;
+  background: var(--lime);
+  color: #000;
+}
+.tel-nome {
+  font-size: 17px;
+}
+.tel-cifra {
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  font-size: 54px;
+  line-height: 1;
+}
+.tel-cifra.venduto {
+  color: var(--lime);
+}
+.pillola {
+  position: absolute;
+  top: 132px;
+  left: 10px;
+  right: 10px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.pillola i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  background: var(--rosa);
+  transform-origin: 0 50%;
+}
+/* Il tasto tondo con l'anello arcobaleno */
+.tasto {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  width: 116px;
+  height: 116px;
+  margin-left: -58px;
+  border-radius: 50%;
+}
+.tasto::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(#ff3b3b, #ff9a1f, #ffe14d, #6edb7e, #2b8cff, #8b5cf6, #ff3b3b);
+}
+.tasto.spento::before {
+  opacity: 0.25;
+}
+.tasto-in {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #000;
+}
+.tasto-on,
+.tasto-testa {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tasto-on {
+  gap: 4px;
+  font-size: 40px;
+}
+.tasto-on .moneta {
+  width: 22px;
+  height: 22px;
+}
+.tasto.spento .tasto-on {
+  color: rgba(255, 255, 255, 0.5);
+}
+.tasto.spento .tasto-on .moneta {
+  opacity: 0.45;
+}
+.tasto-testa {
+  color: var(--lime);
+}
+.tasto-testa svg {
+  width: 46px;
+  height: 46px;
+}
+.onda {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 4px solid var(--lime);
+  opacity: 0;
+}
+.rosa {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 52px;
+  bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  opacity: 0;
+}
+.riga {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.riga b {
+  width: 20px;
+  font-size: 20px;
+  color: var(--lime);
+}
+.riga i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.1);
+}
+.riga i span {
+  color: #000;
+  opacity: 0;
+}
+.riga i.pieno {
+  background: var(--blu);
+}
+.meno {
+  position: absolute;
+  left: 50%;
+  top: -48px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px 0;
+  font-size: 26px;
+  white-space: nowrap;
+  box-shadow: 5px 5px 0 var(--blu);
+  opacity: 0;
+}
+.meno .moneta {
+  width: 20px;
+  height: 20px;
+}
+
+/* --- I gettoni dei rilanci, il martello, il colpo */
+.gettone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 14px 0 10px;
+  font-size: 34px;
+  white-space: nowrap;
+  box-shadow: 5px 5px 0 var(--blu);
+  opacity: 0;
+}
+.gettone .moneta {
+  width: 24px;
+  height: 24px;
+}
+.colpo {
+  position: absolute;
+  z-index: 4;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 8px solid var(--lime);
+  opacity: 0;
+}
+.martello {
+  position: absolute;
+  z-index: 6;
+  width: 236px;
+  height: 126px;
+  transform-origin: 220px 55px;
+  opacity: 0;
+}
+.martello svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

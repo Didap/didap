@@ -8,6 +8,7 @@ import { NuxtLink } from '#components'
 // `medium`: variante della Nav, label Medium invece che Semibold.
 // `paper`: pillola carta con testo ink, sopra i video e il rosso della
 // home a schermate.
+// `ink`: pillola ink con testo carta, sopra i video chiari della home.
 // `download`: con `href` a un file del sito, il browser lo scarica
 // nella stessa scheda invece di aprirlo. L'attributo resta vuoto: un
 // valore diventerebbe il nome del file salvato ("true").
@@ -16,6 +17,7 @@ const props = defineProps<{
   href?: string
   medium?: boolean
   paper?: boolean
+  ink?: boolean
   download?: boolean
 }>()
 
@@ -35,6 +37,10 @@ const link = computed(() => props.href ?? props.to)
         bg-paper-light text-ink
         hover:bg-ink hover:text-paper-light
         focus-visible:outline-paper-light
+      ` : ink ? `
+        bg-ink text-paper-light
+        hover:bg-green
+        focus-visible:outline-ink
       ` : `
         bg-green text-paper-light
         hover:bg-ink

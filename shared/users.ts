@@ -3,11 +3,12 @@ import { text } from './text'
 
 // Collaboratori del pannello: pagine, permessi e validazione
 
-export const ADMIN_PAGES = ['prodotti', 'preventivi', 'clienti', 'bandi', 'impostazioni', 'collaboratori'] as const
+export const ADMIN_PAGES = ['prodotti', 'richieste', 'preventivi', 'clienti', 'bandi', 'impostazioni', 'collaboratori'] as const
 export type AdminPage = typeof ADMIN_PAGES[number]
 
 export const ADMIN_PAGE_INFO: Record<AdminPage, { label: string, path: string }> = {
   prodotti: { label: 'Prodotti', path: '/admin' },
+  richieste: { label: 'Richieste', path: '/admin/richieste' },
   preventivi: { label: 'Preventivi', path: '/admin/preventivi' },
   clienti: { label: 'Clienti', path: '/admin/clienti' },
   bandi: { label: 'Bandi', path: '/admin/bandi' },

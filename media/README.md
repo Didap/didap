@@ -27,6 +27,63 @@ Alcuni `index.html` sono generati da script: `media/bin-or-deal/_generators/`,
 `media/helllo/build.mjs` (dall'illustrazione esportata dal Figma in `media/helllo/figma/`) e
 `media/helllo/parti.mjs` (le parti generate degli altri clip di Helllo, vedi sotto).
 
+## Gli sfondi della home
+
+La home non usa i video `hero` delle schede: ha i suoi, `public/covers/<slug>-home.mp4`
+(1920x1152, 5:3) e `<slug>-home-mobile.mp4` (verticale: composizione 1080x2340, 9:19.5,
+codificata a 720x1560 con `-vf scale=720:1560:flags=lanczos`), con i poster
+`<slug>-home-poster.webp` e `<slug>-home-mobile-poster.webp`. Non hanno il logo del prodotto:
+lo mette il sito sopra il video in SVG (`.screen-logo` in `app/assets/css/main.css`, il file
+in `featured` di `app/pages/index.vue`). I video lasciano libere le zone che la home copre:
+
+- desktop (il video copre lo schermo, object-fit cover): la barra in alto (primo 12%), il velo
+  con la didascalia in basso (ultimo 40%), l'indice a capsula a destra (x 90-100%, y 30-70%) e
+  il logo, centrato a 50% x e 38% y, largo circa il 30%;
+- telefono (sotto i 640px parte la versione verticale, che copre lo schermo): in alto lo stato
+  del telefono e la barra del browser (primo 6%); il logo centrato a 50% x e 30% y, in un
+  riquadro largo il 60% e alto il 16% (y 22-38%); l'ultimo 45% è coperto dalla nuvoletta di
+  Didi (HomeDock), da Didi e dalla pillola "Scrivici", e con la chat aperta la nuvoletta sale
+  ancora: lì solo fondo calmo. Per i tagli dei telefoni più corti o più lunghi le cose che
+  contano stanno fra x 8% e 92% e fra y 8% e 55%.
+
+Se ffmpeg non ha `libwebp` (quello di Homebrew di solito no), il poster si estrae in PNG e si
+converte in WebP a parte (cwebp, sharp o Pillow, qualità 75).
+
+I video raccontano come funziona il prodotto, con illustrazioni animate e senza parole da
+tradurre (lo stesso video serve la home italiana e inglese): icone, numeri, lettere delle
+soluzioni, nomi propri inventati. L'indice a destra, con l'etichetta della voce attiva, occupa
+circa x 80-100% dello schermo fra y 28% e 72%: in quella fascia i contenuti stanno entro x 76%
+del fotogramma.
+
+- CityFix: il giro di una segnalazione sulla mappa dell'hero. Il cittadino manda foto e
+  posizione dal telefono, il segnaposto cade rosso, il Comune affida all'impresa (giallo),
+  l'impresa ripara, il segnaposto diventa verde, il contatore sale e il cittadino riceve la
+  conferma. `node media/cityfix/build-home.mjs` scrive `home/index.html` e
+  `home-mobile/index.html` (mappa girata di 90 gradi e ingrandita x1,13) e legge solo file del
+  repo (`pixel-icons.json`, `osm/roads.json`). Colori e ombre della landing; un alone bianco
+  largo e sfumato tiene calma la zona del logo (`cityfix-wordmark.svg`). Poster 9,9 s.
+- Helllo: le due persone dell'illustrazione chiave ricevono ciascuna la scheda dell'altra,
+  tutte e due dicono helllo, c'è il match (bollino lll e cavo rosso fra i telefoni) e la chat si
+  apre con le bolle. `node media/helllo/home.mjs` (gemello di `build.mjs`) scrive
+  `home/index.html` (3840x2304) e `home-mobile/index.html` (1080x2340). Render a `--fps 24`,
+  codifica con `-vf scale=1920:-2:flags=area` (`scale=720:1560:flags=area` per `home-mobile`).
+  Logo `helllo-wordmark.svg`, ricavato da `helllo-logo.svg`. Poster 8,3 s.
+- Cruciverba Lab: i dieci giochi del giorno come carte, il cruciverba che si scrive e i rulli che
+  girano fino a MORSO (spunte), la classifica dove la nostra riga sale al primo posto, il foglio
+  del calendario che si strappa e le carte che si girano per il giorno dopo. Dietro, molto
+  chiara, la griglia inclinata di -7 gradi come il marchio. `python media/cruciverba-lab/scripts/home.py media/cruciverba-lab/home/index.html 1920 1152`
+  (e `home-mobile/index.html 1080 2340`); il font Caprasimo è in `assets/fonts/`. Logo
+  `cruciverba-lab-wordmark.svg`. Poster 8,65 s.
+- Fanta Rainbow: il giro di un'asta nello stile nuovo dell'app, su fondo nero. La carta del
+  calciatore blu con la banda lime, tre telefoni che rilanciano col tasto arcobaleno, il
+  countdown che riparte a ogni rilancio, il martello e la carta che vola nella rosa di chi
+  vince. Tutto è in `assets/asta.js` e `asta.css`, uguali in `home` e `home-mobile` (se
+  cambiano, si copiano nell'altro); `index.html` ha solo la disposizione
+  (`window.__astaConfig`). Font Barlow Condensed corsivo (OFL, al posto di Thunder) e Archivo,
+  licenze in `assets/fonts/`. Da telefono la carta sta in alto (y 5-19%) sopra il logo e i tre
+  telefoni sotto, uno per colonna, da y 40% a y 66% (dal 68% c'è la nuvoletta di Didi). Logo
+  `fanta-rainbow-wordmark.svg`, con un alone scuro dal sito. Poster a 0 s, il primo fotogramma.
+
 ## CityFix: le illustrazioni della landing
 
 La scheda di CityFix usa le illustrazioni animate della landing (repo `cityfix-landing`,

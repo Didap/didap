@@ -1,6 +1,6 @@
 // Schema del database, applicato a ogni avvio (idempotente).
-// Prodotti, asset e sessioni di /admin; poi preventivi, clienti, radar bandi
-// e OAuth del connettore MCP.
+// Prodotti, asset e sessioni di /admin; poi preventivi, clienti, radar bandi,
+// OAuth del connettore MCP e le richieste arrivate da Didi.
 export const DB_SCHEMA = `
   create table if not exists product_overrides (
     slug text not null,
@@ -304,4 +304,33 @@ export const DB_SCHEMA = `
   create index if not exists oauth_links_client on oauth_links (client_id);
   create index if not exists oauth_tokens_link on oauth_tokens (link_id);
   create index if not exists oauth_tokens_expires on oauth_tokens (expires_at);
+
+  -- Le richieste arrivate dalla chat con Didi (/api/didi): chi, come
+  -- richiamarlo, l'idea spiegata dal modello e la conversazione intera
+  create table if not exists didi_requests (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    contact text not null,
+    contact_kind text not null check (contact_kind in ('email', 'phone')),
+    project_type text not null default '',
+    summary text not null,
+    transcript jsonb not null default '[]'::jsonb,
+    locale text not null default 'it',
+    email_sent boolean not null default false,
+    status text not null default 'new' check (status in ('new', 'done')),
+    created_at timestamptz not null default now()
+  );
+  create index if not exists didi_requests_created on didi_requests (created_at desc);
+
+  -- Cambi una tantum ai dati, segnati per non ripeterli a ogni avvio
+  create table if not exists schema_flags (name text primary key);
+  -- La pagina Richieste è nuova: una volta sola la ricevono le persone
+  -- che gestiscono i collaboratori; poi si dà e si toglie da Collaboratori
+  do $$ begin
+    if not exists (select 1 from schema_flags where name = 'pages_richieste') then
+      update admin_users set pages = array_append(pages, 'richieste')
+        where 'collaboratori' = any(pages) and not ('richieste' = any(pages));
+      insert into schema_flags (name) values ('pages_richieste');
+    end if;
+  end $$;
 `

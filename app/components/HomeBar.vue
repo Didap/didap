@@ -1,18 +1,29 @@
 <script setup lang="ts">
+import DidapButton from '~/components/DidapButton.vue'
+
 // La barra della home a schermate: Didi a sinistra, "Lavoriamo insieme"
-// a destra, senza fondo sopra le schermate. Sull'apertura non c'è
-// (`shown` falso): sale via e torna con la prima schermata. `light` quando
-// sotto c'è carta o un video chiaro (testo ink), altrimenti testo carta
-// e un alone di carta che stacca Didi dal video scuro. Didi è quella
-// della nav: DidiGuide la porta via e la rimette qui. `glow` tiene
-// l'alone anche col testo ink, se Didi e il testo stanno su fondi diversi.
-// "Lavoriamo insieme" porta alla chiusura rossa della home (con la corsa
-// di useScreens) e sparisce quando la chiusura è in scena (`cta` falso).
-const props = withDefaults(
-  defineProps<{ shown: boolean, light: boolean, glow?: boolean, cta?: boolean }>(),
+// a destra. Sull'apertura non c'è (`shown` falso): sale via e torna con
+// la prima schermata. `light` quando sotto c'è carta o un video chiaro
+// (testo ink), altrimenti testo carta. `surface` sui video: una
+// sfumatura corta dello stesso tono del velo in basso (carta sui video
+// chiari, ink su quelli scuri) le dà un fondo suo; sui fondi pieni non
+// serve. Didi è la versione adesivo, col contorno carta: regge su ogni
+// fondo senza alone. È quella della nav: DidiGuide la porta via e la
+// rimette qui. Su telefono la barra non c'è: Didi sta in basso a
+// sinistra (HomeDock). "Lavoriamo insieme" porta alla chiusura
+// rossa della home (con la corsa di useScreens) e sparisce quando la
+// chiusura è in scena (`cta` falso). È verde sui video; sui fondi pieni
+// (il verde e il giallo di Progetti) ink sul chiaro e carta sullo
+// scuro, se no il verde sparirebbe sul verde.
+withDefaults(
+  defineProps<{
+    shown: boolean
+    light: boolean
+    surface?: 'light' | 'dark'
+    cta?: boolean
+  }>(),
   { cta: true },
 )
-const halo = computed(() => props.glow ?? !props.light)
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -27,6 +38,7 @@ const didiAway = useDidiAway()
       justify-between
       transition-[color,background-color,opacity,translate,visibility]
       duration-500
+      max-[859px]:hidden
       lg:h-[97px]
     "
     :class="[
@@ -34,6 +46,26 @@ const didiAway = useDidiAway()
       shown ? '' : 'invisible -translate-y-full opacity-0',
     ]"
   >
+    <!-- Le due sfumature, una per tono: si incrociano con l'opacità -->
+    <div
+      class="
+        pointer-events-none absolute inset-x-0 top-0 -bottom-12 -z-1
+        bg-linear-to-b from-paper-light/94 via-paper-light/75 via-55%
+        to-paper-light/0 transition-opacity duration-500
+      "
+      :class="surface === 'light' ? 'opacity-100' : 'opacity-0'"
+      aria-hidden="true"
+    />
+    <div
+      class="
+        pointer-events-none absolute inset-x-0 top-0 -bottom-12 -z-1
+        bg-linear-to-b from-ink/80 via-ink/50 via-55% to-ink/0
+        transition-opacity duration-500
+      "
+      :class="surface === 'dark' ? 'opacity-100' : 'opacity-0'"
+      aria-hidden="true"
+    />
+
     <NuxtLink
       :to="localePath('/')"
       class="block"
@@ -42,32 +74,25 @@ const didiAway = useDidiAway()
       data-didi-link
     >
       <img
-        src="/brand/didi-testa.svg"
+        src="/brand/didi-testa-sticker.svg"
         alt=""
-        width="218"
-        height="200"
+        width="240"
+        height="222"
         data-didi-home
         class="
-          h-10 w-auto transition-[filter] duration-500
-          lg:h-12
+          h-11 w-auto
+          lg:h-[53px]
         "
-        :class="halo ? `
-          filter-[drop-shadow(0_0_10px_rgb(255_251_242/0.55))_drop-shadow(0_0_22px_rgb(255_251_242/0.35))]
-        ` : ''"
       >
     </NuxtLink>
 
-    <NuxtLink
+    <DidapButton
       :to="ctaPath"
+      :ink="!surface && light"
+      :paper="!surface && !light"
       :class="cta ? '' : 'invisible opacity-0'"
-      class="
-        border-b-[1.5px] border-current py-2.5 text-button leading-none
-        transition-[opacity,visibility] duration-300
-        focus-visible:outline-2 focus-visible:outline-offset-4
-        focus-visible:outline-current
-      "
     >
       {{ t('nav.cta') }}
-    </NuxtLink>
+    </DidapButton>
   </header>
 </template>

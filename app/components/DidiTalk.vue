@@ -21,7 +21,7 @@ const props = defineProps<{ hello: string, suggestions?: boolean, tone?: 'paper'
 const emit = defineEmits<{ form: [type: ProjectType | '', message: string] }>()
 
 const { t } = useI18n()
-const { said, topic, thinking, ask, reset } = useDidiChat()
+const { said, topic, thinking, ai, sent, failed, messages, ask, reset } = useDidiChat()
 
 const draft = ref('')
 const input = ref<HTMLTextAreaElement>()
@@ -29,7 +29,28 @@ const red = computed(() => props.tone === 'red')
 
 const { label: topicLabel, mailto: mailtoFor, whatsapp: whatsappFor } = useDidiContact()
 
-const line = computed(() => (topic.value ? t(`chat.reply.${topic.value}`) : props.hello))
+// Prima che il cliente scriva, nella nuvoletta c'è la domanda di Didi,
+// grande. Poi la conversazione: Didi a sinistra, il cliente a destra,
+// che scorre dentro la nuvoletta (la forma resta, con la coda verso la
+// bocca). Con le frasi già scritte (senza AI) Didi risponde
+// sull'argomento, e se l'idea non è partita propone il modulo
+const line = computed(() => props.hello)
+type Bubble = { role: 'user' | 'assistant', content: string }
+const started = computed(() => messages.value.length > 0)
+const thread = computed<Bubble[]>(() => {
+  const list: Bubble[] = [{ role: 'assistant', content: props.hello }, ...messages.value]
+  if (!ai.value && topic.value && !thinking.value) list.push({ role: 'assistant', content: t(`chat.reply.${topic.value}`) })
+  if (failed.value) list.push({ role: 'assistant', content: t('chat.send_failed') })
+  return list
+})
+
+// A ogni messaggio nuovo la conversazione scende all'ultimo
+const threadEl = ref<HTMLElement>()
+watch([() => thread.value.length, thinking], () => nextTick(() => {
+  const el = threadEl.value
+  if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+}))
+
 // Più è lunga, più è piccola: deve stare nella nuvoletta. Su telefono
 // misure fisse, la nuvoletta è larga quanto lo schermo
 const size = computed(() => {
@@ -113,24 +134,57 @@ onMounted(() => {
     <div
       class="
         relative col-span-full row-1 grid grid-cols-[minmax(0,1fr)]
-        place-items-start rounded-[28px] bg-ink px-5 py-5 text-paper-light
-        md:col-2 md:aspect-1010/410 md:place-items-center
-        md:rounded-[20%/50%] md:px-[11%] md:py-[9%]
+        place-items-start rounded-[28px] bg-ink p-5 text-paper-light
+        md:col-2 md:aspect-1010/410 md:place-items-center md:rounded-[20%/50%]
+        md:px-[11%] md:py-[9%]
       "
+      :class="started ? 'md:min-h-0 md:grid-rows-[minmax(0,1fr)] md:py-[6%]' : ''"
       aria-live="polite"
     >
-      <p
-        v-if="thinking"
-        class="dots flex gap-[max(8px,1cqw)]"
-        role="status"
-        :aria-label="t('chat.thinking')"
+      <!-- La conversazione: scorre dentro la forma della nuvoletta, e in
+           alto i messaggi vecchi sfumano invece di tagliarsi -->
+      <ol
+        v-if="started"
+        ref="threadEl"
+        class="
+          flex max-h-[50svh] w-full flex-col gap-2 self-stretch overflow-y-auto
+          overscroll-contain
+          mask-[linear-gradient(to_bottom,transparent,#000_28px)] pt-6
+          md:h-full md:max-h-none
+        "
       >
-        <span
-          v-for="n in 3"
-          :key="n"
-          class="size-[max(10px,1.2cqw)] rounded-full bg-current"
-        />
-      </p>
+        <li
+          v-for="(m, i) in thread"
+          :key="i"
+          class="
+            talk-bubble max-w-[85%] rounded-[20px] px-4 py-2.5 text-base/snug
+            wrap-break-word
+            md:text-[max(1rem,1.45cqw)]/snug
+          "
+          :class="m.role === 'user'
+            ? 'self-end rounded-br-md bg-green text-paper-light'
+            : 'self-start rounded-bl-md bg-paper-light/12 text-paper-light'"
+        >
+          <span class="sr-only">{{ m.role === 'user' ? t('chat.you') : 'Didi' }}: </span>{{ m.content }}
+        </li>
+        <li
+          v-if="thinking"
+          class="
+            talk-bubble flex self-start rounded-[20px] rounded-bl-md
+            bg-paper-light/12 px-4 py-3.5
+          "
+          role="status"
+          :aria-label="t('chat.thinking')"
+        >
+          <span class="dots flex items-center gap-1.5">
+            <span
+              v-for="n in 3"
+              :key="n"
+              class="size-2 rounded-full bg-current"
+            />
+          </span>
+        </li>
+      </ol>
       <p
         v-else
         :key="line"
@@ -184,20 +238,16 @@ onMounted(() => {
       :class="{ 'is-thinking': thinking, 'is-talking': topic }"
     >
 
-    <!-- Quello che il cliente scrive a Didi -->
+    <!-- Quello che il cliente scrive a Didi; quando l'idea è partita
+         resta solo "Ricomincia" -->
     <form
+      v-if="!sent"
       class="
         col-span-full row-3 mt-6 flex flex-col gap-3
         md:col-2 md:row-2 md:mt-[5.2cqw] md:pr-[5.2cqw] md:pl-[14.1cqw]
       "
       @submit.prevent="send"
     >
-      <p
-        v-if="said"
-        class="text-label opacity-70"
-      >
-        {{ t('chat.you') }}: <span class="normal-case">“{{ said }}”</span>
-      </p>
       <div
         class="
           flex items-end gap-3 rounded-[30px] border-[1.5px] bg-paper-light
@@ -271,14 +321,14 @@ onMounted(() => {
       <!-- Chi non vuole parlare con Didi va dritto al modulo; dopo la
            risposta lo apre "Compila il modulo" -->
       <button
-        v-if="direct && !topic"
+        v-if="direct && (!topic || ai)"
         type="button"
         class="
           mt-1 self-start rounded-sm text-left text-body underline
           decoration-[1.5px] underline-offset-4 opacity-80 transition-opacity
           hover:opacity-100
-          focus-visible:outline-2
-          focus-visible:outline-offset-4 focus-visible:outline-current
+          focus-visible:outline-2 focus-visible:outline-offset-4
+          focus-visible:outline-current
           md:pl-6
         "
         @click="openForm"
@@ -287,14 +337,16 @@ onMounted(() => {
       </button>
     </form>
 
-    <!-- Le strade per sentirci, dopo la risposta -->
+    <!-- Le strade per sentirci, dopo la risposta: con le frasi già
+         scritte, se l'invio non è riuscito o quando l'idea è partita -->
     <div
-      v-if="topic"
+      v-if="topic && (!ai || failed || sent)"
       class="
         col-span-full row-4 mt-4 flex flex-wrap items-center gap-x-7 gap-y-4
         md:col-2 md:row-3 md:pl-[14.1cqw]
       "
     >
+      <template v-if="!sent">
       <DidapButton
         v-if="whatsapp"
         :href="whatsapp"
@@ -318,6 +370,7 @@ onMounted(() => {
       >
         {{ t('chat.form') }}
       </button>
+      </template>
       <button
         type="button"
         class="
@@ -348,7 +401,8 @@ onMounted(() => {
     animation: didi-hop 0.5s var(--ease-vintage);
   }
 
-  .said {
+  .said,
+  .talk-bubble {
     animation: said-in 0.45s var(--ease-vintage);
   }
 

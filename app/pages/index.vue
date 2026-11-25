@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useMediaQuery } from '@vueuse/core'
 import DidapButton from '~/components/DidapButton.vue'
 import DidiTalk from '~/components/DidiTalk.vue'
 import HomeBar from '~/components/HomeBar.vue'
+import HomeDock from '~/components/HomeDock.vue'
 import HomeLogo from '~/components/HomeLogo.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
 import ScreenRail from '~/components/ScreenRail.vue'
@@ -34,32 +34,32 @@ useSeoMeta({
   description: t('home.seo_description'),
 })
 
-// I prodotti a tutto schermo. `light`: il video in alto è chiaro, la
-// barra va in ink. In verticale però sopra il video c'è il poster
-// sfocato e scurito (`screen-backdrop`): lì sono tutti scuri. L'unico
-// invito porta alla scheda
+// I prodotti a tutto schermo. `light`: il video è chiaro, la barra va
+// in ink (anche da telefono, dove il video è verticale). L'unico invito
+// porta alla scheda. `logo`: il marchio del prodotto, che sta
+// sopra il video (i video della home non ce l'hanno dentro)
 type Featured = {
   key: string
   slug: string
   name: string
   light: boolean
+  logo: string
 }
 const featured: Featured[] = [
-  { key: 'cityfix', slug: 'cityfix', name: 'CityFix', light: true },
-  { key: 'fanta_rainbow', slug: 'fanta-rainbow', name: 'Fanta Rainbow', light: false },
-  { key: 'helllo', slug: 'helllo', name: 'Helllo', light: true },
-  { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', light: true },
+  { key: 'cityfix', slug: 'cityfix', name: 'CityFix', light: true, logo: '/covers/cityfix-wordmark.svg' },
+  { key: 'fanta_rainbow', slug: 'fanta-rainbow', name: 'Fanta Rainbow', light: false, logo: '/covers/fanta-rainbow-wordmark.svg' },
+  { key: 'helllo', slug: 'helllo', name: 'Helllo', light: true, logo: '/covers/helllo-wordmark.svg' },
+  { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', light: true, logo: '/covers/cruciverba-lab-wordmark.svg' },
 ]
 
-// Sul server vale falso: conta solo da una schermata di prodotto in giù,
-// che arriva dopo l'idratazione
-const portrait = useMediaQuery('(max-aspect-ratio: 1/1)')
-
+// I video della home sono suoi (media/<slug>/home e home-mobile): senza
+// il logo, che il sito mette sopra, e con i bordi liberi per la barra,
+// la didascalia e l'indice. Le schede prodotto tengono i video `hero`
 const hero = (slug: string) => ({
-  src: `/covers/${slug}-hero.mp4`,
-  poster: `/covers/${slug}-hero-poster.webp`,
-  srcMobile: `/covers/${slug}-hero-mobile.mp4`,
-  posterMobile: `/covers/${slug}-hero-mobile-poster.webp`,
+  src: `/covers/${slug}-home.mp4`,
+  poster: `/covers/${slug}-home-poster.webp`,
+  srcMobile: `/covers/${slug}-home-mobile.mp4`,
+  posterMobile: `/covers/${slug}-home-mobile-poster.webp`,
 })
 
 
@@ -87,19 +87,35 @@ const root = ref<HTMLElement>()
 const clientsHover = ref(false)
 
 // Le schermate, per l'indice a destra e il colore della barra
-const screens = computed(() => [
+type Screen = { id: string, label: string, light: boolean, video?: boolean }
+const screens = computed<Screen[]>(() => [
   { id: 'top', label: 'Didap', light: true },
-  ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light && !portrait.value })),
-  // Didi sta sul verde dei prodotti (sempre con l'alone), "Lavoriamo
-  // insieme" e l'indice sul giallo dei clienti: testo ink, carta quando
-  // i clienti diventano neri sotto il puntatore
-  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: !clientsHover.value, glow: true },
+  // Sui video la barra ha una sfumatura sua (`video`), dello stesso tono
+  ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light, video: true })),
+  // Didi (adesivo) sta sul verde dei prodotti, "Lavoriamo insieme" e
+  // l'indice sul giallo dei clienti: testo ink, carta quando i clienti
+  // diventano neri sotto il puntatore
+  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: !clientsHover.value },
   { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
 ])
 
 // La schermata in scena e, con mouse e trackpad, la corsa morbida da
 // una all'altra (composables/useScreens)
 const { active, motion } = useScreens(root)
+
+// La barra in basso su telefono: Didi e "Hai un progetto?" su tutte
+// le schermate dopo l'apertura, tranne la chiusura rossa, dove la chat
+// con Didi è già a tutto schermo. La nuvoletta con la descrizione solo
+// sui prodotti
+const dockShown = computed(() => active.value > 0 && active.value < screens.value.length - 1)
+const dockProduct = computed(() => featured[active.value - 1])
+
+// La sfumatura della barra, solo sui video
+const surface = computed(() => {
+  const s = screens.value[active.value]
+  if (!s?.video) return undefined
+  return s.light ? 'light' : 'dark'
+})
 
 const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
 </script>
@@ -112,8 +128,16 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
     <HomeBar
       :shown="active > 0"
       :light="screens[active]?.light ?? true"
-      :glow="screens[active]?.glow"
+      :surface="surface"
       :cta="active !== screens.length - 1"
+    />
+
+    <HomeDock
+      :shown="dockShown"
+      :line="dockProduct ? t(`home.products.${dockProduct.key}.desc`) : undefined"
+      :to="dockProduct ? localePath(`/work/${dockProduct.slug}`) : undefined"
+      :label="dockProduct ? `${t('home.featured_more')}: ${dockProduct.name}` : undefined"
+      @form="openDrawer"
     />
 
     <ScreenRail
@@ -205,11 +229,13 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
         :title="p.name"
         :text="t(`home.products.${p.key}.desc`)"
         :title-id="`${p.slug}-name`"
-        :shade="!p.light"
+        :light="screens[i + 1]!.light"
+        :logo="p.logo"
       >
         <DidapButton
           :to="localePath(`/work/${p.slug}`)"
-          paper
+          :paper="!screens[i + 1]!.light"
+          :ink="screens[i + 1]!.light"
         >
           {{ t('home.featured_more') }}
           <svg
@@ -251,7 +277,14 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
             lg:pt-[97px]
             xl:px-20
           "
-          :class="d.tone"
+          :class="[
+            d.tone,
+            // Su telefono i clienti stanno in fondo: lo spazio per la barra
+            // di Didi (HomeDock), se no ne coprirebbe i nomi
+            i === 1 ? `
+              max-[859px]:pb-[calc(max(16px,env(safe-area-inset-bottom))+88px)]
+            ` : '',
+          ]"
           @mouseenter="clientsHover = i === 1"
           @mouseleave="clientsHover = false"
         >

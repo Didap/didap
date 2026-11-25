@@ -9,7 +9,7 @@
 import { type ContactKind, type ProjectType, telHref } from '#shared/contact'
 
 // Chi scrive lascia un'email o un telefono, uno dei due
-interface ContactData {
+export interface ContactData {
   name: string
   contact: { value: string; kind: ContactKind }
   projectType?: ProjectType | ''

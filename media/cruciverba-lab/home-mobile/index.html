@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2340" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:Caprasimo;src:url('assets/fonts/caprasimo-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:Piazzolla;src:url('assets/fonts/piazzolla-var.woff2') format('woff2');font-weight:100 900;font-style:normal}
+:root{--paper:#FCFCF9;--ink:#1F130E;--mute:#6D6059;--hair:#E3DFD9;--brand:#E93F29;--brand-soft:#FBE7E2;--tile:#F7C3B4}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:2340px;overflow:hidden;background:var(--paper)}
+#root{position:absolute;inset:0;background:var(--paper);font-family:Piazzolla,serif;color:var(--ink);overflow:hidden}
+.texw{position:absolute;inset:0;opacity:.06}
+.tex{position:absolute;width:1000px;height:1100px;outline:3px solid var(--ink);transform:rotate(-7deg)}
+.tc{position:absolute;width:102px;height:102px;border:2px solid var(--ink)}
+.tb{position:absolute;background:var(--ink);border-radius:12px}
+.tl{position:absolute;width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:52px}
+.calm{position:absolute;inset:0;background:radial-gradient(circle at 540px 702px,rgba(252,252,249,.94) 0px,rgba(252,252,249,0.940) 220px,rgba(252,252,249,0.914) 236px,rgba(252,252,249,0.842) 252px,rgba(252,252,249,0.737) 268px,rgba(252,252,249,0.609) 284px,rgba(252,252,249,0.470) 300px,rgba(252,252,249,0.331) 316px,rgba(252,252,249,0.203) 332px,rgba(252,252,249,0.098) 348px,rgba(252,252,249,0.026) 364px,rgba(252,252,249,0.000) 380px)}
+.card{position:absolute;width:156px;height:118px}
+.cf{position:absolute;inset:0;border-radius:19px;display:flex;align-items:center;justify-content:center}
+.cf svg{width:94px;height:94px}
+.ring{position:absolute;inset:-6px;border-radius:25px;border:4px solid;opacity:0}
+.ck{position:absolute;right:-8px;bottom:-8px;width:53px;height:53px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;box-shadow:0 0 0 3px var(--paper)}
+.ck svg{width:58%;height:58%}
+.stage{position:absolute;left:360px;top:922px;width:500px;height:500px;transform:scale(0.7200);transform-origin:0 0}
+.pn{position:absolute;inset:0;border-radius:24px;background:#FFFEFB;box-shadow:0 26px 60px rgba(31,19,14,.14),0 0 0 2px var(--hair);overflow:hidden;opacity:0}
+.ph{position:absolute;left:0;right:0;top:0;height:78px;display:flex;align-items:center;padding:0 24px;gap:16px}
+.ph svg{width:54px;height:54px}
+.dots{margin-left:auto;display:flex;gap:7px}
+.dots i{display:block;width:13px;height:13px;border-radius:3px;border:2px solid var(--ink)}
+.xc{position:absolute;width:74px;height:74px;border:2px solid var(--ink)}
+.xb{position:absolute;background:var(--ink);border-radius:8px;z-index:3}
+.xl{position:absolute;width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:40px;z-index:3}
+.xw{position:absolute;background:var(--brand-soft);z-index:1}
+.xcur{position:absolute;left:0;top:0;width:72px;height:72px;background:var(--tile);z-index:2}
+.band{position:absolute;left:14px;right:14px;top:248px;height:104px;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.hit{position:absolute;inset:0;background:#F3C3D3;opacity:0}
+.win{position:absolute;top:96px;width:80px;height:392px;overflow:hidden}
+.reel{position:absolute;left:0;top:152px;width:80px}
+.reel div{height:104px;display:flex;align-items:center;justify-content:center;font-family:Caprasimo;font-size:64px}
+.rfade{position:absolute;left:0;right:0;height:150px}
+.rk{position:absolute;left:22px;width:40px;height:66px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:26px;color:var(--mute)}
+.row{position:absolute;left:70px;right:22px;top:0;height:66px;border-radius:12px;display:flex;align-items:center;padding:0 18px;gap:20px}
+.av{width:40px;height:40px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center}
+.tm{font-size:24px;color:var(--mute);font-variant-numeric:tabular-nums}
+.pt{margin-left:auto;font-weight:700;font-size:32px;font-variant-numeric:tabular-nums}
+.plus{position:absolute;right:150px;top:0;padding:4px 12px;border-radius:8px;background:var(--brand);color:#fff;font-weight:700;font-size:24px;opacity:0}
+.cal{position:absolute;left:100px;top:92px;width:300px;height:340px}
+.pg{position:absolute;inset:0;border-radius:20px;background:#FFFEFB;box-shadow:0 0 0 2px var(--hair);overflow:hidden}
+.pg .hd{position:absolute;left:0;right:0;top:0;height:86px;background:var(--brand)}
+.pg .dn{position:absolute;left:0;right:0;top:104px;text-align:center;font-family:Caprasimo;font-size:150px;line-height:1}
+.pg .wk{position:absolute;left:40px;right:40px;bottom:30px;display:flex;justify-content:space-between}
+.pg .wk i{display:block;width:22px;height:22px;border-radius:5px;background:var(--hair)}
+.ringc{position:absolute;top:-18px;width:22px;height:40px;border-radius:11px;background:var(--ink);z-index:4}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1080" data-height="2340">
+<div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0" style="position:absolute;inset:0" data-layout-allow-overlap data-layout-allow-overflow>
+<div class="texw" data-layout-allow-occlusion><div class="tex" style="left:40px;top:130px"><div class="tc" style="left:-1px;top:-1px"></div><span class="tl" style="left:0px;top:6.0px">S</span><div class="tc" style="left:99px;top:-1px"></div><span class="tl" style="left:100px;top:6.0px">O</span><div class="tc" style="left:199px;top:-1px"></div><span class="tl" style="left:200px;top:6.0px">S</span><div class="tb" style="left:308.0px;top:8.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:399px;top:-1px"></div><span class="tl" style="left:400px;top:6.0px">A</span><div class="tc" style="left:499px;top:-1px"></div><span class="tl" style="left:500px;top:6.0px">L</span><div class="tc" style="left:599px;top:-1px"></div><span class="tl" style="left:600px;top:6.0px">A</span><div class="tb" style="left:708.0px;top:8.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:808.0px;top:8.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:908.0px;top:8.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:-1px;top:99px"></div><span class="tl" style="left:0px;top:106.0px">U</span><div class="tc" style="left:99px;top:99px"></div><span class="tl" style="left:100px;top:106.0px">N</span><div class="tc" style="left:199px;top:99px"></div><span class="tl" style="left:200px;top:106.0px">E</span><div class="tb" style="left:308.0px;top:108.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:399px;top:99px"></div><span class="tl" style="left:400px;top:106.0px">G</span><div class="tc" style="left:499px;top:99px"></div><span class="tl" style="left:500px;top:106.0px">A</span><div class="tc" style="left:599px;top:99px"></div><span class="tl" style="left:600px;top:106.0px">G</span><div class="tb" style="left:708.0px;top:108.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:808.0px;top:108.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:908.0px;top:108.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:-1px;top:199px"></div><span class="tl" style="left:0px;top:206.0px">A</span><div class="tc" style="left:99px;top:199px"></div><span class="tl" style="left:100px;top:206.0px">G</span><div class="tc" style="left:199px;top:199px"></div><span class="tl" style="left:200px;top:206.0px">I</span><div class="tc" style="left:299px;top:199px"></div><span class="tl" style="left:300px;top:206.0px">V</span><div class="tc" style="left:399px;top:199px"></div><span class="tl" style="left:400px;top:206.0px">A</span><div class="tc" style="left:499px;top:199px"></div><span class="tl" style="left:500px;top:206.0px">M</span><div class="tc" style="left:599px;top:199px"></div><span class="tl" style="left:600px;top:206.0px">O</span><div class="tb" style="left:708.0px;top:208.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:808.0px;top:208.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:908.0px;top:208.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:8.0px;top:308.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:108.0px;top:308.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:208.0px;top:308.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:299px;top:299px"></div><span class="tl" style="left:300px;top:306.0px">I</span><div class="tc" style="left:399px;top:299px"></div><span class="tl" style="left:400px;top:306.0px">V</span><div class="tc" style="left:499px;top:299px"></div><span class="tl" style="left:500px;top:306.0px">A</span><div class="tb" style="left:608.0px;top:308.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:699px;top:299px"></div><span class="tl" style="left:700px;top:306.0px">F</span><div class="tc" style="left:799px;top:299px"></div><span class="tl" style="left:800px;top:306.0px">O</span><div class="tc" style="left:899px;top:299px"></div><span class="tl" style="left:900px;top:306.0px">N</span><div class="tc" style="left:-1px;top:399px"></div><span class="tl" style="left:0px;top:406.0px">C</span><div class="tc" style="left:99px;top:399px"></div><span class="tl" style="left:100px;top:406.0px">O</span><div class="tc" style="left:199px;top:399px"></div><span class="tl" style="left:200px;top:406.0px">P</span><div class="tc" style="left:299px;top:399px"></div><span class="tl" style="left:300px;top:406.0px">P</span><div class="tc" style="left:399px;top:399px"></div><span class="tl" style="left:400px;top:406.0px">E</span><div class="tb" style="left:508.0px;top:408.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:599px;top:399px"></div><span class="tl" style="left:600px;top:406.0px">V</span><div class="tc" style="left:699px;top:399px"></div><span class="tl" style="left:700px;top:406.0px">O</span><div class="tc" style="left:799px;top:399px"></div><span class="tl" style="left:800px;top:406.0px">L</span><div class="tc" style="left:899px;top:399px"></div><span class="tl" style="left:900px;top:406.0px">O</span><div class="tc" style="left:-1px;top:499px"></div><span class="tl" style="left:0px;top:506.0px">O</span><div class="tc" style="left:99px;top:499px"></div><span class="tl" style="left:100px;top:506.0px">R</span><div class="tc" style="left:199px;top:499px"></div><span class="tl" style="left:200px;top:506.0px">I</span><div class="tb" style="left:308.0px;top:508.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:408.0px;top:508.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:499px;top:499px"></div><span class="tl" style="left:500px;top:506.0px">S</span><div class="tc" style="left:599px;top:499px"></div><span class="tl" style="left:600px;top:506.0px">O</span><div class="tc" style="left:699px;top:499px"></div><span class="tl" style="left:700px;top:506.0px">L</span><div class="tc" style="left:799px;top:499px"></div><span class="tl" style="left:800px;top:506.0px">A</span><div class="tc" style="left:899px;top:499px"></div><span class="tl" style="left:900px;top:506.0px">I</span><div class="tc" style="left:-1px;top:599px"></div><span class="tl" style="left:0px;top:606.0px">N</span><div class="tc" style="left:99px;top:599px"></div><span class="tl" style="left:100px;top:606.0px">A</span><div class="tc" style="left:199px;top:599px"></div><span class="tl" style="left:200px;top:606.0px">T</span><div class="tc" style="left:299px;top:599px"></div><span class="tl" style="left:300px;top:606.0px">A</span><div class="tb" style="left:408.0px;top:608.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:499px;top:599px"></div><span class="tl" style="left:500px;top:606.0px">T</span><div class="tc" style="left:599px;top:599px"></div><span class="tl" style="left:600px;top:606.0px">I</span><div class="tc" style="left:699px;top:599px"></div><span class="tl" style="left:700px;top:606.0px">C</span><div class="tb" style="left:808.0px;top:608.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:908.0px;top:608.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:8.0px;top:708.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:108.0px;top:708.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:199px;top:699px"></div><span class="tl" style="left:200px;top:706.0px">T</span><div class="tc" style="left:299px;top:699px"></div><span class="tl" style="left:300px;top:706.0px">O</span><div class="tc" style="left:399px;top:699px"></div><span class="tl" style="left:400px;top:706.0px">P</span><div class="tc" style="left:499px;top:699px"></div><span class="tl" style="left:500px;top:706.0px">O</span><div class="tb" style="left:608.0px;top:708.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:699px;top:699px"></div><span class="tl" style="left:700px;top:706.0px">L</span><div class="tc" style="left:799px;top:699px"></div><span class="tl" style="left:800px;top:706.0px">S</span><div class="tc" style="left:899px;top:699px"></div><span class="tl" style="left:900px;top:706.0px">D</span><div class="tc" style="left:-1px;top:799px"></div><span class="tl" style="left:0px;top:806.0px">O</span><div class="tc" style="left:99px;top:799px"></div><span class="tl" style="left:100px;top:806.0px">D</span><div class="tc" style="left:199px;top:799px"></div><span class="tl" style="left:200px;top:806.0px">O</span><div class="tc" style="left:299px;top:799px"></div><span class="tl" style="left:300px;top:806.0px">R</span><div class="tc" style="left:399px;top:799px"></div><span class="tl" style="left:400px;top:806.0px">I</span><div class="tb" style="left:508.0px;top:808.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:599px;top:799px"></div><span class="tl" style="left:600px;top:806.0px">B</span><div class="tc" style="left:699px;top:799px"></div><span class="tl" style="left:700px;top:806.0px">O</span><div class="tc" style="left:799px;top:799px"></div><span class="tl" style="left:800px;top:806.0px">I</span><div class="tc" style="left:899px;top:799px"></div><span class="tl" style="left:900px;top:806.0px">A</span><div class="tc" style="left:-1px;top:899px"></div><span class="tl" style="left:0px;top:906.0px">P</span><div class="tc" style="left:99px;top:899px"></div><span class="tl" style="left:100px;top:906.0px">O</span><div class="tc" style="left:199px;top:899px"></div><span class="tl" style="left:200px;top:906.0px">R</span><div class="tc" style="left:299px;top:899px"></div><span class="tl" style="left:300px;top:906.0px">T</span><div class="tc" style="left:399px;top:899px"></div><span class="tl" style="left:400px;top:906.0px">A</span><div class="tb" style="left:508.0px;top:908.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:599px;top:899px"></div><span class="tl" style="left:600px;top:906.0px">U</span><div class="tc" style="left:699px;top:899px"></div><span class="tl" style="left:700px;top:906.0px">R</span><div class="tc" style="left:799px;top:899px"></div><span class="tl" style="left:800px;top:906.0px">T</span><div class="tc" style="left:899px;top:899px"></div><span class="tl" style="left:900px;top:906.0px">I</span><div class="tc" style="left:-1px;top:999px"></div><span class="tl" style="left:0px;top:1006.0px">S</span><div class="tc" style="left:99px;top:999px"></div><span class="tl" style="left:100px;top:1006.0px">C</span><div class="tc" style="left:199px;top:999px"></div><span class="tl" style="left:200px;top:1006.0px">I</span><div class="tc" style="left:299px;top:999px"></div><span class="tl" style="left:300px;top:1006.0px">E</span><div class="tb" style="left:408.0px;top:1008.0px;width:84.0px;height:84.0px"></div><div class="tb" style="left:508.0px;top:1008.0px;width:84.0px;height:84.0px"></div><div class="tc" style="left:599px;top:999px"></div><span class="tl" style="left:600px;top:1006.0px">M</span><div class="tc" style="left:699px;top:999px"></div><span class="tl" style="left:700px;top:1006.0px">I</span><div class="tc" style="left:799px;top:999px"></div><span class="tl" style="left:800px;top:1006.0px">O</span><div class="tb" style="left:908.0px;top:1008.0px;width:84.0px;height:84.0px"></div></div></div>
+<div class="calm" data-layout-allow-occlusion style="background:linear-gradient(to bottom,rgba(252,252,249,0) 1100px,var(--paper) 1300px)"></div>
+<div class="calm" data-layout-allow-occlusion></div>
+<div class="card" data-layout-allow-occlusion id="cd0" style="left:100px;top:210px"><div class="ring" id="rg0" style="border-color:#D8361F"></div><div class="cf" style="background:#F7C3B4"><svg viewBox="0 0 100 100"><rect x="14.0" y="14.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="14.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="14.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="14.0" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="14.0" y="32.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="32.5" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="32.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="32.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="14.0" y="51.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="51.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="51.0" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="51.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="14.0" y="69.5" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="69.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="69.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="69.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="14" y="14" width="17" height="17" rx="2" fill="#D8361F"/></svg></div><div class="ck" id="ck0" style="background:#D8361F"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd1" style="left:281px;top:210px"><div class="ring" id="rg1" style="border-color:#2C7FA8"></div><div class="cf" style="background:#BFDCEB"><svg viewBox="0 0 100 100"><circle cx="18" cy="18" r="3.4" fill="#1F130E"/><circle cx="34" cy="18" r="3.4" fill="#1F130E"/><circle cx="50" cy="18" r="3.4" fill="#1F130E"/><circle cx="66" cy="18" r="3.4" fill="#1F130E"/><circle cx="82" cy="18" r="3.4" fill="#1F130E"/><circle cx="18" cy="34" r="3.4" fill="#1F130E"/><circle cx="34" cy="34" r="3.4" fill="#1F130E"/><circle cx="50" cy="34" r="3.4" fill="#1F130E"/><circle cx="66" cy="34" r="3.4" fill="#1F130E"/><circle cx="82" cy="34" r="3.4" fill="#1F130E"/><circle cx="18" cy="50" r="3.4" fill="#1F130E"/><circle cx="34" cy="50" r="3.4" fill="#1F130E"/><circle cx="50" cy="50" r="3.4" fill="#1F130E"/><circle cx="66" cy="50" r="3.4" fill="#1F130E"/><circle cx="82" cy="50" r="3.4" fill="#1F130E"/><circle cx="18" cy="66" r="3.4" fill="#1F130E"/><circle cx="34" cy="66" r="3.4" fill="#1F130E"/><circle cx="50" cy="66" r="3.4" fill="#1F130E"/><circle cx="66" cy="66" r="3.4" fill="#1F130E"/><circle cx="82" cy="66" r="3.4" fill="#1F130E"/><circle cx="18" cy="82" r="3.4" fill="#1F130E"/><circle cx="34" cy="82" r="3.4" fill="#1F130E"/><circle cx="50" cy="82" r="3.4" fill="#1F130E"/><circle cx="66" cy="82" r="3.4" fill="#1F130E"/><circle cx="82" cy="82" r="3.4" fill="#1F130E"/><line x1="18" y1="34" x2="66" y2="82" stroke="#2C7FA8" stroke-width="12" stroke-linecap="round" opacity=".75"/></svg></div><div class="ck" id="ck1" style="background:#2C7FA8"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd2" style="left:462px;top:210px"><div class="ring" id="rg2" style="border-color:#1A8A86"></div><div class="cf" style="background:#BDE3E0"><svg viewBox="0 0 100 100"><rect x="20" y="14" width="52" height="13" rx="6.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.8"/><line x1="50" y1="27" x2="50" y2="34" stroke="#1F130E" stroke-width="2"/><rect x="28" y="34" width="52" height="13" rx="6.5" fill="#1A8A86" stroke="#1F130E" stroke-width="1.8"/><line x1="50" y1="47" x2="50" y2="54" stroke="#1F130E" stroke-width="2"/><rect x="20" y="54" width="52" height="13" rx="6.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.8"/><line x1="50" y1="67" x2="50" y2="74" stroke="#1F130E" stroke-width="2"/><rect x="28" y="74" width="52" height="13" rx="6.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.8"/></svg></div><div class="ck" id="ck2" style="background:#1A8A86"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd3" style="left:643px;top:210px"><div class="ring" id="rg3" style="border-color:#6A3FCB"></div><div class="cf" style="background:#D7CBF2"><svg viewBox="0 0 100 100"><rect x="18" y="18" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="21" y="26" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">3</text><rect x="40" y="18" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="43" y="26" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">7</text><rect x="62" y="18" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="65" y="26" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">1</text><rect x="18" y="40" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="21" y="48" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">5</text><rect x="40" y="40" width="20" height="20" rx="2" fill="#6A3FCB" stroke="#1F130E" stroke-width="1.5"/><text x="43" y="48" font-size="7" font-family="Piazzolla" font-weight="600" fill="#FFFFFF">2</text><rect x="62" y="40" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="65" y="48" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">9</text><rect x="18" y="62" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="21" y="70" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">4</text><rect x="40" y="62" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="43" y="70" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">8</text><rect x="62" y="62" width="20" height="20" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><text x="65" y="70" font-size="7" font-family="Piazzolla" font-weight="600" fill="#1F130E">6</text></svg></div><div class="ck" id="ck3" style="background:#6A3FCB"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd4" style="left:824px;top:210px"><div class="ring" id="rg4" style="border-color:#C92A6B"></div><div class="cf" style="background:#F3C3D3"><svg viewBox="0 0 100 100"><rect x="10" y="40" width="80" height="20" fill="#C92A6B" opacity=".85"/><rect x="14" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="29" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="44" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="59" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="74" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/></svg></div><div class="ck" id="ck4" style="background:#C92A6B"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd5" style="left:100px;top:350px"><div class="ring" id="rg5" style="border-color:#0A7A3E"></div><div class="cf" style="background:#BFE6CC"><svg viewBox="0 0 100 100"><rect x="12.0" y="24" width="13.5" height="14" rx="2" fill="#E1DCD5"/><rect x="27.5" y="24" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="43.0" y="24" width="13.5" height="14" rx="2" fill="#E1DCD5"/><rect x="58.5" y="24" width="13.5" height="14" rx="2" fill="#F2C94C"/><rect x="74.0" y="24" width="13.5" height="14" rx="2" fill="#E1DCD5"/><rect x="12.0" y="41" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="27.5" y="41" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="43.0" y="41" width="13.5" height="14" rx="2" fill="#F2C94C"/><rect x="58.5" y="41" width="13.5" height="14" rx="2" fill="#E1DCD5"/><rect x="74.0" y="41" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="12.0" y="58" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="27.5" y="58" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="43.0" y="58" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="58.5" y="58" width="13.5" height="14" rx="2" fill="#0A7A3E"/><rect x="74.0" y="58" width="13.5" height="14" rx="2" fill="#0A7A3E"/></svg></div><div class="ck" id="ck5" style="background:#0A7A3E"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd6" style="left:281px;top:350px"><div class="ring" id="rg6" style="border-color:#B02E8F"></div><div class="cf" style="background:#EFC6E3"><svg viewBox="0 0 100 100"><rect x="14.0" y="14.0" width="17" height="17" rx="2.5" fill="#B02E8F" stroke="#1F130E" stroke-width="1.3"/><rect x="32.5" y="14.0" width="17" height="17" rx="2.5" fill="#B02E8F" stroke="#1F130E" stroke-width="1.3"/><rect x="51.0" y="14.0" width="17" height="17" rx="2.5" fill="#B02E8F" stroke="#1F130E" stroke-width="1.3"/><rect x="69.5" y="14.0" width="17" height="17" rx="2.5" fill="#B02E8F" stroke="#1F130E" stroke-width="1.3"/><rect x="14.0" y="32.5" width="17" height="17" rx="2.5" fill="#1F130E" stroke="#1F130E" stroke-width="1.3"/><rect x="32.5" y="32.5" width="17" height="17" rx="2.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.3"/><rect x="51.0" y="32.5" width="17" height="17" rx="2.5" fill="#1F130E" stroke="#1F130E" stroke-width="1.3"/><rect x="69.5" y="32.5" width="17" height="17" rx="2.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.3"/><rect x="14.0" y="51.0" width="17" height="17" rx="2.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.3"/><rect x="32.5" y="51.0" width="17" height="17" rx="2.5" fill="#1F130E" stroke="#1F130E" stroke-width="1.3"/><rect x="51.0" y="51.0" width="17" height="17" rx="2.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.3"/><rect x="69.5" y="51.0" width="17" height="17" rx="2.5" fill="#1F130E" stroke="#1F130E" stroke-width="1.3"/><rect x="14.0" y="69.5" width="17" height="17" rx="2.5" fill="#1F130E" stroke="#1F130E" stroke-width="1.3"/><rect x="32.5" y="69.5" width="17" height="17" rx="2.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.3"/><rect x="51.0" y="69.5" width="17" height="17" rx="2.5" fill="#1F130E" stroke="#1F130E" stroke-width="1.3"/><rect x="69.5" y="69.5" width="17" height="17" rx="2.5" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.3"/></svg></div><div class="ck" id="ck6" style="background:#B02E8F"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd7" style="left:462px;top:350px"><div class="ring" id="rg7" style="border-color:#9A5A12"></div><div class="cf" style="background:#F6D9BB"><svg viewBox="0 0 100 100"><rect x="12" y="16" width="34" height="13" rx="4" fill="#9A5A12" stroke="#1F130E" stroke-width="1.5"/><rect x="54" y="16" width="34" height="13" rx="4" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="12" y="34" width="34" height="13" rx="4" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="54" y="34" width="34" height="13" rx="4" fill="#9A5A12" stroke="#1F130E" stroke-width="1.5"/><rect x="12" y="52" width="34" height="13" rx="4" fill="#9A5A12" stroke="#1F130E" stroke-width="1.5"/><rect x="54" y="52" width="34" height="13" rx="4" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="12" y="70" width="34" height="13" rx="4" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="54" y="70" width="34" height="13" rx="4" fill="#9A5A12" stroke="#1F130E" stroke-width="1.5"/></svg></div><div class="ck" id="ck7" style="background:#9A5A12"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd8" style="left:643px;top:350px"><div class="ring" id="rg8" style="border-color:#8A7410"></div><div class="cf" style="background:#F8E59B"><svg viewBox="0 0 100 100"><polygon points="60.4,56.0 50.0,62.0 39.6,56.0 39.6,44.0 50.0,38.0 60.4,44.0" fill="#8A7410" stroke="#FFFFFF" stroke-width="1.5"/><polygon points="81.4,56.0 71.0,62.0 60.6,56.0 60.6,44.0 71.0,38.0 81.4,44.0" fill="#F2D55C" stroke="#FFFFFF" stroke-width="1.5"/><polygon points="70.9,74.2 60.5,80.2 50.1,74.2 50.1,62.2 60.5,56.2 70.9,62.2" fill="#F2D55C" stroke="#FFFFFF" stroke-width="1.5"/><polygon points="49.9,74.2 39.5,80.2 29.1,74.2 29.1,62.2 39.5,56.2 49.9,62.2" fill="#F2D55C" stroke="#FFFFFF" stroke-width="1.5"/><polygon points="39.4,56.0 29.0,62.0 18.6,56.0 18.6,44.0 29.0,38.0 39.4,44.0" fill="#F2D55C" stroke="#FFFFFF" stroke-width="1.5"/><polygon points="49.9,37.8 39.5,43.8 29.1,37.8 29.1,25.8 39.5,19.8 49.9,25.8" fill="#F2D55C" stroke="#FFFFFF" stroke-width="1.5"/><polygon points="70.9,37.8 60.5,43.8 50.1,37.8 50.1,25.8 60.5,19.8 70.9,25.8" fill="#F2D55C" stroke="#FFFFFF" stroke-width="1.5"/></svg></div><div class="ck" id="ck8" style="background:#8A7410"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="card" data-layout-allow-occlusion id="cd9" style="left:824px;top:350px"><div class="ring" id="rg9" style="border-color:#557F1C"></div><div class="cf" style="background:#DDEDB8"><svg viewBox="0 0 100 100"><rect x="38" y="20" width="26" height="40" rx="4" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.6" transform="rotate(-14 51 78)"/><rect x="38" y="20" width="26" height="40" rx="4" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.6" transform="rotate(0 51 78)"/><rect x="38" y="20" width="26" height="40" rx="4" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.6" transform="rotate(14 51 78)"/><circle cx="51" cy="40" r="6" fill="#557F1C"/></svg></div><div class="ck" id="ck9" style="background:#557F1C"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+<div class="stage">
+<div class="pn" data-layout-allow-occlusion id="pA"><div class="ph" data-layout-allow-occlusion style="background:#F7C3B4"><svg viewBox="0 0 100 100"><rect x="14.0" y="14.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="14.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="14.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="14.0" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="14.0" y="32.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="32.5" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="32.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="32.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="14.0" y="51.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="51.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="51.0" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="51.0" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="14.0" y="69.5" width="17" height="17" rx="2" fill="#1F130E" stroke="#1F130E" stroke-width="1.5"/><rect x="32.5" y="69.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="51.0" y="69.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="69.5" y="69.5" width="17" height="17" rx="2" fill="#FFFFFF" stroke="#1F130E" stroke-width="1.5"/><rect x="14" y="14" width="17" height="17" rx="2" fill="#D8361F"/></svg><div class="dots"><i></i><i></i><i></i><i></i><i></i></div></div>
+<div style="position:absolute;left:70px;top:108px;width:360px;height:360px;outline:3px solid var(--ink)">
+<div class="xw" id="xw0" style="left:0px;top:0px;width:360px;height:72px;opacity:0"></div>
+<div class="xw" id="xw1" style="left:0px;top:144px;width:288px;height:72px;opacity:0"></div>
+<div class="xw" id="xw2" style="left:0px;top:288px;width:360px;height:72px;opacity:0"></div>
+<div class="xcur" id="xcur" style="opacity:0"></div>
+<div class="xc" style="left:-1px;top:-1px"></div>
+<span class="xl" id="x0_0" style="left:0px;top:3px;opacity:0">C</span>
+<div class="xc" style="left:71px;top:-1px"></div>
+<span class="xl" id="x0_1" style="left:72px;top:3px;opacity:0">O</span>
+<div class="xc" style="left:143px;top:-1px"></div>
+<span class="xl" id="x0_2" style="left:144px;top:3px;opacity:0">P</span>
+<div class="xc" style="left:215px;top:-1px"></div>
+<span class="xl" id="x0_3" style="left:216px;top:3px;opacity:0">P</span>
+<div class="xc" style="left:287px;top:-1px"></div>
+<span class="xl" id="x0_4" style="left:288px;top:3px;opacity:0">E</span>
+<div class="xc" style="left:-1px;top:71px"></div>
+<span class="xl" style="left:0px;top:75px">O</span>
+<div class="xc" style="left:71px;top:71px"></div>
+<span class="xl" style="left:72px;top:75px">R</span>
+<div class="xc" style="left:143px;top:71px"></div>
+<span class="xl" style="left:144px;top:75px">I</span>
+<div class="xb" style="left:222px;top:78px;width:60px;height:60px"></div>
+<div class="xb" style="left:294px;top:78px;width:60px;height:60px"></div>
+<div class="xc" style="left:-1px;top:143px"></div>
+<span class="xl" id="x2_0" style="left:0px;top:147px;opacity:0">N</span>
+<div class="xc" style="left:71px;top:143px"></div>
+<span class="xl" id="x2_1" style="left:72px;top:147px;opacity:0">A</span>
+<div class="xc" style="left:143px;top:143px"></div>
+<span class="xl" id="x2_2" style="left:144px;top:147px;opacity:0">T</span>
+<div class="xc" style="left:215px;top:143px"></div>
+<span class="xl" id="x2_3" style="left:216px;top:147px;opacity:0">A</span>
+<div class="xb" style="left:294px;top:150px;width:60px;height:60px"></div>
+<div class="xb" style="left:6px;top:222px;width:60px;height:60px"></div>
+<div class="xb" style="left:78px;top:222px;width:60px;height:60px"></div>
+<div class="xc" style="left:143px;top:215px"></div>
+<span class="xl" style="left:144px;top:219px">T</span>
+<div class="xc" style="left:215px;top:215px"></div>
+<span class="xl" style="left:216px;top:219px">O</span>
+<div class="xc" style="left:287px;top:215px"></div>
+<span class="xl" style="left:288px;top:219px">P</span>
+<div class="xc" style="left:-1px;top:287px"></div>
+<span class="xl" id="x4_0" style="left:0px;top:291px;opacity:0">O</span>
+<div class="xc" style="left:71px;top:287px"></div>
+<span class="xl" id="x4_1" style="left:72px;top:291px;opacity:0">D</span>
+<div class="xc" style="left:143px;top:287px"></div>
+<span class="xl" id="x4_2" style="left:144px;top:291px;opacity:0">O</span>
+<div class="xc" style="left:215px;top:287px"></div>
+<span class="xl" id="x4_3" style="left:216px;top:291px;opacity:0">R</span>
+<div class="xc" style="left:287px;top:287px"></div>
+<span class="xl" id="x4_4" style="left:288px;top:291px;opacity:0">I</span>
+</div></div>
+<div class="pn" data-layout-allow-occlusion id="pB"><div class="ph" data-layout-allow-occlusion style="background:#F3C3D3"><svg viewBox="0 0 100 100"><rect x="10" y="40" width="80" height="20" fill="#C92A6B" opacity=".85"/><rect x="14" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="29" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="44" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="59" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/><rect x="74" y="16" width="12" height="68" rx="5" fill="none" stroke="#1F130E" stroke-width="1.8"/></svg><div class="dots"><i></i><i></i><i></i><i></i><i></i></div></div>
+<div class="band" data-layout-allow-occlusion><div class="hit" id="hit"></div></div>
+<div class="win" data-layout-allow-occlusion style="left:22px"><div class="reel" id="rl0"><div>T</div><div>C</div><div>L</div><div>P</div><div>S</div><div>A</div><div>V</div><div>M</div><div>C</div></div></div>
+<div class="win" data-layout-allow-occlusion style="left:116px"><div class="reel" id="rl1"><div>A</div><div>U</div><div>E</div><div>O</div><div>R</div><div>I</div><div>A</div><div>O</div><div>A</div></div></div>
+<div class="win" data-layout-allow-occlusion style="left:210px"><div class="reel" id="rl2"><div>S</div><div>N</div><div>T</div><div>R</div><div>L</div><div>T</div><div>N</div><div>R</div><div>N</div></div></div>
+<div class="win" data-layout-allow-occlusion style="left:304px"><div class="reel" id="rl3"><div>V</div><div>T</div><div>S</div><div>C</div><div>A</div><div>E</div><div>P</div><div>S</div><div>T</div></div></div>
+<div class="win" data-layout-allow-occlusion style="left:398px"><div class="reel" id="rl4"><div>I</div><div>A</div><div>E</div><div>L</div><div>O</div><div>C</div><div>I</div><div>O</div><div>E</div></div></div>
+<div class="rfade" data-layout-allow-occlusion style="top:92px;background:linear-gradient(#FFFEFB 20%,rgba(255,254,251,0))"></div>
+<div class="rfade" data-layout-allow-occlusion style="top:350px;background:linear-gradient(rgba(255,254,251,0),#FFFEFB 80%)"></div>
+</div>
+<div class="pn" data-layout-allow-occlusion id="pC"><div class="ph" data-layout-allow-occlusion style="background:var(--brand-soft)"><svg viewBox="0 0 100 100"><path d="M30 18h40v20c0 14-9 24-20 24S30 52 30 38z" fill="#E93F29"/><path d="M30 26H18c0 12 6 18 14 18M70 26h12c0 12-6 18-14 18" fill="none" stroke="#E93F29" stroke-width="5"/><rect x="45" y="60" width="10" height="14" fill="#E93F29"/><rect x="32" y="74" width="36" height="9" rx="3" fill="#1F130E"/></svg><div class="dots"><i></i><i></i><i></i><i></i><i></i></div></div>
+<div class="rk" style="top:104px">1</div>
+<div class="rk" style="top:180px">2</div>
+<div class="rk" style="top:256px">3</div>
+<div class="rk" style="top:332px">4</div>
+<div class="rk" style="top:408px">5</div>
+<div class="row" id="rw0" style=""><div class="av" style="background:#F2C4B5"></div><span class="tm" id="tm0">02:21,4</span><span class="pt" id="pt0">1000</span></div>
+<div class="row" id="rw1" style=""><div class="av" style="background:#D7CBF2"></div><span class="tm" id="tm1">02:37,0</span><span class="pt" id="pt1">1000</span></div>
+<div class="row" id="rw2" style=""><div class="av" style="background:#BDE3E0"></div><span class="tm" id="tm2">02:58,7</span><span class="pt" id="pt2">981</span></div>
+<div class="row" id="rw3" style="background:var(--brand-soft);"><div class="av" style="background:var(--brand)"><svg viewBox="0 0 10 10" width="22" height="22"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="#FCFCF9"/><rect x="3.6" y="3.6" width="2.8" height="2.8" fill="#E93F29"/></svg></div><span class="tm" id="tm3">03:12,5</span><span class="pt" id="pt3">940</span></div>
+<div class="row" id="rw4" style=""><div class="av" style="background:#BFDCEB"></div><span class="tm" id="tm4">04:26,8</span><span class="pt" id="pt4">925</span></div>
+<div class="plus" id="plus">+60</div>
+</div>
+<div class="pn" data-layout-allow-occlusion id="pD" style="background:transparent;box-shadow:none">
+<div class="cal">
+<div class="pg"><div class="hd"></div><div class="dn">29</div><div class="wk"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+<div class="pg" id="pg0" style="box-shadow:0 22px 50px rgba(31,19,14,.16),0 0 0 2px var(--hair)"><div class="hd"></div><div class="dn">28</div><div class="wk"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+<div class="ringc" style="left:80px"></div><div class="ringc" style="left:198px"></div>
+</div></div>
+</div>
+</div>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.to("#cd0",{y:-10,scale:1.06,duration:0.3,ease:"power2.out"},0.50);
+tl.to("#rg0",{opacity:1,duration:0.25},0.50);
+tl.to("#cd0",{y:0,scale:1,duration:0.3,ease:"power2.inOut"},3.35);
+tl.to("#rg0",{opacity:0,duration:0.25},3.35);
+tl.fromTo("#pA",{opacity:0,scale:0.92,y:16},{opacity:1,scale:1,y:0,duration:0.35,ease:"power3.out",immediateRender:false},0.50);
+tl.to("#pA",{opacity:0,scale:0.96,y:-10,duration:0.3,ease:"power2.in"},3.35);
+tl.set("#xcur",{x:0,y:0},0.95);
+tl.to("#xcur",{opacity:1,duration:0.12},0.95);
+tl.to("#xw0",{opacity:1,duration:0.15},0.95);
+tl.fromTo("#x0_0",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.07);
+tl.to("#xcur",{x:72,duration:0.06,ease:"power2.out"},1.11);
+tl.fromTo("#x0_1",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.15);
+tl.to("#xcur",{x:144,duration:0.06,ease:"power2.out"},1.19);
+tl.fromTo("#x0_2",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.23);
+tl.to("#xcur",{x:216,duration:0.06,ease:"power2.out"},1.27);
+tl.fromTo("#x0_3",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.31);
+tl.to("#xcur",{x:288,duration:0.06,ease:"power2.out"},1.35);
+tl.fromTo("#x0_4",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.39);
+tl.to("#xcur",{opacity:0,duration:0.07},1.59);
+tl.to("#xw0",{opacity:0,duration:0.2},1.59);
+tl.set("#xcur",{x:0,y:144},1.67);
+tl.to("#xcur",{opacity:1,duration:0.12},1.67);
+tl.to("#xw1",{opacity:1,duration:0.15},1.67);
+tl.fromTo("#x2_0",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.79);
+tl.to("#xcur",{x:72,duration:0.06,ease:"power2.out"},1.83);
+tl.fromTo("#x2_1",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.87);
+tl.to("#xcur",{x:144,duration:0.06,ease:"power2.out"},1.91);
+tl.fromTo("#x2_2",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},1.95);
+tl.to("#xcur",{x:216,duration:0.06,ease:"power2.out"},1.99);
+tl.fromTo("#x2_3",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},2.03);
+tl.to("#xcur",{opacity:0,duration:0.07},2.23);
+tl.to("#xw1",{opacity:0,duration:0.2},2.23);
+tl.set("#xcur",{x:0,y:288},2.31);
+tl.to("#xcur",{opacity:1,duration:0.12},2.31);
+tl.to("#xw2",{opacity:1,duration:0.15},2.31);
+tl.fromTo("#x4_0",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},2.43);
+tl.to("#xcur",{x:72,duration:0.06,ease:"power2.out"},2.47);
+tl.fromTo("#x4_1",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},2.51);
+tl.to("#xcur",{x:144,duration:0.06,ease:"power2.out"},2.55);
+tl.fromTo("#x4_2",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},2.59);
+tl.to("#xcur",{x:216,duration:0.06,ease:"power2.out"},2.63);
+tl.fromTo("#x4_3",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},2.67);
+tl.to("#xcur",{x:288,duration:0.06,ease:"power2.out"},2.71);
+tl.fromTo("#x4_4",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.14,ease:"back.out(2)",immediateRender:false},2.75);
+tl.to("#xcur",{opacity:0,duration:0.07},2.95);
+tl.to("#xw2",{opacity:0,duration:0.2},2.95);
+tl.fromTo("#ck0",{opacity:0,scale:0.3},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.4)",immediateRender:false},3.15);
+tl.set(["#x0_0","#x0_1","#x0_2","#x0_3","#x0_4","#x2_0","#x2_1","#x2_2","#x2_3","#x4_0","#x4_1","#x4_2","#x4_3","#x4_4"],{opacity:0},3.70);
+tl.to("#cd4",{y:-10,scale:1.06,duration:0.3,ease:"power2.out"},3.75);
+tl.to("#rg4",{opacity:1,duration:0.25},3.75);
+tl.to("#cd4",{y:0,scale:1,duration:0.3,ease:"power2.inOut"},6.15);
+tl.to("#rg4",{opacity:0,duration:0.25},6.15);
+tl.fromTo("#pB",{opacity:0,scale:0.92,y:16},{opacity:1,scale:1,y:0,duration:0.35,ease:"power3.out",immediateRender:false},3.75);
+tl.to("#pB",{opacity:0,scale:0.96,y:-10,duration:0.3,ease:"power2.in"},6.15);
+gsap.set("#rl0",{y:-104});
+tl.to("#rl0",{y:-728,duration:0.90,ease:"power3.inOut"},4.10);
+gsap.set("#rl1",{y:-104});
+tl.to("#rl1",{y:-728,duration:1.08,ease:"power3.inOut"},4.10);
+gsap.set("#rl2",{y:-104});
+tl.to("#rl2",{y:-728,duration:1.26,ease:"power3.inOut"},4.10);
+gsap.set("#rl3",{y:-104});
+tl.to("#rl3",{y:-728,duration:1.44,ease:"power3.inOut"},4.10);
+gsap.set("#rl4",{y:-104});
+tl.to("#rl4",{y:-728,duration:1.62,ease:"power3.inOut"},4.10);
+tl.to("#hit",{opacity:1,duration:0.2},5.77);
+tl.fromTo("#ck4",{opacity:0,scale:0.3},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.4)",immediateRender:false},5.97);
+tl.set("#hit",{opacity:0},6.50);
+tl.set("#rl0",{y:-104},6.50);
+tl.set("#rl1",{y:-104},6.50);
+tl.set("#rl2",{y:-104},6.50);
+tl.set("#rl3",{y:-104},6.50);
+tl.set("#rl4",{y:-104},6.50);
+tl.fromTo("#ck5",{opacity:0,scale:0.3},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.4)",immediateRender:false},6.30);
+tl.fromTo("#ck6",{opacity:0,scale:0.3},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.4)",immediateRender:false},6.44);
+tl.fromTo("#ck8",{opacity:0,scale:0.3},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.4)",immediateRender:false},6.58);
+tl.fromTo("#ck1",{opacity:0,scale:0.3},{opacity:1,scale:1,duration:0.3,ease:"back.out(2.4)",immediateRender:false},6.72);
+tl.fromTo("#pC",{opacity:0,scale:0.92,y:16},{opacity:1,scale:1,y:0,duration:0.35,ease:"power3.out",immediateRender:false},6.55);
+tl.to("#pC",{opacity:0,scale:0.96,y:-10,duration:0.3,ease:"power2.in"},9.00);
+gsap.set("#rw0",{y:104});
+gsap.set("#rw1",{y:180});
+gsap.set("#rw2",{y:256});
+gsap.set("#rw3",{y:332});
+gsap.set("#rw4",{y:408});
+tl.set("#pt3",{textContent:"961"},7.20);
+tl.to("#rw0",{y:104,duration:0.35,ease:"power3.inOut"},7.20);
+tl.to("#rw1",{y:180,duration:0.35,ease:"power3.inOut"},7.20);
+tl.to("#rw3",{y:256,duration:0.35,ease:"power3.inOut"},7.20);
+tl.to("#rw2",{y:332,duration:0.35,ease:"power3.inOut"},7.20);
+tl.to("#rw4",{y:408,duration:0.35,ease:"power3.inOut"},7.20);
+tl.set("#pt3",{textContent:"1000"},7.75);
+tl.set("#tm3",{textContent:"02:18,9"},7.75);
+tl.fromTo("#plus",{opacity:0,y:194},{opacity:1,y:178,duration:0.25,ease:"back.out(2)",immediateRender:false},7.75);
+tl.to("#rw0",{y:104,duration:0.35,ease:"power3.inOut"},7.80);
+tl.to("#rw3",{y:180,duration:0.35,ease:"power3.inOut"},7.80);
+tl.to("#rw1",{y:256,duration:0.35,ease:"power3.inOut"},7.80);
+tl.to("#rw2",{y:332,duration:0.35,ease:"power3.inOut"},7.80);
+tl.to("#rw4",{y:408,duration:0.35,ease:"power3.inOut"},7.80);
+tl.to("#rw3",{y:104,duration:0.35,ease:"power3.inOut"},8.20);
+tl.to("#rw0",{y:180,duration:0.35,ease:"power3.inOut"},8.20);
+tl.to("#rw1",{y:256,duration:0.35,ease:"power3.inOut"},8.20);
+tl.to("#rw2",{y:332,duration:0.35,ease:"power3.inOut"},8.20);
+tl.to("#rw4",{y:408,duration:0.35,ease:"power3.inOut"},8.20);
+tl.to("#plus",{y:102,duration:0.35,ease:"power3.inOut"},8.20);
+tl.to("#plus",{opacity:0,duration:0.25},8.70);
+tl.set("#rw0",{y:104},9.35);
+tl.set("#rw1",{y:180},9.35);
+tl.set("#rw2",{y:256},9.35);
+tl.set("#rw3",{y:332},9.35);
+tl.set("#rw4",{y:408},9.35);
+tl.set("#pt3",{textContent:"940"},9.35);
+tl.set("#tm3",{textContent:"03:12,5"},9.35);
+tl.fromTo("#pD",{opacity:0,scale:0.92,y:16},{opacity:1,scale:1,y:0,duration:0.35,ease:"power3.out",immediateRender:false},9.30);
+tl.to("#pD",{opacity:0,scale:0.96,y:-10,duration:0.3,ease:"power2.in"},11.05);
+tl.to("#pg0",{rotation:-14,x:-40,y:-120,opacity:0,duration:0.55,ease:"power2.in",transformOrigin:"0% 0%"},9.75);
+tl.to("#cd0",{scaleX:0,duration:0.13,ease:"power2.in"},10.15);
+tl.set("#ck0",{opacity:0},10.28);
+tl.to("#cd0",{scaleX:1,duration:0.15,ease:"power2.out"},10.28);
+tl.to("#cd1",{scaleX:0,duration:0.13,ease:"power2.in"},10.22);
+tl.set("#ck1",{opacity:0},10.35);
+tl.to("#cd1",{scaleX:1,duration:0.15,ease:"power2.out"},10.35);
+tl.to("#cd2",{scaleX:0,duration:0.13,ease:"power2.in"},10.29);
+tl.set("#ck2",{opacity:0},10.42);
+tl.to("#cd2",{scaleX:1,duration:0.15,ease:"power2.out"},10.42);
+tl.to("#cd3",{scaleX:0,duration:0.13,ease:"power2.in"},10.36);
+tl.set("#ck3",{opacity:0},10.49);
+tl.to("#cd3",{scaleX:1,duration:0.15,ease:"power2.out"},10.49);
+tl.to("#cd4",{scaleX:0,duration:0.13,ease:"power2.in"},10.43);
+tl.set("#ck4",{opacity:0},10.56);
+tl.to("#cd4",{scaleX:1,duration:0.15,ease:"power2.out"},10.56);
+tl.to("#cd5",{scaleX:0,duration:0.13,ease:"power2.in"},10.22);
+tl.set("#ck5",{opacity:0},10.35);
+tl.to("#cd5",{scaleX:1,duration:0.15,ease:"power2.out"},10.35);
+tl.to("#cd6",{scaleX:0,duration:0.13,ease:"power2.in"},10.29);
+tl.set("#ck6",{opacity:0},10.42);
+tl.to("#cd6",{scaleX:1,duration:0.15,ease:"power2.out"},10.42);
+tl.to("#cd7",{scaleX:0,duration:0.13,ease:"power2.in"},10.36);
+tl.set("#ck7",{opacity:0},10.49);
+tl.to("#cd7",{scaleX:1,duration:0.15,ease:"power2.out"},10.49);
+tl.to("#cd8",{scaleX:0,duration:0.13,ease:"power2.in"},10.43);
+tl.set("#ck8",{opacity:0},10.56);
+tl.to("#cd8",{scaleX:1,duration:0.15,ease:"power2.out"},10.56);
+tl.to("#cd9",{scaleX:0,duration:0.13,ease:"power2.in"},10.50);
+tl.set("#ck9",{opacity:0},10.63);
+tl.to("#cd9",{scaleX:1,duration:0.15,ease:"power2.out"},10.63);
+tl.set("#pg0",{rotation:0,x:0,y:0,opacity:1},11.40);
+tl.set({},{},12.00);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

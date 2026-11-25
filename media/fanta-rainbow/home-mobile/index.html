@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="it">
+  <!-- Fanta Rainbow, sfondo della home da telefono, verticale a tutto schermo (1080x2340, 12 s
+       in loop): lo stesso giro d'asta di home/ (assets/asta.js e asta.css sono copie identiche),
+       la carta sopra il logo e i telefoni sotto. Si codifica a 720x1560. Zone del telefono
+       (object-fit cover, riferimento 390x844): barra in alto 0-5%, logo SVG del sito centrato a
+       x 50% e y 30% (riquadro y 22-38%, su nero), nuvoletta e Didi in basso da y 68%. -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=2340" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/asta.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 2340px; overflow: hidden; background: #000; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #000; }
+      #asta { --carta-w: 820px; --banda: 54px; --nome: 84px; --cifra: 130px; --anello: 160px; --riga: 44px; --raggi: 560px; }
+      /* Telefoni più alti che sul desktop (160x400 prima della scala), coi numeri e il tasto
+         più grandi; la pillola del countdown sta sopra il tasto */
+      .tel { top: -200px; height: 400px; }
+      .tel-testa { font-size: 15px; }
+      .tel-lotto { top: 52px; }
+      .tel-nome { font-size: 20px; }
+      .tel-cifra { top: 80px; font-size: 84px; }
+      .pillola { top: auto; bottom: 172px; height: 12px; }
+      .tasto { bottom: 22px; width: 130px; height: 130px; margin-left: -65px; }
+      .tasto-on { font-size: 48px; }
+      .tasto-on .moneta { width: 26px; height: 26px; }
+      .tasto-testa svg { width: 56px; height: 56px; }
+      .rosa { top: 64px; bottom: 30px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1080" data-height="2340">
+      <div id="asta" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap></div>
+    </div>
+    <script>
+      // Dove stanno le parti dell'asta, in px del fotogramma: la carta in alto (y 5-19%, x
+      // 12-88%), sopra il logo; i tre telefoni sotto il logo, uno per colonna (x 14-38%,
+      // 40-60%, 62-86%), da y 40% a y 66%. Sotto il 68% c'è la nuvoletta di Didi: solo nero.
+      // Rilanci e volo passano ai lati del logo (x sotto il 20% o sopra l'80%).
+      window.__astaConfig = {
+        forma: "largo",
+        carta: { x: 130, y: 120 },
+        telefoni: [
+          { x: 281, y: 1240, r: -2, s: 1.5 },
+          { x: 540, y: 1240, r: 0, s: 1.5 },
+          { x: 799, y: 1240, r: 2, s: 1.5 },
+        ],
+        gettone: (da) => (da[0] < 600 ? [[100, 1100], [100, 600]] : [[980, 1100], [980, 600]]),
+        volo: [[990, 560], [990, 1000]],
+        voloScala: 0.1,
+        martello: { x: 790, y: 265, s: 0.9 },
+      };
+      (function () {
+        var orologio = { t: 0 };
+        var stato = { disegna: null };
+        window.__asta = stato;
+        window.__hf = window.__hf || {};
+        window.__hf.buildReady = window.__hf.buildReady || {};
+        window.__hf.buildReady["asta"] = new Promise(function (resolve) {
+          stato.pronto = resolve;
+        });
+        stato.orologio = orologio;
+        var tl = gsap.timeline({ paused: true });
+        tl.to(orologio, {
+          t: 12,
+          duration: 12,
+          ease: "none",
+          onUpdate: function () {
+            if (stato.disegna) stato.disegna(orologio.t);
+          },
+        });
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+    <script type="module">
+      import { monta } from "./assets/asta.js";
+      const stato = window.__asta;
+      const asta = monta(document.getElementById("asta"), window.__astaConfig);
+      await document.fonts.ready;
+      asta.render(0);
+      asta.misura();
+      stato.disegna = asta.render;
+      stato.disegna(stato.orologio.t);
+      stato.pronto();
+    </script>
+  </body>
+</html>

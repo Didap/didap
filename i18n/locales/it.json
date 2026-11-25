@@ -20,6 +20,8 @@
     "outro_title": "Hai un’idea\nda liberare?",
     "hero_tagline": "Free the\nmonkey.",
     "featured_more": "Scopri di più",
+    "dock_ask": "Hai un progetto?",
+    "dock_cta": "Scrivici",
     "status_live": "Live",
     "status_development": "In sviluppo",
     "status_pilot": "Pilot",
@@ -168,7 +170,7 @@
     },
     "hello": "Ciao, sono Didi. Raccontami cosa hai in mente e ti dico come partire.",
     "ask": "Hai un’idea da liberare? Raccontamela.",
-    "placeholder": "Es. un’app per il mio ristorante",
+    "placeholder": "Un’app per il mio ristorante",
     "input": "Il tuo messaggio per Didi",
     "send": "Invia",
     "thinking": "Didi ci sta pensando",
@@ -183,6 +185,8 @@
     "form": "Compila il modulo",
     "direct": "Oppure contattaci direttamente",
     "restart": "Ricomincia",
+    "send_failed": "Non sono riuscito a mandarci la tua idea. Scrivici dal modulo: la leggiamo subito.",
+    "contact_invalid": "Non riesco a leggere il contatto. Mi scrivi un’email o un numero di telefono per richiamarti?",
     "back": "Torna da Didi"
   },
   "error": {

@@ -20,6 +20,8 @@
     "outro_title": "Got an idea\nto set free?",
     "hero_tagline": "Free the\nmonkey.",
     "featured_more": "Find out more",
+    "dock_ask": "Got a project?",
+    "dock_cta": "Write to us",
     "status_live": "Live",
     "status_development": "In development",
     "status_pilot": "Pilot",
@@ -168,7 +170,7 @@
     },
     "hello": "Hi, I’m Didi. Tell me what you have in mind and I’ll tell you how to start.",
     "ask": "Got an idea to set free? Tell me about it.",
-    "placeholder": "E.g. a booking app for my restaurant",
+    "placeholder": "An app for my restaurant",
     "input": "Your message for Didi",
     "send": "Send",
     "thinking": "Didi is thinking",
@@ -183,6 +185,8 @@
     "form": "Fill in the form",
     "direct": "Or contact us directly",
     "restart": "Start over",
+    "send_failed": "I couldn't send us your idea. Write to us from the form: we'll read it right away.",
+    "contact_invalid": "I can’t read that contact. Can you write me an email or a phone number to get back to you?",
     "back": "Back to Didi"
   },
   "error": {

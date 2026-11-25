@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useMediaQuery } from '@vueuse/core'
 import DidapButton from '~/components/DidapButton.vue'
 import DidiTalk from '~/components/DidiTalk.vue'
 import HomeBar from '~/components/HomeBar.vue'
+import HomeDock from '~/components/HomeDock.vue'
 import HomeLogo from '~/components/HomeLogo.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
 import ScreenRail from '~/components/ScreenRail.vue'
@@ -34,10 +34,10 @@ useSeoMeta({
   description: t('home.seo_description'),
 })
 
-// I prodotti a tutto schermo. `light`: il video in alto è chiaro, la
-// barra va in ink. In verticale però sopra il video c'è il poster
-// sfocato e scurito (`screen-backdrop`): lì sono tutti scuri. L'unico
-// invito porta alla scheda
+// I prodotti a tutto schermo. `light`: il video è chiaro, la barra va
+// in ink (anche da telefono, dove il video è verticale). L'unico invito
+// porta alla scheda. Il marchio del prodotto (`<slug>-wordmark.svg`) sta
+// sopra il video: i video della home non ce l'hanno dentro
 type Featured = {
   key: string
   slug: string
@@ -51,15 +51,14 @@ const featured: Featured[] = [
   { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', light: true },
 ]
 
-// Sul server vale falso: conta solo da una schermata di prodotto in giù,
-// che arriva dopo l'idratazione
-const portrait = useMediaQuery('(max-aspect-ratio: 1/1)')
-
+// I video della home sono suoi (media/<slug>/home e home-mobile): senza
+// il logo, che il sito mette sopra, e con i bordi liberi per la barra,
+// la didascalia e l'indice. Le schede prodotto tengono i video `hero`
 const hero = (slug: string) => ({
-  src: `/covers/${slug}-hero.mp4`,
-  poster: `/covers/${slug}-hero-poster.webp`,
-  srcMobile: `/covers/${slug}-hero-mobile.mp4`,
-  posterMobile: `/covers/${slug}-hero-mobile-poster.webp`,
+  src: `/covers/${slug}-home.mp4`,
+  poster: `/covers/${slug}-home-poster.webp`,
+  srcMobile: `/covers/${slug}-home-mobile.mp4`,
+  posterMobile: `/covers/${slug}-home-mobile-poster.webp`,
 })
 
 
@@ -87,13 +86,18 @@ const root = ref<HTMLElement>()
 const clientsHover = ref(false)
 
 // Le schermate, per l'indice a destra e il colore della barra
-const screens = computed(() => [
+// `product`: le schermate dei prodotti, con il video (la barra ha una
+// sfumatura sua, dello stesso tono) e la descrizione nella barra in basso
+// su telefono. `dock`: lì c'è la barra in basso
+type Screen = { id: string, label: string, light: boolean, product?: Featured, dock?: boolean }
+const screens = computed<Screen[]>(() => [
   { id: 'top', label: 'Didap', light: true },
-  ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light && !portrait.value })),
-  // Didi sta sul verde dei prodotti (sempre con l'alone), "Lavoriamo
-  // insieme" e l'indice sul giallo dei clienti: testo ink, carta quando
-  // i clienti diventano neri sotto il puntatore
-  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: !clientsHover.value, glow: true },
+  ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light, product: p, dock: true })),
+  // Didi (adesivo) sta sul verde dei prodotti, "Lavoriamo insieme" e
+  // l'indice sul giallo dei clienti: testo ink, carta quando i clienti
+  // diventano neri sotto il puntatore
+  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: !clientsHover.value, dock: true },
+  // Nella chiusura la chat con Didi è già a tutto schermo: niente barra
   { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
 ])
 
@@ -101,7 +105,46 @@ const screens = computed(() => [
 // una all'altra (composables/useScreens)
 const { active, motion } = useScreens(root)
 
+// La barra in basso su telefono: Didi e "Hai un progetto?" dove la
+// schermata la vuole, la nuvoletta con la descrizione sui prodotti
+const dockShown = computed(() => !!screens.value[active.value]?.dock)
+const dockProduct = computed(() => screens.value[active.value]?.product)
+
+// La sfumatura della barra, solo sui video
+const surface = computed(() => {
+  const s = screens.value[active.value]
+  if (!s?.product) return undefined
+  return s.light ? 'light' : 'dark'
+})
+
 const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
+
+// Didi annuisce mentre pensa, anche nella chat della chiusura da telefono
+const { thinking: chatThinking } = useDidiChat()
+
+// Da telefono, arrivando alla chiusura da una schermata con la barra in
+// basso, Didi non sparisce: quello della barra si nasconde e quello della
+// chiusura parte dal suo posto e scivola sotto la chat (FLIP). Da
+// desktop la barra non c'è e non succede niente; con meno movimento
+// nemmeno
+const closingDidi = ref<HTMLImageElement>()
+watch(active, (now, before) => {
+  if (now !== screens.value.length - 1 || !screens.value[before]?.dock) return
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const dock = document.querySelector<HTMLElement>('[data-dock-didi]')
+  const from = dock?.getBoundingClientRect()
+  if (!dock || !from?.width) return
+  dock.style.visibility = 'hidden'
+  nextTick(() => {
+    const el = closingDidi.value
+    if (!el) return
+    const to = el.getBoundingClientRect()
+    el.animate(
+      [{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)` }, { transform: 'none' }],
+      { duration: 650, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+    ).finished.finally(() => dock.style.removeProperty('visibility'))
+  })
+}, { flush: 'pre' })
 </script>
 
 <template>
@@ -112,8 +155,16 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
     <HomeBar
       :shown="active > 0"
       :light="screens[active]?.light ?? true"
-      :glow="screens[active]?.glow"
+      :surface="surface"
       :cta="active !== screens.length - 1"
+    />
+
+    <HomeDock
+      :shown="dockShown"
+      :line="dockProduct ? t(`home.products.${dockProduct.key}.desc`) : undefined"
+      :to="dockProduct ? localePath(`/work/${dockProduct.slug}`) : undefined"
+      :label="dockProduct ? `${t('home.featured_more')}: ${dockProduct.name}` : undefined"
+      @form="openDrawer"
     />
 
     <ScreenRail
@@ -205,11 +256,13 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
         :title="p.name"
         :text="t(`home.products.${p.key}.desc`)"
         :title-id="`${p.slug}-name`"
-        :shade="!p.light"
+        :light="p.light"
+        :logo="`/covers/${p.slug}-wordmark.svg`"
       >
         <DidapButton
           :to="localePath(`/work/${p.slug}`)"
-          paper
+          :paper="!p.light"
+          :ink="p.light"
         >
           {{ t('home.featured_more') }}
           <svg
@@ -251,7 +304,12 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
             lg:pt-[97px]
             xl:px-20
           "
-          :class="d.tone"
+          :class="[
+            d.tone,
+            // Su telefono i clienti stanno in fondo: lo spazio per la barra
+            // di Didi (HomeDock), se no ne coprirebbe i nomi
+            i === 1 ? `max-screens:pb-(--dock-space)` : '',
+          ]"
           @mouseenter="clientsHover = i === 1"
           @mouseleave="clientsHover = false"
         >
@@ -308,15 +366,72 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
         >
           {{ t('home.outro_title') }}
         </h2>
-        <!-- Didi chiede cosa serve; il modulo sale dal basso, già compilato -->
+        <!-- Didi chiede cosa serve; il modulo sale dal basso, già compilato.
+             Da telefono la chat è quella della nuvoletta in basso
+             (DidiChatPanel), sotto "Lavoriamo insieme": la conversazione è
+             la stessa (useDidiChat) -->
         <DidiTalk
-          class="reveal"
+          class="
+            reveal
+            max-md:hidden
+          "
           style="--i: 0"
           tone="red"
           direct
           :hello="t('chat.ask')"
           @form="openDrawer"
         />
+        <div class="
+          flex flex-col gap-6
+          md:hidden
+        ">
+          <p
+            class="
+              reveal font-wide text-[clamp(2.5rem,11vw,3.25rem)] leading-[0.92]
+              font-bold tracking-[-0.03em]
+            "
+            style="--i: 0"
+            aria-hidden="true"
+          >
+            {{ t('nav.cta') }}
+          </p>
+          <div class="flex flex-col items-start gap-3">
+            <!-- La nuvoletta crema con la coda, come in HomeDock: forma e
+                 ombra su uno strato loro, la chat sopra -->
+            <div
+              class="reveal relative w-full text-ink"
+              style="--i: 1"
+            >
+              <div
+                class="
+                  absolute inset-0 drop-shadow-[0_10px_22px_rgb(22_20_18/0.3)]
+                "
+                aria-hidden="true"
+              >
+                <div class="absolute inset-0 rounded-[38px] bg-paper-light" />
+                <DidiTail />
+              </div>
+              <DidiChatPanel
+                class="relative max-h-[52svh]"
+                @form="openDrawer"
+              />
+            </div>
+            <!-- Didi arriva qui dalla barra in basso (vedi closingDidi): fuori
+                 dall'entrata del testo, se no viaggerebbe trasparente -->
+            <img
+              ref="closingDidi"
+              src="/brand/didi-testa-sticker.svg"
+              alt=""
+              width="240"
+              height="222"
+              class="
+                relative z-1 h-[62px] w-auto origin-bottom
+                drop-shadow-[0_6px_14px_rgb(22_20_18/0.35)]
+              "
+              :class="chatThinking ? 'dock-speaking' : ''"
+            >
+          </div>
+        </div>
         <ScreenLegal />
       </div>
     </section>

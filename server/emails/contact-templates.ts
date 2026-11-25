@@ -6,28 +6,14 @@
   /Arial mantenendo gerarchia tipografica e identità di brand.
 */
 
-import { type ContactKind, type ProjectType, telHref } from '#shared/contact'
+import { type ContactKind, PROJECT_TYPE_LABELS, type ProjectType, contactReply as reply } from '#shared/contact'
 
 // Chi scrive lascia un'email o un telefono, uno dei due
-interface ContactData {
+export interface ContactData {
   name: string
   contact: { value: string; kind: ContactKind }
   projectType?: ProjectType | ''
   message: string
-}
-
-// Come rispondere a chi ha scritto
-function reply({ value, kind }: ContactData['contact']) {
-  return kind === 'email'
-    ? { label: 'Email', href: `mailto:${encodeURIComponent(value)}`, action: 'Rispondi a' }
-    : { label: 'Telefono', href: telHref(value), action: 'Chiama' }
-}
-
-const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
-  product: 'Un prodotto nuovo',
-  app: 'App o SaaS',
-  site: 'Un sito',
-  grant: 'Cerca un bando',
 }
 
 export function escapeHtml(s: string) {

@@ -22,6 +22,7 @@ const RULES: Rule[] = [
   // Consenso a Claude: Bandi lo controlla approve, per rispondere con un messaggio
   { prefix: '/api/admin/oauth', access: { kind: 'session' } },
   { prefix: '/api/admin/products', access: pages('prodotti') },
+  { prefix: '/api/admin/requests', access: pages('richieste') },
   { prefix: '/api/admin/assets', access: pages('prodotti') },
   { prefix: '/api/admin/quotes', access: pages('preventivi') },
   // I clienti si leggono anche da Preventivi, si modificano solo da Clienti

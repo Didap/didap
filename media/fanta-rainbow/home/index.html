@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+  <!-- Fanta Rainbow, sfondo della home (desktop, 1920x1152, 12 s in loop): il giro di un'asta
+       live nello stile dell'app, su fondo nero, senza logo (il sito ci mette sopra il suo SVG,
+       al centro, su nero uniforme). I telefoni dei giocatori a sinistra, la carta del calciatore
+       a destra: i rilanci volano sotto il logo, la carta vola sopra. Tutto in assets/asta.js e
+       asta.css (gli stessi file in home-mobile/). Zone libere: barra in alto (12%), velo in basso
+       (40%), indice a destra (oltre x 76% fra y 28% e 72%), logo al centro attorno al 38%. -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1152" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/asta.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1152px; overflow: hidden; background: #000; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #000; }
+      #asta { --carta-w: 300px; --banda: 46px; --nome: 60px; --cifra: 84px; --anello: 92px; --riga: 38px; --raggi: 520px; }
+      #posto-tel-1 { z-index: 3; }
+      #posto-tel-2 { z-index: 4; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1920" data-height="1152">
+      <div id="asta" class="clip" data-start="0" data-duration="12" data-track-index="0" data-layout-allow-overflow data-layout-allow-overlap></div>
+    </div>
+    <script>
+      // Dove stanno le parti dell'asta, in px del fotogramma. I telefoni a sinistra, la carta
+      // a destra del logo ma entro x 76% (1459 px): fra y 28% e 72% l'indice della pagina, con
+      // l'etichetta della voce attiva, arriva fino a x 80% dello schermo. I rilanci passano
+      // sotto il logo (y attorno al 54%), la carta vola sopra (y attorno al 20%).
+      window.__astaConfig = {
+        forma: "stretto",
+        carta: { x: 1156, y: 205 },
+        telefoni: [
+          { x: 215, y: 405, r: -5, s: 1 },
+          { x: 365, y: 385, r: 0, s: 1 },
+          { x: 515, y: 405, r: 5, s: 1 },
+        ],
+        gettone: () => [[700, 680], [1250, 680]],
+        volo: [[1250, 160], [650, 160]],
+        voloScala: 0.08,
+        martello: { x: 1300, y: 395, s: 0.8 },
+      };
+      (function () {
+        var orologio = { t: 0 };
+        var stato = { disegna: null };
+        window.__asta = stato;
+        window.__hf = window.__hf || {};
+        window.__hf.buildReady = window.__hf.buildReady || {};
+        window.__hf.buildReady["asta"] = new Promise(function (resolve) {
+          stato.pronto = resolve;
+        });
+        stato.orologio = orologio;
+        var tl = gsap.timeline({ paused: true });
+        tl.to(orologio, {
+          t: 12,
+          duration: 12,
+          ease: "none",
+          onUpdate: function () {
+            if (stato.disegna) stato.disegna(orologio.t);
+          },
+        });
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+    <script type="module">
+      import { monta } from "./assets/asta.js";
+      const stato = window.__asta;
+      const asta = monta(document.getElementById("asta"), window.__astaConfig);
+      await document.fonts.ready;
+      asta.render(0);
+      asta.misura();
+      stato.disegna = asta.render;
+      stato.disegna(stato.orologio.t);
+      stato.pronto();
+    </script>
+  </body>
+</html>

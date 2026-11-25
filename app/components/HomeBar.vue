@@ -38,7 +38,7 @@ const didiAway = useDidiAway()
       justify-between
       transition-[color,background-color,opacity,translate,visibility]
       duration-500
-      max-[859px]:hidden
+      max-screens:hidden
       lg:h-[97px]
     "
     :class="[

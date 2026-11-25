@@ -1,36 +1,55 @@
-import { guessTopic, type DidiTopic } from '#shared/didi'
+import { projectTypeFromQuery } from '#shared/contact'
+import { guessTopic, lastMessages, type DidiMessage, type DidiTopic } from '#shared/didi'
+import { untypeset } from '#shared/typeset'
 
-type ChatMessage = { role: 'user' | 'assistant', content: string }
-type DidiAnswer = { reply: string, topic: DidiTopic, sent: boolean, failed?: boolean }
+// `invalid`: il modello ha chiuso con un contatto che il server non
+// accetta; al posto del suo grazie Didi chiede di nuovo il contatto
+type DidiAnswer = { reply: string, topic: DidiTopic, sent: boolean, failed?: boolean, invalid?: boolean }
+
+// Le risposte che arrivano dopo un "Ricomincia" non contano
+let run = 0
 
 /**
- * La chat con Didi (DidiTalk nella chiusura della home, HomeDock da
- * telefono). `ask` manda la conversazione al server (/api/didi, il
- * modello su Groq): Didi capisce l'idea, chiede nome e contatto e, quando
- * li ha, il server ce la manda per email (`sent`). Se l'invio non riesce
- * `failed`. Se il server non ha l'AI o non risponde, Didi torna alle
- * parole chiave (shared/didi.ts) e alle frasi già scritte: `ai` falso,
- * `reply` vuoto, e chi la usa mostra `chat.reply.<topic>` con WhatsApp,
- * la mail e il modulo.
+ * La chat con Didi, una sola per pagina: la nuvoletta di HomeDock e la
+ * chiusura della home (DidiTalk, DidiChatPanel) mostrano la stessa
+ * conversazione, così chi ha già lasciato l'idea non la rimanda.
+ * `ask` manda la conversazione al server (/api/didi, il modello su
+ * Groq): Didi capisce l'idea, chiede nome e contatto e, quando li ha, il
+ * server ce la manda (`sent`); se non riesce `failed`. Se il server non
+ * ha l'AI o non risponde, Didi torna alle parole chiave (shared/didi.ts)
+ * e alle frasi già scritte (`ai` falso). `thread` è quello che si vede:
+ * la domanda di Didi, i messaggi, e senza AI la frase sull'argomento.
  */
 export function useDidiChat() {
-  const { locale } = useI18n()
+  const { locale, t } = useI18n()
+  const { mailto: mailtoFor, whatsapp: whatsappFor } = useDidiContact()
+
+  const messages = useState<DidiMessage[]>('didi-chat-messages', () => [])
+  const topic = useState<DidiTopic | null>('didi-chat-topic', () => null)
+  const thinking = useState('didi-chat-thinking', () => false)
+  const ai = useState('didi-chat-ai', () => false)
+  const sent = useState('didi-chat-sent', () => false)
+  const failed = useState('didi-chat-failed', () => false)
 
   // Quello che ha scritto il cliente, l'ultima volta
-  const said = ref('')
-  const topic = ref<DidiTopic | null>(null)
-  const thinking = ref(false)
-  // La risposta di Didi dal server; null con le frasi già scritte
-  const reply = ref<string | null>(null)
-  const ai = ref(false)
-  const sent = ref(false)
-  const failed = ref(false)
-  const messages = ref<ChatMessage[]>([])
-  let run = 0
+  const said = computed(() => messages.value.findLast(m => m.role === 'user')?.content ?? '')
+
+  const thread = computed<DidiMessage[]>(() => {
+    const list: DidiMessage[] = [{ role: 'assistant', content: t('chat.ask') }, ...messages.value]
+    if (!ai.value && topic.value && !thinking.value) list.push({ role: 'assistant', content: t(`chat.reply.${topic.value}`) })
+    if (failed.value) list.push({ role: 'assistant', content: t('chat.send_failed') })
+    return list
+  })
+
+  const mailto = computed(() => (topic.value ? mailtoFor(topic.value, said.value) : ''))
+  const whatsapp = computed(() => (said.value ? whatsappFor(said.value) : ''))
+  // Le strade per sentirci: con le frasi già scritte, se l'invio non è
+  // riuscito o quando l'idea è partita (allora solo "Ricomincia")
+  const actions = computed(() => !!topic.value && (!ai.value || failed.value || sent.value))
 
   async function ask(text: string) {
     const id = ++run
-    said.value = text
+    topic.value = null
     thinking.value = true
     failed.value = false
     messages.value = [...messages.value, { role: 'user', content: text }]
@@ -38,11 +57,13 @@ export function useDidiChat() {
     try {
       const answer = await $fetch<DidiAnswer>('/api/didi', {
         method: 'POST',
-        body: { locale: locale.value === 'en' ? 'en' : 'it', messages: messages.value },
+        // Solo gli ultimi messaggi che il server accetta: una chat lunga
+        // continua invece di tornare alle frasi già scritte
+        body: { locale: locale.value === 'en' ? 'en' : 'it', messages: lastMessages(messages.value) },
       })
       if (id !== run) return
-      messages.value = [...messages.value, { role: 'assistant', content: answer.reply }]
-      reply.value = answer.reply
+      const content = answer.invalid ? untypeset(t('chat.contact_invalid')) : answer.reply
+      messages.value = [...messages.value, { role: 'assistant', content }]
       topic.value = answer.topic
       sent.value = answer.sent
       failed.value = !!answer.failed
@@ -51,7 +72,6 @@ export function useDidiChat() {
       // Senza AI: le parole chiave, dopo una breve pausa come se pensasse
       await new Promise(r => setTimeout(r, Math.max(0, 900 - (Date.now() - started))))
       if (id !== run) return
-      reply.value = null
       ai.value = false
       topic.value = guessTopic(text)
     } finally {
@@ -61,15 +81,17 @@ export function useDidiChat() {
 
   function reset() {
     run++
-    said.value = ''
+    messages.value = []
     topic.value = null
     thinking.value = false
-    reply.value = null
     ai.value = false
     sent.value = false
     failed.value = false
-    messages.value = []
   }
 
-  return { said, topic, thinking, reply, ai, sent, failed, messages, ask, reset }
+  // Quello già scritto a Didi passa al modulo; prima della risposta anche
+  // il testo nel campo non ancora inviato
+  const formPayload = (draft: string) => [projectTypeFromQuery(topic.value), said.value || draft.trim()] as const
+
+  return { messages, thread, said, topic, thinking, ai, sent, failed, mailto, whatsapp, actions, ask, reset, formPayload }
 }

@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import AdminConfirm from '~/components/admin/AdminConfirm.vue'
 import AdminShell from '~/components/admin/AdminShell.vue'
 import { adminErrorText } from '~/utils/adminErrors'
-import { telHref, type ProjectType } from '#shared/contact'
-import type { DidiRequest, RequestStatus } from '#shared/didi-requests'
+import { formatDateTime } from '~/utils/format'
+import { PROJECT_TYPE_LABELS, contactReply } from '#shared/contact'
+import type { DidiRequest, DidiRequestItem, RequestStatus } from '#shared/didi-requests'
 
 // Le richieste arrivate dalla chat con Didi: chi, come richiamarlo, cosa
-// vuole (spiegato dal modello) e la conversazione intera
+// vuole (spiegato dal modello) e la conversazione intera, che arriva
+// quando si apre la richiesta
 definePageMeta({ layout: 'admin' })
 defineI18nRoute(false)
 useSeoMeta({ title: 'Richieste - Admin Didap' })
@@ -13,21 +16,14 @@ useSeoMeta({ title: 'Richieste - Admin Didap' })
 await useAdminSession()
 const { notify } = useAdminToast()
 
-const requests = ref<DidiRequest[] | null>(null)
-const selectedId = ref<string | null>(null)
+const requests = ref<DidiRequestItem[] | null>(null)
+const selected = ref<DidiRequest | null>(null)
 const query = ref('')
 const busy = ref(false)
 const confirmDelete = ref(false)
 
-const TYPE_LABELS: Record<ProjectType, string> = {
-  product: 'Un prodotto nuovo',
-  app: 'App o SaaS',
-  site: 'Un sito',
-  grant: 'Cerca un bando',
-}
-
-const selected = computed(() => requests.value?.find(r => r.id === selectedId.value) ?? null)
 const newCount = computed(() => requests.value?.filter(r => r.status === 'new').length ?? 0)
+const reply = computed(() => selected.value && contactReply({ value: selected.value.contact, kind: selected.value.contactKind }))
 
 const filtered = computed(() => {
   const q = query.value.trim().toLowerCase()
@@ -37,12 +33,9 @@ const filtered = computed(() => {
     : all
 })
 
-const date = (iso: string) => new Date(iso).toLocaleString('it-IT', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-const contactHref = (r: DidiRequest) => r.contactKind === 'email' ? `mailto:${encodeURIComponent(r.contact)}` : telHref(r.contact)
-
 async function load() {
   try {
-    requests.value = await $fetch<DidiRequest[]>('/api/admin/requests')
+    requests.value = await $fetch<DidiRequestItem[]>('/api/admin/requests')
   }
   catch (err) {
     notify('error', adminErrorText(err))
@@ -51,17 +44,22 @@ async function load() {
 
 onAdminReady(load)
 
-function open(r: DidiRequest) {
-  confirmDelete.value = false
-  selectedId.value = r.id
+async function open(r: DidiRequestItem) {
+  try {
+    selected.value = await $fetch<DidiRequest>(`/api/admin/requests/${r.id}`)
+  }
+  catch (err) {
+    notify('error', adminErrorText(err))
+  }
 }
 
 async function setStatus(status: RequestStatus) {
   if (!selected.value) return
   busy.value = true
   try {
-    const saved = await $fetch<DidiRequest>(`/api/admin/requests/${selected.value.id}`, { method: 'PUT', body: { status } })
+    const saved = await $fetch<DidiRequestItem>(`/api/admin/requests/${selected.value.id}`, { method: 'PUT', body: { status } })
     requests.value = requests.value?.map(r => r.id === saved.id ? saved : r) ?? null
+    selected.value = { ...selected.value, status: saved.status }
     notify('ok', status === 'done' ? 'Segnata come gestita' : 'Di nuovo da gestire')
   }
   catch (err) {
@@ -77,7 +75,7 @@ async function remove() {
   busy.value = true
   try {
     await $fetch(`/api/admin/requests/${selected.value.id}`, { method: 'DELETE' })
-    selectedId.value = null
+    selected.value = null
     await load()
     notify('ok', 'Richiesta eliminata')
   }
@@ -137,7 +135,7 @@ async function remove() {
             <button
               type="button"
               class="w-full rounded-xl px-3 py-2.5 text-left transition"
-              :class="selectedId === r.id ? 'bg-ink text-paper-light' : `
+              :class="selected?.id === r.id ? 'bg-ink text-paper-light' : `
                 hover:bg-ink/5
               `"
               @click="open(r)"
@@ -149,7 +147,7 @@ async function remove() {
                   aria-label="Da gestire"
                 />
                 <span class="truncate font-medium">{{ r.name }}</span>
-                <span class="ml-auto shrink-0 text-xs opacity-60">{{ date(r.createdAt) }}</span>
+                <span class="ml-auto shrink-0 text-xs opacity-60">{{ formatDateTime(r.createdAt) }}</span>
               </span>
               <span class="mt-0.5 line-clamp-2 block text-xs opacity-70">{{ r.summary }}</span>
             </button>
@@ -184,20 +182,20 @@ async function remove() {
               >{{ selected.status === 'new' ? 'Da gestire' : 'Gestita' }}</span>
             </div>
             <p class="flex flex-wrap gap-x-4 gap-y-1 text-sm opacity-70">
-              <span>{{ date(selected.createdAt) }}</span>
-              <span v-if="selected.projectType">{{ TYPE_LABELS[selected.projectType] }}</span>
+              <span>{{ formatDateTime(selected.createdAt) }}</span>
+              <span v-if="selected.projectType">{{ PROJECT_TYPE_LABELS[selected.projectType] }}</span>
               <span>{{ selected.locale === 'en' ? 'Dal sito in inglese' : 'Dal sito in italiano' }}</span>
               <span>{{ selected.emailSent ? 'Email inviata' : 'Email non inviata' }}</span>
             </p>
             <a
-              :href="contactHref(selected)"
+              :href="reply!.href"
               class="
                 self-start rounded-full bg-green px-5 py-2.5 font-medium
                 text-paper-light
                 hover:bg-ink
               "
             >
-              {{ selected.contactKind === 'email' ? 'Scrivi a' : 'Chiama' }} {{ selected.contact }}
+              {{ reply!.action }} {{ selected.contact }}
             </a>
           </header>
 
@@ -260,7 +258,6 @@ async function remove() {
               Di nuovo da gestire
             </button>
             <button
-              v-if="!confirmDelete"
               type="button"
               class="
                 rounded-full px-4 py-2 text-sm text-red
@@ -270,27 +267,16 @@ async function remove() {
             >
               Elimina
             </button>
-            <template v-else>
-              <span class="text-sm">Eliminare la richiesta?</span>
-              <button
-                type="button"
-                class="rounded-full bg-red px-4 py-2 text-sm text-white"
-                :disabled="busy"
-                @click="remove"
-              >
-                Sì, elimina
-              </button>
-              <button
-                type="button"
-                class="rounded-full px-4 py-2 text-sm"
-                @click="confirmDelete = false"
-              >
-                Annulla
-              </button>
-            </template>
           </div>
         </article>
       </main>
     </div>
+    <AdminConfirm
+      v-model:open="confirmDelete"
+      :title="`Eliminare la richiesta di ${selected?.name || 'questo cliente'}?`"
+      description="La richiesta e la sua chat con Didi spariscono dal pannello. Le email già arrivate restano."
+      :busy="busy"
+      @confirm="remove"
+    />
   </AdminShell>
 </template>

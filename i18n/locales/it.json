@@ -186,6 +186,7 @@
     "direct": "Oppure contattaci direttamente",
     "restart": "Ricomincia",
     "send_failed": "Non sono riuscito a mandarci la tua idea. Scrivici dal modulo: la leggiamo subito.",
+    "contact_invalid": "Non riesco a leggere il contatto. Mi scrivi un’email o un numero di telefono per richiamarti?",
     "back": "Torna da Didi"
   },
   "error": {

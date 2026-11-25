@@ -1,25 +1,28 @@
+import type { DidiMessage } from '#shared/didi'
+
 // Groq per la chat con Didi: l'API è compatibile con quella di OpenAI
 // (chat completions). La chiave sta solo sul server (GROQ_API_KEY), il
 // modello si sceglie con GROQ_MODEL. Si chiede sempre una risposta JSON,
 // che chi chiama valida.
 
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+// Anche il ragionamento dei modelli gpt-oss conta nei token
+const MAX_TOKENS = 1500
+const TIMEOUT_MS = 20_000
 
 export const hasGroq = () => !!process.env.GROQ_API_KEY
-export const groqModel = () => process.env.GROQ_MODEL || 'openai/gpt-oss-120b'
+const groqModel = () => process.env.GROQ_MODEL || 'openai/gpt-oss-120b'
 
-export type GroqMessage = { role: 'system' | 'user' | 'assistant', content: string }
+export type GroqMessage = DidiMessage | { role: 'system', content: string }
 
 export class GroqError extends Error {
-  constructor(message: string, readonly status?: number) {
-    super(message)
-    this.name = 'GroqError'
-  }
+  override name = 'GroqError'
 }
 
 // La risposta del modello come oggetto JSON; lancia GroqError se Groq
 // non risponde, risponde male o non manda JSON
-export async function groqJson(messages: GroqMessage[], { maxTokens = 1500, timeoutMs = 20_000 } = {}): Promise<unknown> {
+export async function groqJson(messages: GroqMessage[]): Promise<unknown> {
+  const model = groqModel()
   let res: Response
   try {
     res = await fetch(ENDPOINT, {
@@ -29,23 +32,21 @@ export async function groqJson(messages: GroqMessage[], { maxTokens = 1500, time
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: groqModel(),
+        model,
         messages,
         temperature: 0.5,
-        // Anche il ragionamento dei modelli gpt-oss conta nei token: breve,
-        // così la chat resta svelta e la risposta ci sta
-        max_tokens: maxTokens,
-        reasoning_effort: 'low',
+        max_tokens: MAX_TOKENS,
+        // Ragionamento breve, così la chat resta svelta e la risposta ci
+        // sta. Gli altri modelli non ragionano e rifiutano il parametro
+        ...(/gpt-oss/.test(model) ? { reasoning_effort: 'low' } : {}),
         response_format: { type: 'json_object' },
       }),
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     })
   } catch (err) {
     throw new GroqError(`Groq non raggiungibile: ${(err as Error).message}`)
   }
-  if (!res.ok) {
-    throw new GroqError(`Groq ha risposto ${res.status}`, res.status)
-  }
+  if (!res.ok) throw new GroqError(`Groq ha risposto ${res.status}`)
   const body = await res.json() as { choices?: { message?: { content?: string } }[] }
   const content = body.choices?.[0]?.message?.content
   if (!content) throw new GroqError('Groq non ha mandato una risposta')

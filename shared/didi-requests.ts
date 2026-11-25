@@ -1,8 +1,7 @@
 import type { ContactKind, ProjectType } from './contact'
+import type { DidiMessage } from './didi'
 
 // Le richieste arrivate dalla chat con Didi, come le vede /admin/richieste
-
-export type DidiMessage = { role: 'user' | 'assistant', content: string }
 
 export const REQUEST_STATUSES = ['new', 'done'] as const
 export type RequestStatus = typeof REQUEST_STATUSES[number]
@@ -22,3 +21,7 @@ export interface DidiRequest {
   status: RequestStatus
   createdAt: string
 }
+
+// Nell'elenco di /admin/richieste la conversazione non serve: arriva
+// quando si apre la richiesta
+export type DidiRequestItem = Omit<DidiRequest, 'transcript'>

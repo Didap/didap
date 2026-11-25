@@ -1,36 +1,39 @@
 import { z } from 'zod'
-import { PROJECT_TYPES, contactKind, type ProjectType } from '#shared/contact'
-import { DIDI_TOPICS, type DidiTopic } from '#shared/didi'
+import { contactKind, projectTypeFromQuery } from '#shared/contact'
+import { DIDI_MAX_MESSAGES, DIDI_MAX_TOTAL, DIDI_TOPICS } from '#shared/didi'
 import { text } from '#shared/text'
 
 // La chat con Didi (useDidiChat). Didi, il modello su Groq, capisce
 // l'idea del cliente con una o due domande, poi chiede nome e contatto.
-// Quando li ha, il server salva la richiesta (/admin/richieste) e ce la
-// manda come il modulo di contatto (sendContact), con il riassunto e la
+// Quando li ha, il server ce la manda come il modulo di contatto
+// (sendContact) e la salva per /admin/richieste, con il riassunto e la
 // conversazione. Il contatto lo
 // controlla il server con le regole del modulo: quello che dice il
 // modello non basta. Senza GROQ_API_KEY risponde 503 e la chat torna
 // alle frasi già scritte.
-
-const MAX_MESSAGES = 24
-const MAX_TOTAL = 12_000
 
 const BodySchema = z.object({
   locale: z.enum(['it', 'en']).default('it'),
   messages: z.array(z.object({
     role: z.enum(['user', 'assistant']),
     content: text(2000).min(1),
-  })).min(1).max(MAX_MESSAGES),
+  })).min(1).max(DIDI_MAX_MESSAGES),
 })
 
+// Quello che il modello scrive troppo lungo si accorcia: una risposta
+// buona non si butta per qualche lettera in più
+const clip = (max: number) => z.string().trim().min(1).transform(s => s.slice(0, max))
+
 const ReplySchema = z.object({
-  reply: z.string().trim().min(1).max(600),
+  reply: clip(600),
   topic: z.enum(DIDI_TOPICS).catch('chat'),
-  lead: z.object({
-    name: z.string().trim().min(1).max(120),
-    contact: z.string().trim().min(1).max(200),
-    summary: z.string().trim().min(1).max(2000),
-  }).nullish().catch(null),
+  lead: z.unknown(),
+})
+
+const LeadSchema = z.object({
+  name: clip(120),
+  contact: clip(200),
+  summary: clip(2000),
 })
 
 const LANGUAGE = { it: 'italiano', en: 'English' } as const
@@ -59,7 +62,7 @@ export default defineEventHandler(async (event) => {
   rateLimit('didi', event, { max: 40, windowMs: 15 * 60_000 })
   const { locale, messages } = await readSchemaBody(event, BodySchema)
 
-  if (messages.reduce((n, m) => n + m.content.length, 0) > MAX_TOTAL) {
+  if (messages.reduce((n, m) => n + m.content.length, 0) > DIDI_MAX_TOTAL) {
     throw createError({ statusCode: 413, statusMessage: 'CHAT_TOO_LONG' })
   }
   if (!hasGroq()) {
@@ -77,36 +80,32 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 502, statusMessage: 'DIDI_UNAVAILABLE' })
   }
 
-  const topic: DidiTopic = answer.topic
-  const lead = answer.lead
+  const { reply, topic, lead: rawLead } = answer
+  if (!rawLead || typeof rawLead !== 'object' || !Object.keys(rawLead).length) return { reply, topic, sent: false }
+  // Il modello crede di avere tutto e ringrazia: se il contatto non
+  // regge, la richiesta non parte e la chat lo chiede di nuovo (`invalid`)
+  const parsedLead = LeadSchema.safeParse(rawLead)
+  const lead = parsedLead.success ? parsedLead.data : null
   const kind = lead ? contactKind(lead.contact) : null
-  if (!lead || !kind) return { reply: answer.reply, topic, sent: false }
+  if (!lead || !kind) return { reply, topic, sent: false, invalid: true }
+
+  // Una persona lascia la sua idea una volta, non dieci: oltre, chi
+  // insiste è uno script che riempie la tabella e la casella
+  try {
+    rateLimit('didi-lead', event, { max: 5, windowMs: 60 * 60_000 })
+  } catch {
+    return { reply, topic, sent: false, failed: true }
+  }
 
   // Il contatto è valido: l'idea arriva a noi, con la conversazione
-  // intera. Prima nel database (/admin/richieste), poi per email: basta
-  // che riesca una delle due perché la richiesta non vada persa
-  const conversation = [...messages, { role: 'assistant' as const, content: answer.reply }]
+  // intera. Prima per email, poi nel database (/admin/richieste) con
+  // l'esito della mail: basta che riesca una delle due perché la
+  // richiesta non vada persa
+  const conversation = [...messages, { role: 'assistant' as const, content: reply }]
   const transcript = conversation
     .map(m => `${m.role === 'user' ? 'Cliente' : 'Didi'}: ${m.content}`)
     .join('\n')
-  const projectType: ProjectType | '' = (PROJECT_TYPES as readonly string[]).includes(topic) ? topic as ProjectType : ''
-
-  let saved: { id: string } | null = null
-  if (hasDatabase()) {
-    try {
-      saved = await createDidiRequest(await useDb(), {
-        name: lead.name,
-        contact: lead.contact,
-        contactKind: kind,
-        projectType,
-        summary: lead.summary,
-        transcript: conversation,
-        locale,
-      })
-    } catch (err) {
-      console.error('[didi] salvataggio non riuscito', err)
-    }
-  }
+  const projectType = projectTypeFromQuery(topic)
 
   let emailed = false
   try {
@@ -117,11 +116,29 @@ export default defineEventHandler(async (event) => {
       message: `${lead.summary}\n\nLa conversazione con Didi:\n${transcript}`,
     }, { source: 'didi' })
     emailed = true
-    if (saved) await markDidiRequestEmailed(await useDb(), saved.id).catch(() => {})
   } catch (err) {
     console.error('[didi] invio non riuscito', err)
   }
 
-  const sent = !!saved || emailed
-  return { reply: answer.reply, topic, sent, failed: !sent }
+  let saved = false
+  if (hasDatabase()) {
+    try {
+      await createDidiRequest(await useDb(), {
+        name: lead.name,
+        contact: lead.contact,
+        contactKind: kind,
+        projectType,
+        summary: lead.summary,
+        transcript: conversation,
+        locale,
+        emailSent: emailed,
+      })
+      saved = true
+    } catch (err) {
+      console.error('[didi] salvataggio non riuscito', err)
+    }
+  }
+
+  const sent = saved || emailed
+  return { reply, topic, sent, failed: !sent }
 })

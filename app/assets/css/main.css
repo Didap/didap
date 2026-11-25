@@ -16,6 +16,11 @@
 */
 
 @theme {
+  /* Le pagine a schermate (la home) cambiano layout qui: sopra c'è
+     l'indice a destra e la barra in alto, sotto la barra in basso con Didi
+     (HomeDock). `screens:` e `max-screens:` in tutti i componenti */
+  --breakpoint-screens: 53.75rem;
+
   /* Palette (variabili Figma: ink, cream, red, green, banana)
      paper        fondo pagina
      paper-light  superfici nav/footer, testo su verde
@@ -1001,6 +1006,13 @@ samp {
   from { transform: scale(1.06); }
 }
 
+/* Quanto spazio prende in fondo la barra in basso della home su
+   telefono (HomeDock): il suo margine sotto, Didi alto 62px e un po'
+   d'aria. Chi ha contenuti in fondo alla schermata lo lascia libero */
+:root {
+  --dock-space: calc(max(16px, env(safe-area-inset-bottom)) + 88px);
+}
+
 /* Didi che parla nella barra in basso della home su telefono
    (HomeDock): annuisce piano finché la frase si scrive */
 .dock-speaking {
@@ -1018,28 +1030,36 @@ samp {
   }
 }
 
-/* I puntini di Didi che pensa, nella chat della barra in basso */
+/* La chat con Didi (DidiThread): le bolle entrano dal basso, i puntini
+   di Didi che pensa saltellano. Con meno movimento stanno fermi */
 @media (prefers-reduced-motion: no-preference) {
-  .dock-dots span {
-    animation: dock-dot 1s ease-in-out infinite;
+  .chat-bubble {
+    animation: chat-bubble-in 0.3s var(--ease-vintage) both;
   }
 
-  .dock-dots span:nth-child(2) { animation-delay: 0.15s; }
-  .dock-dots span:nth-child(3) { animation-delay: 0.3s; }
+  .chat-dots span {
+    animation: chat-dot 1s ease-in-out infinite;
+  }
+
+  .chat-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .chat-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  /* La descrizione nella nuvoletta di HomeDock: ogni lettera compare al
+     suo turno (`--d`), senza timer */
+  .dock-letter {
+    animation: dock-letter-in 1ms var(--d, 0ms) both;
+  }
 }
 
-@keyframes dock-dot {
+@keyframes chat-bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+}
+
+@keyframes chat-dot {
   0%, 100% { opacity: 0.35; transform: translateY(0); }
   50% { opacity: 1; transform: translateY(-4px); }
 }
 
-/* Le bolle della chat della barra in basso entrano dal basso */
-@media (prefers-reduced-motion: no-preference) {
-  .dock-bubble {
-    animation: dock-bubble-in 0.3s var(--ease-vintage) both;
-  }
-}
-
-@keyframes dock-bubble-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+@keyframes dock-letter-in {
+  from { opacity: 0; }
 }

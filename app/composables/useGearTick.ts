@@ -1,5 +1,3 @@
-import { useEventListener } from '@vueuse/core'
-
 // Lo scatto di un cricchetto: la registrazione della cinghia di un
 // attacco da snowboard ("snowboard straps 6" di fleurescence, da
 // Pixabay, Pixabay Content License), in /sounds/cricchetto.mp3.
@@ -7,8 +5,9 @@ import { useEventListener } from '@vueuse/core'
 // registrata suonerebbe come riverbero. `step`, al passaggio su una
 // voce, è il dente leggero; `press`, al click e ai passi di rotella,
 // quello forte. Ogni volta cambia appena di velocità: due scatti di
-// fila non suonano identici. Il browser lascia suonare solo dopo che la persona ha interagito con la
-// pagina (un click, un tasto): prima resta muto, senza errori.
+// fila non suonano identici. Il browser lascia suonare solo dopo che la
+// persona ha interagito con la pagina (un click, un tasto): prima resta
+// muto, senza errori.
 
 type Kind = 'step' | 'press'
 
@@ -90,16 +89,20 @@ function play(kind: Kind) {
   src.start(t, cut.from, length)
 }
 
+// Il file si prepara al primo tocco sulla pagina, così il primo scatto
+// non va perso. Una volta sola per pagina, e solo con il mouse: col dito
+// non c'è né l'indice né la corsa della rotella, che lo fanno suonare
+let warming = false
+
 export function useGearTick() {
-  // Il file si prepara al primo tocco sulla pagina, così il primo
-  // scatto non va perso
-  if (import.meta.client) {
+  if (import.meta.client && !warming && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    warming = true
     const warm = () => {
       const ac = audio()
       if (ac) load(ac)
     }
-    useEventListener(window, 'pointerdown', warm, { once: true, passive: true })
-    useEventListener(window, 'keydown', warm, { once: true, passive: true })
+    window.addEventListener('pointerdown', warm, { once: true, passive: true })
+    window.addEventListener('keydown', warm, { once: true, passive: true })
   }
   return play
 }

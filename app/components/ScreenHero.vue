@@ -31,7 +31,7 @@ defineProps<{
   >
     <MediaSlot
       :media="media"
-      class="screen-video screen-hero absolute inset-0 size-full"
+      class="screen-video absolute inset-0 size-full"
     />
     <!-- Il marchio del prodotto sopra il video, dove il video gli lascia
          il posto (`.screen-logo` in main.css). Decorativo: il nome c'è
@@ -51,11 +51,11 @@ defineProps<{
     <ScreenVeil />
     <div
       class="
-        screen-hero-caption absolute inset-x-0 bottom-0 z-2 page-x grid
-        max-w-none items-end gap-x-12 gap-y-6
+        absolute inset-x-0 bottom-0 z-2 page-x grid max-w-none items-end
+        gap-x-12 gap-y-6
         pb-[max(clamp(28px,5vh,64px),env(safe-area-inset-bottom))]
         transition-colors duration-500
-        min-[860px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]
+        screens:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]
       "
       :class="light ? 'text-ink' : 'text-paper-light'"
     >
@@ -69,7 +69,7 @@ defineProps<{
           class="
             reveal font-wide text-[clamp(2.25rem,1.4rem+2.6vw,4rem)]
             leading-[0.92] font-bold tracking-[-0.03em]
-            max-[859px]:sr-only
+            max-screens:sr-only
           "
           style="--i: 0"
         >
@@ -78,7 +78,7 @@ defineProps<{
         <p
           class="
             reveal text-[17px]/normal
-            max-[859px]:sr-only
+            max-screens:sr-only
           "
           style="--i: 1"
         >
@@ -88,8 +88,8 @@ defineProps<{
       <div
         class="
           reveal flex flex-wrap items-center gap-x-[22px] gap-y-3.5
-          max-[859px]:hidden
-          min-[860px]:justify-end
+          max-screens:hidden
+          screens:justify-end
         "
         style="--i: 2"
       >

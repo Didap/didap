@@ -186,6 +186,7 @@
     "direct": "Or contact us directly",
     "restart": "Start over",
     "send_failed": "I couldn't send us your idea. Write to us from the form: we'll read it right away.",
+    "contact_invalid": "I can’t read that contact. Can you write me an email or a phone number to get back to you?",
     "back": "Back to Didi"
   },
   "error": {

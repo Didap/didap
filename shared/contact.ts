@@ -11,6 +11,14 @@ export const CONTACT_WHATSAPP = ''
 export const PROJECT_TYPES = ['product', 'app', 'site', 'grant'] as const
 export type ProjectType = (typeof PROJECT_TYPES)[number]
 
+// Le voci come le leggiamo noi: email di notifica e /admin/richieste
+export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+  product: 'Un prodotto nuovo',
+  app: 'App o SaaS',
+  site: 'Un sito',
+  grant: 'Cerca un bando',
+}
+
 // Stessi esiti di z.string().email() sugli indirizzi dei test, senza
 // portare zod nel modulo del sito. Niente punti doppi o in coda
 const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/
@@ -31,6 +39,13 @@ export function contactKind(value: string): ContactKind | null {
 
 // Il numero come link tel: solo cifre e il + davanti
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`
+
+// Come rispondere a chi ci ha scritto: l'email o il telefono che ha lasciato
+export function contactReply({ value, kind }: { value: string, kind: ContactKind }) {
+  return kind === 'email'
+    ? { label: 'Email', href: `mailto:${encodeURIComponent(value)}`, action: 'Rispondi a' }
+    : { label: 'Telefono', href: telHref(value), action: 'Chiama' }
+}
 
 // La chat WhatsApp con il messaggio già scritto: wa.me vuole solo cifre,
 // con il prefisso e senza il + o lo 00 davanti

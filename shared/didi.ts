@@ -19,3 +19,23 @@ const RULES: [DidiTopic, RegExp][] = [
 export function guessTopic(text: string): DidiTopic {
   return RULES.find(([, re]) => re.test(text))?.[0] ?? 'chat'
 }
+
+// Un messaggio della chat con Didi: del cliente o di Didi
+export type DidiMessage = { role: 'user' | 'assistant', content: string }
+
+// Quanto della conversazione arriva a /api/didi: al massimo tanti
+// messaggi e tante lettere in tutto. Il server rifiuta di più, la chat
+// manda solo gli ultimi che ci stanno (useDidiChat)
+export const DIDI_MAX_MESSAGES = 24
+export const DIDI_MAX_TOTAL = 12_000
+
+export function lastMessages<T extends { content: string }>(list: T[]): T[] {
+  const out: T[] = []
+  let total = 0
+  for (let i = list.length - 1; i >= 0 && out.length < DIDI_MAX_MESSAGES; i--) {
+    total += list[i]!.content.length
+    if (total > DIDI_MAX_TOTAL) break
+    out.unshift(list[i]!)
+  }
+  return out
+}

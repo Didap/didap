@@ -31,8 +31,8 @@ function onFocus(e: FocusEvent) {
     class="
       rail fixed top-1/2 right-5 z-30 hidden -translate-y-1/2 font-mono
       tracking-[0.06em] uppercase transition-[opacity,visibility] duration-500
-      min-[860px]:block
       md:right-10
+      screens:block
       xl:right-20
     "
     :class="[

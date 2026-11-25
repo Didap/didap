@@ -84,6 +84,28 @@ watch(() => props.shown, (shown) => {
   if (!shown) chat.value = false
 })
 
+// Tornando dalla chiusura, Didi viene da lì (index.vue): la barra
+// ricompare al suo posto senza scivolare dal basso, e Didi parte da
+// `from` e scivola qui (FLIP). Finito il viaggio la barra torna a
+// entrare e uscire scivolando
+const jump = ref(false)
+const didiImg = ref<HTMLImageElement>()
+function arriveFrom(from: DOMRect) {
+  jump.value = true
+  return nextTick().then(() => {
+    const el = didiImg.value
+    if (!el) return
+    const to = el.getBoundingClientRect()
+    return el.animate(
+      [{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)` }, { transform: 'none' }],
+      { duration: 650, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+    ).finished.catch(() => {})
+  }).finally(() => {
+    jump.value = false
+  })
+}
+defineExpose({ arriveFrom })
+
 if (import.meta.client) {
   useEventListener(window, 'keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape' && chat.value) close()
@@ -118,7 +140,10 @@ if (import.meta.client) {
       transition-[opacity,translate,visibility] duration-500
       screens:hidden
     "
-    :class="shown || chat ? '' : 'invisible translate-y-full opacity-0'"
+    :class="[
+      shown || chat ? '' : 'invisible translate-y-full opacity-0',
+      jump ? 'transition-none' : '',
+    ]"
   >
     <!-- La riga di Didi: lui a sinistra, a destra l'invito a scrivergli,
          sempre visibile; sparisce solo con la chat aperta -->
@@ -141,6 +166,7 @@ if (import.meta.client) {
           alt=""
           width="240"
           height="222"
+          ref="didiImg"
           data-dock-didi
           class="
             h-[62px] w-auto origin-bottom
@@ -209,15 +235,15 @@ if (import.meta.client) {
          lettera. Cambiando prodotto la nuvoletta resta e riscrive solo la
          frase; fra descrizione e chat cambia solo quello che c'è dentro -->
     <Transition
-      enter-from-class="opacity-0 translate-y-2 scale-95"
-      leave-to-class="opacity-0 translate-y-2 scale-95"
-      enter-active-class="transition duration-300 ease-vintage"
-      leave-active-class="transition duration-200"
+      enter-from-class="bubble-from"
+      leave-to-class="bubble-from"
+      enter-active-class="bubble-in"
+      leave-active-class="bubble-out"
     >
       <div
         v-if="bubble"
         class="
-          pointer-events-auto relative w-full origin-bottom-left text-ink
+          bubble-origin pointer-events-auto relative w-full text-ink
           transition-[height] duration-350 ease-vintage
           motion-reduce:transition-none
         "

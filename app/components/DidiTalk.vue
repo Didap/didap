@@ -69,15 +69,19 @@ const openForm = () => emit('form', ...formPayload(draft.value))
     grid-cols-[minmax(0,25.2fr)_minmax(0,74.8fr)]
   ">
     <!-- La nuvoletta, con la coda verso la bocca di Didi. Su telefono sta
-         sopra Didi, larga quanto la scena e alta quanto il testo -->
+         sopra Didi, larga quanto la scena e alta quanto il testo. Nella
+         home nasce dalla bocca di Didi quando la schermata è in scena
+         (`.bubble-reveal` in main.css): cresce dalla punta della coda -->
     <div
       class="
-        relative col-span-full row-1 grid grid-cols-[minmax(0,1fr)]
+        bubble-reveal relative col-span-full row-1 grid
+        origin-[26.7cqw_calc(100%+14px+17.1cqw)] grid-cols-[minmax(0,1fr)]
         place-items-start rounded-[28px] bg-ink p-5 text-paper-light
-        md:col-2 md:aspect-1010/410 md:place-items-center md:rounded-[20%/50%]
-        md:px-[11%] md:py-[9%]
+        md:col-2 md:aspect-1010/410 md:origin-[4%_125.5%] md:place-items-center
+        md:rounded-[20%/50%] md:px-[11%] md:py-[9%]
       "
       :class="started ? 'md:min-h-0 md:grid-rows-[minmax(0,1fr)] md:py-[6%]' : ''"
+      style="--i: 1"
       aria-live="polite"
     >
       <!-- La conversazione: scorre dentro la forma della nuvoletta, e in

@@ -122,28 +122,48 @@ const [taglineStart, taglineEnd] = t('home.hero_tagline').split('\n')
 // Didi annuisce mentre pensa, anche nella chat della chiusura da telefono
 const { thinking: chatThinking } = useDidiChat()
 
-// Da telefono, arrivando alla chiusura da una schermata con la barra in
-// basso, Didi non sparisce: quello della barra si nasconde e quello della
-// chiusura parte dal suo posto e scivola sotto la chat (FLIP). Da
-// desktop la barra non c'è e non succede niente; con meno movimento
-// nemmeno
+// Da telefono Didi non sparisce fra la barra in basso e la chiusura:
+// passa dall'una all'altra (FLIP). Arrivando alla chiusura, quello della
+// barra si nasconde e quello della chiusura parte dal suo posto e
+// scivola sotto la chat; tornando su, il contrario (HomeDock
+// `arriveFrom`). Da desktop la barra non c'è e non succede niente; con
+// meno movimento nemmeno
 const closingDidi = ref<HTMLImageElement>()
+const dock = ref<InstanceType<typeof HomeDock>>()
+
+function slide(el: HTMLElement, from: DOMRect) {
+  const to = el.getBoundingClientRect()
+  return el.animate(
+    [{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)` }, { transform: 'none' }],
+    { duration: 650, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+  ).finished.catch(() => {})
+}
+
+// Il posto di Didi, se si vede: da desktop la barra è nascosta (largo 0)
+const visibleRect = (el: Element | null | undefined) => {
+  const r = el?.getBoundingClientRect()
+  return r?.width ? r : null
+}
+
 watch(active, (now, before) => {
-  if (now !== screens.value.length - 1 || !screens.value[before]?.dock) return
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  const dock = document.querySelector<HTMLElement>('[data-dock-didi]')
-  const from = dock?.getBoundingClientRect()
-  if (!dock || !from?.width) return
-  dock.style.visibility = 'hidden'
-  nextTick(() => {
-    const el = closingDidi.value
-    if (!el) return
-    const to = el.getBoundingClientRect()
-    el.animate(
-      [{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)` }, { transform: 'none' }],
-      { duration: 650, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
-    ).finished.finally(() => dock.style.removeProperty('visibility'))
-  })
+  const contact = screens.value.length - 1
+  const dockImg = document.querySelector<HTMLElement>('[data-dock-didi]')
+  if (now === contact && screens.value[before]?.dock) {
+    const from = visibleRect(dockImg)
+    if (!dockImg || !from) return
+    dockImg.style.visibility = 'hidden'
+    nextTick(() => {
+      if (closingDidi.value) slide(closingDidi.value, from).finally(() => dockImg.style.removeProperty('visibility'))
+    })
+  }
+  else if (before === contact && screens.value[now]?.dock) {
+    const closing = closingDidi.value
+    const from = visibleRect(closing)
+    if (!closing || !from || !dock.value) return
+    closing.style.visibility = 'hidden'
+    dock.value.arriveFrom(from).finally(() => closing.style.removeProperty('visibility'))
+  }
 }, { flush: 'pre' })
 </script>
 
@@ -160,6 +180,7 @@ watch(active, (now, before) => {
     />
 
     <HomeDock
+      ref="dock"
       :shown="dockShown"
       :line="dockProduct ? t(`home.products.${dockProduct.key}.desc`) : undefined"
       :to="dockProduct ? localePath(`/work/${dockProduct.slug}`) : undefined"
@@ -399,7 +420,7 @@ watch(active, (now, before) => {
             <!-- La nuvoletta crema con la coda, come in HomeDock: forma e
                  ombra su uno strato loro, la chat sopra -->
             <div
-              class="reveal relative w-full text-ink"
+              class="bubble-reveal bubble-origin relative w-full text-ink"
               style="--i: 1"
             >
               <div

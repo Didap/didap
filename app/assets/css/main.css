@@ -961,6 +961,57 @@ samp {
   transform: none;
 }
 
+/* Le nuvolette di Didi su telefono nascono dalla sua bocca: crescono
+   dalla punta della coda (DidiTail: 76px da sinistra, 50px sotto la
+   nuvoletta) con un piccolo rimbalzo e ci rientrano quando se ne vanno.
+   La nuvoletta della barra in basso (HomeDock) con le classi della sua
+   Transition, quella della chiusura quando la schermata è in scena */
+.bubble-origin {
+  transform-origin: 76px calc(100% + 50px);
+}
+
+.bubble-in {
+  transition:
+    opacity 0.3s ease-out,
+    scale 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bubble-out {
+  transition:
+    opacity 0.2s ease-in 0.05s,
+    scale 0.25s ease-in;
+}
+
+.bubble-from {
+  opacity: 0;
+  scale: 0.3;
+}
+
+.motion .bubble-reveal {
+  opacity: 0;
+  scale: 0.3;
+  transition:
+    opacity 0.3s ease-out,
+    scale 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i, 0) * 90ms + 420ms);
+}
+
+.motion .is-active .bubble-reveal {
+  opacity: 1;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble-in,
+  .bubble-out {
+    transition: opacity 0.2s;
+  }
+
+  .bubble-from {
+    scale: 1;
+  }
+}
+
 /* Legate allo scroll: chi esce sale più piano, così la successiva la
    copre; i video (`screen-dims`) si scuriscono mentre escono (carta e
    colori no, verrebbero grigi) e quello che entra (`screen-video`) si

@@ -1,9 +1,10 @@
 ---
 title: Sudel
 summary: Italian company designing and manufacturing electronic anti-intrusion security systems since 1978, entirely made in Italy.
+did: "We developed **NX-TAB**, the Android app behind the touch keypad for NOVA X control panels."
 client: Sudel
 role: App
-cover: /covers/sudel.jpg
+logo: /logos/sudel.webp
 url: https://www.sudel.com
 tags:
   - app

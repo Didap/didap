@@ -1,9 +1,10 @@
 ---
 title: The Qube
 summary: MIMIT-certified business incubator, Didap's strategic partner for subsidised finance and access to Italian and EU public funding.
+did: "We work as a pair: we build the product, they find the funding through **subsidised finance**."
 client: The Qube Consulting
 role: Strategic partner
-cover: /covers/the-qube.jpg
+logo: /logos/the-qube.webp
 url: https://www.theqube.it
 tags:
   - Public funding

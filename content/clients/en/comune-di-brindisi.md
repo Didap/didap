@@ -1,9 +1,10 @@
 ---
 title: Comune di Brindisi
 summary: Public-administration partner in southern Italy, the first authority we are building our urban regeneration platform CityFix together with.
+did: "We are building **CityFix** together, our platform for taking care of the city, on a real case."
 client: Comune di Brindisi
 role: Institutional partner
-cover: /covers/comune-di-brindisi.jpg
+logo: /logos/comune-di-brindisi.webp
 url: https://www.comune.brindisi.it
 tags:
   - PA

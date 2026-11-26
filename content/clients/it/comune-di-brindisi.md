@@ -1,9 +1,10 @@
 ---
 title: Comune di Brindisi
 summary: Comune partner sul territorio pugliese, primo ente con cui costruiamo la nostra piattaforma di rigenerazione urbana CityFix.
+did: "Costruiamo insieme **CityFix**, la nostra piattaforma per la cura della città, su un caso reale."
 client: Comune di Brindisi
 role: Partner istituzionale
-cover: /covers/comune-di-brindisi.jpg
+logo: /logos/comune-di-brindisi.webp
 url: https://www.comune.brindisi.it
 tags:
   - PA

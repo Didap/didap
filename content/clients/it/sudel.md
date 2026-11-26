@@ -1,9 +1,10 @@
 ---
 title: Sudel
 summary: Azienda italiana che dal 1978 progetta e produce sistemi di sicurezza elettronica antintrusione, interamente made in Italy.
+did: "Abbiamo sviluppato **NX-TAB**, l'app Android della tastiera touch per le centrali NOVA X."
 client: Sudel
 role: App
-cover: /covers/sudel.jpg
+logo: /logos/sudel.webp
 url: https://www.sudel.com
 tags:
   - app

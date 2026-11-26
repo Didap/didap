@@ -1,9 +1,10 @@
 ---
 title: TMI
 summary: Apulian company specialised in extraction and ventilation systems for professional kitchens and industrial spaces, with made-in-Italy manufacturing.
+did: "We developed **TMI Regolo**, their native Android app, published on the Google Play Store."
 client: TMI
 role: App
-cover: /covers/tmi.jpg
+logo: /logos/tmi.webp
 url: https://www.tm-i.it/sito/
 tags:
   - app

@@ -1,9 +1,10 @@
 ---
 title: The Qube
 summary: Incubatore di impresa certificato MIMIT, partner strategico di Didap per la finanza agevolata e l'accesso a bandi e contributi pubblici.
+did: "Lavoriamo in coppia: noi costruiamo il prodotto, loro trovano i fondi con la **finanza agevolata**."
 client: The Qube Consulting
 role: Partner strategico
-cover: /covers/the-qube.jpg
+logo: /logos/the-qube.webp
 url: https://www.theqube.it
 tags:
   - Finanza agevolata

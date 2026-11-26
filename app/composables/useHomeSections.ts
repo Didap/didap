@@ -1,11 +1,13 @@
 /**
  * Voci della nav: ancore alle schermate della home. Da qualsiasi pagina
  * portano alla home e scorrono alla schermata: i prodotti partono da
- * CityFix, i progetti sono le card, i contatti la chiusura rossa.
+ * CityFix, i progetti sono la porta per tutti i prodotti (dopo c'è il
+ * carosello dei clienti), i contatti la chiusura rossa.
  */
 export const HOME_SECTIONS = {
   products: 'prodotti',
   projects: 'progetti',
+  clients: 'clienti',
   contact: 'contatti',
 } as const
 

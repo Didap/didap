@@ -39,7 +39,7 @@ useSeoMeta({
 // I prodotti a tutto schermo. `light`: il video è chiaro, la barra va
 // in ink (anche da telefono, dove il video è verticale). L'unico invito
 // porta alla scheda. Il marchio del prodotto (`<slug>-wordmark.svg`) sta
-// sopra il video: i video della home non ce l'hanno dentro
+// sopra il video da telefono, che non ce l'ha dentro
 type Featured = {
   key: string
   slug: string
@@ -53,12 +53,13 @@ const featured: Featured[] = [
   { key: 'cruciverba_lab', slug: 'cruciverba-lab', name: 'Cruciverba Lab', light: true },
 ]
 
-// I video della home sono suoi (media/<slug>/home e home-mobile): senza
-// il logo, che il sito mette sopra, e con i bordi liberi per la barra,
-// la didascalia e l'indice. Le schede prodotto tengono i video `hero`
+// Da desktop i video `hero`, gli stessi delle schede prodotto, col
+// marchio dentro. Da telefono i video verticali della home
+// (media/<slug>/home-mobile): senza il marchio, che il sito mette sopra
+// (ScreenHero), e con i bordi liberi per la barra e la nuvoletta di Didi
 const hero = (slug: string) => ({
-  src: `/covers/${slug}-home.mp4`,
-  poster: `/covers/${slug}-home-poster.webp`,
+  src: `/covers/${slug}-hero.mp4`,
+  poster: `/covers/${slug}-hero-poster.webp`,
   srcMobile: `/covers/${slug}-home-mobile.mp4`,
   posterMobile: `/covers/${slug}-home-mobile-poster.webp`,
 })

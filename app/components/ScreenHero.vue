@@ -11,7 +11,7 @@ import ScreenVeil from '~/components/ScreenVeil.vue'
 // Su telefono nome, frase e azioni non si vedono: il nome sta nel logo
 // del video, la frase e il link li dice Didi nella barra in basso
 // (HomeDock). Nome e frase restano per gli screen reader. `logo`: il
-// marchio del prodotto, sopra il video.
+// marchio del prodotto, sopra il video da telefono (`.screen-logo`).
 // Va dentro una <section class="screen">.
 defineProps<{
   media: MediaSlotData

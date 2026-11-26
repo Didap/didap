@@ -901,15 +901,27 @@ samp {
    `logo`): i video lo lasciano fuori e gli tengono libero il centro.
    Centrato, attorno al 38% dell'altezza, largo circa il 30%; sotto la
    didascalia e il suo velo */
+/* Il marchio del prodotto sopra il video della home (ScreenHero): solo
+   da telefono, sotto i 640px dove parte la versione verticale del video
+   (MediaSlot), che non ce l'ha dentro. Da desktop il video `hero` ha già
+   il suo. Sta in alto: sotto c'è la nuvoletta di Didi (HomeDock), che
+   copre l'ultimo 45% */
 .screen-logo {
-  position: absolute;
-  top: 38%;
-  left: 50%;
-  z-index: 1;
-  width: clamp(220px, 30vw, 560px);
-  height: min(24dvh, 18vw);
-  translate: -50% -50%;
-  pointer-events: none;
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .screen-logo {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    z-index: 1;
+    display: block;
+    width: 60vw;
+    height: 16dvh;
+    translate: -50% -50%;
+    pointer-events: none;
+  }
 }
 
 .screen-logo img {
@@ -922,17 +934,6 @@ samp {
    che gli passa dietro (la rete di Fanta Rainbow) */
 [data-tone='dark'] > .screen-logo img {
   filter: drop-shadow(0 0 18px rgb(22 20 18 / 0.85)) drop-shadow(0 0 6px rgb(22 20 18 / 0.7));
-}
-
-/* Da telefono (sotto i 640px, dove parte la versione verticale del video,
-   MediaSlot) il marchio sta più in alto: sotto c'è la nuvoletta di Didi
-   (HomeDock), che copre l'ultimo 45% */
-@media (max-width: 639px) {
-  .screen-logo {
-    top: 30%;
-    width: 60vw;
-    height: 16dvh;
-  }
 }
 
 /* I video di testata coprono lo schermo anche in verticale: da telefono

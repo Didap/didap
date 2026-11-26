@@ -2,7 +2,6 @@
   "nav": {
     "work": "Products",
     "projects": "Projects",
-    "clients": "Partners",
     "about": "About",
     "contact": "Work with us",
     "cta": "Let’s work together",
@@ -17,6 +16,9 @@
     "scroll_cue": "Scroll to discover the projects",
     "more_products": "Products",
     "more_clients": "Clients",
+    "clients_title": "Our clients",
+    "clients_hint": "Hover over a logo to see what we did together.",
+    "clients_hint_touch": "Tap a logo to see what we did together.",
     "outro_title": "Got an idea\nto set free?",
     "hero_tagline": "Free the\nmonkey.",
     "featured_more": "Find out more",
@@ -50,12 +52,6 @@
     "search_clear": "Clear search",
     "clear_filters": "Clear filters",
     "results_count": "1 product | {count} products"
-  },
-  "clients": {
-    "kicker": "Partners",
-    "title": "Our partners",
-    "intro": "Clients and strategic partners we build alongside, working on products and long-term collaborations.",
-    "strategic_partner": "Strategic partner"
   },
   "about": {
     "kicker": "About",

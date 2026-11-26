@@ -2,7 +2,6 @@
   "nav": {
     "work": "Prodotti",
     "projects": "Progetti",
-    "clients": "Partner",
     "about": "Chi siamo",
     "contact": "Lavora con noi",
     "cta": "Lavoriamo insieme",
@@ -17,6 +16,9 @@
     "scroll_cue": "Scorri per scoprire i progetti",
     "more_products": "Prodotti",
     "more_clients": "Clienti",
+    "clients_title": "I nostri clienti",
+    "clients_hint": "Passa sopra un logo per vedere cosa abbiamo fatto insieme.",
+    "clients_hint_touch": "Tocca un logo per vedere cosa abbiamo fatto insieme.",
     "outro_title": "Hai un’idea\nda liberare?",
     "hero_tagline": "Free the\nmonkey.",
     "featured_more": "Scopri di più",
@@ -50,12 +52,6 @@
     "search_clear": "Svuota la ricerca",
     "clear_filters": "Cancella filtri",
     "results_count": "1 prodotto | {count} prodotti"
-  },
-  "clients": {
-    "kicker": "Partner",
-    "title": "I nostri partner",
-    "intro": "Clienti e partner strategici con cui costruiamo, fianco a fianco, prodotti e collaborazioni a lungo termine.",
-    "strategic_partner": "Partner strategico"
   },
   "about": {
     "kicker": "Chi siamo",

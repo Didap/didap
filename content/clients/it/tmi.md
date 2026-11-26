@@ -1,9 +1,10 @@
 ---
 title: TMI
 summary: Azienda pugliese specializzata in impianti di aspirazione e ventilazione per cucine professionali e ambienti industriali, con produzione made in Italy.
+did: "Abbiamo sviluppato **TMI Regolo**, la loro app Android nativa, pubblicata sul Google Play Store."
 client: TMI
 role: App
-cover: /covers/tmi.jpg
+logo: /logos/tmi.webp
 url: https://www.tm-i.it/sito/
 tags:
   - app

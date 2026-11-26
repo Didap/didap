@@ -1,9 +1,10 @@
 ---
 title: Le Rotte di Portolano
 summary: Custom SaaS for a sailing tour operator with two decades of experience, specialised in tailor-made cruises across the Mediterranean and beyond.
+did: "We designed and built their **custom SaaS** for fleet, itineraries and clients."
 client: Le Rotte di Portolano
 role: SaaS
-cover: /covers/rotte-di-portolano.jpg
+logo: /logos/rotte-di-portolano.webp
 url: https://www.rottediportolano.com
 tags:
   - web app

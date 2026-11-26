@@ -1,9 +1,10 @@
 ---
 title: Le Rotte di Portolano
 summary: Gestionale su misura per un tour operator nautico con vent'anni di esperienza, specializzato in crociere su misura nel Mediterraneo e oltre.
+did: "Abbiamo progettato e sviluppato il loro **gestionale su misura** per flotta, itinerari e clienti."
 client: Le Rotte di Portolano
 role: Gestionale
-cover: /covers/rotte-di-portolano.jpg
+logo: /logos/rotte-di-portolano.webp
 url: https://www.rottediportolano.com
 tags:
   - web app

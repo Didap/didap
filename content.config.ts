@@ -24,6 +24,9 @@ const namedItem = z.object({ name: z.string(), desc: z.string() })
 const projectSchema = z.object({
   title: z.string(),
   summary: z.string(),
+  // Cosa abbiamo fatto per il cliente, in una frase: la dialog del
+  // carosello dei clienti in home (ClientsMarquee)
+  did: z.string().optional(),
   client: z.string().optional(),
   role: z.string().optional(),
   year: z.number().int().optional(),

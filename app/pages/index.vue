@@ -7,14 +7,16 @@ import HomeLogo from '~/components/HomeLogo.vue'
 import ScreenLegal from '~/components/ScreenLegal.vue'
 import ScreenRail from '~/components/ScreenRail.vue'
 import ScreenHero from '~/components/ScreenHero.vue'
+import ClientsMarquee, { type MarqueeClient } from '~/components/ClientsMarquee.vue'
+import { typeset } from '#shared/typeset'
 import type { ProjectType } from '#shared/contact'
 
 // Home a schermate: una pila di schermate a tutto schermo, ognuna copre
 // la precedente salendo dal basso (scroll nativo con lo snap). Apertura
 // su carta, poi CityFix, Fanta Rainbow e Helllo con il loro video a
-// tutto schermo, poi Cruciverba Lab, poi le porte per le pagine dei
-// prodotti e dei clienti e la chiusura rossa con Didi che chiede cosa
-// serve. Niente nav né footer: la barra è HomeBar, i link legali stanno
+// tutto schermo, poi Cruciverba Lab, poi la porta per la pagina dei
+// prodotti, il carosello dei clienti (non hanno una pagina loro) e la
+// chiusura rossa con Didi che chiede cosa serve. Niente nav né footer: la barra è HomeBar, i link legali stanno
 // nella chiusura.
 // La splash non serve: la stessa animazione gira nel logo dell'apertura
 definePageMeta({ layout: 'screens', splash: false })
@@ -62,8 +64,9 @@ const hero = (slug: string) => ({
 })
 
 
-// L'ultima schermata porta alle pagine dei prodotti e dei clienti, con
-// i nomi di tutti presi dalle loro schede
+// Due schermate prima della chiusura: la porta per tutti i prodotti, con
+// i loro nomi, e il carosello dei loghi dei clienti, ognuno con quello
+// che abbiamo fatto per lui (dalle loro schede)
 const workCollection = useProjectCollection('work')
 const clientsCollection = useProjectCollection('clients')
 const { data: names } = await useAsyncData(
@@ -71,32 +74,49 @@ const { data: names } = await useAsyncData(
   async () => {
     const [work, clients] = await Promise.all([
       queryCollection(workCollection.value).order('order', 'ASC').select('title').all(),
-      queryCollection(clientsCollection.value).order('order', 'ASC').select('title').all(),
+      queryCollection(clientsCollection.value)
+        .order('order', 'ASC')
+        .select('stem', 'title', 'role', 'did', 'summary', 'logo', 'url')
+        .all(),
     ])
-    return { work: work.map(p => p.title), clients: clients.map(p => p.title) }
+    return {
+      work: work.map(p => p.title),
+      clients: clients.map((c): MarqueeClient => ({
+        slug: c.stem.split('/').pop()!,
+        title: c.title,
+        role: c.role,
+        did: c.did,
+        summary: c.summary,
+        logo: c.logo,
+        url: c.url,
+      })),
+    }
   },
   { watch: [workCollection] },
 )
-const indexes = computed(() => [
-  { to: localePath('/work'), label: t('home.more_products'), names: names.value?.work ?? [], tone: 'bg-green text-paper-light hover:bg-ink' },
-  { to: localePath('/clients'), label: t('home.more_clients'), names: names.value?.clients ?? [], tone: 'bg-banana text-ink hover:bg-ink hover:text-paper-light' },
-])
 
 const root = ref<HTMLElement>()
-const clientsHover = ref(false)
 
 // Le schermate, per l'indice a destra e il colore della barra
 // `product`: le schermate dei prodotti, con il video (la barra ha una
 // sfumatura sua, dello stesso tono) e la descrizione nella barra in basso
-// su telefono. `dock`: lì c'è la barra in basso
-type Screen = { id: string, label: string, light: boolean, product?: Featured, dock?: boolean }
+// su telefono. `dock`: lì c'è la barra in basso. `say`: titolo e frase
+// della nuvoletta di Didi su telefono, senza link (i clienti)
+type Say = { title: string, line: string }
+type Screen = { id: string, label: string, light: boolean, product?: Featured, dock?: boolean, say?: Say }
 const screens = computed<Screen[]>(() => [
   { id: 'top', label: 'Didap', light: true },
   ...featured.map((p, i) => ({ id: i === 0 ? HOME_SECTIONS.products : p.slug, label: p.name, light: p.light, product: p, dock: true })),
-  // Didi (adesivo) sta sul verde dei prodotti, "Lavoriamo insieme" e
-  // l'indice sul giallo dei clienti: testo ink, carta quando i clienti
-  // diventano neri sotto il puntatore
-  { id: HOME_SECTIONS.projects, label: t('nav.projects'), light: !clientsHover.value, dock: true },
+  // Tutti i prodotti sul verde (testo carta), poi i clienti sul giallo
+  // (testo ink)
+  { id: HOME_SECTIONS.projects, label: t('home.more_products'), light: false, dock: true },
+  {
+    id: HOME_SECTIONS.clients,
+    label: t('home.more_clients'),
+    light: true,
+    dock: true,
+    say: { title: t('home.clients_title'), line: t('home.clients_hint_touch') },
+  },
   // Nella chiusura la chat con Didi è già a tutto schermo: niente barra
   { id: HOME_SECTIONS.contact, label: t('nav.contact'), light: false },
 ])
@@ -109,6 +129,17 @@ const { active, motion } = useScreens(root)
 // schermata la vuole, la nuvoletta con la descrizione sui prodotti
 const dockShown = computed(() => !!screens.value[active.value]?.dock)
 const dockProduct = computed(() => screens.value[active.value]?.product)
+// Da telefono il cliente toccato nel carosello lo racconta Didi: il
+// nome per titolo e quello che abbiamo fatto per lui (coi grassetti), al
+// posto di quello che dice la schermata
+const picked = ref<MarqueeClient>()
+const pickedSay = computed<Say | undefined>(() => {
+  const c = picked.value
+  return c && { title: c.title, line: typeset(c.did ?? c.summary) }
+})
+const dockSay = computed<Say | undefined>(() => dockProduct.value
+  ? { title: '', line: t(`home.products.${dockProduct.value.key}.desc`) }
+  : pickedSay.value ?? screens.value[active.value]?.say)
 
 // La sfumatura della barra, solo sui video
 const surface = computed(() => {
@@ -182,7 +213,8 @@ watch(active, (now, before) => {
     <HomeDock
       ref="dock"
       :shown="dockShown"
-      :line="dockProduct ? t(`home.products.${dockProduct.key}.desc`) : undefined"
+      :title="dockSay?.title || undefined"
+      :line="dockSay?.line"
       :to="dockProduct ? localePath(`/work/${dockProduct.slug}`) : undefined"
       :label="dockProduct ? `${t('home.featured_more')}: ${dockProduct.name}` : undefined"
       @form="openDrawer"
@@ -299,76 +331,132 @@ watch(active, (now, before) => {
       </ScreenHero>
     </section>
 
-    <!-- Le porte: tutti i prodotti, tutti i clienti -->
+    <!-- Tutti i prodotti: la schermata intera porta alla pagina -->
     <section
       :id="HOME_SECTIONS.projects"
       data-screen
       class="screen"
       :class="{ 'is-active': active === featured.length + 1 }"
-      :aria-label="t('nav.projects')"
+      :aria-label="t('home.more_products')"
+    >
+      <NuxtLink
+        :to="localePath('/work')"
+        class="
+          screen-inner group flex h-full bg-green pt-[72px]
+          pb-[max(28px,env(safe-area-inset-bottom))] text-paper-light
+          transition-colors duration-500
+          hover:bg-ink
+          max-screens:pb-(--dock-space)
+          md:pb-16
+          lg:pt-[97px]
+        "
+      >
+        <div class="page-x flex flex-col justify-end gap-[clamp(16px,3vh,32px)]">
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.2"
+          aria-hidden="true"
+          class="
+            reveal transition-transform duration-300 ease-vintage
+            group-hover:translate-x-1.5 group-hover:-translate-y-1.5
+          "
+        ><path d="M3 11 11 3M4.5 3H11v6.5" /></svg>
+        <h2 class="
+          reveal font-wide text-[clamp(2.75rem,1.4rem+6vw,9rem)] leading-[0.9]
+          font-bold tracking-[-0.035em]
+        ">
+          {{ t('home.more_products') }}
+        </h2>
+        <ul
+          class="reveal flex flex-wrap gap-x-6 gap-y-1 text-body opacity-80"
+          style="--i: 1"
+        >
+          <li
+            v-for="n in names?.work ?? []"
+            :key="n"
+          >
+            {{ n }}
+          </li>
+        </ul>
+        </div>
+      </NuxtLink>
+    </section>
+
+    <!-- I clienti: stanno solo qui. Il carosello dei loghi in mezzo, il
+         titolo in basso a sinistra con le misure delle schermate dei
+         prodotti (ScreenHero), con sotto come si apre la dialog di un logo.
+         Da telefono, come sui prodotti, titolo e riga li dice Didi nella
+         nuvoletta in basso (`say`, col titolo): la griglia dei loghi le lascia posto. Su telefono lo spazio per la
+         barra di Didi (HomeDock), se no ne coprirebbe il titolo -->
+    <section
+      :id="HOME_SECTIONS.clients"
+      data-screen
+      class="clients-screen screen bg-banana text-ink"
+      :class="{ 'is-active': active === featured.length + 2 }"
+      aria-labelledby="clienti-title"
     >
       <div
         class="
-          screen-inner grid h-full grid-rows-2
-          md:grid-cols-2 md:grid-rows-1
+          screen-inner flex h-full flex-col gap-[clamp(16px,3vh,32px)] pt-[72px]
+          pb-[max(clamp(28px,5vh,64px),env(safe-area-inset-bottom))]
+          max-screens:pb-(--dock-space)
+          lg:pt-[97px]
         "
       >
-        <NuxtLink
-          v-for="(d, i) in indexes"
-          :key="d.to"
-          :to="d.to"
+        <div
           class="
-            group flex min-h-0 flex-col justify-end gap-[clamp(16px,3vh,32px)]
-            px-5 pt-[72px] pb-[max(28px,env(safe-area-inset-bottom))]
-            transition-colors duration-500
-            md:px-10 md:pb-16
-            lg:pt-[97px]
-            xl:px-20
+            reveal flex min-h-0 flex-1 flex-col justify-center
+            max-screens:pb-[140px]
           "
-          :class="[
-            d.tone,
-            // Su telefono i clienti stanno in fondo: lo spazio per la barra
-            // di Didi (HomeDock), se no ne coprirebbe i nomi
-            i === 1 ? `max-screens:pb-(--dock-space)` : '',
-          ]"
-          @mouseenter="clientsHover = i === 1"
-          @mouseleave="clientsHover = false"
+          style="--i: 1"
         >
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 14 14"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.2"
-            aria-hidden="true"
-            class="
-              reveal transition-transform duration-300 ease-vintage
-              group-hover:translate-x-1.5 group-hover:-translate-y-1.5
-            "
-            :style="{ '--i': i * 2 }"
-          ><path d="M3 11 11 3M4.5 3H11v6.5" /></svg>
+          <ClientsMarquee
+            :clients="names?.clients ?? []"
+            :active="active === featured.length + 2"
+            @pick="picked = $event"
+          />
+        </div>
+        <div
+          class="
+            clients-caption page-x grid gap-[18px]
+            max-screens:sr-only
+          "
+        >
           <h2
+            id="clienti-title"
             class="
-              reveal font-wide text-[clamp(2.75rem,1.4rem+5vw,7rem)]
-              leading-[0.9] font-bold tracking-[-0.035em]
+              reveal font-wide text-[clamp(2.25rem,1.4rem+2.6vw,4rem)]
+              leading-[0.92] font-bold tracking-[-0.03em]
             "
-            :style="{ '--i': i * 2 }"
+            style="--i: 2"
           >
-            {{ d.label }}
+            {{ t('home.clients_title') }}
           </h2>
-          <ul
-            class="reveal flex flex-wrap gap-x-5 gap-y-1 text-body opacity-80"
-            :style="{ '--i': i * 2 + 1 }"
+          <p
+            class="reveal text-[17px]/normal"
+            style="--i: 3"
           >
-            <li
-              v-for="n in d.names"
-              :key="n"
-            >
-              {{ n }}
-            </li>
-          </ul>
-        </NuxtLink>
+            <span>
+              <span class="pointer-coarse:hidden">{{ t('home.clients_hint') }}</span>
+              <span class="
+                hidden
+                pointer-coarse:inline
+              ">{{ t('home.clients_hint_touch') }}</span>
+            </span>
+          </p>
+        </div>
+        <!-- Quello che Didi dice nella nuvoletta da telefono, per gli
+             screen reader (la nuvoletta non la leggono) -->
+        <p
+          class="sr-only"
+          aria-live="polite"
+        >
+          {{ pickedSay && `${pickedSay.title}: ${stripBold(pickedSay.line)}` }}
+        </p>
       </div>
     </section>
 
@@ -496,6 +584,16 @@ watch(active, (now, before) => {
 @keyframes arrow {
   0%, 100% { transform: translateY(-3px); }
   50% { transform: translateY(3px); }
+}
+
+/* Titolo e riga dei clienti si fanno da parte mentre la dialog di un
+   logo è aperta: ci passa sopra */
+.clients-caption {
+  transition: opacity 0.3s ease;
+}
+
+.clients-screen:has(.client-card) .clients-caption {
+  opacity: 0.15;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -63,6 +63,11 @@ export default defineNuxtConfig({
 
   // Preventivi per i clienti: link privati, mai in cache condivise né indicizzati
   routeRules: {
+    // I clienti non hanno più pagine: stanno nel carosello della home
+    '/clients': { redirect: { to: '/#clienti', statusCode: 301 } },
+    '/clients/**': { redirect: { to: '/#clienti', statusCode: 301 } },
+    '/en/clients': { redirect: { to: '/en#clienti', statusCode: 301 } },
+    '/en/clients/**': { redirect: { to: '/en#clienti', statusCode: 301 } },
     '/p/**': {
       headers: {
         'X-Robots-Tag': 'noindex, nofollow',

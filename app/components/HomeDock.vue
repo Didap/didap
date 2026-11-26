@@ -12,7 +12,10 @@ import DidiChatPanel from '~/components/DidiChatPanel.vue'
 // serve: sta nel logo del video. Con meno movimento la frase compare
 // intera. Fuori dalle schermate in cui serve (`shown` falso) scende via.
 // Agli screen reader la frase la legge la schermata (ScreenHero): qui
-// conta il link, con `label` ("Scopri di più: CityFix").
+// conta il link, con `label` ("Scopri di più: CityFix"). Senza `to` la
+// nuvoletta dice solo la frase (i clienti), senza link né freccia, con un
+// titolo sopra (`title`) se c'è. Nella frase `**così**` è in grassetto
+// (boldParts): titolo e grassetti si scrivono con il resto.
 //
 // Toccare Didi, o l'invito "Scrivici" accanto a lui, apre nella
 // nuvoletta la chat con Didi (DidiChatPanel), la stessa della chiusura:
@@ -20,6 +23,7 @@ import DidiChatPanel from '~/components/DidiChatPanel.vue'
 // ✕, con Esc o toccando fuori.
 const props = defineProps<{
   shown: boolean
+  title?: string
   line?: string
   to?: string
   label?: string
@@ -36,13 +40,20 @@ const { thinking } = useDidiChat()
 // main.css): niente timer, il componente non si ridisegna. Didi annuisce
 // finché la frase si scrive
 const STEP = 22
-const letters = computed(() => Array.from(props.line ?? ''))
+// Le lettere del titolo, poi quelle della frase: il ritardo continua
+const titleLetters = computed(() => Array.from(props.title ?? ''))
+const letters = computed(() => {
+  const offset = titleLetters.value.length
+  return boldParts(props.line ?? '')
+    .flatMap(p => Array.from(p.text, c => ({ c, bold: p.bold })))
+    .map((l, i) => ({ ...l, d: (offset + i) * STEP }))
+})
 const speaking = ref(false)
 let quiet: ReturnType<typeof setTimeout> | undefined
-watch(() => [props.line, props.shown] as const, ([line, shown]) => {
+watch(() => [props.title, props.line, props.shown] as const, ([, line, shown]) => {
   clearTimeout(quiet)
   speaking.value = !!(shown && line) && !matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (speaking.value) quiet = setTimeout(() => (speaking.value = false), letters.value.length * STEP)
+  if (speaking.value) quiet = setTimeout(() => (speaking.value = false), (titleLetters.value.length + letters.value.length) * STEP)
 }, { flush: 'post' })
 onBeforeUnmount(() => clearTimeout(quiet))
 
@@ -50,8 +61,8 @@ onBeforeUnmount(() => clearTimeout(quiet))
 const chat = ref(false)
 const panel = ref<InstanceType<typeof DidiChatPanel>>()
 
-// La nuvoletta c'è: con la chat o con la descrizione
-const bubble = computed(() => chat.value || (props.shown && !!props.line && !!props.to))
+// La nuvoletta c'è: con la chat o con la frase
+const bubble = computed(() => chat.value || (props.shown && !!props.line))
 
 // L'altezza della nuvoletta segue il contenuto con una transizione:
 // fra descrizione e chat cresce e si restringe piano invece di saltare.
@@ -290,7 +301,7 @@ if (import.meta.client) {
                    flottante dopo la frase: si affianca a destra dell'ultima
                    riga -->
               <NuxtLink
-                v-else
+                v-else-if="to"
                 key="product"
                 :to="to!"
                 :aria-label="label"
@@ -305,11 +316,12 @@ if (import.meta.client) {
                   :key="line"
                   aria-hidden="true"
                 ><span
-                  v-for="(c, i) in letters"
+                  v-for="(l, i) in letters"
                   :key="i"
                   class="dock-letter"
-                  :style="{ '--d': `${i * STEP}ms` }"
-                >{{ c }}</span></span>
+                  :class="{ 'font-semibold': l.bold }"
+                  :style="{ '--d': `${l.d}ms` }"
+                >{{ l.c }}</span></span>
                 <span
                   class="
                     float-right mt-1 ml-3 flex size-10 items-center
@@ -330,6 +342,39 @@ if (import.meta.client) {
                   ><path d="M3.5 10.5 10.5 3.5M5 3.5h5.5V9" /></svg>
                 </span>
               </NuxtLink>
+
+              <!-- Solo la frase, senza link: la legge la schermata -->
+              <p
+                v-else
+                key="say"
+                aria-hidden="true"
+                class="
+                  rounded-[38px] px-5 pt-4 pb-5
+                  text-[clamp(1.0625rem,4.4vw,1.1875rem)]/[1.35] wrap-break-word
+                "
+              >
+                <span :key="`${title}|${line}`">
+                  <span
+                    v-if="title"
+                    class="
+                      mb-1 block font-wide text-[1.375rem] leading-[1.1]
+                      font-bold tracking-[-0.02em]
+                    "
+                  ><span
+                    v-for="(c, i) in titleLetters"
+                    :key="i"
+                    class="dock-letter"
+                    :style="{ '--d': `${i * STEP}ms` }"
+                  >{{ c }}</span></span>
+                  <span
+                    v-for="(l, i) in letters"
+                    :key="i"
+                    class="dock-letter"
+                    :class="{ 'font-semibold': l.bold }"
+                    :style="{ '--d': `${l.d}ms` }"
+                  >{{ l.c }}</span>
+                </span>
+              </p>
             </Transition>
           </div>
         </div>
